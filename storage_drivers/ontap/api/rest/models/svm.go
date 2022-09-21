@@ -61,6 +61,12 @@ type Svm struct {
 	// ipspace
 	Ipspace *SvmIpspace `json:"ipspace,omitempty"`
 
+	// Indicates whether logical space enforcement for the SVM is enabled.
+	IsSpaceEnforcementLogical *bool `json:"is_space_enforcement_logical,omitempty"`
+
+	// Indicates whether logical space reporting for the SVM is enabled.
+	IsSpaceReportingLogical *bool `json:"is_space_reporting_logical,omitempty"`
+
 	// iscsi
 	Iscsi *SvmIscsi `json:"iscsi,omitempty"`
 
@@ -2033,7 +2039,7 @@ func (m *Svm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmAggregatesItems0 Aggregate
+// SvmAggregatesItems0 svm aggregates items0
 //
 // swagger:model SvmAggregatesItems0
 type SvmAggregatesItems0 struct {

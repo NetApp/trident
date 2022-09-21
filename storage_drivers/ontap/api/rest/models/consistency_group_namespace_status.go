@@ -23,25 +23,21 @@ type ConsistencyGroupNamespaceStatus struct {
 
 	// The state of the volume and aggregate that contain the NVMe namespace. Namespaces are only available when their containers are available.
 	//
-	// Read Only: true
 	// Enum: [online aggregate_offline volume_offline]
 	ContainerState string `json:"container_state,omitempty"`
 
 	// Reports if the NVMe namespace is mapped to an NVMe subsystem.<br/>
 	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
-	// Read Only: true
-	Mapped *bool `json:"mapped,omitempty"`
+	Mapped bool `json:"mapped,omitempty"`
 
 	// Reports if the NVMe namespace allows only read access.
 	//
-	// Read Only: true
-	ReadOnly *bool `json:"read_only,omitempty"`
+	ReadOnly bool `json:"read_only,omitempty"`
 
 	// The state of the NVMe namespace. Normal states for a namespace are _online_ and _offline_. Other states indicate errors.
 	//
 	// Example: online
-	// Read Only: true
 	// Enum: [nvfail offline online space_error]
 	State string `json:"state,omitempty"`
 }
@@ -206,65 +202,8 @@ func (m *ConsistencyGroupNamespaceStatus) validateState(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this consistency group namespace status based on the context it is used
+// ContextValidate validates this consistency group namespace status based on context it is used
 func (m *ConsistencyGroupNamespaceStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateContainerState(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMapped(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateReadOnly(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateState(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ConsistencyGroupNamespaceStatus) contextValidateContainerState(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "container_state", "body", string(m.ContainerState)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupNamespaceStatus) contextValidateMapped(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "mapped", "body", m.Mapped); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupNamespaceStatus) contextValidateReadOnly(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "read_only", "body", m.ReadOnly); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupNamespaceStatus) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
-		return err
-	}
-
 	return nil
 }
 

@@ -15,10 +15,30 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// FpolicyEngine The engine defines how ONTAP makes and manages connections to external FPolicy servers.
+// FpolicyEngine Defines how ONTAP makes and manages connections to external FPolicy servers.
 //
 // swagger:model fpolicy_engine
 type FpolicyEngine struct {
+
+	// buffer size
+	BufferSize *FpolicyEngineBufferSize `json:"buffer_size,omitempty"`
+
+	// certificate
+	Certificate *FpolicyEngineCertificate `json:"certificate,omitempty"`
+
+	// The format for the notification messages sent to the FPolicy servers.
+	//   The possible values are:
+	//     * xml  - Notifications sent to the FPolicy server will be formatted using the XML schema.
+	//     * protobuf - Notifications sent to the FPolicy server will be formatted using Protobuf schema, which is a binary form.
+	//
+	// Enum: [xml protobuf]
+	Format *string `json:"format,omitempty"`
+
+	// Specifies the maximum number of outstanding requests for the FPolicy server. It is used to specify maximum outstanding requests that will be queued up for the FPolicy server. The value for this field must be between 1 and 10000. The default value can be 500 , 1000 or 2000 depending on the hardware platform.
+	// Example: 500
+	// Maximum: 10000
+	// Minimum: 1
+	MaxServerRequests int64 `json:"max_server_requests,omitempty"`
 
 	// Specifies the name to assign to the external server configuration.
 	// Example: fp_ex_eng
@@ -32,9 +52,36 @@ type FpolicyEngine struct {
 	// Example: ["10.132.145.20","10.140.101.109"]
 	PrimaryServers []string `json:"primary_servers,omitempty"`
 
+	// Specifies the ISO-8601 timeout duration for a screen request to be aborted by a storage appliance. The allowed range is between 0 to 200 seconds.
+	// Example: PT40S
+	RequestAbortTimeout *string `json:"request_abort_timeout,omitempty"`
+
+	// Specifies the ISO-8601 timeout duration for a screen request to be processed by an FPolicy server. The allowed range is between 0 to 100 seconds.
+	// Example: PT20S
+	RequestCancelTimeout *string `json:"request_cancel_timeout,omitempty"`
+
+	// resiliency
+	Resiliency *FpolicyEngineResiliency `json:"resiliency,omitempty"`
+
 	// secondary servers
 	// Example: ["10.132.145.20","10.132.145.21"]
 	SecondaryServers []string `json:"secondary_servers,omitempty"`
+
+	// Specifies the ISO-8601 timeout duration in which a throttled FPolicy server must complete at least one screen request. If no request is processed within the timeout, connection to the FPolicy server is terminated. The allowed range is between 0 to 100 seconds.
+	// Example: PT1M
+	ServerProgressTimeout *string `json:"server_progress_timeout,omitempty"`
+
+	// Specifies the SSL option for external communication with the FPolicy server. Possible values include the following:
+	// * no_auth       When set to "no_auth", no authentication takes place.
+	// * server_auth   When set to "server_auth", only the FPolicy server is authenticated by the SVM. With this option, before creating the FPolicy external engine, the administrator must install the public certificate of the certificate authority (CA) that signed the FPolicy server certificate.
+	// * mutual_auth   When set to "mutual_auth", mutual authentication takes place between the SVM and the FPolicy server. This means authentication of the FPolicy server by the SVM along with authentication of the SVM by the FPolicy server. With this option, before creating the FPolicy external engine, the administrator must install the public certificate of the certificate authority (CA) that signed the FPolicy server certificate along with the public certificate and key file for authentication of the SVM.
+	//
+	// Enum: [no_auth server_auth mutual_auth]
+	SslOption *string `json:"ssl_option,omitempty"`
+
+	// Specifies the ISO-8601 interval time for a storage appliance to query a status request from an FPolicy server. The allowed range is between 0 to 50 seconds.
+	// Example: PT10S
+	StatusRequestInterval *string `json:"status_request_interval,omitempty"`
 
 	// svm
 	Svm *FpolicyEngineSvm `json:"svm,omitempty"`
@@ -52,6 +99,30 @@ type FpolicyEngine struct {
 func (m *FpolicyEngine) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateBufferSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCertificate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFormat(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxServerRequests(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateResiliency(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSslOption(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
@@ -63,6 +134,195 @@ func (m *FpolicyEngine) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *FpolicyEngine) validateBufferSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.BufferSize) { // not required
+		return nil
+	}
+
+	if m.BufferSize != nil {
+		if err := m.BufferSize.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("buffer_size")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FpolicyEngine) validateCertificate(formats strfmt.Registry) error {
+	if swag.IsZero(m.Certificate) { // not required
+		return nil
+	}
+
+	if m.Certificate != nil {
+		if err := m.Certificate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var fpolicyEngineTypeFormatPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["xml","protobuf"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		fpolicyEngineTypeFormatPropEnum = append(fpolicyEngineTypeFormatPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// fpolicy_engine
+	// FpolicyEngine
+	// format
+	// Format
+	// xml
+	// END DEBUGGING
+	// FpolicyEngineFormatXML captures enum value "xml"
+	FpolicyEngineFormatXML string = "xml"
+
+	// BEGIN DEBUGGING
+	// fpolicy_engine
+	// FpolicyEngine
+	// format
+	// Format
+	// protobuf
+	// END DEBUGGING
+	// FpolicyEngineFormatProtobuf captures enum value "protobuf"
+	FpolicyEngineFormatProtobuf string = "protobuf"
+)
+
+// prop value enum
+func (m *FpolicyEngine) validateFormatEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fpolicyEngineTypeFormatPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *FpolicyEngine) validateFormat(formats strfmt.Registry) error {
+	if swag.IsZero(m.Format) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateFormatEnum("format", "body", *m.Format); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *FpolicyEngine) validateMaxServerRequests(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxServerRequests) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("max_server_requests", "body", m.MaxServerRequests, 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("max_server_requests", "body", m.MaxServerRequests, 10000, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *FpolicyEngine) validateResiliency(formats strfmt.Registry) error {
+	if swag.IsZero(m.Resiliency) { // not required
+		return nil
+	}
+
+	if m.Resiliency != nil {
+		if err := m.Resiliency.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("resiliency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var fpolicyEngineTypeSslOptionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_auth","server_auth","mutual_auth"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		fpolicyEngineTypeSslOptionPropEnum = append(fpolicyEngineTypeSslOptionPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// fpolicy_engine
+	// FpolicyEngine
+	// ssl_option
+	// SslOption
+	// no_auth
+	// END DEBUGGING
+	// FpolicyEngineSslOptionNoAuth captures enum value "no_auth"
+	FpolicyEngineSslOptionNoAuth string = "no_auth"
+
+	// BEGIN DEBUGGING
+	// fpolicy_engine
+	// FpolicyEngine
+	// ssl_option
+	// SslOption
+	// server_auth
+	// END DEBUGGING
+	// FpolicyEngineSslOptionServerAuth captures enum value "server_auth"
+	FpolicyEngineSslOptionServerAuth string = "server_auth"
+
+	// BEGIN DEBUGGING
+	// fpolicy_engine
+	// FpolicyEngine
+	// ssl_option
+	// SslOption
+	// mutual_auth
+	// END DEBUGGING
+	// FpolicyEngineSslOptionMutualAuth captures enum value "mutual_auth"
+	FpolicyEngineSslOptionMutualAuth string = "mutual_auth"
+)
+
+// prop value enum
+func (m *FpolicyEngine) validateSslOptionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fpolicyEngineTypeSslOptionPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *FpolicyEngine) validateSslOption(formats strfmt.Registry) error {
+	if swag.IsZero(m.SslOption) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSslOptionEnum("ssl_option", "body", *m.SslOption); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -143,6 +403,18 @@ func (m *FpolicyEngine) validateType(formats strfmt.Registry) error {
 func (m *FpolicyEngine) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateBufferSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCertificate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateResiliency(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -150,6 +422,48 @@ func (m *FpolicyEngine) ContextValidate(ctx context.Context, formats strfmt.Regi
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *FpolicyEngine) contextValidateBufferSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.BufferSize != nil {
+		if err := m.BufferSize.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("buffer_size")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FpolicyEngine) contextValidateCertificate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Certificate != nil {
+		if err := m.Certificate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FpolicyEngine) contextValidateResiliency(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Resiliency != nil {
+		if err := m.Resiliency.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("resiliency")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -178,6 +492,153 @@ func (m *FpolicyEngine) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *FpolicyEngine) UnmarshalBinary(b []byte) error {
 	var res FpolicyEngine
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FpolicyEngineBufferSize Specifies the send and recieve buffer size of the connected socket for the FPolicy server.
+//
+// swagger:model FpolicyEngineBufferSize
+type FpolicyEngineBufferSize struct {
+
+	// Specifies the receive buffer size of the connected socket for the FPolicy server. Default value is 256KB.
+	RecvBuffer *int64 `json:"recv_buffer,omitempty"`
+
+	// Specifies the send buffer size of the connected socket for the FPolicy server. Default value 1MB.
+	SendBuffer *int64 `json:"send_buffer,omitempty"`
+}
+
+// Validate validates this fpolicy engine buffer size
+func (m *FpolicyEngineBufferSize) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this fpolicy engine buffer size based on context it is used
+func (m *FpolicyEngineBufferSize) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FpolicyEngineBufferSize) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FpolicyEngineBufferSize) UnmarshalBinary(b []byte) error {
+	var res FpolicyEngineBufferSize
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FpolicyEngineCertificate Provides details about certificate used to authenticate the Fpolicy server.
+//
+// swagger:model FpolicyEngineCertificate
+type FpolicyEngineCertificate struct {
+
+	// Specifies the certificate authority (CA) name of the certificate
+	// used for authentication if SSL authentication between the SVM and the FPolicy
+	// server is configured.
+	//
+	// Example: TASample1
+	Ca string `json:"ca,omitempty"`
+
+	// Specifies the certificate name as a fully qualified domain
+	// name (FQDN) or custom common name. The certificate is used if SSL authentication
+	// between the SVM and the FPolicy server is configured.
+	//
+	// Example: Sample1-FPolicy-Client
+	Name string `json:"name,omitempty"`
+
+	// Specifies the serial number of the certificate used for
+	// authentication if SSL authentication between the SVM and the FPolicy
+	// server is configured.
+	//
+	// Example: 8DDE112A114D1FBC
+	SerialNumber string `json:"serial_number,omitempty"`
+}
+
+// Validate validates this fpolicy engine certificate
+func (m *FpolicyEngineCertificate) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this fpolicy engine certificate based on context it is used
+func (m *FpolicyEngineCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FpolicyEngineCertificate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FpolicyEngineCertificate) UnmarshalBinary(b []byte) error {
+	var res FpolicyEngineCertificate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FpolicyEngineResiliency If all primary and secondary servers are down, or if no response is received from the FPolicy servers, file access events are stored inside the storage controller under the specified resiliency-directory-path.
+//
+// swagger:model FpolicyEngineResiliency
+type FpolicyEngineResiliency struct {
+
+	// Specifies the directory path under the SVM namespace,
+	// where notifications are stored in the files whenever a network outage happens.
+	//
+	// Example: /dir1
+	DirectoryPath string `json:"directory_path,omitempty"`
+
+	// Specifies whether the resiliency feature is enabled or not.
+	// Default is false.
+	//
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Specifies the ISO-8601 duration, for which the notifications are written
+	// to files inside the storage controller during a network outage. The value for
+	// this field must be between 0 and 600 seconds. Default is 180 seconds.
+	//
+	// Example: PT3M
+	RetentionDuration string `json:"retention_duration,omitempty"`
+}
+
+// Validate validates this fpolicy engine resiliency
+func (m *FpolicyEngineResiliency) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this fpolicy engine resiliency based on context it is used
+func (m *FpolicyEngineResiliency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FpolicyEngineResiliency) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FpolicyEngineResiliency) UnmarshalBinary(b []byte) error {
+	var res FpolicyEngineResiliency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

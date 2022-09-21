@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
@@ -61,9 +62,20 @@ func NewLunModifyParamsWithHTTPClient(client *http.Client) *LunModifyParams {
 */
 type LunModifyParams struct {
 
+	/* DataOffset.
+
+	     The offset, in bytes, at which to begin writing LUN data.<br/>
+	LUN data write requests are distinguished by the header entry `Content-Type: multipart/form-data`. When this header entry is provided, query parameter `data.offset` is required and used to specify the location within the LUN at which to write the data; no other query parameters are allowed. The request body must be `multipart/form-data` content with exactly one form entry containing the data to write. The content type entry of the form data is ignored and always treated as `application/octet-stream`. Writes are limited to one megabyte (1MB) per request.
+
+
+	     Format: int64
+	*/
+	DataOffsetQueryParameter *int64
+
 	/* Info.
 
-	   The new property values for the LUN.
+	     The new property values for the LUN.<br/>
+	Either `info` or `data` must be supplied.
 
 	*/
 	Info *models.Lun
@@ -128,6 +140,17 @@ func (o *LunModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithDataOffsetQueryParameter adds the dataOffset to the lun modify params
+func (o *LunModifyParams) WithDataOffsetQueryParameter(dataOffset *int64) *LunModifyParams {
+	o.SetDataOffsetQueryParameter(dataOffset)
+	return o
+}
+
+// SetDataOffsetQueryParameter adds the dataOffset to the lun modify params
+func (o *LunModifyParams) SetDataOffsetQueryParameter(dataOffset *int64) {
+	o.DataOffsetQueryParameter = dataOffset
+}
+
 // WithInfo adds the info to the lun modify params
 func (o *LunModifyParams) WithInfo(info *models.Lun) *LunModifyParams {
 	o.SetInfo(info)
@@ -157,6 +180,23 @@ func (o *LunModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		return err
 	}
 	var res []error
+
+	if o.DataOffsetQueryParameter != nil {
+
+		// query param data.offset
+		var qrDataOffset int64
+
+		if o.DataOffsetQueryParameter != nil {
+			qrDataOffset = *o.DataOffsetQueryParameter
+		}
+		qDataOffset := swag.FormatInt64(qrDataOffset)
+		if qDataOffset != "" {
+
+			if err := r.SetQueryParam("data.offset", qDataOffset); err != nil {
+				return err
+			}
+		}
+	}
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err

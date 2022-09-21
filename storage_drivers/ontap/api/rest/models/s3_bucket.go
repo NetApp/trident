@@ -24,6 +24,9 @@ type S3Bucket struct {
 	// A list of aggregates for FlexGroup volume constituents where the bucket is hosted. If this option is not specified, the bucket is auto-provisioned as a FlexGroup volume.
 	Aggregates []*S3BucketAggregatesItems0 `json:"aggregates,omitempty"`
 
+	// audit event selector
+	AuditEventSelector *S3BucketAuditEventSelector `json:"audit_event_selector,omitempty"`
+
 	// Can contain any additional information about the bucket being created or modified.
 	// Example: S3 bucket.
 	// Max Length: 256
@@ -83,6 +86,11 @@ type S3Bucket struct {
 	// Format: uuid
 	UUID strfmt.UUID `json:"uuid,omitempty"`
 
+	// Specifies the versioning state of the bucket. Valid values are "disabled", "enabled" or "suspended". Note that the versioning state cannot be modified to 'disabled' from any other state.
+	// Example: enabled
+	// Enum: [disabled enabled suspended]
+	VersioningState *string `json:"versioning_state,omitempty"`
+
 	// volume
 	Volume *S3BucketVolume `json:"volume,omitempty"`
 }
@@ -92,6 +100,10 @@ func (m *S3Bucket) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAggregates(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAuditEventSelector(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -143,6 +155,10 @@ func (m *S3Bucket) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateVersioningState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateVolume(formats); err != nil {
 		res = append(res, err)
 	}
@@ -172,6 +188,23 @@ func (m *S3Bucket) validateAggregates(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *S3Bucket) validateAuditEventSelector(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuditEventSelector) { // not required
+		return nil
+	}
+
+	if m.AuditEventSelector != nil {
+		if err := m.AuditEventSelector.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("audit_event_selector")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -470,6 +503,72 @@ func (m *S3Bucket) validateUUID(formats strfmt.Registry) error {
 	return nil
 }
 
+var s3BucketTypeVersioningStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["disabled","enabled","suspended"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		s3BucketTypeVersioningStatePropEnum = append(s3BucketTypeVersioningStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// s3_bucket
+	// S3Bucket
+	// versioning_state
+	// VersioningState
+	// disabled
+	// END DEBUGGING
+	// S3BucketVersioningStateDisabled captures enum value "disabled"
+	S3BucketVersioningStateDisabled string = "disabled"
+
+	// BEGIN DEBUGGING
+	// s3_bucket
+	// S3Bucket
+	// versioning_state
+	// VersioningState
+	// enabled
+	// END DEBUGGING
+	// S3BucketVersioningStateEnabled captures enum value "enabled"
+	S3BucketVersioningStateEnabled string = "enabled"
+
+	// BEGIN DEBUGGING
+	// s3_bucket
+	// S3Bucket
+	// versioning_state
+	// VersioningState
+	// suspended
+	// END DEBUGGING
+	// S3BucketVersioningStateSuspended captures enum value "suspended"
+	S3BucketVersioningStateSuspended string = "suspended"
+)
+
+// prop value enum
+func (m *S3Bucket) validateVersioningStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3BucketTypeVersioningStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *S3Bucket) validateVersioningState(formats strfmt.Registry) error {
+	if swag.IsZero(m.VersioningState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateVersioningStateEnum("versioning_state", "body", *m.VersioningState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *S3Bucket) validateVolume(formats strfmt.Registry) error {
 	if swag.IsZero(m.Volume) { // not required
 		return nil
@@ -492,6 +591,10 @@ func (m *S3Bucket) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	var res []error
 
 	if err := m.contextValidateAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAuditEventSelector(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -550,6 +653,20 @@ func (m *S3Bucket) contextValidateAggregates(ctx context.Context, formats strfmt
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *S3Bucket) contextValidateAuditEventSelector(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AuditEventSelector != nil {
+		if err := m.AuditEventSelector.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("audit_event_selector")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -684,7 +801,7 @@ func (m *S3Bucket) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketAggregatesItems0 Aggregate
+// S3BucketAggregatesItems0 s3 bucket aggregates items0
 //
 // swagger:model S3BucketAggregatesItems0
 type S3BucketAggregatesItems0 struct {
@@ -857,6 +974,195 @@ func (m *S3BucketAggregatesItems0Links) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *S3BucketAggregatesItems0Links) UnmarshalBinary(b []byte) error {
 	var res S3BucketAggregatesItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketAuditEventSelector Audit event selector allows you to specify access and permission types to audit.
+//
+// swagger:model S3BucketAuditEventSelector
+type S3BucketAuditEventSelector struct {
+
+	// Specifies read and write access types.
+	//
+	// Enum: [read write all]
+	Access *string `json:"access,omitempty"`
+
+	// Specifies allow and deny permission types.
+	//
+	// Enum: [deny allow all]
+	Permission *string `json:"permission,omitempty"`
+}
+
+// Validate validates this s3 bucket audit event selector
+func (m *S3BucketAuditEventSelector) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAccess(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePermission(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var s3BucketAuditEventSelectorTypeAccessPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["read","write","all"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		s3BucketAuditEventSelectorTypeAccessPropEnum = append(s3BucketAuditEventSelectorTypeAccessPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// S3BucketAuditEventSelector
+	// S3BucketAuditEventSelector
+	// access
+	// Access
+	// read
+	// END DEBUGGING
+	// S3BucketAuditEventSelectorAccessRead captures enum value "read"
+	S3BucketAuditEventSelectorAccessRead string = "read"
+
+	// BEGIN DEBUGGING
+	// S3BucketAuditEventSelector
+	// S3BucketAuditEventSelector
+	// access
+	// Access
+	// write
+	// END DEBUGGING
+	// S3BucketAuditEventSelectorAccessWrite captures enum value "write"
+	S3BucketAuditEventSelectorAccessWrite string = "write"
+
+	// BEGIN DEBUGGING
+	// S3BucketAuditEventSelector
+	// S3BucketAuditEventSelector
+	// access
+	// Access
+	// all
+	// END DEBUGGING
+	// S3BucketAuditEventSelectorAccessAll captures enum value "all"
+	S3BucketAuditEventSelectorAccessAll string = "all"
+)
+
+// prop value enum
+func (m *S3BucketAuditEventSelector) validateAccessEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3BucketAuditEventSelectorTypeAccessPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *S3BucketAuditEventSelector) validateAccess(formats strfmt.Registry) error {
+	if swag.IsZero(m.Access) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAccessEnum("audit_event_selector"+"."+"access", "body", *m.Access); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var s3BucketAuditEventSelectorTypePermissionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["deny","allow","all"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		s3BucketAuditEventSelectorTypePermissionPropEnum = append(s3BucketAuditEventSelectorTypePermissionPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// S3BucketAuditEventSelector
+	// S3BucketAuditEventSelector
+	// permission
+	// Permission
+	// deny
+	// END DEBUGGING
+	// S3BucketAuditEventSelectorPermissionDeny captures enum value "deny"
+	S3BucketAuditEventSelectorPermissionDeny string = "deny"
+
+	// BEGIN DEBUGGING
+	// S3BucketAuditEventSelector
+	// S3BucketAuditEventSelector
+	// permission
+	// Permission
+	// allow
+	// END DEBUGGING
+	// S3BucketAuditEventSelectorPermissionAllow captures enum value "allow"
+	S3BucketAuditEventSelectorPermissionAllow string = "allow"
+
+	// BEGIN DEBUGGING
+	// S3BucketAuditEventSelector
+	// S3BucketAuditEventSelector
+	// permission
+	// Permission
+	// all
+	// END DEBUGGING
+	// S3BucketAuditEventSelectorPermissionAll captures enum value "all"
+	S3BucketAuditEventSelectorPermissionAll string = "all"
+)
+
+// prop value enum
+func (m *S3BucketAuditEventSelector) validatePermissionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3BucketAuditEventSelectorTypePermissionPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *S3BucketAuditEventSelector) validatePermission(formats strfmt.Registry) error {
+	if swag.IsZero(m.Permission) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePermissionEnum("audit_event_selector"+"."+"permission", "body", *m.Permission); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this s3 bucket audit event selector based on context it is used
+func (m *S3BucketAuditEventSelector) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketAuditEventSelector) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketAuditEventSelector) UnmarshalBinary(b []byte) error {
+	var res S3BucketAuditEventSelector
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

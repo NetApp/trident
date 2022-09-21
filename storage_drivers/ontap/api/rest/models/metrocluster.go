@@ -27,10 +27,6 @@ type Metrocluster struct {
 	// DR Pairs to create as part of a MetroCluster configure.
 	DrPairs []*MetroclusterDrPairsItems0 `json:"dr_pairs,omitempty"`
 
-	// enabled
-	// Read Only: true
-	Enabled *bool `json:"enabled,omitempty"`
-
 	// local
 	Local *MetroclusterLocal `json:"local,omitempty"`
 
@@ -230,10 +226,6 @@ func (m *Metrocluster) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateEnabled(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateLocal(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -287,15 +279,6 @@ func (m *Metrocluster) contextValidateDrPairs(ctx context.Context, formats strfm
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *Metrocluster) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "enabled", "body", m.Enabled); err != nil {
-		return err
 	}
 
 	return nil

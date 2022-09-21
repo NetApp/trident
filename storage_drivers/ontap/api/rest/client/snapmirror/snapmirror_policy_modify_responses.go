@@ -85,10 +85,13 @@ func NewSnapmirrorPolicyModifyDefault(code int) *SnapmirrorPolicyModifyDefault {
  ONTAP Error Response codes
 | Error code  |  Description |
 |-------------|--------------|
+| 6619714     | Schedule specified is an interval schedule. SnapMirror does not support interval schedules. |
 | 13303842    | SnapMirror policy is not supported.|
 | 13303843    | Conflicting values between SnapMirror policy and SnapMirror relationships for either 'transfer_schedule, throttle or identity_preservation' properties |
 | 13303850    | Invalid input parameter |
 | 13303887    | Failed to create SnapMirror policy. Reason: Maximum number of allowed retention rules reached |
+| 13304050    | Retention cannot be empty for a SnapMirror policy with 'create_snapshot_on_source' set to false. |
+
 
 */
 type SnapmirrorPolicyModifyDefault struct {

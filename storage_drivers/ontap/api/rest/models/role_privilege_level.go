@@ -14,11 +14,20 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// RolePrivilegeLevel Access level for the REST endpoint.
+// RolePrivilegeLevel Access level for the REST endpoint or command/command directory path. If it denotes the access level for a command/command directory path, the only supported enum values are 'none','readonly' and 'all'.
 // Example: readonly
 //
 // swagger:model role_privilege_level
 type RolePrivilegeLevel string
+
+func NewRolePrivilegeLevel(value RolePrivilegeLevel) *RolePrivilegeLevel {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated RolePrivilegeLevel.
+func (m RolePrivilegeLevel) Pointer() *RolePrivilegeLevel {
+	return &m
+}
 
 const (
 
@@ -27,6 +36,15 @@ const (
 
 	// RolePrivilegeLevelReadonly captures enum value "readonly"
 	RolePrivilegeLevelReadonly RolePrivilegeLevel = "readonly"
+
+	// RolePrivilegeLevelReadCreate captures enum value "read_create"
+	RolePrivilegeLevelReadCreate RolePrivilegeLevel = "read_create"
+
+	// RolePrivilegeLevelReadModify captures enum value "read_modify"
+	RolePrivilegeLevelReadModify RolePrivilegeLevel = "read_modify"
+
+	// RolePrivilegeLevelReadCreateModify captures enum value "read_create_modify"
+	RolePrivilegeLevelReadCreateModify RolePrivilegeLevel = "read_create_modify"
 
 	// RolePrivilegeLevelAll captures enum value "all"
 	RolePrivilegeLevelAll RolePrivilegeLevel = "all"
@@ -37,7 +55,7 @@ var rolePrivilegeLevelEnum []interface{}
 
 func init() {
 	var res []RolePrivilegeLevel
-	if err := json.Unmarshal([]byte(`["none","readonly","all"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["none","readonly","read_create","read_modify","read_create_modify","all"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

@@ -20,6 +20,15 @@ import (
 // swagger:model key_exchange_algorithm
 type KeyExchangeAlgorithm string
 
+func NewKeyExchangeAlgorithm(value KeyExchangeAlgorithm) *KeyExchangeAlgorithm {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated KeyExchangeAlgorithm.
+func (m KeyExchangeAlgorithm) Pointer() *KeyExchangeAlgorithm {
+	return &m
+}
+
 const (
 
 	// KeyExchangeAlgorithmDiffieHellmanGroupExchangeSha256 captures enum value "diffie_hellman_group_exchange_sha256"

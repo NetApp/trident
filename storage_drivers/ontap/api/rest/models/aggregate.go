@@ -47,6 +47,16 @@ type Aggregate struct {
 	// inactive data reporting
 	InactiveDataReporting *AggregateInactiveDataReporting `json:"inactive_data_reporting,omitempty"`
 
+	// inode attributes
+	InodeAttributes *AggregateInodeAttributes `json:"inode_attributes,omitempty"`
+
+	// Specifies whether the aggregate is in a spares low condition on any of the RAID groups.
+	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	//
+	// Example: false
+	// Read Only: true
+	IsSpareLow *bool `json:"is_spare_low,omitempty"`
+
 	// metric
 	Metric *AggregateMetric `json:"metric,omitempty"`
 
@@ -60,6 +70,9 @@ type Aggregate struct {
 	// Information on the aggregate's remaining hot spare disks.
 	RecommendationSpares []*AggregateSpare `json:"recommendation_spares,omitempty"`
 
+	// Specifies whether or not SIDL is enabled on the aggregate.
+	SidlEnabled bool `json:"sidl_enabled,omitempty"`
+
 	// SnapLock type.
 	// Enum: [non_snaplock compliance enterprise]
 	SnaplockType string `json:"snaplock_type,omitempty"`
@@ -71,7 +84,6 @@ type Aggregate struct {
 	Space *AggregateSpace `json:"space,omitempty"`
 
 	// Operational state of the aggregate.
-	// Read Only: true
 	// Enum: [online onlining offline offlining relocating unmounted restricted inconsistent failed unknown]
 	State string `json:"state,omitempty"`
 
@@ -81,6 +93,10 @@ type Aggregate struct {
 	// Aggregate UUID.
 	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
+
+	// Number of volumes in the aggregate.
+	// Read Only: true
+	VolumeCount int64 `json:"volume-count,omitempty"`
 }
 
 // Validate validates this aggregate
@@ -112,6 +128,10 @@ func (m *Aggregate) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateInactiveDataReporting(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateInodeAttributes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -264,6 +284,23 @@ func (m *Aggregate) validateInactiveDataReporting(formats strfmt.Registry) error
 		if err := m.InactiveDataReporting.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("inactive_data_reporting")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Aggregate) validateInodeAttributes(formats strfmt.Registry) error {
+	if swag.IsZero(m.InodeAttributes) { // not required
+		return nil
+	}
+
+	if m.InodeAttributes != nil {
+		if err := m.InodeAttributes.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("inode_attributes")
 			}
 			return err
 		}
@@ -619,6 +656,14 @@ func (m *Aggregate) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateInodeAttributes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsSpareLow(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMetric(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -639,15 +684,15 @@ func (m *Aggregate) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateState(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateStatistics(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeCount(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -764,6 +809,29 @@ func (m *Aggregate) contextValidateInactiveDataReporting(ctx context.Context, fo
 	return nil
 }
 
+func (m *Aggregate) contextValidateInodeAttributes(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.InodeAttributes != nil {
+		if err := m.InodeAttributes.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("inode_attributes")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Aggregate) contextValidateIsSpareLow(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_spare_low", "body", m.IsSpareLow); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Aggregate) contextValidateMetric(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Metric != nil {
@@ -838,15 +906,6 @@ func (m *Aggregate) contextValidateSpace(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *Aggregate) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *Aggregate) contextValidateStatistics(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Statistics != nil {
@@ -864,6 +923,15 @@ func (m *Aggregate) contextValidateStatistics(ctx context.Context, formats strfm
 func (m *Aggregate) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Aggregate) contextValidateVolumeCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "volume-count", "body", int64(m.VolumeCount)); err != nil {
 		return err
 	}
 
@@ -905,6 +973,15 @@ type AggregateBlockStorage struct {
 
 	// primary
 	Primary *AggregateBlockStoragePrimary `json:"primary,omitempty"`
+
+	// Type of aggregate.
+	// Read Only: true
+	// Enum: [hdd hybrid lun ssd vmdisk]
+	StorageType string `json:"storage_type,omitempty"`
+
+	// If true, aggregate is using shared disks.
+	// Read Only: true
+	UsesPartitions *bool `json:"uses_partitions,omitempty"`
 }
 
 // Validate validates this aggregate block storage
@@ -924,6 +1001,10 @@ func (m *AggregateBlockStorage) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePrimary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1008,6 +1089,92 @@ func (m *AggregateBlockStorage) validatePrimary(formats strfmt.Registry) error {
 	return nil
 }
 
+var aggregateBlockStorageTypeStorageTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["hdd","hybrid","lun","ssd","vmdisk"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		aggregateBlockStorageTypeStorageTypePropEnum = append(aggregateBlockStorageTypeStorageTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// AggregateBlockStorage
+	// AggregateBlockStorage
+	// storage_type
+	// StorageType
+	// hdd
+	// END DEBUGGING
+	// AggregateBlockStorageStorageTypeHdd captures enum value "hdd"
+	AggregateBlockStorageStorageTypeHdd string = "hdd"
+
+	// BEGIN DEBUGGING
+	// AggregateBlockStorage
+	// AggregateBlockStorage
+	// storage_type
+	// StorageType
+	// hybrid
+	// END DEBUGGING
+	// AggregateBlockStorageStorageTypeHybrid captures enum value "hybrid"
+	AggregateBlockStorageStorageTypeHybrid string = "hybrid"
+
+	// BEGIN DEBUGGING
+	// AggregateBlockStorage
+	// AggregateBlockStorage
+	// storage_type
+	// StorageType
+	// lun
+	// END DEBUGGING
+	// AggregateBlockStorageStorageTypeLun captures enum value "lun"
+	AggregateBlockStorageStorageTypeLun string = "lun"
+
+	// BEGIN DEBUGGING
+	// AggregateBlockStorage
+	// AggregateBlockStorage
+	// storage_type
+	// StorageType
+	// ssd
+	// END DEBUGGING
+	// AggregateBlockStorageStorageTypeSsd captures enum value "ssd"
+	AggregateBlockStorageStorageTypeSsd string = "ssd"
+
+	// BEGIN DEBUGGING
+	// AggregateBlockStorage
+	// AggregateBlockStorage
+	// storage_type
+	// StorageType
+	// vmdisk
+	// END DEBUGGING
+	// AggregateBlockStorageStorageTypeVmdisk captures enum value "vmdisk"
+	AggregateBlockStorageStorageTypeVmdisk string = "vmdisk"
+)
+
+// prop value enum
+func (m *AggregateBlockStorage) validateStorageTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateBlockStorageTypeStorageTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *AggregateBlockStorage) validateStorageType(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStorageTypeEnum("block_storage"+"."+"storage_type", "body", m.StorageType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this aggregate block storage based on the context it is used
 func (m *AggregateBlockStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -1025,6 +1192,14 @@ func (m *AggregateBlockStorage) ContextValidate(ctx context.Context, formats str
 	}
 
 	if err := m.contextValidatePrimary(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorageType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsesPartitions(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1098,6 +1273,24 @@ func (m *AggregateBlockStorage) contextValidatePrimary(ctx context.Context, form
 	return nil
 }
 
+func (m *AggregateBlockStorage) contextValidateStorageType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"storage_type", "body", string(m.StorageType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateBlockStorage) contextValidateUsesPartitions(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"uses_partitions", "body", m.UsesPartitions); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *AggregateBlockStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -1140,6 +1333,9 @@ type AggregateBlockStorageHybridCache struct {
 	// Read Only: true
 	Size int64 `json:"size,omitempty"`
 
+	// List of storage pool properties and allocation_units_count for aggregate.
+	StoragePools []*AggregateBlockStorageHybridCacheStoragePoolsItems0 `json:"storage_pools,omitempty"`
+
 	// Space used in bytes of SSD cache. Only provided when hybrid_cache.enabled is 'true'.
 	// Example: 26501122
 	// Read Only: true
@@ -1151,6 +1347,10 @@ func (m *AggregateBlockStorageHybridCache) Validate(formats strfmt.Registry) err
 	var res []error
 
 	if err := m.validateRaidType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStoragePools(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1226,6 +1426,30 @@ func (m *AggregateBlockStorageHybridCache) validateRaidType(formats strfmt.Regis
 	return nil
 }
 
+func (m *AggregateBlockStorageHybridCache) validateStoragePools(formats strfmt.Registry) error {
+	if swag.IsZero(m.StoragePools) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StoragePools); i++ {
+		if swag.IsZero(m.StoragePools[i]) { // not required
+			continue
+		}
+
+		if m.StoragePools[i] != nil {
+			if err := m.StoragePools[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("block_storage" + "." + "hybrid_cache" + "." + "storage_pools" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this aggregate block storage hybrid cache based on the context it is used
 func (m *AggregateBlockStorageHybridCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -1243,6 +1467,10 @@ func (m *AggregateBlockStorageHybridCache) ContextValidate(ctx context.Context, 
 	}
 
 	if err := m.contextValidateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStoragePools(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1292,6 +1520,24 @@ func (m *AggregateBlockStorageHybridCache) contextValidateSize(ctx context.Conte
 	return nil
 }
 
+func (m *AggregateBlockStorageHybridCache) contextValidateStoragePools(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.StoragePools); i++ {
+
+		if m.StoragePools[i] != nil {
+			if err := m.StoragePools[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("block_storage" + "." + "hybrid_cache" + "." + "storage_pools" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *AggregateBlockStorageHybridCache) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "block_storage"+"."+"hybrid_cache"+"."+"used", "body", int64(m.Used)); err != nil {
@@ -1312,6 +1558,95 @@ func (m *AggregateBlockStorageHybridCache) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *AggregateBlockStorageHybridCache) UnmarshalBinary(b []byte) error {
 	var res AggregateBlockStorageHybridCache
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AggregateBlockStorageHybridCacheStoragePoolsItems0 aggregate block storage hybrid cache storage pools items0
+//
+// swagger:model AggregateBlockStorageHybridCacheStoragePoolsItems0
+type AggregateBlockStorageHybridCacheStoragePoolsItems0 struct {
+
+	// Allocation count of storage pool.
+	AllocationUnitsCount int32 `json:"allocation_units_count,omitempty"`
+
+	// storage pool
+	StoragePool *StoragePoolReference `json:"storage_pool,omitempty"`
+}
+
+// Validate validates this aggregate block storage hybrid cache storage pools items0
+func (m *AggregateBlockStorageHybridCacheStoragePoolsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateStoragePool(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AggregateBlockStorageHybridCacheStoragePoolsItems0) validateStoragePool(formats strfmt.Registry) error {
+	if swag.IsZero(m.StoragePool) { // not required
+		return nil
+	}
+
+	if m.StoragePool != nil {
+		if err := m.StoragePool.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_pool")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this aggregate block storage hybrid cache storage pools items0 based on the context it is used
+func (m *AggregateBlockStorageHybridCacheStoragePoolsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateStoragePool(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AggregateBlockStorageHybridCacheStoragePoolsItems0) contextValidateStoragePool(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.StoragePool != nil {
+		if err := m.StoragePool.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_pool")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AggregateBlockStorageHybridCacheStoragePoolsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AggregateBlockStorageHybridCacheStoragePoolsItems0) UnmarshalBinary(b []byte) error {
+	var res AggregateBlockStorageHybridCacheStoragePoolsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2046,8 +2381,20 @@ func (m *AggregateBlockStoragePrimary) UnmarshalBinary(b []byte) error {
 // swagger:model AggregateBlockStoragePrimarySimulatedRaidGroupsItems0
 type AggregateBlockStoragePrimarySimulatedRaidGroupsItems0 struct {
 
+	// Number of added data disks in RAID group.
+	AddedDataDiskCount int64 `json:"added_data_disk_count,omitempty"`
+
+	// Number of added parity disks in RAID group.
+	AddedParityDiskCount int64 `json:"added_parity_disk_count,omitempty"`
+
 	// Number of data disks in RAID group.
 	DataDiskCount int64 `json:"data_disk_count,omitempty"`
+
+	// Number of existing data disks in the RAID group.
+	ExistingDataDiskCount int64 `json:"existing_data_disk_count,omitempty"`
+
+	// Number of existing parity disks in the RAID group.
+	ExistingParityDiskCount int64 `json:"existing_parity_disk_count,omitempty"`
 
 	// Indicates whether the disk is partitioned (true) or whole (false).
 	IsPartition bool `json:"is_partition,omitempty"`
@@ -2672,6 +3019,115 @@ func (m *AggregateInactiveDataReporting) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *AggregateInactiveDataReporting) UnmarshalBinary(b []byte) error {
 	var res AggregateInactiveDataReporting
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AggregateInodeAttributes aggregate inode attributes
+//
+// swagger:model AggregateInodeAttributes
+type AggregateInodeAttributes struct {
+
+	// Number of files that can currently be stored on disk for system metadata files. This number will dynamically increase as more system files are created.
+	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	//
+	// Example: 31136
+	FilePrivateCapacity int64 `json:"file_private_capacity,omitempty"`
+
+	// Number of files that can currently be stored on disk for user-visible files.  This number will dynamically increase as more user-visible files are created.
+	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	//
+	// Example: 31136
+	FilePublicCapacity int64 `json:"file_public_capacity,omitempty"`
+
+	// Number of system metadata files used. If the referenced file system is restricted or offline, a value of 0 is returned.
+	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	//
+	// Example: 502
+	FilesPrivateUsed int64 `json:"files_private_used,omitempty"`
+
+	// Maximum number of user-visible files that this referenced file system can currently hold. If the referenced file system is restricted or offline, a value of 0 is returned.
+	// Example: 31136
+	FilesTotal int64 `json:"files_total,omitempty"`
+
+	// Number of user-visible files used in the referenced file system. If the referenced file system is restricted or offline, a value of 0 is returned.
+	// Example: 97
+	FilesUsed int64 `json:"files_used,omitempty"`
+
+	// The count of the maximum number of user-visible files currently allowable on the referenced file system.
+	// Example: 31136
+	MaxFilesAvailable int64 `json:"max_files_available,omitempty"`
+
+	// The largest value to which the maxfiles-available parameter can be increased by reconfiguration, on the referenced file system.
+	// Example: 2844525
+	MaxFilesPossible int64 `json:"max_files_possible,omitempty"`
+
+	// The number of user-visible files currently in use on the referenced file system.
+	// Example: 97
+	MaxFilesUsed int64 `json:"max_files_used,omitempty"`
+
+	// The percentage of disk space currently in use based on user-visible file count on the referenced file system.
+	// Example: 5
+	// Maximum: 100
+	// Minimum: 0
+	UsedPercent *int64 `json:"used_percent,omitempty"`
+
+	// The inofile-version of the aggregate. If the referenced file system is restricted or offline, a value of 0 is returned.
+	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
+	//
+	// Example: 4
+	Version int64 `json:"version,omitempty"`
+}
+
+// Validate validates this aggregate inode attributes
+func (m *AggregateInodeAttributes) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateUsedPercent(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AggregateInodeAttributes) validateUsedPercent(formats strfmt.Registry) error {
+	if swag.IsZero(m.UsedPercent) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("inode_attributes"+"."+"used_percent", "body", *m.UsedPercent, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("inode_attributes"+"."+"used_percent", "body", *m.UsedPercent, 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this aggregate inode attributes based on context it is used
+func (m *AggregateInodeAttributes) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AggregateInodeAttributes) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AggregateInodeAttributes) UnmarshalBinary(b []byte) error {
+	var res AggregateInodeAttributes
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4161,15 +4617,15 @@ func (m *AggregateSpace) UnmarshalBinary(b []byte) error {
 // swagger:model AggregateSpaceBlockStorage
 type AggregateSpaceBlockStorage struct {
 
-	// Aggregate metadata, in bytes.
+	// Space used by different metafiles and internal operations inside the aggregate, in bytes.
 	// Example: 2655
 	// Read Only: true
-	AggregateMetadata int64 `json:"aggregate-metadata,omitempty"`
+	AggregateMetadata int64 `json:"aggregate_metadata,omitempty"`
 
 	// Aggregate metadata as a percentage.
 	// Example: 8
 	// Read Only: true
-	AggregateMetadataPercent int64 `json:"aggregate-metadata-percent,omitempty"`
+	AggregateMetadataPercent int64 `json:"aggregate_metadata_percent,omitempty"`
 
 	// Space available in bytes.
 	// Example: 10156560384
@@ -4231,17 +4687,12 @@ type AggregateSpaceBlockStorage struct {
 	// Total used including the Snapshot copy reserve, in bytes.
 	// Example: 674685
 	// Read Only: true
-	UsedIncludingSnapshotReserve int64 `json:"used-including-snapshot-reserve,omitempty"`
+	UsedIncludingSnapshotReserve int64 `json:"used_including_snapshot_reserve,omitempty"`
 
 	// Total used including the Snapshot reserve as a percentage.
 	// Example: 35
 	// Read Only: true
-	UsedIncludingSnapshotReservePercent int64 `json:"used-including-snapshot-reserve-percent,omitempty"`
-
-	// Total of volume footprints as a percentage.
-	// Example: 14
-	// Read Only: true
-	VolumeFootprintsPercent int64 `json:"volume-footprints-percent,omitempty"`
+	UsedIncludingSnapshotReservePercent int64 `json:"used_including_snapshot_reserve_percent,omitempty"`
 
 	// Amount of shared bytes counted by storage efficiency.
 	// Example: 1990000
@@ -4257,6 +4708,11 @@ type AggregateSpaceBlockStorage struct {
 	// Example: 27
 	// Read Only: true
 	VolumeDeduplicationSpaceSavedPercent int64 `json:"volume_deduplication_space_saved_percent,omitempty"`
+
+	// A summation of volume footprints inside the aggregate, as a percentage. A volume's footprint is the amount of space being used for the volume in the aggregate.
+	// Example: 14
+	// Read Only: true
+	VolumeFootprintsPercent int64 `json:"volume_footprints_percent,omitempty"`
 }
 
 // Validate validates this aggregate space block storage
@@ -4328,10 +4784,6 @@ func (m *AggregateSpaceBlockStorage) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateVolumeFootprintsPercent(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateVolumeDeduplicationSharedCount(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -4344,6 +4796,10 @@ func (m *AggregateSpaceBlockStorage) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateVolumeFootprintsPercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -4352,7 +4808,7 @@ func (m *AggregateSpaceBlockStorage) ContextValidate(ctx context.Context, format
 
 func (m *AggregateSpaceBlockStorage) contextValidateAggregateMetadata(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"aggregate-metadata", "body", int64(m.AggregateMetadata)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"aggregate_metadata", "body", int64(m.AggregateMetadata)); err != nil {
 		return err
 	}
 
@@ -4361,7 +4817,7 @@ func (m *AggregateSpaceBlockStorage) contextValidateAggregateMetadata(ctx contex
 
 func (m *AggregateSpaceBlockStorage) contextValidateAggregateMetadataPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"aggregate-metadata-percent", "body", int64(m.AggregateMetadataPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"aggregate_metadata_percent", "body", int64(m.AggregateMetadataPercent)); err != nil {
 		return err
 	}
 
@@ -4469,7 +4925,7 @@ func (m *AggregateSpaceBlockStorage) contextValidateUsed(ctx context.Context, fo
 
 func (m *AggregateSpaceBlockStorage) contextValidateUsedIncludingSnapshotReserve(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used-including-snapshot-reserve", "body", int64(m.UsedIncludingSnapshotReserve)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used_including_snapshot_reserve", "body", int64(m.UsedIncludingSnapshotReserve)); err != nil {
 		return err
 	}
 
@@ -4478,16 +4934,7 @@ func (m *AggregateSpaceBlockStorage) contextValidateUsedIncludingSnapshotReserve
 
 func (m *AggregateSpaceBlockStorage) contextValidateUsedIncludingSnapshotReservePercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used-including-snapshot-reserve-percent", "body", int64(m.UsedIncludingSnapshotReservePercent)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *AggregateSpaceBlockStorage) contextValidateVolumeFootprintsPercent(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume-footprints-percent", "body", int64(m.VolumeFootprintsPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"used_including_snapshot_reserve_percent", "body", int64(m.UsedIncludingSnapshotReservePercent)); err != nil {
 		return err
 	}
 
@@ -4515,6 +4962,15 @@ func (m *AggregateSpaceBlockStorage) contextValidateVolumeDeduplicationSpaceSave
 func (m *AggregateSpaceBlockStorage) contextValidateVolumeDeduplicationSpaceSavedPercent(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_deduplication_space_saved_percent", "body", int64(m.VolumeDeduplicationSpaceSavedPercent)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateSpaceBlockStorage) contextValidateVolumeFootprintsPercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"volume_footprints_percent", "body", int64(m.VolumeFootprintsPercent)); err != nil {
 		return err
 	}
 

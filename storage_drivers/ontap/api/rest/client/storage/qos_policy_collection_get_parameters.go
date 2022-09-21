@@ -184,6 +184,12 @@ type QosPolicyCollectionGetParams struct {
 	*/
 	ReturnTimeoutQueryParameter *int64
 
+	/* Scope.
+
+	   Filter by scope
+	*/
+	ScopeQueryParameter *string
+
 	/* SvmName.
 
 	   Filter by svm.name
@@ -487,6 +493,17 @@ func (o *QosPolicyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTim
 // SetReturnTimeoutQueryParameter adds the returnTimeout to the qos policy collection get params
 func (o *QosPolicyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
 	o.ReturnTimeoutQueryParameter = returnTimeout
+}
+
+// WithScopeQueryParameter adds the scope to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithScopeQueryParameter(scope *string) *QosPolicyCollectionGetParams {
+	o.SetScopeQueryParameter(scope)
+	return o
+}
+
+// SetScopeQueryParameter adds the scope to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetScopeQueryParameter(scope *string) {
+	o.ScopeQueryParameter = scope
 }
 
 // WithSVMNameQueryParameter adds the svmName to the qos policy collection get params
@@ -853,6 +870,23 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ScopeQueryParameter != nil {
+
+		// query param scope
+		var qrScope string
+
+		if o.ScopeQueryParameter != nil {
+			qrScope = *o.ScopeQueryParameter
+		}
+		qScope := qrScope
+		if qScope != "" {
+
+			if err := r.SetQueryParam("scope", qScope); err != nil {
 				return err
 			}
 		}

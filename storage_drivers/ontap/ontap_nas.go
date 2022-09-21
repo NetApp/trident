@@ -46,7 +46,7 @@ type NASStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
 	API         api.OntapAPI
-	telemetry   *TelemetryAbstraction
+	telemetry   *Telemetry
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
@@ -60,7 +60,7 @@ func (d *NASStorageDriver) GetAPI() api.OntapAPI {
 	return d.API
 }
 
-func (d *NASStorageDriver) GetTelemetry() *TelemetryAbstraction {
+func (d *NASStorageDriver) GetTelemetry() *Telemetry {
 	return d.telemetry
 }
 
@@ -100,14 +100,14 @@ func (d *NASStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriverAbstraction(ctx, config)
+	d.API, err = InitializeOntapDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
 	d.Config = *config
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommonAbstraction(ctx, d,
-		d.getStoragePoolAttributesAbstraction(ctx), d.BackendName())
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
+		d.getStoragePoolAttributes(ctx), d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}
@@ -119,7 +119,7 @@ func (d *NASStorageDriver) Initialize(
 	}
 
 	// Set up the autosupport heartbeat
-	d.telemetry = NewOntapTelemetryAbstraction(ctx, d)
+	d.telemetry = NewOntapTelemetry(ctx, d)
 	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	d.telemetry.TridentBackendUUID = backendUUID
 	d.telemetry.Start(ctx)
@@ -164,7 +164,7 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		return fmt.Errorf("replication validation failed: %v", err)
 	}
 
-	if err := ValidateNASDriverAbstraction(ctx, d.API, &d.Config); err != nil {
+	if err := ValidateNASDriver(ctx, d.API, &d.Config); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
@@ -172,7 +172,7 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePoolsAbstraction(
+	if err := ValidateStoragePools(
 		ctx, d.physicalPools, d.virtualPools, d, api.MaxNASLabelLength,
 	); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
@@ -209,7 +209,7 @@ func (d *NASStorageDriver) Create(
 
 	// If volume shall be mirrored, check that the SVM is peered with the other side
 	if volConfig.PeerVolumeHandle != "" {
-		if err = checkSVMPeeredAbstraction(ctx, volConfig, d.API.SVMName(), d.API); err != nil {
+		if err = checkSVMPeered(ctx, volConfig, d.API.SVMName(), d.API); err != nil {
 			return err
 		}
 	}
@@ -319,7 +319,7 @@ func (d *NASStorageDriver) Create(
 		aggregate := physicalPool.Name()
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
-		if aggrLimitsErr := checkAggregateLimitsAbstraction(
+		if aggrLimitsErr := checkAggregateLimits(
 			ctx, aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI(),
 		); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
@@ -644,7 +644,7 @@ func (d *NASStorageDriver) Publish(
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = mountOptions
 
-	return publishShareAbstraction(ctx, d.API, &d.Config, publishInfo, name, d.API.VolumeModifyExportPolicy)
+	return publishShare(ctx, d.API, &d.Config, publishInfo, name, d.API.VolumeModifyExportPolicy)
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
@@ -829,7 +829,7 @@ func (d *NASStorageDriver) RestoreSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	return RestoreSnapshotAbstraction(ctx, snapConfig, &d.Config, d.API)
+	return RestoreSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
@@ -850,7 +850,7 @@ func (d *NASStorageDriver) DeleteSnapshot(
 	if err := d.API.VolumeSnapshotDelete(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName); err != nil {
 		if api.IsSnapshotBusyError(err) {
 			// Start a split here before returning the error so a subsequent delete attempt may succeed.
-			_ = SplitVolumeFromBusySnapshotAbstraction(ctx, snapConfig, &d.Config, d.API, d.API.VolumeCloneSplitStart)
+			_ = SplitVolumeFromBusySnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeCloneSplitStart)
 		}
 		// we must return the err, even if we started a split, so the snapshot delete is retried
 		return err
@@ -892,7 +892,7 @@ func (d *NASStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) [
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }
 
-func (d *NASStorageDriver) getStoragePoolAttributesAbstraction(ctx context.Context) map[string]sa.Offer {
+func (d *NASStorageDriver) getStoragePoolAttributes(ctx context.Context) map[string]sa.Offer {
 	client := d.GetAPI()
 	mirroring, _ := client.IsSVMDRCapable(ctx)
 	return map[string]sa.Offer{
@@ -1073,7 +1073,7 @@ func (d *NASStorageDriver) Resize(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
 	}
 
-	flexvolSize, err := resizeValidationAbstraction(ctx, name, requestedSizeBytes, d.API.VolumeExists, d.API.VolumeSize)
+	flexvolSize, err := resizeValidation(ctx, name, requestedSizeBytes, d.API.VolumeExists, d.API.VolumeSize)
 	if err != nil {
 		return err
 	}
@@ -1083,14 +1083,14 @@ func (d *NASStorageDriver) Resize(
 		return nil
 	}
 
-	snapshotReserveInt, err := getSnapshotReserveFromOntapAbstraction(ctx, name, d.API.VolumeInfo)
+	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.VolumeInfo)
 	if err != nil {
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
 	}
 
 	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 
-	if aggrLimitsErr := checkAggregateLimitsForFlexvolAbstraction(
+	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, name, newFlexvolSize, d.Config, d.GetAPI(),
 	); aggrLimitsErr != nil {
 		return aggrLimitsErr
@@ -1129,7 +1129,7 @@ func (d *NASStorageDriver) ReconcileNodeAccess(
 
 	policyName := getExportPolicyName(backendUUID)
 
-	return reconcileNASNodeAccessAbstraction(ctx, nodes, &d.Config, d.API, policyName)
+	return reconcileNASNodeAccess(ctx, nodes, &d.Config, d.API, policyName)
 }
 
 // String makes NASStorageDriver satisfy the Stringer interface.
@@ -1158,12 +1158,12 @@ func (d *NASStorageDriver) EstablishMirror(
 	}
 
 	// Validate replication policy, if it is invalid, use the backend policy
-	isAsync, err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+	isAsync, err := validateReplicationPolicy(ctx, replicationPolicy, d.API)
 	if err != nil {
 		Logc(ctx).Debugf("Replication policy given in TMR %s is invalid, using policy %s from backend.",
 			replicationPolicy, d.GetConfig().ReplicationPolicy)
 		replicationPolicy = d.GetConfig().ReplicationPolicy
-		isAsync, err = validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+		isAsync, err = validateReplicationPolicy(ctx, replicationPolicy, d.API)
 		if err != nil {
 			Logc(ctx).Debugf("Replication policy %s in backend should be valid.", replicationPolicy)
 		}
@@ -1198,12 +1198,12 @@ func (d *NASStorageDriver) ReestablishMirror(
 	}
 
 	// Validate replication policy, if it is invalid, use the backend policy
-	isAsync, err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+	isAsync, err := validateReplicationPolicy(ctx, replicationPolicy, d.API)
 	if err != nil {
 		Logc(ctx).Debugf("Replication policy given in TMR %s is invalid, using policy %s from backend.",
 			replicationPolicy, d.GetConfig().ReplicationPolicy)
 		replicationPolicy = d.GetConfig().ReplicationPolicy
-		isAsync, err = validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+		isAsync, err = validateReplicationPolicy(ctx, replicationPolicy, d.API)
 		if err != nil {
 			Logc(ctx).Debugf("Replication policy %s in backend should be valid.", replicationPolicy)
 		}

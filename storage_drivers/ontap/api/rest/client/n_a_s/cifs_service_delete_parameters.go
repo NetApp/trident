@@ -62,6 +62,12 @@ func NewCifsServiceDeleteParamsWithHTTPClient(client *http.Client) *CifsServiceD
 */
 type CifsServiceDeleteParams struct {
 
+	/* Force.
+
+	   When set, the local CIFS configuration is deleted irrespective of any communication errors. Default value for this field is false.
+	*/
+	ForceQueryParameter *bool
+
 	/* Info.
 
 	   Info specification
@@ -144,6 +150,17 @@ func (o *CifsServiceDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithForceQueryParameter adds the force to the cifs service delete params
+func (o *CifsServiceDeleteParams) WithForceQueryParameter(force *bool) *CifsServiceDeleteParams {
+	o.SetForceQueryParameter(force)
+	return o
+}
+
+// SetForceQueryParameter adds the force to the cifs service delete params
+func (o *CifsServiceDeleteParams) SetForceQueryParameter(force *bool) {
+	o.ForceQueryParameter = force
+}
+
 // WithInfo adds the info to the cifs service delete params
 func (o *CifsServiceDeleteParams) WithInfo(info *models.CifsServiceDelete) *CifsServiceDeleteParams {
 	o.SetInfo(info)
@@ -184,6 +201,23 @@ func (o *CifsServiceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 		return err
 	}
 	var res []error
+
+	if o.ForceQueryParameter != nil {
+
+		// query param force
+		var qrForce bool
+
+		if o.ForceQueryParameter != nil {
+			qrForce = *o.ForceQueryParameter
+		}
+		qForce := swag.FormatBool(qrForce)
+		if qForce != "" {
+
+			if err := r.SetQueryParam("force", qForce); err != nil {
+				return err
+			}
+		}
+	}
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err

@@ -37,14 +37,28 @@ type SnapmirrorRelationship struct {
 	// Read Only: true
 	ExportedSnapshot string `json:"exported_snapshot,omitempty"`
 
+	// Specifies the group type of the top level SnapMirror relationship. The volume relationships are shown as _none_, the SVMDR relationships are shown as _svm_dr_, the Consistency Group relationships are shown as _consistency_group_, and the FlexGroup volume relationships are shown as _flexgroup_.
+	// Example: consistency_group
+	// Enum: [none svm_dr consistency_group flexgroup]
+	GroupType string `json:"group_type,omitempty"`
+
 	// Is the relationship healthy?
 	// Read Only: true
 	Healthy *bool `json:"healthy,omitempty"`
+
+	// Specifies which configuration of the source SVM is replicated to the destination SVM. This property is applicable only for SVM data protection with "async" policy type. This "identity_preservation" overrides the "identity_preservation" set on the SnapMirror relationship's policy.
+	// Enum: [full exclude_network_config exclude_network_and_protocol_config]
+	IdentityPreservation string `json:"identity_preservation,omitempty"`
 
 	// Time since the exported Snapshot copy was created.
 	// Example: PT8H35M42S
 	// Read Only: true
 	LagTime string `json:"lag_time,omitempty"`
+
+	// Specifies the operation type of the last transfer that occured on the relationship. The _initialize_ transfer occurs when the relationship state changes from uninitialized to snapmirrored or in_sync. The _update_ transfer occurs when the snapshots are transferred from the source endpoint to the destination endpoint as part of scheduled or manual update. The _resync_ transfer occurs when the relationship state changes from broken_off to snapmirrored or in_sync. The _restore_ transfer occurs when the snapshot is restored from a destination endpoint to another endpoint.
+	// Example: initialize
+	// Enum: [initialize update resync restore]
+	LastTransferType string `json:"last_transfer_type,omitempty"`
 
 	// policy
 	Policy *SnapmirrorRelationshipPolicy `json:"policy,omitempty"`
@@ -52,7 +66,7 @@ type SnapmirrorRelationship struct {
 	// Set to true on resync to preserve Snapshot copies on the destination that are newer than the latest common Snapshot copy. This property is applicable only for relationships with FlexVol volume or FlexGroup volume endpoints and when the PATCH state is being changed to "snapmirrored".
 	Preserve *bool `json:"preserve,omitempty"`
 
-	// Set to true to reduce resync time by not preserving storage efficiency. This property is applicable only for relationships with FlexVol volume endpoints and when the PATCH state is being changed to "snapmirrored".
+	// Set to true to reduce resync time by not preserving storage efficiency. This property is applicable only for relationships with FlexVol volume endpoints and SVMDR relationships when the PATCH state is being changed to "snapmirrored".
 	QuickResync *bool `json:"quick_resync,omitempty"`
 
 	// Set to true to recover from a failed SnapMirror break operation on a FlexGroup volume relationship. This restores all destination FlexGroup constituent volumes to the latest Snapshot copy, and any writes to the read-write constituents are lost. This property is applicable only for SnapMirror relationships with FlexGroup volume endpoints and when the PATCH state is being changed to "broken_off".
@@ -72,8 +86,14 @@ type SnapmirrorRelationship struct {
 	// Enum: [broken_off paused snapmirrored uninitialized in_sync out_of_sync synchronizing]
 	State string `json:"state,omitempty"`
 
+	// Throttle, in KBs per second. This "throttle" overrides the "throttle" set on the SnapMirror relationship's policy. If neither of these are set, defaults to 0, which is interpreted as unlimited.
+	Throttle int64 `json:"throttle,omitempty"`
+
 	// transfer
 	Transfer *SnapmirrorRelationshipTransfer `json:"transfer,omitempty"`
+
+	// transfer schedule
+	TransferSchedule *SnapmirrorRelationshipTransferSchedule `json:"transfer_schedule,omitempty"`
 
 	// Reason the relationship is not healthy. It is a concatenation of up to four levels of error messages.
 	// Example: [{"code":"6621444","message":"Failed to complete update operation on one or more item relationships.","parameters":[]},{"code":"6621445","message":"Group Update failed","parameters":[]}]
@@ -107,6 +127,18 @@ func (m *SnapmirrorRelationship) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateGroupType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIdentityPreservation(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLastTransferType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validatePolicy(formats); err != nil {
 		res = append(res, err)
 	}
@@ -120,6 +152,10 @@ func (m *SnapmirrorRelationship) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateTransfer(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTransferSchedule(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -200,6 +236,224 @@ func (m *SnapmirrorRelationship) validateDestination(formats strfmt.Registry) er
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var snapmirrorRelationshipTypeGroupTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","svm_dr","consistency_group","flexgroup"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snapmirrorRelationshipTypeGroupTypePropEnum = append(snapmirrorRelationshipTypeGroupTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// group_type
+	// GroupType
+	// none
+	// END DEBUGGING
+	// SnapmirrorRelationshipGroupTypeNone captures enum value "none"
+	SnapmirrorRelationshipGroupTypeNone string = "none"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// group_type
+	// GroupType
+	// svm_dr
+	// END DEBUGGING
+	// SnapmirrorRelationshipGroupTypeSvmDr captures enum value "svm_dr"
+	SnapmirrorRelationshipGroupTypeSvmDr string = "svm_dr"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// group_type
+	// GroupType
+	// consistency_group
+	// END DEBUGGING
+	// SnapmirrorRelationshipGroupTypeConsistencyGroup captures enum value "consistency_group"
+	SnapmirrorRelationshipGroupTypeConsistencyGroup string = "consistency_group"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// group_type
+	// GroupType
+	// flexgroup
+	// END DEBUGGING
+	// SnapmirrorRelationshipGroupTypeFlexgroup captures enum value "flexgroup"
+	SnapmirrorRelationshipGroupTypeFlexgroup string = "flexgroup"
+)
+
+// prop value enum
+func (m *SnapmirrorRelationship) validateGroupTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorRelationshipTypeGroupTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SnapmirrorRelationship) validateGroupType(formats strfmt.Registry) error {
+	if swag.IsZero(m.GroupType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateGroupTypeEnum("group_type", "body", m.GroupType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var snapmirrorRelationshipTypeIdentityPreservationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["full","exclude_network_config","exclude_network_and_protocol_config"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snapmirrorRelationshipTypeIdentityPreservationPropEnum = append(snapmirrorRelationshipTypeIdentityPreservationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// identity_preservation
+	// IdentityPreservation
+	// full
+	// END DEBUGGING
+	// SnapmirrorRelationshipIdentityPreservationFull captures enum value "full"
+	SnapmirrorRelationshipIdentityPreservationFull string = "full"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// identity_preservation
+	// IdentityPreservation
+	// exclude_network_config
+	// END DEBUGGING
+	// SnapmirrorRelationshipIdentityPreservationExcludeNetworkConfig captures enum value "exclude_network_config"
+	SnapmirrorRelationshipIdentityPreservationExcludeNetworkConfig string = "exclude_network_config"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// identity_preservation
+	// IdentityPreservation
+	// exclude_network_and_protocol_config
+	// END DEBUGGING
+	// SnapmirrorRelationshipIdentityPreservationExcludeNetworkAndProtocolConfig captures enum value "exclude_network_and_protocol_config"
+	SnapmirrorRelationshipIdentityPreservationExcludeNetworkAndProtocolConfig string = "exclude_network_and_protocol_config"
+)
+
+// prop value enum
+func (m *SnapmirrorRelationship) validateIdentityPreservationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorRelationshipTypeIdentityPreservationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SnapmirrorRelationship) validateIdentityPreservation(formats strfmt.Registry) error {
+	if swag.IsZero(m.IdentityPreservation) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateIdentityPreservationEnum("identity_preservation", "body", m.IdentityPreservation); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var snapmirrorRelationshipTypeLastTransferTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["initialize","update","resync","restore"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snapmirrorRelationshipTypeLastTransferTypePropEnum = append(snapmirrorRelationshipTypeLastTransferTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// last_transfer_type
+	// LastTransferType
+	// initialize
+	// END DEBUGGING
+	// SnapmirrorRelationshipLastTransferTypeInitialize captures enum value "initialize"
+	SnapmirrorRelationshipLastTransferTypeInitialize string = "initialize"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// last_transfer_type
+	// LastTransferType
+	// update
+	// END DEBUGGING
+	// SnapmirrorRelationshipLastTransferTypeUpdate captures enum value "update"
+	SnapmirrorRelationshipLastTransferTypeUpdate string = "update"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// last_transfer_type
+	// LastTransferType
+	// resync
+	// END DEBUGGING
+	// SnapmirrorRelationshipLastTransferTypeResync captures enum value "resync"
+	SnapmirrorRelationshipLastTransferTypeResync string = "resync"
+
+	// BEGIN DEBUGGING
+	// snapmirror_relationship
+	// SnapmirrorRelationship
+	// last_transfer_type
+	// LastTransferType
+	// restore
+	// END DEBUGGING
+	// SnapmirrorRelationshipLastTransferTypeRestore captures enum value "restore"
+	SnapmirrorRelationshipLastTransferTypeRestore string = "restore"
+)
+
+// prop value enum
+func (m *SnapmirrorRelationship) validateLastTransferTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorRelationshipTypeLastTransferTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SnapmirrorRelationship) validateLastTransferType(formats strfmt.Registry) error {
+	if swag.IsZero(m.LastTransferType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateLastTransferTypeEnum("last_transfer_type", "body", m.LastTransferType); err != nil {
+		return err
 	}
 
 	return nil
@@ -362,6 +616,23 @@ func (m *SnapmirrorRelationship) validateTransfer(formats strfmt.Registry) error
 	return nil
 }
 
+func (m *SnapmirrorRelationship) validateTransferSchedule(formats strfmt.Registry) error {
+	if swag.IsZero(m.TransferSchedule) { // not required
+		return nil
+	}
+
+	if m.TransferSchedule != nil {
+		if err := m.TransferSchedule.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("transfer_schedule")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SnapmirrorRelationship) validateUnhealthyReason(formats strfmt.Registry) error {
 	if swag.IsZero(m.UnhealthyReason) { // not required
 		return nil
@@ -439,6 +710,10 @@ func (m *SnapmirrorRelationship) ContextValidate(ctx context.Context, formats st
 	}
 
 	if err := m.contextValidateTransfer(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTransferSchedule(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -573,6 +848,20 @@ func (m *SnapmirrorRelationship) contextValidateTransfer(ctx context.Context, fo
 		if err := m.Transfer.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("transfer")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorRelationship) contextValidateTransferSchedule(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.TransferSchedule != nil {
+		if err := m.TransferSchedule.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("transfer_schedule")
 			}
 			return err
 		}
@@ -1319,6 +1608,186 @@ func (m *SnapmirrorRelationshipTransferLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SnapmirrorRelationshipTransferLinks) UnmarshalBinary(b []byte) error {
 	var res SnapmirrorRelationshipTransferLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SnapmirrorRelationshipTransferSchedule Schedule used to update asynchronous relationships. This "transfer_schedule" overrides the "transfer_schedule" set on the SnapMirror relationship's policy. To remove the "transfer_schedule", set its value to null (no-quotes). Only cron schedules are supported for SnapMirror.
+//
+// swagger:model SnapmirrorRelationshipTransferSchedule
+type SnapmirrorRelationshipTransferSchedule struct {
+
+	// links
+	Links *SnapmirrorRelationshipTransferScheduleLinks `json:"_links,omitempty"`
+
+	// Job schedule name
+	// Example: weekly
+	Name string `json:"name,omitempty"`
+
+	// Job schedule UUID
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this snapmirror relationship transfer schedule
+func (m *SnapmirrorRelationshipTransferSchedule) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapmirrorRelationshipTransferSchedule) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("transfer_schedule" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this snapmirror relationship transfer schedule based on the context it is used
+func (m *SnapmirrorRelationshipTransferSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapmirrorRelationshipTransferSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("transfer_schedule" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapmirrorRelationshipTransferSchedule) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapmirrorRelationshipTransferSchedule) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorRelationshipTransferSchedule
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SnapmirrorRelationshipTransferScheduleLinks snapmirror relationship transfer schedule links
+//
+// swagger:model SnapmirrorRelationshipTransferScheduleLinks
+type SnapmirrorRelationshipTransferScheduleLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this snapmirror relationship transfer schedule links
+func (m *SnapmirrorRelationshipTransferScheduleLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapmirrorRelationshipTransferScheduleLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("transfer_schedule" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this snapmirror relationship transfer schedule links based on the context it is used
+func (m *SnapmirrorRelationshipTransferScheduleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapmirrorRelationshipTransferScheduleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("transfer_schedule" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapmirrorRelationshipTransferScheduleLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapmirrorRelationshipTransferScheduleLinks) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorRelationshipTransferScheduleLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

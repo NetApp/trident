@@ -1568,7 +1568,7 @@ func (m *SecurityAssociationResponseRecordsItems0NodeLinks) UnmarshalBinary(b []
 	return nil
 }
 
-// SecurityAssociationResponseRecordsItems0Svm SVM, applies only to SVM-scoped objects.
+// SecurityAssociationResponseRecordsItems0Svm security association response records items0 svm
 //
 // swagger:model SecurityAssociationResponseRecordsItems0Svm
 type SecurityAssociationResponseRecordsItems0Svm struct {

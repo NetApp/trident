@@ -92,6 +92,7 @@ func NewIPServicePolicyCreateDefault(code int) *IPServicePolicyCreateDefault {
 | 53281944 | Ipspace.name does not exist. |
 | 53281945 | Ipspace.uuid is not an IPspace. |
 | 53281946 | Service policy already exists. |
+| 53281958 | Service policies cannot contain multiple block-oriented services. |
 
 */
 type IPServicePolicyCreateDefault struct {

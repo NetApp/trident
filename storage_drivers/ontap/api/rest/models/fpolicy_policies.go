@@ -39,10 +39,24 @@ type FpolicyPolicies struct {
 	// Example: fp_policy_1
 	Name string `json:"name,omitempty"`
 
+	// Specifies whether passthrough-read should be allowed for FPolicy servers
+	// registered for the policy. Passthrough-read is a way to read data for
+	// offline files without restoring the files to primary storage. Offline
+	// files are files that have been moved to secondary storage.
+	//
+	PassthroughRead *bool `json:"passthrough_read,omitempty"`
+
 	// Specifies the priority that is assigned to this policy.
 	// Maximum: 10
 	// Minimum: 1
 	Priority int64 `json:"priority,omitempty"`
+
+	// Specifies the privileged user name for accessing files on the cluster
+	// using a separate data channel with privileged access. The input for
+	// this field should be in "domain\username" format.
+	//
+	// Example: mydomain\\testuser
+	PrivilegedUser string `json:"privileged_user,omitempty"`
 
 	// scope
 	Scope *FpolicyPoliciesScope `json:"scope,omitempty"`
@@ -239,6 +253,13 @@ func (m *FpolicyPolicies) UnmarshalBinary(b []byte) error {
 // swagger:model FpolicyPoliciesScope
 type FpolicyPoliciesScope struct {
 
+	// Specifies whether the file name extension checks also apply to directory objects. If this parameter is set to true,
+	// the directory objects are subjected to the same extension checks as regular files. If this parameter is set to false,
+	// the directory names are not matched for extensions and notifications are sent for directories even if their name
+	// extensions do not match. Default is false.
+	//
+	CheckExtensionsOnDirectories *bool `json:"check_extensions_on_directories,omitempty"`
+
 	// exclude export policies
 	ExcludeExportPolicies []string `json:"exclude_export_policies,omitempty"`
 
@@ -265,6 +286,11 @@ type FpolicyPoliciesScope struct {
 	// include volumes
 	// Example: ["vol1","vol_svm1"]
 	IncludeVolumes []string `json:"include_volumes,omitempty"`
+
+	// Specifies whether the extension checks also apply to objects with no extension. If this parameter is set to true,
+	// all objects with or without extensions are monitored. Default is false.
+	//
+	ObjectMonitoringWithNoExtension *bool `json:"object_monitoring_with_no_extension,omitempty"`
 }
 
 // Validate validates this fpolicy policies scope

@@ -71,7 +71,12 @@ func NewIpsecCaCertificateDeleteDefault(code int) *IpsecCaCertificateDeleteDefau
 
 /* IpsecCaCertificateDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 66257298 | CA certificate is not installed for IPsec. |
+| 66257303 | The CA certificate cannot be removed from IPsec because it is not installed. |
+
 */
 type IpsecCaCertificateDeleteDefault struct {
 	_statusCode int

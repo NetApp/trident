@@ -276,6 +276,18 @@ type CifsServiceCollectionGetParams struct {
 	*/
 	OptionsReferralQueryParameter *bool
 
+	/* OptionsShadowcopy.
+
+	   Filter by options.shadowcopy
+	*/
+	OptionsShadowcopyQueryParameter *bool
+
+	/* OptionsShadowcopyDirDepth.
+
+	   Filter by options.shadowcopy_dir_depth
+	*/
+	OptionsShadowcopyDirDepthQueryParameter *int64
+
 	/* OptionsSmbCredits.
 
 	   Filter by options.smb_credits
@@ -933,6 +945,28 @@ func (o *CifsServiceCollectionGetParams) WithOptionsReferralQueryParameter(optio
 // SetOptionsReferralQueryParameter adds the optionsReferral to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) SetOptionsReferralQueryParameter(optionsReferral *bool) {
 	o.OptionsReferralQueryParameter = optionsReferral
+}
+
+// WithOptionsShadowcopyQueryParameter adds the optionsShadowcopy to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsShadowcopyQueryParameter(optionsShadowcopy *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsShadowcopyQueryParameter(optionsShadowcopy)
+	return o
+}
+
+// SetOptionsShadowcopyQueryParameter adds the optionsShadowcopy to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsShadowcopyQueryParameter(optionsShadowcopy *bool) {
+	o.OptionsShadowcopyQueryParameter = optionsShadowcopy
+}
+
+// WithOptionsShadowcopyDirDepthQueryParameter adds the optionsShadowcopyDirDepth to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsShadowcopyDirDepthQueryParameter(optionsShadowcopyDirDepth *int64) *CifsServiceCollectionGetParams {
+	o.SetOptionsShadowcopyDirDepthQueryParameter(optionsShadowcopyDirDepth)
+	return o
+}
+
+// SetOptionsShadowcopyDirDepthQueryParameter adds the optionsShadowcopyDirDepth to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsShadowcopyDirDepthQueryParameter(optionsShadowcopyDirDepth *int64) {
+	o.OptionsShadowcopyDirDepthQueryParameter = optionsShadowcopyDirDepth
 }
 
 // WithOptionsSmbCreditsQueryParameter adds the optionsSmbCredits to the cifs service collection get params
@@ -1896,6 +1930,40 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qOptionsReferral != "" {
 
 			if err := r.SetQueryParam("options.referral", qOptionsReferral); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsShadowcopyQueryParameter != nil {
+
+		// query param options.shadowcopy
+		var qrOptionsShadowcopy bool
+
+		if o.OptionsShadowcopyQueryParameter != nil {
+			qrOptionsShadowcopy = *o.OptionsShadowcopyQueryParameter
+		}
+		qOptionsShadowcopy := swag.FormatBool(qrOptionsShadowcopy)
+		if qOptionsShadowcopy != "" {
+
+			if err := r.SetQueryParam("options.shadowcopy", qOptionsShadowcopy); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsShadowcopyDirDepthQueryParameter != nil {
+
+		// query param options.shadowcopy_dir_depth
+		var qrOptionsShadowcopyDirDepth int64
+
+		if o.OptionsShadowcopyDirDepthQueryParameter != nil {
+			qrOptionsShadowcopyDirDepth = *o.OptionsShadowcopyDirDepthQueryParameter
+		}
+		qOptionsShadowcopyDirDepth := swag.FormatInt64(qrOptionsShadowcopyDirDepth)
+		if qOptionsShadowcopyDirDepth != "" {
+
+			if err := r.SetQueryParam("options.shadowcopy_dir_depth", qOptionsShadowcopyDirDepth); err != nil {
 				return err
 			}
 		}

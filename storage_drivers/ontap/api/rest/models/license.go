@@ -60,6 +60,10 @@ type License struct {
 	// Read Only: true
 	SerialNumber string `json:"serial_number,omitempty"`
 
+	// A flag indicating whether the Cloud ONTAP system is going to shutdown as the Cloud platform license has already expired.
+	// Read Only: true
+	ShutdownImminent *bool `json:"shutdown_imminent,omitempty"`
+
 	// Date and time when the license starts.
 	// Example: 2019-02-02T19:00:00Z
 	// Read Only: true
@@ -191,6 +195,10 @@ func (m *License) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateShutdownImminent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStartTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -286,6 +294,15 @@ func (m *License) contextValidateOwner(ctx context.Context, formats strfmt.Regis
 func (m *License) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *License) contextValidateShutdownImminent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "shutdown_imminent", "body", m.ShutdownImminent); err != nil {
 		return err
 	}
 

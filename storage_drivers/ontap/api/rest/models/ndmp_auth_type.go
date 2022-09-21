@@ -19,6 +19,15 @@ import (
 // swagger:model ndmp_auth_type
 type NdmpAuthType string
 
+func NewNdmpAuthType(value NdmpAuthType) *NdmpAuthType {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated NdmpAuthType.
+func (m NdmpAuthType) Pointer() *NdmpAuthType {
+	return &m
+}
+
 const (
 
 	// NdmpAuthTypePlaintext captures enum value "plaintext"

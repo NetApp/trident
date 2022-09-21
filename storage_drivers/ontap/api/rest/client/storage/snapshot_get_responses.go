@@ -82,7 +82,16 @@ func NewSnapshotGetDefault(code int) *SnapshotGetDefault {
 
 /* SnapshotGetDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Code
+| Error Code | Description |
+| ---------- | ----------- |
+| 2          | An invalid value was entered for one of the fields. |
+| 262197     | An invalid field was specified in the request. |
+| 1638473    | Snapshot copy tag not found. |
+| 1638503    | The Snapshot copy does not exist on the specified volume. |
+| 1638600    | The Snapshot copy does not exist. |
+| 1638615    | Bulk operations for Snapshot copies are not supported on multiple SVMs. |
+
 */
 type SnapshotGetDefault struct {
 	_statusCode int

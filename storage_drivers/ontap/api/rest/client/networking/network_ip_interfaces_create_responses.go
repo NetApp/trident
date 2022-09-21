@@ -78,6 +78,7 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | 1376663 | All LIFs from a single DNS zone must be in the same SVM. |
 | 1376663 | Cannot add interface to DNS zone because all interfaces from a single DNS zone must be in the same SVM. |
 | 1376963 | Duplicate IP address. |
+| 1376976 | The specified port is not capable of hosting this LIF. |
 | 1966138 | The same IP address may not be used for both a mgmt interface and a gateway address. |
 | 1966140 | An interface with the same name already exists. |
 | 1966141 | Invalid DNS zone name. |
@@ -125,7 +126,11 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | 1967391 | Setting the DNS zone requires an effective cluster version of 9.9.1 or later. |
 | 1967392 | Setting the DDNS enable parameter requires an effective cluster version of 9.9.1 or later. |
 | 1967394 | Setting the probe port parameter requires an effective cluster version of 9.10.1 or later. |
+| 1967396 | The specified subnet.name does not match the subnet name of subnet.uuid. |
+| 1967397 | The specified subnet.uuid does not match any configured subnet."; |
+| 1967398 | Address must be specified by either ip.address and ip.netmask, or at least one subnet field, not both."; |
 | 5373966 | An iSCSI interface cannot be created in an SVM configured for NVMe. |
+| 53281018 | Failover policy is not compatible with one or more services in service policy |
 | 53281036 | Setting the probe port parameter is not allowed on this platform. |
 | 53281065 | The service_policy does not exist in the SVM. |
 | 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |

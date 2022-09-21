@@ -61,6 +61,9 @@ type Lun struct {
 	// consistency group
 	ConsistencyGroup *LunConsistencyGroup `json:"consistency_group,omitempty"`
 
+	// convert
+	Convert *LunConvert `json:"convert,omitempty"`
+
 	// copy
 	Copy *LunCopy `json:"copy,omitempty"`
 
@@ -159,6 +162,10 @@ func (m *Lun) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateConsistencyGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConvert(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -373,6 +380,23 @@ func (m *Lun) validateConsistencyGroup(formats strfmt.Registry) error {
 		if err := m.ConsistencyGroup.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("consistency_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Lun) validateConvert(formats strfmt.Registry) error {
+	if swag.IsZero(m.Convert) { // not required
+		return nil
+	}
+
+	if m.Convert != nil {
+		if err := m.Convert.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("convert")
 			}
 			return err
 		}
@@ -789,6 +813,10 @@ func (m *Lun) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateConvert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCopy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -903,6 +931,20 @@ func (m *Lun) contextValidateConsistencyGroup(ctx context.Context, formats strfm
 		if err := m.ConsistencyGroup.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("consistency_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Lun) contextValidateConvert(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Convert != nil {
+		if err := m.Convert.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("convert")
 			}
 			return err
 		}
@@ -1687,6 +1729,139 @@ func (m *LunConsistencyGroupLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *LunConsistencyGroupLinks) UnmarshalBinary(b []byte) error {
 	var res LunConsistencyGroupLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunConvert This sub-object is used in POST to convert a valid in-place NVMe namespace to a LUN. Setting a property in this sub-object indicates that a conversion from the specified NVMe namespace to LUN is desired.<br/>
+//
+//
+// swagger:model LunConvert
+type LunConvert struct {
+
+	// namespace
+	Namespace *LunConvertNamespace `json:"namespace,omitempty"`
+}
+
+// Validate validates this lun convert
+func (m *LunConvert) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateNamespace(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunConvert) validateNamespace(formats strfmt.Registry) error {
+	if swag.IsZero(m.Namespace) { // not required
+		return nil
+	}
+
+	if m.Namespace != nil {
+		if err := m.Namespace.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("convert" + "." + "namespace")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun convert based on the context it is used
+func (m *LunConvert) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateNamespace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunConvert) contextValidateNamespace(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Namespace != nil {
+		if err := m.Namespace.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("convert" + "." + "namespace")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunConvert) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunConvert) UnmarshalBinary(b []byte) error {
+	var res LunConvert
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunConvertNamespace The source namespace for convert operation. This can be specified using property `convert.namespace.uuid` or `convert.namespace.name`. If both properties are supplied, they must refer to the same NVMe namespace.<br/>
+// Valid in POST. A convert request from NVMe namespace to LUN cannot be combined with setting any other LUN properties. All other properties of the converted LUN comes from the source NVMe namespace.<br/>
+//
+//
+// swagger:model LunConvertNamespace
+type LunConvertNamespace struct {
+
+	// The fully qualified path name of the source NVMe namespace composed of a "/vol" prefix, the volume name, the (optional) qtree name and base name of the NVMe namespace. Valid in POST.
+	//
+	// Example: /vol/volume1/namespace1
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the source NVMe namespace. Valid in POST.
+	//
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun convert namespace
+func (m *LunConvertNamespace) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this lun convert namespace based on context it is used
+func (m *LunConvertNamespace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunConvertNamespace) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunConvertNamespace) UnmarshalBinary(b []byte) error {
+	var res LunConvertNamespace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4202,7 +4377,7 @@ func (m *LunLunMapsItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMetric Performance numbers, such as IOPS latency and throughput.
+// LunMetric lun metric
 //
 // swagger:model LunMetric
 type LunMetric struct {
@@ -5877,7 +6052,7 @@ func (m *LunSpaceGuarantee) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunStatistics These are raw performance numbers, such as IOPS latency and throughput. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
+// LunStatistics lun statistics
 //
 // swagger:model LunStatistics
 type LunStatistics struct {

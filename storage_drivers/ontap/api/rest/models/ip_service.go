@@ -20,6 +20,15 @@ import (
 // swagger:model ip_service
 type IPService string
 
+func NewIPService(value IPService) *IPService {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated IPService.
+func (m IPService) Pointer() *IPService {
+	return &m
+}
+
 const (
 
 	// IPServiceClusterCore captures enum value "cluster_core"
@@ -73,8 +82,23 @@ const (
 	// IPServiceDataDNSServer captures enum value "data_dns_server"
 	IPServiceDataDNSServer IPService = "data_dns_server"
 
+	// IPServiceDataFpolicyClient captures enum value "data_fpolicy_client"
+	IPServiceDataFpolicyClient IPService = "data_fpolicy_client"
+
 	// IPServiceManagementNtpClient captures enum value "management_ntp_client"
 	IPServiceManagementNtpClient IPService = "management_ntp_client"
+
+	// IPServiceManagementDNSClient captures enum value "management_dns_client"
+	IPServiceManagementDNSClient IPService = "management_dns_client"
+
+	// IPServiceManagementAdClient captures enum value "management_ad_client"
+	IPServiceManagementAdClient IPService = "management_ad_client"
+
+	// IPServiceManagementLdapClient captures enum value "management_ldap_client"
+	IPServiceManagementLdapClient IPService = "management_ldap_client"
+
+	// IPServiceManagementNisClient captures enum value "management_nis_client"
+	IPServiceManagementNisClient IPService = "management_nis_client"
 
 	// IPServiceManagementSnmpServer captures enum value "management_snmp_server"
 	IPServiceManagementSnmpServer IPService = "management_snmp_server"
@@ -100,7 +124,7 @@ var ipServiceEnum []interface{}
 
 func init() {
 	var res []IPService
-	if err := json.Unmarshal([]byte(`["cluster_core","intercluster_core","management_core","management_autosupport","management_bgp","management_ems","management_https","management_http","management_ssh","management_portmap","data_core","data_nfs","data_cifs","data_flexcache","data_iscsi","data_s3_server","data_dns_server","management_ntp_client","management_snmp_server","management_rsh_server","management_telnet_server","management_ntp_server","data_nvme_tcp","backup_ndmp_control"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["cluster_core","intercluster_core","management_core","management_autosupport","management_bgp","management_ems","management_https","management_http","management_ssh","management_portmap","data_core","data_nfs","data_cifs","data_flexcache","data_iscsi","data_s3_server","data_dns_server","data_fpolicy_client","management_ntp_client","management_dns_client","management_ad_client","management_ldap_client","management_nis_client","management_snmp_server","management_rsh_server","management_telnet_server","management_ntp_server","data_nvme_tcp","backup_ndmp_control"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

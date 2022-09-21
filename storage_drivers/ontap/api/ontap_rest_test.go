@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
@@ -17,9 +18,9 @@ import (
 var ctx = context.Background()
 
 func TestPayload(t *testing.T) {
-	////////////////////
+	// //////////////////
 	// negative tests //
-	////////////////////
+	// //////////////////
 
 	// pass a nil
 	err := ValidatePayloadExists(ctx, nil)
@@ -47,9 +48,9 @@ func TestPayload(t *testing.T) {
 	err = ValidatePayloadExists(ctx, svm.SvmCollectionGetOK{})
 	assert.Equal(t, "result payload was nil", err.Error(), "Strings not equal")
 
-	////////////////////
+	// //////////////////
 	// positive tests //
-	////////////////////
+	// //////////////////
 
 	// pass a valid pointer, with a minimal Payload
 	svmCollectionGetOK = &svm.SvmCollectionGetOK{Payload: &models.SvmResponse{}}
@@ -61,7 +62,70 @@ func TestPayload(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestMinimumONTAPVersionIs9Point9(t *testing.T) {
-	expectedMinimumONTAPVersion := utils.MustParseSemantic("9.9.0")
+func TestMinimumONTAPVersionForREST(t *testing.T) {
+	expectedMinimumONTAPVersion := utils.MustParseSemantic("9.11.1")
 	assert.Equal(t, MinimumONTAPVersion, expectedMinimumONTAPVersion, "Unexpected minimum ONTAP version")
+}
+
+func TestExtractErrorResponse(t *testing.T) {
+	// //////////////////
+	// negative tests //
+	// //////////////////
+
+	var eeResponse *models.ErrorResponse
+
+	// pass a nil
+	eeResponse, err := ExtractErrorResponse(ctx, nil)
+	assert.Nil(t, eeResponse)
+	assert.Equal(t, "rest error was nil", err.Error(), "Strings not equal")
+
+	// pass an invalid object type (no Payload field on struct)
+	eeResponse, err = ExtractErrorResponse(ctx, azgo.ZapiError{})
+	assert.Nil(t, eeResponse)
+	assert.Equal(t, "no error payload field exists for type 'ZapiError'", err.Error(), "Strings not equal")
+
+	// pass an invalid pointer object type (no Payload field on struct)
+	eeResponse, err = ExtractErrorResponse(ctx, &azgo.ZapiError{})
+	assert.Nil(t, eeResponse)
+	assert.Equal(t, "no error payload field exists for type '*ZapiError'", err.Error(), "Strings not equal")
+
+	// pass a nil pointer
+	var lunMapReportingNodeCollectionGetOK *s_a_n.LunMapReportingNodeCollectionGetOK
+	eeResponse, err = ExtractErrorResponse(ctx, lunMapReportingNodeCollectionGetOK)
+	assert.Nil(t, eeResponse)
+	assert.Equal(t, "rest error was nil", err.Error(), "Strings not equal")
+
+	// pass a valid pointer, with a nil Payload field
+	lunMapReportingNodeCollectionGetOK = &s_a_n.LunMapReportingNodeCollectionGetOK{}
+	eeResponse, err = ExtractErrorResponse(ctx, lunMapReportingNodeCollectionGetOK)
+	assert.Nil(t, eeResponse)
+	assert.Equal(t, "no error payload field exists for type '*LunMapReportingNodeResponse'", err.Error(), "Strings not equal")
+
+	// pass a valid instance, with a nil Payload field
+	eeResponse, err = ExtractErrorResponse(ctx, s_a_n.LunMapReportingNodeCollectionGetOK{})
+	assert.Nil(t, eeResponse)
+	assert.Equal(t, "no error payload field exists for type '*LunMapReportingNodeResponse'", err.Error(), "Strings not equal")
+
+	// //////////////////
+	// positive tests //
+	// //////////////////
+
+	// pass a LunModifyDefault instance, with no error response (this is the success case usually from a REST call)
+	lunModifyDefaultResponse := s_a_n.LunModifyDefault{}
+	eeResponse, err = ExtractErrorResponse(ctx, lunModifyDefaultResponse)
+	assert.Nil(t, err)
+	assert.Nil(t, eeResponse)
+
+	// pass a LunModifyDefault instance, with a populated error response
+	lunModifyDefaultResponse = s_a_n.LunModifyDefault{Payload: &models.ErrorResponse{
+		Error: &models.Error{
+			Code:    "42",
+			Message: "error 42",
+		},
+	}}
+	eeResponse, err = ExtractErrorResponse(ctx, lunModifyDefaultResponse)
+	assert.Nil(t, err)
+	assert.NotNil(t, eeResponse)
+	assert.Equal(t, eeResponse.Error.Code, "42", "Unexpected code")
+	assert.Equal(t, eeResponse.Error.Message, "error 42", "Unexpected message")
 }

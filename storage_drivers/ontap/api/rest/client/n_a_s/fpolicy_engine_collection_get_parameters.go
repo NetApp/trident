@@ -60,17 +60,59 @@ func NewFpolicyEngineCollectionGetParamsWithHTTPClient(client *http.Client) *Fpo
 */
 type FpolicyEngineCollectionGetParams struct {
 
+	/* BufferSizeRecvBuffer.
+
+	   Filter by buffer_size.recv_buffer
+	*/
+	BufferSizeRecvBufferQueryParameter *int64
+
+	/* BufferSizeSendBuffer.
+
+	   Filter by buffer_size.send_buffer
+	*/
+	BufferSizeSendBufferQueryParameter *int64
+
+	/* CertificateCa.
+
+	   Filter by certificate.ca
+	*/
+	CertificateCaQueryParameter *string
+
+	/* CertificateName.
+
+	   Filter by certificate.name
+	*/
+	CertificateNameQueryParameter *string
+
+	/* CertificateSerialNumber.
+
+	   Filter by certificate.serial_number
+	*/
+	CertificateSerialNumberQueryParameter *string
+
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
 	FieldsQueryParameter []string
 
+	/* Format.
+
+	   Filter by format
+	*/
+	FormatQueryParameter *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
 	MaxRecordsQueryParameter *int64
+
+	/* MaxServerRequests.
+
+	   Filter by max_server_requests
+	*/
+	MaxServerRequestsQueryParameter *int64
 
 	/* Name.
 
@@ -96,6 +138,36 @@ type FpolicyEngineCollectionGetParams struct {
 	*/
 	PrimaryServersQueryParameter *string
 
+	/* RequestAbortTimeout.
+
+	   Filter by request_abort_timeout
+	*/
+	RequestAbortTimeoutQueryParameter *string
+
+	/* RequestCancelTimeout.
+
+	   Filter by request_cancel_timeout
+	*/
+	RequestCancelTimeoutQueryParameter *string
+
+	/* ResiliencyDirectoryPath.
+
+	   Filter by resiliency.directory_path
+	*/
+	ResiliencyDirectoryPathQueryParameter *string
+
+	/* ResiliencyEnabled.
+
+	   Filter by resiliency.enabled
+	*/
+	ResiliencyEnabledQueryParameter *bool
+
+	/* ResiliencyRetentionDuration.
+
+	   Filter by resiliency.retention_duration
+	*/
+	ResiliencyRetentionDurationQueryParameter *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -117,6 +189,24 @@ type FpolicyEngineCollectionGetParams struct {
 	   Filter by secondary_servers
 	*/
 	SecondaryServersQueryParameter *string
+
+	/* ServerProgressTimeout.
+
+	   Filter by server_progress_timeout
+	*/
+	ServerProgressTimeoutQueryParameter *string
+
+	/* SslOption.
+
+	   Filter by ssl_option
+	*/
+	SslOptionQueryParameter *string
+
+	/* StatusRequestInterval.
+
+	   Filter by status_request_interval
+	*/
+	StatusRequestIntervalQueryParameter *string
 
 	/* SvmUUID.
 
@@ -197,6 +287,61 @@ func (o *FpolicyEngineCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithBufferSizeRecvBufferQueryParameter adds the bufferSizeRecvBuffer to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithBufferSizeRecvBufferQueryParameter(bufferSizeRecvBuffer *int64) *FpolicyEngineCollectionGetParams {
+	o.SetBufferSizeRecvBufferQueryParameter(bufferSizeRecvBuffer)
+	return o
+}
+
+// SetBufferSizeRecvBufferQueryParameter adds the bufferSizeRecvBuffer to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetBufferSizeRecvBufferQueryParameter(bufferSizeRecvBuffer *int64) {
+	o.BufferSizeRecvBufferQueryParameter = bufferSizeRecvBuffer
+}
+
+// WithBufferSizeSendBufferQueryParameter adds the bufferSizeSendBuffer to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithBufferSizeSendBufferQueryParameter(bufferSizeSendBuffer *int64) *FpolicyEngineCollectionGetParams {
+	o.SetBufferSizeSendBufferQueryParameter(bufferSizeSendBuffer)
+	return o
+}
+
+// SetBufferSizeSendBufferQueryParameter adds the bufferSizeSendBuffer to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetBufferSizeSendBufferQueryParameter(bufferSizeSendBuffer *int64) {
+	o.BufferSizeSendBufferQueryParameter = bufferSizeSendBuffer
+}
+
+// WithCertificateCaQueryParameter adds the certificateCa to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithCertificateCaQueryParameter(certificateCa *string) *FpolicyEngineCollectionGetParams {
+	o.SetCertificateCaQueryParameter(certificateCa)
+	return o
+}
+
+// SetCertificateCaQueryParameter adds the certificateCa to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetCertificateCaQueryParameter(certificateCa *string) {
+	o.CertificateCaQueryParameter = certificateCa
+}
+
+// WithCertificateNameQueryParameter adds the certificateName to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithCertificateNameQueryParameter(certificateName *string) *FpolicyEngineCollectionGetParams {
+	o.SetCertificateNameQueryParameter(certificateName)
+	return o
+}
+
+// SetCertificateNameQueryParameter adds the certificateName to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetCertificateNameQueryParameter(certificateName *string) {
+	o.CertificateNameQueryParameter = certificateName
+}
+
+// WithCertificateSerialNumberQueryParameter adds the certificateSerialNumber to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithCertificateSerialNumberQueryParameter(certificateSerialNumber *string) *FpolicyEngineCollectionGetParams {
+	o.SetCertificateSerialNumberQueryParameter(certificateSerialNumber)
+	return o
+}
+
+// SetCertificateSerialNumberQueryParameter adds the certificateSerialNumber to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetCertificateSerialNumberQueryParameter(certificateSerialNumber *string) {
+	o.CertificateSerialNumberQueryParameter = certificateSerialNumber
+}
+
 // WithFieldsQueryParameter adds the fields to the fpolicy engine collection get params
 func (o *FpolicyEngineCollectionGetParams) WithFieldsQueryParameter(fields []string) *FpolicyEngineCollectionGetParams {
 	o.SetFieldsQueryParameter(fields)
@@ -208,6 +353,17 @@ func (o *FpolicyEngineCollectionGetParams) SetFieldsQueryParameter(fields []stri
 	o.FieldsQueryParameter = fields
 }
 
+// WithFormatQueryParameter adds the format to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithFormatQueryParameter(format *string) *FpolicyEngineCollectionGetParams {
+	o.SetFormatQueryParameter(format)
+	return o
+}
+
+// SetFormatQueryParameter adds the format to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetFormatQueryParameter(format *string) {
+	o.FormatQueryParameter = format
+}
+
 // WithMaxRecordsQueryParameter adds the maxRecords to the fpolicy engine collection get params
 func (o *FpolicyEngineCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FpolicyEngineCollectionGetParams {
 	o.SetMaxRecordsQueryParameter(maxRecords)
@@ -217,6 +373,17 @@ func (o *FpolicyEngineCollectionGetParams) WithMaxRecordsQueryParameter(maxRecor
 // SetMaxRecordsQueryParameter adds the maxRecords to the fpolicy engine collection get params
 func (o *FpolicyEngineCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
 	o.MaxRecordsQueryParameter = maxRecords
+}
+
+// WithMaxServerRequestsQueryParameter adds the maxServerRequests to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithMaxServerRequestsQueryParameter(maxServerRequests *int64) *FpolicyEngineCollectionGetParams {
+	o.SetMaxServerRequestsQueryParameter(maxServerRequests)
+	return o
+}
+
+// SetMaxServerRequestsQueryParameter adds the maxServerRequests to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetMaxServerRequestsQueryParameter(maxServerRequests *int64) {
+	o.MaxServerRequestsQueryParameter = maxServerRequests
 }
 
 // WithNameQueryParameter adds the name to the fpolicy engine collection get params
@@ -263,6 +430,61 @@ func (o *FpolicyEngineCollectionGetParams) SetPrimaryServersQueryParameter(prima
 	o.PrimaryServersQueryParameter = primaryServers
 }
 
+// WithRequestAbortTimeoutQueryParameter adds the requestAbortTimeout to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithRequestAbortTimeoutQueryParameter(requestAbortTimeout *string) *FpolicyEngineCollectionGetParams {
+	o.SetRequestAbortTimeoutQueryParameter(requestAbortTimeout)
+	return o
+}
+
+// SetRequestAbortTimeoutQueryParameter adds the requestAbortTimeout to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetRequestAbortTimeoutQueryParameter(requestAbortTimeout *string) {
+	o.RequestAbortTimeoutQueryParameter = requestAbortTimeout
+}
+
+// WithRequestCancelTimeoutQueryParameter adds the requestCancelTimeout to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithRequestCancelTimeoutQueryParameter(requestCancelTimeout *string) *FpolicyEngineCollectionGetParams {
+	o.SetRequestCancelTimeoutQueryParameter(requestCancelTimeout)
+	return o
+}
+
+// SetRequestCancelTimeoutQueryParameter adds the requestCancelTimeout to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetRequestCancelTimeoutQueryParameter(requestCancelTimeout *string) {
+	o.RequestCancelTimeoutQueryParameter = requestCancelTimeout
+}
+
+// WithResiliencyDirectoryPathQueryParameter adds the resiliencyDirectoryPath to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithResiliencyDirectoryPathQueryParameter(resiliencyDirectoryPath *string) *FpolicyEngineCollectionGetParams {
+	o.SetResiliencyDirectoryPathQueryParameter(resiliencyDirectoryPath)
+	return o
+}
+
+// SetResiliencyDirectoryPathQueryParameter adds the resiliencyDirectoryPath to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetResiliencyDirectoryPathQueryParameter(resiliencyDirectoryPath *string) {
+	o.ResiliencyDirectoryPathQueryParameter = resiliencyDirectoryPath
+}
+
+// WithResiliencyEnabledQueryParameter adds the resiliencyEnabled to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithResiliencyEnabledQueryParameter(resiliencyEnabled *bool) *FpolicyEngineCollectionGetParams {
+	o.SetResiliencyEnabledQueryParameter(resiliencyEnabled)
+	return o
+}
+
+// SetResiliencyEnabledQueryParameter adds the resiliencyEnabled to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetResiliencyEnabledQueryParameter(resiliencyEnabled *bool) {
+	o.ResiliencyEnabledQueryParameter = resiliencyEnabled
+}
+
+// WithResiliencyRetentionDurationQueryParameter adds the resiliencyRetentionDuration to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithResiliencyRetentionDurationQueryParameter(resiliencyRetentionDuration *string) *FpolicyEngineCollectionGetParams {
+	o.SetResiliencyRetentionDurationQueryParameter(resiliencyRetentionDuration)
+	return o
+}
+
+// SetResiliencyRetentionDurationQueryParameter adds the resiliencyRetentionDuration to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetResiliencyRetentionDurationQueryParameter(resiliencyRetentionDuration *string) {
+	o.ResiliencyRetentionDurationQueryParameter = resiliencyRetentionDuration
+}
+
 // WithReturnRecordsQueryParameter adds the returnRecords to the fpolicy engine collection get params
 func (o *FpolicyEngineCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FpolicyEngineCollectionGetParams {
 	o.SetReturnRecordsQueryParameter(returnRecords)
@@ -296,6 +518,39 @@ func (o *FpolicyEngineCollectionGetParams) SetSecondaryServersQueryParameter(sec
 	o.SecondaryServersQueryParameter = secondaryServers
 }
 
+// WithServerProgressTimeoutQueryParameter adds the serverProgressTimeout to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithServerProgressTimeoutQueryParameter(serverProgressTimeout *string) *FpolicyEngineCollectionGetParams {
+	o.SetServerProgressTimeoutQueryParameter(serverProgressTimeout)
+	return o
+}
+
+// SetServerProgressTimeoutQueryParameter adds the serverProgressTimeout to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetServerProgressTimeoutQueryParameter(serverProgressTimeout *string) {
+	o.ServerProgressTimeoutQueryParameter = serverProgressTimeout
+}
+
+// WithSslOptionQueryParameter adds the sslOption to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithSslOptionQueryParameter(sslOption *string) *FpolicyEngineCollectionGetParams {
+	o.SetSslOptionQueryParameter(sslOption)
+	return o
+}
+
+// SetSslOptionQueryParameter adds the sslOption to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetSslOptionQueryParameter(sslOption *string) {
+	o.SslOptionQueryParameter = sslOption
+}
+
+// WithStatusRequestIntervalQueryParameter adds the statusRequestInterval to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithStatusRequestIntervalQueryParameter(statusRequestInterval *string) *FpolicyEngineCollectionGetParams {
+	o.SetStatusRequestIntervalQueryParameter(statusRequestInterval)
+	return o
+}
+
+// SetStatusRequestIntervalQueryParameter adds the statusRequestInterval to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetStatusRequestIntervalQueryParameter(statusRequestInterval *string) {
+	o.StatusRequestIntervalQueryParameter = statusRequestInterval
+}
+
 // WithSVMUUIDPathParameter adds the svmUUID to the fpolicy engine collection get params
 func (o *FpolicyEngineCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *FpolicyEngineCollectionGetParams {
 	o.SetSVMUUIDPathParameter(svmUUID)
@@ -326,6 +581,91 @@ func (o *FpolicyEngineCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
+	if o.BufferSizeRecvBufferQueryParameter != nil {
+
+		// query param buffer_size.recv_buffer
+		var qrBufferSizeRecvBuffer int64
+
+		if o.BufferSizeRecvBufferQueryParameter != nil {
+			qrBufferSizeRecvBuffer = *o.BufferSizeRecvBufferQueryParameter
+		}
+		qBufferSizeRecvBuffer := swag.FormatInt64(qrBufferSizeRecvBuffer)
+		if qBufferSizeRecvBuffer != "" {
+
+			if err := r.SetQueryParam("buffer_size.recv_buffer", qBufferSizeRecvBuffer); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BufferSizeSendBufferQueryParameter != nil {
+
+		// query param buffer_size.send_buffer
+		var qrBufferSizeSendBuffer int64
+
+		if o.BufferSizeSendBufferQueryParameter != nil {
+			qrBufferSizeSendBuffer = *o.BufferSizeSendBufferQueryParameter
+		}
+		qBufferSizeSendBuffer := swag.FormatInt64(qrBufferSizeSendBuffer)
+		if qBufferSizeSendBuffer != "" {
+
+			if err := r.SetQueryParam("buffer_size.send_buffer", qBufferSizeSendBuffer); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateCaQueryParameter != nil {
+
+		// query param certificate.ca
+		var qrCertificateCa string
+
+		if o.CertificateCaQueryParameter != nil {
+			qrCertificateCa = *o.CertificateCaQueryParameter
+		}
+		qCertificateCa := qrCertificateCa
+		if qCertificateCa != "" {
+
+			if err := r.SetQueryParam("certificate.ca", qCertificateCa); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateNameQueryParameter != nil {
+
+		// query param certificate.name
+		var qrCertificateName string
+
+		if o.CertificateNameQueryParameter != nil {
+			qrCertificateName = *o.CertificateNameQueryParameter
+		}
+		qCertificateName := qrCertificateName
+		if qCertificateName != "" {
+
+			if err := r.SetQueryParam("certificate.name", qCertificateName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateSerialNumberQueryParameter != nil {
+
+		// query param certificate.serial_number
+		var qrCertificateSerialNumber string
+
+		if o.CertificateSerialNumberQueryParameter != nil {
+			qrCertificateSerialNumber = *o.CertificateSerialNumberQueryParameter
+		}
+		qCertificateSerialNumber := qrCertificateSerialNumber
+		if qCertificateSerialNumber != "" {
+
+			if err := r.SetQueryParam("certificate.serial_number", qCertificateSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
@@ -334,6 +674,23 @@ func (o *FpolicyEngineCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.FormatQueryParameter != nil {
+
+		// query param format
+		var qrFormat string
+
+		if o.FormatQueryParameter != nil {
+			qrFormat = *o.FormatQueryParameter
+		}
+		qFormat := qrFormat
+		if qFormat != "" {
+
+			if err := r.SetQueryParam("format", qFormat); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -349,6 +706,23 @@ func (o *FpolicyEngineCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxServerRequestsQueryParameter != nil {
+
+		// query param max_server_requests
+		var qrMaxServerRequests int64
+
+		if o.MaxServerRequestsQueryParameter != nil {
+			qrMaxServerRequests = *o.MaxServerRequestsQueryParameter
+		}
+		qMaxServerRequests := swag.FormatInt64(qrMaxServerRequests)
+		if qMaxServerRequests != "" {
+
+			if err := r.SetQueryParam("max_server_requests", qMaxServerRequests); err != nil {
 				return err
 			}
 		}
@@ -416,6 +790,91 @@ func (o *FpolicyEngineCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.RequestAbortTimeoutQueryParameter != nil {
+
+		// query param request_abort_timeout
+		var qrRequestAbortTimeout string
+
+		if o.RequestAbortTimeoutQueryParameter != nil {
+			qrRequestAbortTimeout = *o.RequestAbortTimeoutQueryParameter
+		}
+		qRequestAbortTimeout := qrRequestAbortTimeout
+		if qRequestAbortTimeout != "" {
+
+			if err := r.SetQueryParam("request_abort_timeout", qRequestAbortTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RequestCancelTimeoutQueryParameter != nil {
+
+		// query param request_cancel_timeout
+		var qrRequestCancelTimeout string
+
+		if o.RequestCancelTimeoutQueryParameter != nil {
+			qrRequestCancelTimeout = *o.RequestCancelTimeoutQueryParameter
+		}
+		qRequestCancelTimeout := qrRequestCancelTimeout
+		if qRequestCancelTimeout != "" {
+
+			if err := r.SetQueryParam("request_cancel_timeout", qRequestCancelTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ResiliencyDirectoryPathQueryParameter != nil {
+
+		// query param resiliency.directory_path
+		var qrResiliencyDirectoryPath string
+
+		if o.ResiliencyDirectoryPathQueryParameter != nil {
+			qrResiliencyDirectoryPath = *o.ResiliencyDirectoryPathQueryParameter
+		}
+		qResiliencyDirectoryPath := qrResiliencyDirectoryPath
+		if qResiliencyDirectoryPath != "" {
+
+			if err := r.SetQueryParam("resiliency.directory_path", qResiliencyDirectoryPath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ResiliencyEnabledQueryParameter != nil {
+
+		// query param resiliency.enabled
+		var qrResiliencyEnabled bool
+
+		if o.ResiliencyEnabledQueryParameter != nil {
+			qrResiliencyEnabled = *o.ResiliencyEnabledQueryParameter
+		}
+		qResiliencyEnabled := swag.FormatBool(qrResiliencyEnabled)
+		if qResiliencyEnabled != "" {
+
+			if err := r.SetQueryParam("resiliency.enabled", qResiliencyEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ResiliencyRetentionDurationQueryParameter != nil {
+
+		// query param resiliency.retention_duration
+		var qrResiliencyRetentionDuration string
+
+		if o.ResiliencyRetentionDurationQueryParameter != nil {
+			qrResiliencyRetentionDuration = *o.ResiliencyRetentionDurationQueryParameter
+		}
+		qResiliencyRetentionDuration := qrResiliencyRetentionDuration
+		if qResiliencyRetentionDuration != "" {
+
+			if err := r.SetQueryParam("resiliency.retention_duration", qResiliencyRetentionDuration); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
@@ -462,6 +921,57 @@ func (o *FpolicyEngineCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qSecondaryServers != "" {
 
 			if err := r.SetQueryParam("secondary_servers", qSecondaryServers); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServerProgressTimeoutQueryParameter != nil {
+
+		// query param server_progress_timeout
+		var qrServerProgressTimeout string
+
+		if o.ServerProgressTimeoutQueryParameter != nil {
+			qrServerProgressTimeout = *o.ServerProgressTimeoutQueryParameter
+		}
+		qServerProgressTimeout := qrServerProgressTimeout
+		if qServerProgressTimeout != "" {
+
+			if err := r.SetQueryParam("server_progress_timeout", qServerProgressTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SslOptionQueryParameter != nil {
+
+		// query param ssl_option
+		var qrSslOption string
+
+		if o.SslOptionQueryParameter != nil {
+			qrSslOption = *o.SslOptionQueryParameter
+		}
+		qSslOption := qrSslOption
+		if qSslOption != "" {
+
+			if err := r.SetQueryParam("ssl_option", qSslOption); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusRequestIntervalQueryParameter != nil {
+
+		// query param status_request_interval
+		var qrStatusRequestInterval string
+
+		if o.StatusRequestIntervalQueryParameter != nil {
+			qrStatusRequestInterval = *o.StatusRequestIntervalQueryParameter
+		}
+		qStatusRequestInterval := qrStatusRequestInterval
+		if qStatusRequestInterval != "" {
+
+			if err := r.SetQueryParam("status_request_interval", qStatusRequestInterval); err != nil {
 				return err
 			}
 		}

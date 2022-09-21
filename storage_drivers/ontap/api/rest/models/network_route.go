@@ -37,6 +37,9 @@ type NetworkRoute struct {
 	// ipspace
 	Ipspace *NetworkRouteIpspace `json:"ipspace,omitempty"`
 
+	// Indicates a preference order between several routes to the same destination.  With typical usage, the default metrics provided are adequate, there is no need to specify a metric in the route creation.
+	Metric int64 `json:"metric,omitempty"`
+
 	// scope
 	Scope NetworkScopeReadonly `json:"scope,omitempty"`
 
@@ -356,7 +359,9 @@ type NetworkRouteInterfacesItems0 struct {
 	// ip
 	IP *NetworkRouteInterfacesItems0IP `json:"ip,omitempty"`
 
-	// The name of the interface.
+	// The name of the interface. If only the name is provided, the SVM scope
+	// must be provided by the object this object is embedded in.
+	//
 	// Example: lif1
 	Name string `json:"name,omitempty"`
 

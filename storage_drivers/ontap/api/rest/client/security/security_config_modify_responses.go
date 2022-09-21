@@ -89,6 +89,7 @@ func NewSecurityConfigModifyDefault(code int) *SecurityConfigModifyDefault {
 | 52428817 | SSLv3 is not supported when FIPS is enabled. |
 | 52428824 | TLSv1 is not supported when FIPS is enabled. |
 | 52428830 | Cannot enable FIPS-compliant mode because the configured minimum security strength for certificates is not compatible. |
+| 52428832 | TLSv1.1 is not supported when FIPS is enabled. |
 | 52559974 | Cannot enable FIPS-compliant mode because a certificate that is not FIPS-compliant is in use. |
 | 196608081 | Cannot start software encryption conversion while there are data volumes in the cluster. |
 | 196608082 | The operation is not valid when the MetroCluster is in switchover mode. |

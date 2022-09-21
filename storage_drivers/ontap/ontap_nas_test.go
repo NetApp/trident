@@ -42,7 +42,9 @@ var (
 )
 
 const (
-	BackendUUID = "deadbeef-03af-4394-ace4-e177cdbcaf28"
+	BackendUUID                 = "deadbeef-03af-4394-ace4-e177cdbcaf28"
+	ONTAPTEST_LOCALHOST         = "127.0.0.1"
+	ONTAPTEST_VSERVER_AGGR_NAME = "data"
 )
 
 func TestOntapNasStorageDriverConfigString(t *testing.T) {
@@ -115,7 +117,7 @@ func newTestOntapNASDriver(
 	var ontapAPI api.OntapAPI
 
 	nasDriver.API = ontapAPI
-	nasDriver.telemetry = &TelemetryAbstraction{
+	nasDriver.telemetry = &Telemetry{
 		Plugin:        nasDriver.Name(),
 		SVM:           config.SVM,
 		StoragePrefix: *nasDriver.GetConfig().StoragePrefix,
@@ -203,7 +205,7 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 	for _, c := range cases {
 		d.Config.Labels = c.physicalPoolLabels
 		d.Config.Storage[0].Labels = c.virtualPoolLabels
-		physicalPools, virtualPools, err := InitializeStoragePoolsCommonAbstraction(ctx, d, poolAttributes,
+		physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
 			c.backendName)
 		assert.Nil(t, err, "Error is not nil")
 

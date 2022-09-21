@@ -78,6 +78,66 @@ type NetworkEthernetPortsGetParams struct {
 	*/
 	BroadcastDomainUUIDQueryParameter *string
 
+	/* DiscoveredDevicesCapabilities.
+
+	   Filter by discovered_devices.capabilities
+	*/
+	DiscoveredDevicesCapabilitiesQueryParameter *string
+
+	/* DiscoveredDevicesChassisID.
+
+	   Filter by discovered_devices.chassis_id
+	*/
+	DiscoveredDevicesChassisIDQueryParameter *string
+
+	/* DiscoveredDevicesIPAddresses.
+
+	   Filter by discovered_devices.ip_addresses
+	*/
+	DiscoveredDevicesIPAddressesQueryParameter *string
+
+	/* DiscoveredDevicesName.
+
+	   Filter by discovered_devices.name
+	*/
+	DiscoveredDevicesNameQueryParameter *string
+
+	/* DiscoveredDevicesPlatform.
+
+	   Filter by discovered_devices.platform
+	*/
+	DiscoveredDevicesPlatformQueryParameter *string
+
+	/* DiscoveredDevicesProtocol.
+
+	   Filter by discovered_devices.protocol
+	*/
+	DiscoveredDevicesProtocolQueryParameter *string
+
+	/* DiscoveredDevicesRemainingHoldTime.
+
+	   Filter by discovered_devices.remaining_hold_time
+	*/
+	DiscoveredDevicesRemainingHoldTimeQueryParameter *int64
+
+	/* DiscoveredDevicesRemotePort.
+
+	   Filter by discovered_devices.remote_port
+	*/
+	DiscoveredDevicesRemotePortQueryParameter *string
+
+	/* DiscoveredDevicesSystemName.
+
+	   Filter by discovered_devices.system_name
+	*/
+	DiscoveredDevicesSystemNameQueryParameter *string
+
+	/* DiscoveredDevicesVersion.
+
+	   Filter by discovered_devices.version
+	*/
+	DiscoveredDevicesVersionQueryParameter *string
+
 	/* Enabled.
 
 	   Filter by enabled
@@ -89,6 +149,12 @@ type NetworkEthernetPortsGetParams struct {
 	   Specify the fields to return.
 	*/
 	FieldsQueryParameter []string
+
+	/* InterfaceCount.
+
+	   Filter by interface_count
+	*/
+	InterfaceCountQueryParameter *int64
 
 	/* LagActivePortsName.
 
@@ -488,6 +554,116 @@ func (o *NetworkEthernetPortsGetParams) SetBroadcastDomainUUIDQueryParameter(bro
 	o.BroadcastDomainUUIDQueryParameter = broadcastDomainUUID
 }
 
+// WithDiscoveredDevicesCapabilitiesQueryParameter adds the discoveredDevicesCapabilities to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesCapabilitiesQueryParameter(discoveredDevicesCapabilities *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesCapabilitiesQueryParameter(discoveredDevicesCapabilities)
+	return o
+}
+
+// SetDiscoveredDevicesCapabilitiesQueryParameter adds the discoveredDevicesCapabilities to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesCapabilitiesQueryParameter(discoveredDevicesCapabilities *string) {
+	o.DiscoveredDevicesCapabilitiesQueryParameter = discoveredDevicesCapabilities
+}
+
+// WithDiscoveredDevicesChassisIDQueryParameter adds the discoveredDevicesChassisID to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesChassisIDQueryParameter(discoveredDevicesChassisID *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesChassisIDQueryParameter(discoveredDevicesChassisID)
+	return o
+}
+
+// SetDiscoveredDevicesChassisIDQueryParameter adds the discoveredDevicesChassisId to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesChassisIDQueryParameter(discoveredDevicesChassisID *string) {
+	o.DiscoveredDevicesChassisIDQueryParameter = discoveredDevicesChassisID
+}
+
+// WithDiscoveredDevicesIPAddressesQueryParameter adds the discoveredDevicesIPAddresses to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesIPAddressesQueryParameter(discoveredDevicesIPAddresses *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesIPAddressesQueryParameter(discoveredDevicesIPAddresses)
+	return o
+}
+
+// SetDiscoveredDevicesIPAddressesQueryParameter adds the discoveredDevicesIpAddresses to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesIPAddressesQueryParameter(discoveredDevicesIPAddresses *string) {
+	o.DiscoveredDevicesIPAddressesQueryParameter = discoveredDevicesIPAddresses
+}
+
+// WithDiscoveredDevicesNameQueryParameter adds the discoveredDevicesName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesNameQueryParameter(discoveredDevicesName *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesNameQueryParameter(discoveredDevicesName)
+	return o
+}
+
+// SetDiscoveredDevicesNameQueryParameter adds the discoveredDevicesName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesNameQueryParameter(discoveredDevicesName *string) {
+	o.DiscoveredDevicesNameQueryParameter = discoveredDevicesName
+}
+
+// WithDiscoveredDevicesPlatformQueryParameter adds the discoveredDevicesPlatform to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesPlatformQueryParameter(discoveredDevicesPlatform *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesPlatformQueryParameter(discoveredDevicesPlatform)
+	return o
+}
+
+// SetDiscoveredDevicesPlatformQueryParameter adds the discoveredDevicesPlatform to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesPlatformQueryParameter(discoveredDevicesPlatform *string) {
+	o.DiscoveredDevicesPlatformQueryParameter = discoveredDevicesPlatform
+}
+
+// WithDiscoveredDevicesProtocolQueryParameter adds the discoveredDevicesProtocol to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesProtocolQueryParameter(discoveredDevicesProtocol *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesProtocolQueryParameter(discoveredDevicesProtocol)
+	return o
+}
+
+// SetDiscoveredDevicesProtocolQueryParameter adds the discoveredDevicesProtocol to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesProtocolQueryParameter(discoveredDevicesProtocol *string) {
+	o.DiscoveredDevicesProtocolQueryParameter = discoveredDevicesProtocol
+}
+
+// WithDiscoveredDevicesRemainingHoldTimeQueryParameter adds the discoveredDevicesRemainingHoldTime to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesRemainingHoldTimeQueryParameter(discoveredDevicesRemainingHoldTime *int64) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesRemainingHoldTimeQueryParameter(discoveredDevicesRemainingHoldTime)
+	return o
+}
+
+// SetDiscoveredDevicesRemainingHoldTimeQueryParameter adds the discoveredDevicesRemainingHoldTime to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesRemainingHoldTimeQueryParameter(discoveredDevicesRemainingHoldTime *int64) {
+	o.DiscoveredDevicesRemainingHoldTimeQueryParameter = discoveredDevicesRemainingHoldTime
+}
+
+// WithDiscoveredDevicesRemotePortQueryParameter adds the discoveredDevicesRemotePort to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesRemotePortQueryParameter(discoveredDevicesRemotePort *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesRemotePortQueryParameter(discoveredDevicesRemotePort)
+	return o
+}
+
+// SetDiscoveredDevicesRemotePortQueryParameter adds the discoveredDevicesRemotePort to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesRemotePortQueryParameter(discoveredDevicesRemotePort *string) {
+	o.DiscoveredDevicesRemotePortQueryParameter = discoveredDevicesRemotePort
+}
+
+// WithDiscoveredDevicesSystemNameQueryParameter adds the discoveredDevicesSystemName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesSystemNameQueryParameter(discoveredDevicesSystemName *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesSystemNameQueryParameter(discoveredDevicesSystemName)
+	return o
+}
+
+// SetDiscoveredDevicesSystemNameQueryParameter adds the discoveredDevicesSystemName to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesSystemNameQueryParameter(discoveredDevicesSystemName *string) {
+	o.DiscoveredDevicesSystemNameQueryParameter = discoveredDevicesSystemName
+}
+
+// WithDiscoveredDevicesVersionQueryParameter adds the discoveredDevicesVersion to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithDiscoveredDevicesVersionQueryParameter(discoveredDevicesVersion *string) *NetworkEthernetPortsGetParams {
+	o.SetDiscoveredDevicesVersionQueryParameter(discoveredDevicesVersion)
+	return o
+}
+
+// SetDiscoveredDevicesVersionQueryParameter adds the discoveredDevicesVersion to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetDiscoveredDevicesVersionQueryParameter(discoveredDevicesVersion *string) {
+	o.DiscoveredDevicesVersionQueryParameter = discoveredDevicesVersion
+}
+
 // WithEnabledQueryParameter adds the enabled to the network ethernet ports get params
 func (o *NetworkEthernetPortsGetParams) WithEnabledQueryParameter(enabled *bool) *NetworkEthernetPortsGetParams {
 	o.SetEnabledQueryParameter(enabled)
@@ -508,6 +684,17 @@ func (o *NetworkEthernetPortsGetParams) WithFieldsQueryParameter(fields []string
 // SetFieldsQueryParameter adds the fields to the network ethernet ports get params
 func (o *NetworkEthernetPortsGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
+}
+
+// WithInterfaceCountQueryParameter adds the interfaceCount to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithInterfaceCountQueryParameter(interfaceCount *int64) *NetworkEthernetPortsGetParams {
+	o.SetInterfaceCountQueryParameter(interfaceCount)
+	return o
+}
+
+// SetInterfaceCountQueryParameter adds the interfaceCount to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetInterfaceCountQueryParameter(interfaceCount *int64) {
+	o.InterfaceCountQueryParameter = interfaceCount
 }
 
 // WithLagActivePortsNameQueryParameter adds the lagActivePortsName to the network ethernet ports get params
@@ -1108,6 +1295,176 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
+	if o.DiscoveredDevicesCapabilitiesQueryParameter != nil {
+
+		// query param discovered_devices.capabilities
+		var qrDiscoveredDevicesCapabilities string
+
+		if o.DiscoveredDevicesCapabilitiesQueryParameter != nil {
+			qrDiscoveredDevicesCapabilities = *o.DiscoveredDevicesCapabilitiesQueryParameter
+		}
+		qDiscoveredDevicesCapabilities := qrDiscoveredDevicesCapabilities
+		if qDiscoveredDevicesCapabilities != "" {
+
+			if err := r.SetQueryParam("discovered_devices.capabilities", qDiscoveredDevicesCapabilities); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DiscoveredDevicesChassisIDQueryParameter != nil {
+
+		// query param discovered_devices.chassis_id
+		var qrDiscoveredDevicesChassisID string
+
+		if o.DiscoveredDevicesChassisIDQueryParameter != nil {
+			qrDiscoveredDevicesChassisID = *o.DiscoveredDevicesChassisIDQueryParameter
+		}
+		qDiscoveredDevicesChassisID := qrDiscoveredDevicesChassisID
+		if qDiscoveredDevicesChassisID != "" {
+
+			if err := r.SetQueryParam("discovered_devices.chassis_id", qDiscoveredDevicesChassisID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DiscoveredDevicesIPAddressesQueryParameter != nil {
+
+		// query param discovered_devices.ip_addresses
+		var qrDiscoveredDevicesIPAddresses string
+
+		if o.DiscoveredDevicesIPAddressesQueryParameter != nil {
+			qrDiscoveredDevicesIPAddresses = *o.DiscoveredDevicesIPAddressesQueryParameter
+		}
+		qDiscoveredDevicesIPAddresses := qrDiscoveredDevicesIPAddresses
+		if qDiscoveredDevicesIPAddresses != "" {
+
+			if err := r.SetQueryParam("discovered_devices.ip_addresses", qDiscoveredDevicesIPAddresses); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DiscoveredDevicesNameQueryParameter != nil {
+
+		// query param discovered_devices.name
+		var qrDiscoveredDevicesName string
+
+		if o.DiscoveredDevicesNameQueryParameter != nil {
+			qrDiscoveredDevicesName = *o.DiscoveredDevicesNameQueryParameter
+		}
+		qDiscoveredDevicesName := qrDiscoveredDevicesName
+		if qDiscoveredDevicesName != "" {
+
+			if err := r.SetQueryParam("discovered_devices.name", qDiscoveredDevicesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DiscoveredDevicesPlatformQueryParameter != nil {
+
+		// query param discovered_devices.platform
+		var qrDiscoveredDevicesPlatform string
+
+		if o.DiscoveredDevicesPlatformQueryParameter != nil {
+			qrDiscoveredDevicesPlatform = *o.DiscoveredDevicesPlatformQueryParameter
+		}
+		qDiscoveredDevicesPlatform := qrDiscoveredDevicesPlatform
+		if qDiscoveredDevicesPlatform != "" {
+
+			if err := r.SetQueryParam("discovered_devices.platform", qDiscoveredDevicesPlatform); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DiscoveredDevicesProtocolQueryParameter != nil {
+
+		// query param discovered_devices.protocol
+		var qrDiscoveredDevicesProtocol string
+
+		if o.DiscoveredDevicesProtocolQueryParameter != nil {
+			qrDiscoveredDevicesProtocol = *o.DiscoveredDevicesProtocolQueryParameter
+		}
+		qDiscoveredDevicesProtocol := qrDiscoveredDevicesProtocol
+		if qDiscoveredDevicesProtocol != "" {
+
+			if err := r.SetQueryParam("discovered_devices.protocol", qDiscoveredDevicesProtocol); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DiscoveredDevicesRemainingHoldTimeQueryParameter != nil {
+
+		// query param discovered_devices.remaining_hold_time
+		var qrDiscoveredDevicesRemainingHoldTime int64
+
+		if o.DiscoveredDevicesRemainingHoldTimeQueryParameter != nil {
+			qrDiscoveredDevicesRemainingHoldTime = *o.DiscoveredDevicesRemainingHoldTimeQueryParameter
+		}
+		qDiscoveredDevicesRemainingHoldTime := swag.FormatInt64(qrDiscoveredDevicesRemainingHoldTime)
+		if qDiscoveredDevicesRemainingHoldTime != "" {
+
+			if err := r.SetQueryParam("discovered_devices.remaining_hold_time", qDiscoveredDevicesRemainingHoldTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DiscoveredDevicesRemotePortQueryParameter != nil {
+
+		// query param discovered_devices.remote_port
+		var qrDiscoveredDevicesRemotePort string
+
+		if o.DiscoveredDevicesRemotePortQueryParameter != nil {
+			qrDiscoveredDevicesRemotePort = *o.DiscoveredDevicesRemotePortQueryParameter
+		}
+		qDiscoveredDevicesRemotePort := qrDiscoveredDevicesRemotePort
+		if qDiscoveredDevicesRemotePort != "" {
+
+			if err := r.SetQueryParam("discovered_devices.remote_port", qDiscoveredDevicesRemotePort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DiscoveredDevicesSystemNameQueryParameter != nil {
+
+		// query param discovered_devices.system_name
+		var qrDiscoveredDevicesSystemName string
+
+		if o.DiscoveredDevicesSystemNameQueryParameter != nil {
+			qrDiscoveredDevicesSystemName = *o.DiscoveredDevicesSystemNameQueryParameter
+		}
+		qDiscoveredDevicesSystemName := qrDiscoveredDevicesSystemName
+		if qDiscoveredDevicesSystemName != "" {
+
+			if err := r.SetQueryParam("discovered_devices.system_name", qDiscoveredDevicesSystemName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DiscoveredDevicesVersionQueryParameter != nil {
+
+		// query param discovered_devices.version
+		var qrDiscoveredDevicesVersion string
+
+		if o.DiscoveredDevicesVersionQueryParameter != nil {
+			qrDiscoveredDevicesVersion = *o.DiscoveredDevicesVersionQueryParameter
+		}
+		qDiscoveredDevicesVersion := qrDiscoveredDevicesVersion
+		if qDiscoveredDevicesVersion != "" {
+
+			if err := r.SetQueryParam("discovered_devices.version", qDiscoveredDevicesVersion); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EnabledQueryParameter != nil {
 
 		// query param enabled
@@ -1133,6 +1490,23 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.InterfaceCountQueryParameter != nil {
+
+		// query param interface_count
+		var qrInterfaceCount int64
+
+		if o.InterfaceCountQueryParameter != nil {
+			qrInterfaceCount = *o.InterfaceCountQueryParameter
+		}
+		qInterfaceCount := swag.FormatInt64(qrInterfaceCount)
+		if qInterfaceCount != "" {
+
+			if err := r.SetQueryParam("interface_count", qInterfaceCount); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -20,6 +20,15 @@ import (
 // swagger:model cipher
 type Cipher string
 
+func NewCipher(value Cipher) *Cipher {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated Cipher.
+func (m Cipher) Pointer() *Cipher {
+	return &m
+}
+
 const (
 
 	// CipherAes256Ctr captures enum value "aes256_ctr"

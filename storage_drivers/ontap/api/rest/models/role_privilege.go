@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// RolePrivilege A tuple containing the REST endpoint and the access level assigned to that endpoint. The REST endpoint can be a resource-qualified endpoint. At present, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\*/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+// RolePrivilege A tuple containing a REST endpoint or a command/command directory path and the access level assigned to that endpoint or command/command directory. If the "path" attribute refers to a command/command directory path, the tuple could additionally contain an optional query. The REST endpoint can be a resource-qualified endpoint. At present, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\*/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 //
 // swagger:model role_privilege
 type RolePrivilege struct {
@@ -24,9 +24,13 @@ type RolePrivilege struct {
 	// access
 	Access RolePrivilegeLevel `json:"access,omitempty"`
 
-	// REST URI/endpoint
-	// Example: /api/storage/volumes
+	// Either of REST URI/endpoint OR command/command directory path.
+	// Example: ['/api/cluster/jobs', '/api/storage/volumes', 'job schedule interval', 'volume move']
 	Path string `json:"path,omitempty"`
+
+	// Optional attribute that can be specified only if the "path" attribute refers to a command/command directory path. The privilege tuple implicitly defines a set of objects the role can or cannot access at the specified access level. The query further reduces this set of objects to a subset of objects that the role is allowed to access. The query attribute must be applicable to the command/command directory specified by the "path" attribute. It is defined using one or more parameters of the command/command directory path specified by the "path" attribute.
+	// Example: ['-days \u003c1 -hours \u003e12', '-vserver vs1|vs2|vs3 -destination-aggregate aggr1|aggr2']
+	Query string `json:"query,omitempty"`
 }
 
 // Validate validates this role privilege

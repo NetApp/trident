@@ -46,6 +46,9 @@ type Snapshot struct {
 	// Read Only: true
 	Owners []string `json:"owners,omitempty"`
 
+	// provenance volume
+	ProvenanceVolume *SnapshotProvenanceVolume `json:"provenance_volume,omitempty"`
+
 	// Space reclaimed when the Snapshot copy is deleted, in bytes.
 	ReclaimableSpace int64 `json:"reclaimable_space,omitempty"`
 
@@ -76,6 +79,11 @@ type Snapshot struct {
 	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
 
+	// The 128 bit identifier that uniquely identifies a snapshot and its logical data layout.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	// Read Only: true
+	VersionUUID string `json:"version_uuid,omitempty"`
+
 	// volume
 	Volume *SnapshotVolume `json:"volume,omitempty"`
 }
@@ -97,6 +105,10 @@ func (m *Snapshot) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateOwners(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProvenanceVolume(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -194,6 +206,23 @@ func (m *Snapshot) validateOwners(formats strfmt.Registry) error {
 			return err
 		}
 
+	}
+
+	return nil
+}
+
+func (m *Snapshot) validateProvenanceVolume(formats strfmt.Registry) error {
+	if swag.IsZero(m.ProvenanceVolume) { // not required
+		return nil
+	}
+
+	if m.ProvenanceVolume != nil {
+		if err := m.ProvenanceVolume.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provenance_volume")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -327,6 +356,10 @@ func (m *Snapshot) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateProvenanceVolume(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSize(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -344,6 +377,10 @@ func (m *Snapshot) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	}
 
 	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVersionUUID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -384,6 +421,20 @@ func (m *Snapshot) contextValidateOwners(ctx context.Context, formats strfmt.Reg
 
 	if err := validate.ReadOnly(ctx, "owners", "body", []string(m.Owners)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Snapshot) contextValidateProvenanceVolume(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ProvenanceVolume != nil {
+		if err := m.ProvenanceVolume.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provenance_volume")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -433,6 +484,15 @@ func (m *Snapshot) contextValidateSvm(ctx context.Context, formats strfmt.Regist
 func (m *Snapshot) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Snapshot) contextValidateVersionUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "version_uuid", "body", string(m.VersionUUID)); err != nil {
 		return err
 	}
 
@@ -550,6 +610,63 @@ func (m *SnapshotLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SnapshotLinks) UnmarshalBinary(b []byte) error {
 	var res SnapshotLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SnapshotProvenanceVolume snapshot provenance volume
+//
+// swagger:model SnapshotProvenanceVolume
+type SnapshotProvenanceVolume struct {
+
+	// UUID for the volume that is used to identify the source volume in a mirroring relationship. When the mirroring relationship is broken, a volume's Instance UUID and Provenance UUID are made identical. An unmirrored volume's Provenance UUID is the same as its Instance UUID. This field is valid for flexible volumes only.
+	// Example: 4cd8a442-86d1-11e0-ae1c-125648563413
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this snapshot provenance volume
+func (m *SnapshotProvenanceVolume) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this snapshot provenance volume based on the context it is used
+func (m *SnapshotProvenanceVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapshotProvenanceVolume) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "provenance_volume"+"."+"uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapshotProvenanceVolume) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapshotProvenanceVolume) UnmarshalBinary(b []byte) error {
+	var res SnapshotProvenanceVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

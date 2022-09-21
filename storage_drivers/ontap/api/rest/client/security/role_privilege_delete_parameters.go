@@ -73,7 +73,7 @@ type RolePrivilegeDeleteParams struct {
 
 	/* Path.
 
-	   REST API path
+	   REST API path or command/command directory path
 	*/
 	PathPathParameter string
 

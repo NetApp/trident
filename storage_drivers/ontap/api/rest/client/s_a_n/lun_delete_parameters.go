@@ -62,8 +62,8 @@ type LunDeleteParams struct {
 
 	/* AllowDeleteWhileMapped.
 
-	     Allows deletion of a mapped LUN.
-	A mapped LUN might be in use. Deleting a mapped LUN also deletes the LUN map and makes the data no longer available. This might cause a disruption in the availability of data.
+	     Allows deletion of a mapped LUN.</br>
+	A mapped LUN might be in use. Deleting a mapped LUN also deletes the LUN map and makes the data no longer available. This might cause a disruption in the availability of data.</br>
 	**This parameter should be used with caution.**
 
 	*/

@@ -82,7 +82,19 @@ func NewFcInterfaceCollectionGetDefault(code int) *FcInterfaceCollectionGetDefau
 
 /* FcInterfaceCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 5374938 | Query parameter `recommend.data_protocol` is required when any other `recommend` query parameters are specified. |
+| 5374939 | Query parameter `recommend.fabrics.name` specifies a duplicate FC fabric. |
+| 5374940 | Query parameter `recommend.nodes.name` or `recommend.nodes.uuid` specifies a duplicate node. |
+| 5375953 | Query parameter `recommend.fabrics.name` specifies an FC fabric to which no FC port is connected. |
+| 5375954 | Query parameter `recommend.nodes.name` or `recommend.nodes.uuid` specifies a node that does not support the specified data protocol. |
+| 5375955 | Query parameter `recommend.proposed.locations.port.uuid` does not specify a valid port or specifies a port that is support the specified data protocol. |
+| 5375956 | Query parameter `recommend.proposed.locations.port.uuid` specifies a port that is not located on a node specified by query parameter `recommend.nodes.name` or `recommend.nodes.uuid`. If the nodes are to be constrained, only ports on those nodes may be proposed. |
+| 5375957 | Query parameter `recommend.proposed.locations.port.uuid` specifies a port that is disabled. |
+| 5375958 | Query parameter `recommend.proposed.locations.port.uuid` specifies a port that is not reporting a connected FC fabric. |
+
 */
 type FcInterfaceCollectionGetDefault struct {
 	_statusCode int

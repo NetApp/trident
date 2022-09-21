@@ -85,6 +85,12 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
+| 1115545 | Access token has an invalid signature. |
+| 1115546 | Access token expired at a time. |
+| 1115547 | Access token not valid until a time. |
+| 1115548 | Access token is malformed. |
+| 1115549 | Internal error. Failed to validate access token. |
+| 6619637 | Relationship with specified destination volume already exists. |
 | 6620374 | Internal error. Failed to get SVM information. |
 | 6620478 | Internal error. Failed to check SnapMirror capability. |
 | 6621834 | Object store configuration does not exist for specified vserver. |
@@ -118,6 +124,7 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13303893 | Updating job description failed. |
 | 13303894 | Destination volume name is invalid. It must contain the source volume name and have a suffix when creating a destination endpoint on a cluster with an effective cluster version of 9.6 or earlier. |
 | 13303895 | Operation on the remote destination cluster is not supported. |
+| 13303897 | Specifying transfer_schedule is only supported for an asynchronous SnapMirror relationship with a remote destination cluster that has an effective cluster version of 9.6 or earlier. |
 | 13303916 | FlexGroup volumes are not supported on SnapLock aggregates. |
 | 13303918 | No suitable destination aggregate type is available. |
 | 13303919 | Only FabricPool enabled aggregates are available on the destination. |
@@ -131,6 +138,16 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13303938 | Fetching information from the local cluster failed. |
 | 13303939 | Could not create an SVM peer relationship. |
 | 13303944 | An SVM-DR relationship is not supported because the source SVM has CIFS configured and the associated SnapMirror policy has either the "identity_preservation" property not set or set to "exclude_network_and_protocol_config". |
+| 13303945 | Schedule specified cannot be associated with the relationship because the policy used for the relationship has a schedule. |
+| 13303953 | SnapMirror relationships between FlexGroup volumes and object store endpoints are not supported. |
+| 13303957 | Restore to the specified destination endpoint is not supported. |
+| 13303958 | The \\\"source.uuid\\\" property must be specified. |
+| 13303959 | The \\\"source.uuid\\\" property can only be specified when using the \\\"restore\\\" property to create a SnapMirror relationship from an object store endpoint. |
+| 13303960 | The \\\"destination.uuid\\\" property cannot be specified for these endpoints. |
+| 13303961 | Creating a destination endpoint is not supported with the \\\"source.uuid\\\" property. |
+| 13303962 | Creating a destination endpoint is not supported with the \\\"destination.uuid\\\" property. |
+| 13303964 | Specified property is not supported for object store relationships. |
+| 13303965 | Specified endpoint not found. |
 | 13303966 | Consistency Group relationships require a policy of type \"sync\" with a sync_type of \"automated_failover\". |
 | 13303967 | Consistency Group volume is not a FlexVol volume. |
 | 13303968 | Unsupported volume type for the Consistency Group. |
@@ -146,7 +163,21 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13303982 | SAN data interface is not configured on the SVM. |
 | 13304021 | No suitable storage can be found meeting the specified requirements. No FabricPool enabled aggregates are available on the destination. |
 | 13304022 | No suitable storage can be found meeting the specified requirements. No non-root, non-taken-over, non-SnapLock, non-composite aggregates are available on the destination. |
+| 13304026 | API license token is required for this operation. |
+| 13304027 | Invalid API license token specified. |
 | 13304032 | In an "All SAN Array", an SVM-DR relationship is not supported when the associated SnapMirror policy does not have the "identity_preservation" property set to "exclude_network_and_protocol_config". |
+| 13304034 | SnapMirror Cloud license must be installed to use this feature. |
+| 13304035 | SnapMirror Cloud license capacity limit has been exceeded. |
+| 13304036 | SnapmMirror Cloud license term has expired. |
+| 13304038 | SnapMirror Cloud License capacity limit would be exceeded with this SnapMirror operation. |
+| 13304042 | The specified destination or source cluster for relationships with an object store destination must be local. |
+| 13304043 | The property must be specified for a restore from an object store endpoint. |
+| 13304044 | File restore from object store endpoints is not supported for relationship restore. |
+| 13304045 | Incremental restore from an object store endpoint is not supported. |
+| 13304077 | Specified property is only supported for creating a destination endpoint for FabricLink SnapMirror relationships.</private> |
+| 13304080 | Specified UUID and name do not match. |
+| 13304082 | Specified properties are mutually exclusive. |
+| 13304083 | The specified property is not supported because all nodes in the cluster are not capable of supporting the property.<private> |
 
 */
 type SnapmirrorRelationshipCreateDefault struct {

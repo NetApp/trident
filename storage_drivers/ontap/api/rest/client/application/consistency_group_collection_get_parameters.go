@@ -78,6 +78,12 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	ConsistencyGroupsLunsEnabledQueryParameter *bool
 
+	/* ConsistencyGroupsLunsLunMapsIgroupComment.
+
+	   Filter by consistency_groups.luns.lun_maps.igroup.comment
+	*/
+	ConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter *string
+
 	/* ConsistencyGroupsLunsLunMapsIgroupIgroupsName.
 
 	   Filter by consistency_groups.luns.lun_maps.igroup.igroups.name
@@ -185,6 +191,18 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Filter by consistency_groups.luns.serial_number
 	*/
 	ConsistencyGroupsLunsSerialNumberQueryParameter *string
+
+	/* ConsistencyGroupsLunsSpaceGuaranteeRequested.
+
+	   Filter by consistency_groups.luns.space.guarantee.requested
+	*/
+	ConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter *bool
+
+	/* ConsistencyGroupsLunsSpaceGuaranteeReserved.
+
+	   Filter by consistency_groups.luns.space.guarantee.reserved
+	*/
+	ConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter *bool
 
 	/* ConsistencyGroupsLunsSpaceSize.
 
@@ -432,6 +450,12 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	LunsEnabledQueryParameter *bool
 
+	/* LunsLunMapsIgroupComment.
+
+	   Filter by luns.lun_maps.igroup.comment
+	*/
+	LunsLunMapsIgroupCommentQueryParameter *string
+
 	/* LunsLunMapsIgroupIgroupsName.
 
 	   Filter by luns.lun_maps.igroup.igroups.name
@@ -539,6 +563,18 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Filter by luns.serial_number
 	*/
 	LunsSerialNumberQueryParameter *string
+
+	/* LunsSpaceGuaranteeRequested.
+
+	   Filter by luns.space.guarantee.requested
+	*/
+	LunsSpaceGuaranteeRequestedQueryParameter *bool
+
+	/* LunsSpaceGuaranteeReserved.
+
+	   Filter by luns.space.guarantee.reserved
+	*/
+	LunsSpaceGuaranteeReservedQueryParameter *bool
 
 	/* LunsSpaceSize.
 
@@ -902,6 +938,17 @@ func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsEnabledQue
 	o.ConsistencyGroupsLunsEnabledQueryParameter = consistencyGroupsLunsEnabled
 }
 
+// WithConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter adds the consistencyGroupsLunsLunMapsIgroupComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter(consistencyGroupsLunsLunMapsIgroupComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter(consistencyGroupsLunsLunMapsIgroupComment)
+	return o
+}
+
+// SetConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter adds the consistencyGroupsLunsLunMapsIgroupComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter(consistencyGroupsLunsLunMapsIgroupComment *string) {
+	o.ConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter = consistencyGroupsLunsLunMapsIgroupComment
+}
+
 // WithConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter adds the consistencyGroupsLunsLunMapsIgroupIgroupsName to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter(consistencyGroupsLunsLunMapsIgroupIgroupsName *string) *ConsistencyGroupCollectionGetParams {
 	o.SetConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter(consistencyGroupsLunsLunMapsIgroupIgroupsName)
@@ -1098,6 +1145,28 @@ func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSerialNum
 // SetConsistencyGroupsLunsSerialNumberQueryParameter adds the consistencyGroupsLunsSerialNumber to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSerialNumberQueryParameter(consistencyGroupsLunsSerialNumber *string) {
 	o.ConsistencyGroupsLunsSerialNumberQueryParameter = consistencyGroupsLunsSerialNumber
+}
+
+// WithConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter adds the consistencyGroupsLunsSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter(consistencyGroupsLunsSpaceGuaranteeRequested *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter(consistencyGroupsLunsSpaceGuaranteeRequested)
+	return o
+}
+
+// SetConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter adds the consistencyGroupsLunsSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter(consistencyGroupsLunsSpaceGuaranteeRequested *bool) {
+	o.ConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter = consistencyGroupsLunsSpaceGuaranteeRequested
+}
+
+// WithConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter adds the consistencyGroupsLunsSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter(consistencyGroupsLunsSpaceGuaranteeReserved *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter(consistencyGroupsLunsSpaceGuaranteeReserved)
+	return o
+}
+
+// SetConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter adds the consistencyGroupsLunsSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter(consistencyGroupsLunsSpaceGuaranteeReserved *bool) {
+	o.ConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter = consistencyGroupsLunsSpaceGuaranteeReserved
 }
 
 // WithConsistencyGroupsLunsSpaceSizeQueryParameter adds the consistencyGroupsLunsSpaceSize to the consistency group collection get params
@@ -1551,6 +1620,17 @@ func (o *ConsistencyGroupCollectionGetParams) SetLunsEnabledQueryParameter(lunsE
 	o.LunsEnabledQueryParameter = lunsEnabled
 }
 
+// WithLunsLunMapsIgroupCommentQueryParameter adds the lunsLunMapsIgroupComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupCommentQueryParameter(lunsLunMapsIgroupComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsIgroupCommentQueryParameter(lunsLunMapsIgroupComment)
+	return o
+}
+
+// SetLunsLunMapsIgroupCommentQueryParameter adds the lunsLunMapsIgroupComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupCommentQueryParameter(lunsLunMapsIgroupComment *string) {
+	o.LunsLunMapsIgroupCommentQueryParameter = lunsLunMapsIgroupComment
+}
+
 // WithLunsLunMapsIgroupIgroupsNameQueryParameter adds the lunsLunMapsIgroupIgroupsName to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupIgroupsNameQueryParameter(lunsLunMapsIgroupIgroupsName *string) *ConsistencyGroupCollectionGetParams {
 	o.SetLunsLunMapsIgroupIgroupsNameQueryParameter(lunsLunMapsIgroupIgroupsName)
@@ -1747,6 +1827,28 @@ func (o *ConsistencyGroupCollectionGetParams) WithLunsSerialNumberQueryParameter
 // SetLunsSerialNumberQueryParameter adds the lunsSerialNumber to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetLunsSerialNumberQueryParameter(lunsSerialNumber *string) {
 	o.LunsSerialNumberQueryParameter = lunsSerialNumber
+}
+
+// WithLunsSpaceGuaranteeRequestedQueryParameter adds the lunsSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsSpaceGuaranteeRequestedQueryParameter(lunsSpaceGuaranteeRequested *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsSpaceGuaranteeRequestedQueryParameter(lunsSpaceGuaranteeRequested)
+	return o
+}
+
+// SetLunsSpaceGuaranteeRequestedQueryParameter adds the lunsSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsSpaceGuaranteeRequestedQueryParameter(lunsSpaceGuaranteeRequested *bool) {
+	o.LunsSpaceGuaranteeRequestedQueryParameter = lunsSpaceGuaranteeRequested
+}
+
+// WithLunsSpaceGuaranteeReservedQueryParameter adds the lunsSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsSpaceGuaranteeReservedQueryParameter(lunsSpaceGuaranteeReserved *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsSpaceGuaranteeReservedQueryParameter(lunsSpaceGuaranteeReserved)
+	return o
+}
+
+// SetLunsSpaceGuaranteeReservedQueryParameter adds the lunsSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsSpaceGuaranteeReservedQueryParameter(lunsSpaceGuaranteeReserved *bool) {
+	o.LunsSpaceGuaranteeReservedQueryParameter = lunsSpaceGuaranteeReserved
 }
 
 // WithLunsSpaceSizeQueryParameter adds the lunsSpaceSize to the consistency group collection get params
@@ -2281,6 +2383,23 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.ConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter != nil {
+
+		// query param consistency_groups.luns.lun_maps.igroup.comment
+		var qrConsistencyGroupsLunsLunMapsIgroupComment string
+
+		if o.ConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter != nil {
+			qrConsistencyGroupsLunsLunMapsIgroupComment = *o.ConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter
+		}
+		qConsistencyGroupsLunsLunMapsIgroupComment := qrConsistencyGroupsLunsLunMapsIgroupComment
+		if qConsistencyGroupsLunsLunMapsIgroupComment != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.lun_maps.igroup.comment", qConsistencyGroupsLunsLunMapsIgroupComment); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter != nil {
 
 		// query param consistency_groups.luns.lun_maps.igroup.igroups.name
@@ -2582,6 +2701,40 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qConsistencyGroupsLunsSerialNumber != "" {
 
 			if err := r.SetQueryParam("consistency_groups.luns.serial_number", qConsistencyGroupsLunsSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter != nil {
+
+		// query param consistency_groups.luns.space.guarantee.requested
+		var qrConsistencyGroupsLunsSpaceGuaranteeRequested bool
+
+		if o.ConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter != nil {
+			qrConsistencyGroupsLunsSpaceGuaranteeRequested = *o.ConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter
+		}
+		qConsistencyGroupsLunsSpaceGuaranteeRequested := swag.FormatBool(qrConsistencyGroupsLunsSpaceGuaranteeRequested)
+		if qConsistencyGroupsLunsSpaceGuaranteeRequested != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.space.guarantee.requested", qConsistencyGroupsLunsSpaceGuaranteeRequested); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter != nil {
+
+		// query param consistency_groups.luns.space.guarantee.reserved
+		var qrConsistencyGroupsLunsSpaceGuaranteeReserved bool
+
+		if o.ConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter != nil {
+			qrConsistencyGroupsLunsSpaceGuaranteeReserved = *o.ConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter
+		}
+		qConsistencyGroupsLunsSpaceGuaranteeReserved := swag.FormatBool(qrConsistencyGroupsLunsSpaceGuaranteeReserved)
+		if qConsistencyGroupsLunsSpaceGuaranteeReserved != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.space.guarantee.reserved", qConsistencyGroupsLunsSpaceGuaranteeReserved); err != nil {
 				return err
 			}
 		}
@@ -3278,6 +3431,23 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.LunsLunMapsIgroupCommentQueryParameter != nil {
+
+		// query param luns.lun_maps.igroup.comment
+		var qrLunsLunMapsIgroupComment string
+
+		if o.LunsLunMapsIgroupCommentQueryParameter != nil {
+			qrLunsLunMapsIgroupComment = *o.LunsLunMapsIgroupCommentQueryParameter
+		}
+		qLunsLunMapsIgroupComment := qrLunsLunMapsIgroupComment
+		if qLunsLunMapsIgroupComment != "" {
+
+			if err := r.SetQueryParam("luns.lun_maps.igroup.comment", qLunsLunMapsIgroupComment); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.LunsLunMapsIgroupIgroupsNameQueryParameter != nil {
 
 		// query param luns.lun_maps.igroup.igroups.name
@@ -3579,6 +3749,40 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qLunsSerialNumber != "" {
 
 			if err := r.SetQueryParam("luns.serial_number", qLunsSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunsSpaceGuaranteeRequestedQueryParameter != nil {
+
+		// query param luns.space.guarantee.requested
+		var qrLunsSpaceGuaranteeRequested bool
+
+		if o.LunsSpaceGuaranteeRequestedQueryParameter != nil {
+			qrLunsSpaceGuaranteeRequested = *o.LunsSpaceGuaranteeRequestedQueryParameter
+		}
+		qLunsSpaceGuaranteeRequested := swag.FormatBool(qrLunsSpaceGuaranteeRequested)
+		if qLunsSpaceGuaranteeRequested != "" {
+
+			if err := r.SetQueryParam("luns.space.guarantee.requested", qLunsSpaceGuaranteeRequested); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunsSpaceGuaranteeReservedQueryParameter != nil {
+
+		// query param luns.space.guarantee.reserved
+		var qrLunsSpaceGuaranteeReserved bool
+
+		if o.LunsSpaceGuaranteeReservedQueryParameter != nil {
+			qrLunsSpaceGuaranteeReserved = *o.LunsSpaceGuaranteeReservedQueryParameter
+		}
+		qLunsSpaceGuaranteeReserved := swag.FormatBool(qrLunsSpaceGuaranteeReserved)
+		if qLunsSpaceGuaranteeReserved != "" {
+
+			if err := r.SetQueryParam("luns.space.guarantee.reserved", qLunsSpaceGuaranteeReserved); err != nil {
 				return err
 			}
 		}

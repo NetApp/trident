@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -27,6 +28,9 @@ type IgroupInitiatorListItem struct {
 	// Max Length: 254
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
+
+	// connectivity tracking
+	ConnectivityTracking *IgroupInitiatorListItemConnectivityTracking `json:"connectivity_tracking,omitempty"`
 
 	// igroup
 	Igroup *IgroupInitiatorListItemIgroup `json:"igroup,omitempty"`
@@ -49,6 +53,10 @@ func (m *IgroupInitiatorListItem) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConnectivityTracking(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -99,6 +107,23 @@ func (m *IgroupInitiatorListItem) validateComment(formats strfmt.Registry) error
 	return nil
 }
 
+func (m *IgroupInitiatorListItem) validateConnectivityTracking(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConnectivityTracking) { // not required
+		return nil
+	}
+
+	if m.ConnectivityTracking != nil {
+		if err := m.ConnectivityTracking.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("connectivity_tracking")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *IgroupInitiatorListItem) validateIgroup(formats strfmt.Registry) error {
 	if swag.IsZero(m.Igroup) { // not required
 		return nil
@@ -140,6 +165,10 @@ func (m *IgroupInitiatorListItem) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateConnectivityTracking(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIgroup(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -156,6 +185,20 @@ func (m *IgroupInitiatorListItem) contextValidateLinks(ctx context.Context, form
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInitiatorListItem) contextValidateConnectivityTracking(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ConnectivityTracking != nil {
+		if err := m.ConnectivityTracking.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("connectivity_tracking")
 			}
 			return err
 		}
@@ -189,6 +232,148 @@ func (m *IgroupInitiatorListItem) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *IgroupInitiatorListItem) UnmarshalBinary(b []byte) error {
 	var res IgroupInitiatorListItem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorListItemConnectivityTracking Overview of the initiator's connections to ONTAP.
+//
+// swagger:model IgroupInitiatorListItemConnectivityTracking
+type IgroupInitiatorListItemConnectivityTracking struct {
+
+	// Connection state.
+	// Read Only: true
+	// Enum: [full none partial no_lun_maps]
+	ConnectionState string `json:"connection_state,omitempty"`
+}
+
+// Validate validates this igroup initiator list item connectivity tracking
+func (m *IgroupInitiatorListItemConnectivityTracking) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateConnectionState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var igroupInitiatorListItemConnectivityTrackingTypeConnectionStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["full","none","partial","no_lun_maps"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		igroupInitiatorListItemConnectivityTrackingTypeConnectionStatePropEnum = append(igroupInitiatorListItemConnectivityTrackingTypeConnectionStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// IgroupInitiatorListItemConnectivityTracking
+	// IgroupInitiatorListItemConnectivityTracking
+	// connection_state
+	// ConnectionState
+	// full
+	// END DEBUGGING
+	// IgroupInitiatorListItemConnectivityTrackingConnectionStateFull captures enum value "full"
+	IgroupInitiatorListItemConnectivityTrackingConnectionStateFull string = "full"
+
+	// BEGIN DEBUGGING
+	// IgroupInitiatorListItemConnectivityTracking
+	// IgroupInitiatorListItemConnectivityTracking
+	// connection_state
+	// ConnectionState
+	// none
+	// END DEBUGGING
+	// IgroupInitiatorListItemConnectivityTrackingConnectionStateNone captures enum value "none"
+	IgroupInitiatorListItemConnectivityTrackingConnectionStateNone string = "none"
+
+	// BEGIN DEBUGGING
+	// IgroupInitiatorListItemConnectivityTracking
+	// IgroupInitiatorListItemConnectivityTracking
+	// connection_state
+	// ConnectionState
+	// partial
+	// END DEBUGGING
+	// IgroupInitiatorListItemConnectivityTrackingConnectionStatePartial captures enum value "partial"
+	IgroupInitiatorListItemConnectivityTrackingConnectionStatePartial string = "partial"
+
+	// BEGIN DEBUGGING
+	// IgroupInitiatorListItemConnectivityTracking
+	// IgroupInitiatorListItemConnectivityTracking
+	// connection_state
+	// ConnectionState
+	// no_lun_maps
+	// END DEBUGGING
+	// IgroupInitiatorListItemConnectivityTrackingConnectionStateNoLunMaps captures enum value "no_lun_maps"
+	IgroupInitiatorListItemConnectivityTrackingConnectionStateNoLunMaps string = "no_lun_maps"
+)
+
+// prop value enum
+func (m *IgroupInitiatorListItemConnectivityTracking) validateConnectionStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, igroupInitiatorListItemConnectivityTrackingTypeConnectionStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorListItemConnectivityTracking) validateConnectionState(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConnectionState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateConnectionStateEnum("connectivity_tracking"+"."+"connection_state", "body", m.ConnectionState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiator list item connectivity tracking based on the context it is used
+func (m *IgroupInitiatorListItemConnectivityTracking) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateConnectionState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorListItemConnectivityTracking) contextValidateConnectionState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connectivity_tracking"+"."+"connection_state", "body", string(m.ConnectionState)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorListItemConnectivityTracking) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorListItemConnectivityTracking) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorListItemConnectivityTracking
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -406,6 +591,9 @@ func (m *IgroupInitiatorListItemIgroupLinks) UnmarshalBinary(b []byte) error {
 // swagger:model IgroupInitiatorListItemLinks
 type IgroupInitiatorListItemLinks struct {
 
+	// connectivity tracking
+	ConnectivityTracking *IgroupInitiatorListItemLinksConnectivityTracking `json:"connectivity_tracking,omitempty"`
+
 	// self
 	Self *IgroupInitiatorListItemLinksSelf `json:"self,omitempty"`
 }
@@ -414,6 +602,10 @@ type IgroupInitiatorListItemLinks struct {
 func (m *IgroupInitiatorListItemLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateConnectivityTracking(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSelf(formats); err != nil {
 		res = append(res, err)
 	}
@@ -421,6 +613,23 @@ func (m *IgroupInitiatorListItemLinks) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *IgroupInitiatorListItemLinks) validateConnectivityTracking(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConnectivityTracking) { // not required
+		return nil
+	}
+
+	if m.ConnectivityTracking != nil {
+		if err := m.ConnectivityTracking.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "connectivity_tracking")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -445,6 +654,10 @@ func (m *IgroupInitiatorListItemLinks) validateSelf(formats strfmt.Registry) err
 func (m *IgroupInitiatorListItemLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateConnectivityTracking(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -452,6 +665,20 @@ func (m *IgroupInitiatorListItemLinks) ContextValidate(ctx context.Context, form
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *IgroupInitiatorListItemLinks) contextValidateConnectivityTracking(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ConnectivityTracking != nil {
+		if err := m.ConnectivityTracking.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "connectivity_tracking")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -480,6 +707,63 @@ func (m *IgroupInitiatorListItemLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *IgroupInitiatorListItemLinks) UnmarshalBinary(b []byte) error {
 	var res IgroupInitiatorListItemLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorListItemLinksConnectivityTracking A link to the initiator with connectivity information relevant to its membership of this initiator group.
+//
+// swagger:model IgroupInitiatorListItemLinksConnectivityTracking
+type IgroupInitiatorListItemLinksConnectivityTracking struct {
+
+	// href
+	// Example: /api/resourcelink
+	// Read Only: true
+	Href string `json:"href,omitempty"`
+}
+
+// Validate validates this igroup initiator list item links connectivity tracking
+func (m *IgroupInitiatorListItemLinksConnectivityTracking) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this igroup initiator list item links connectivity tracking based on the context it is used
+func (m *IgroupInitiatorListItemLinksConnectivityTracking) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateHref(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorListItemLinksConnectivityTracking) contextValidateHref(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "_links"+"."+"connectivity_tracking"+"."+"href", "body", string(m.Href)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorListItemLinksConnectivityTracking) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorListItemLinksConnectivityTracking) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorListItemLinksConnectivityTracking
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

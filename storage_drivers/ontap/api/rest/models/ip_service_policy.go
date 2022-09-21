@@ -27,6 +27,10 @@ type IPServicePolicy struct {
 	// ipspace
 	Ipspace *IPServicePolicyIpspace `json:"ipspace,omitempty"`
 
+	// is built in
+	// Read Only: true
+	IsBuiltIn *bool `json:"is_built_in,omitempty"`
+
 	// name
 	// Example: default-intercluster
 	Name string `json:"name,omitempty"`
@@ -215,6 +219,10 @@ func (m *IPServicePolicy) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIsBuiltIn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateServices(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -256,6 +264,15 @@ func (m *IPServicePolicy) contextValidateIpspace(ctx context.Context, formats st
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *IPServicePolicy) contextValidateIsBuiltIn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_built_in", "body", m.IsBuiltIn); err != nil {
+		return err
 	}
 
 	return nil

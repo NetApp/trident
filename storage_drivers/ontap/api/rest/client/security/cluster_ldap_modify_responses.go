@@ -85,7 +85,7 @@ func NewClusterLdapModifyDefault(code int) *ClusterLdapModifyDefault {
 | 4915257    | The LDAP configuration is not valid. Verify that the Distinguished Names and bind password are correct. |
 | 4915258    | The LDAP configuration is not valid. Verify that the servers are reachable and that the network configuration is correct. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
-| 4915252    | LDAP Referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
+| 4915252    | LDAP referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
 
 */
 type ClusterLdapModifyDefault struct {

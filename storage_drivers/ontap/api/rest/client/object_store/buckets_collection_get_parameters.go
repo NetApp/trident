@@ -60,6 +60,18 @@ func NewBucketsCollectionGetParamsWithHTTPClient(client *http.Client) *BucketsCo
 */
 type BucketsCollectionGetParams struct {
 
+	/* AuditEventSelectorAccess.
+
+	   Filter by audit_event_selector.access
+	*/
+	AuditEventSelectorAccessQueryParameter *string
+
+	/* AuditEventSelectorPermission.
+
+	   Filter by audit_event_selector.permission
+	*/
+	AuditEventSelectorPermissionQueryParameter *string
+
 	/* Comment.
 
 	   Filter by comment
@@ -268,6 +280,12 @@ type BucketsCollectionGetParams struct {
 	*/
 	UUIDQueryParameter *string
 
+	/* VersioningState.
+
+	   Filter by versioning_state
+	*/
+	VersioningStateQueryParameter *string
+
 	/* VolumeName.
 
 	   Filter by volume.name
@@ -345,6 +363,28 @@ func (o *BucketsCollectionGetParams) WithHTTPClient(client *http.Client) *Bucket
 // SetHTTPClient adds the HTTPClient to the buckets collection get params
 func (o *BucketsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAuditEventSelectorAccessQueryParameter adds the auditEventSelectorAccess to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithAuditEventSelectorAccessQueryParameter(auditEventSelectorAccess *string) *BucketsCollectionGetParams {
+	o.SetAuditEventSelectorAccessQueryParameter(auditEventSelectorAccess)
+	return o
+}
+
+// SetAuditEventSelectorAccessQueryParameter adds the auditEventSelectorAccess to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetAuditEventSelectorAccessQueryParameter(auditEventSelectorAccess *string) {
+	o.AuditEventSelectorAccessQueryParameter = auditEventSelectorAccess
+}
+
+// WithAuditEventSelectorPermissionQueryParameter adds the auditEventSelectorPermission to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithAuditEventSelectorPermissionQueryParameter(auditEventSelectorPermission *string) *BucketsCollectionGetParams {
+	o.SetAuditEventSelectorPermissionQueryParameter(auditEventSelectorPermission)
+	return o
+}
+
+// SetAuditEventSelectorPermissionQueryParameter adds the auditEventSelectorPermission to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetAuditEventSelectorPermissionQueryParameter(auditEventSelectorPermission *string) {
+	o.AuditEventSelectorPermissionQueryParameter = auditEventSelectorPermission
 }
 
 // WithCommentQueryParameter adds the comment to the buckets collection get params
@@ -721,6 +761,17 @@ func (o *BucketsCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
 	o.UUIDQueryParameter = uuid
 }
 
+// WithVersioningStateQueryParameter adds the versioningState to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithVersioningStateQueryParameter(versioningState *string) *BucketsCollectionGetParams {
+	o.SetVersioningStateQueryParameter(versioningState)
+	return o
+}
+
+// SetVersioningStateQueryParameter adds the versioningState to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetVersioningStateQueryParameter(versioningState *string) {
+	o.VersioningStateQueryParameter = versioningState
+}
+
 // WithVolumeNameQueryParameter adds the volumeName to the buckets collection get params
 func (o *BucketsCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *BucketsCollectionGetParams {
 	o.SetVolumeNameQueryParameter(volumeName)
@@ -750,6 +801,40 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		return err
 	}
 	var res []error
+
+	if o.AuditEventSelectorAccessQueryParameter != nil {
+
+		// query param audit_event_selector.access
+		var qrAuditEventSelectorAccess string
+
+		if o.AuditEventSelectorAccessQueryParameter != nil {
+			qrAuditEventSelectorAccess = *o.AuditEventSelectorAccessQueryParameter
+		}
+		qAuditEventSelectorAccess := qrAuditEventSelectorAccess
+		if qAuditEventSelectorAccess != "" {
+
+			if err := r.SetQueryParam("audit_event_selector.access", qAuditEventSelectorAccess); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AuditEventSelectorPermissionQueryParameter != nil {
+
+		// query param audit_event_selector.permission
+		var qrAuditEventSelectorPermission string
+
+		if o.AuditEventSelectorPermissionQueryParameter != nil {
+			qrAuditEventSelectorPermission = *o.AuditEventSelectorPermissionQueryParameter
+		}
+		qAuditEventSelectorPermission := qrAuditEventSelectorPermission
+		if qAuditEventSelectorPermission != "" {
+
+			if err := r.SetQueryParam("audit_event_selector.permission", qAuditEventSelectorPermission); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.CommentQueryParameter != nil {
 
@@ -1300,6 +1385,23 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qUUID != "" {
 
 			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VersioningStateQueryParameter != nil {
+
+		// query param versioning_state
+		var qrVersioningState string
+
+		if o.VersioningStateQueryParameter != nil {
+			qrVersioningState = *o.VersioningStateQueryParameter
+		}
+		qVersioningState := qrVersioningState
+		if qVersioningState != "" {
+
+			if err := r.SetQueryParam("versioning_state", qVersioningState); err != nil {
 				return err
 			}
 		}

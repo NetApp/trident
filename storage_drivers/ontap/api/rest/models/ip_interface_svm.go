@@ -630,7 +630,7 @@ func (m *IPInterfaceSvmLocation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceSvmLocationBroadcastDomain Broadcast domain UUID along with a readable name.
+// IPInterfaceSvmLocationBroadcastDomain IP interface svm location broadcast domain
 //
 // swagger:model IPInterfaceSvmLocationBroadcastDomain
 type IPInterfaceSvmLocationBroadcastDomain struct {

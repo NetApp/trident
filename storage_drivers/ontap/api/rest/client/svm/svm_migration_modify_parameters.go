@@ -15,6 +15,8 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 // NewSvmMigrationModifyParams creates a new SvmMigrationModifyParams object,
@@ -85,6 +87,12 @@ type SvmMigrationModifyParams struct {
 	   Default: true
 	*/
 	AutoSourceCleanupQueryParameter *bool
+
+	/* Info.
+
+	   Info specification
+	*/
+	Info *models.SvmMigration
 
 	/* ReturnTimeout.
 
@@ -201,6 +209,17 @@ func (o *SvmMigrationModifyParams) SetAutoSourceCleanupQueryParameter(autoSource
 	o.AutoSourceCleanupQueryParameter = autoSourceCleanup
 }
 
+// WithInfo adds the info to the svm migration modify params
+func (o *SvmMigrationModifyParams) WithInfo(info *models.SvmMigration) *SvmMigrationModifyParams {
+	o.SetInfo(info)
+	return o
+}
+
+// SetInfo adds the info to the svm migration modify params
+func (o *SvmMigrationModifyParams) SetInfo(info *models.SvmMigration) {
+	o.Info = info
+}
+
 // WithReturnTimeoutQueryParameter adds the returnTimeout to the svm migration modify params
 func (o *SvmMigrationModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmMigrationModifyParams {
 	o.SetReturnTimeoutQueryParameter(returnTimeout)
@@ -279,6 +298,11 @@ func (o *SvmMigrationModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 			if err := r.SetQueryParam("auto_source_cleanup", qAutoSourceCleanup); err != nil {
 				return err
 			}
+		}
+	}
+	if o.Info != nil {
+		if err := r.SetBodyParam(o.Info); err != nil {
+			return err
 		}
 	}
 

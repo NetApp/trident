@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -30,6 +31,11 @@ type AccountPassword struct {
 	// Min Length: 8
 	// Format: password
 	Password strfmt.Password `json:"password,omitempty"`
+
+	// Optional property that specifies the password hash algorithm used to generate a hash of the user's password for password matching.
+	// Example: sha512
+	// Enum: [sha512 sha256 md5]
+	PasswordHashAlgorithm *string `json:"password_hash_algorithm,omitempty"`
 }
 
 // Validate validates this account password
@@ -41,6 +47,10 @@ func (m *AccountPassword) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePassword(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePasswordHashAlgorithm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -81,6 +91,72 @@ func (m *AccountPassword) validatePassword(formats strfmt.Registry) error {
 	}
 
 	if err := validate.FormatOf("password", "body", "password", m.Password.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var accountPasswordTypePasswordHashAlgorithmPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["sha512","sha256","md5"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		accountPasswordTypePasswordHashAlgorithmPropEnum = append(accountPasswordTypePasswordHashAlgorithmPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// account_password
+	// AccountPassword
+	// password_hash_algorithm
+	// PasswordHashAlgorithm
+	// sha512
+	// END DEBUGGING
+	// AccountPasswordPasswordHashAlgorithmSha512 captures enum value "sha512"
+	AccountPasswordPasswordHashAlgorithmSha512 string = "sha512"
+
+	// BEGIN DEBUGGING
+	// account_password
+	// AccountPassword
+	// password_hash_algorithm
+	// PasswordHashAlgorithm
+	// sha256
+	// END DEBUGGING
+	// AccountPasswordPasswordHashAlgorithmSha256 captures enum value "sha256"
+	AccountPasswordPasswordHashAlgorithmSha256 string = "sha256"
+
+	// BEGIN DEBUGGING
+	// account_password
+	// AccountPassword
+	// password_hash_algorithm
+	// PasswordHashAlgorithm
+	// md5
+	// END DEBUGGING
+	// AccountPasswordPasswordHashAlgorithmMd5 captures enum value "md5"
+	AccountPasswordPasswordHashAlgorithmMd5 string = "md5"
+)
+
+// prop value enum
+func (m *AccountPassword) validatePasswordHashAlgorithmEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, accountPasswordTypePasswordHashAlgorithmPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *AccountPassword) validatePasswordHashAlgorithm(formats strfmt.Registry) error {
+	if swag.IsZero(m.PasswordHashAlgorithm) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePasswordHashAlgorithmEnum("password_hash_algorithm", "body", *m.PasswordHashAlgorithm); err != nil {
 		return err
 	}
 

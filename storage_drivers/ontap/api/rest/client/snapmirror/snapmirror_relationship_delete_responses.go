@@ -93,6 +93,7 @@ func NewSnapmirrorRelationshipDeleteDefault(code int) *SnapmirrorRelationshipDel
 | 13303854    | Cleanup of restore relationship failed |
 | 13303855    | DELETE call on a restore relationship does not support the given flags |
 | 13303865    | Deleting the specified SnapMirror policy is not supported. |
+| 6619715     | Modification of relationship is in progress. Retry the command after a few minutes. |
 
 */
 type SnapmirrorRelationshipDeleteDefault struct {

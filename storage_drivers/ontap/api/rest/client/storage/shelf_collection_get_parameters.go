@@ -156,6 +156,18 @@ type ShelfCollectionGetParams struct {
 	*/
 	AcpsSubnetQueryParameter *string
 
+	/* BaysDrawerID.
+
+	   Filter by bays.drawer.id
+	*/
+	BaysDrawerIDQueryParameter *int64
+
+	/* BaysDrawerSlot.
+
+	   Filter by bays.drawer.slot
+	*/
+	BaysDrawerSlotQueryParameter *int64
+
 	/* BaysHasDisk.
 
 	   Filter by bays.has_disk
@@ -947,6 +959,28 @@ func (o *ShelfCollectionGetParams) WithAcpsSubnetQueryParameter(acpsSubnet *stri
 // SetAcpsSubnetQueryParameter adds the acpsSubnet to the shelf collection get params
 func (o *ShelfCollectionGetParams) SetAcpsSubnetQueryParameter(acpsSubnet *string) {
 	o.AcpsSubnetQueryParameter = acpsSubnet
+}
+
+// WithBaysDrawerIDQueryParameter adds the baysDrawerID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithBaysDrawerIDQueryParameter(baysDrawerID *int64) *ShelfCollectionGetParams {
+	o.SetBaysDrawerIDQueryParameter(baysDrawerID)
+	return o
+}
+
+// SetBaysDrawerIDQueryParameter adds the baysDrawerId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetBaysDrawerIDQueryParameter(baysDrawerID *int64) {
+	o.BaysDrawerIDQueryParameter = baysDrawerID
+}
+
+// WithBaysDrawerSlotQueryParameter adds the baysDrawerSlot to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithBaysDrawerSlotQueryParameter(baysDrawerSlot *int64) *ShelfCollectionGetParams {
+	o.SetBaysDrawerSlotQueryParameter(baysDrawerSlot)
+	return o
+}
+
+// SetBaysDrawerSlotQueryParameter adds the baysDrawerSlot to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetBaysDrawerSlotQueryParameter(baysDrawerSlot *int64) {
+	o.BaysDrawerSlotQueryParameter = baysDrawerSlot
 }
 
 // WithBaysHasDiskQueryParameter adds the baysHasDisk to the shelf collection get params
@@ -2225,6 +2259,40 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qAcpsSubnet != "" {
 
 			if err := r.SetQueryParam("acps.subnet", qAcpsSubnet); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BaysDrawerIDQueryParameter != nil {
+
+		// query param bays.drawer.id
+		var qrBaysDrawerID int64
+
+		if o.BaysDrawerIDQueryParameter != nil {
+			qrBaysDrawerID = *o.BaysDrawerIDQueryParameter
+		}
+		qBaysDrawerID := swag.FormatInt64(qrBaysDrawerID)
+		if qBaysDrawerID != "" {
+
+			if err := r.SetQueryParam("bays.drawer.id", qBaysDrawerID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BaysDrawerSlotQueryParameter != nil {
+
+		// query param bays.drawer.slot
+		var qrBaysDrawerSlot int64
+
+		if o.BaysDrawerSlotQueryParameter != nil {
+			qrBaysDrawerSlot = *o.BaysDrawerSlotQueryParameter
+		}
+		qBaysDrawerSlot := swag.FormatInt64(qrBaysDrawerSlot)
+		if qBaysDrawerSlot != "" {
+
+			if err := r.SetQueryParam("bays.drawer.slot", qBaysDrawerSlot); err != nil {
 				return err
 			}
 		}

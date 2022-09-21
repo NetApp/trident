@@ -66,11 +66,59 @@ type EmsDestinationCollectionGetParams struct {
 	*/
 	CertificateCaQueryParameter *string
 
+	/* CertificateName.
+
+	   Filter by certificate.name
+	*/
+	CertificateNameQueryParameter *string
+
 	/* CertificateSerialNumber.
 
 	   Filter by certificate.serial_number
 	*/
 	CertificateSerialNumberQueryParameter *string
+
+	/* ConnectivityErrorsMessageArgumentsCode.
+
+	   Filter by connectivity.errors.message.arguments.code
+	*/
+	ConnectivityErrorsMessageArgumentsCodeQueryParameter *string
+
+	/* ConnectivityErrorsMessageArgumentsMessage.
+
+	   Filter by connectivity.errors.message.arguments.message
+	*/
+	ConnectivityErrorsMessageArgumentsMessageQueryParameter *string
+
+	/* ConnectivityErrorsMessageCode.
+
+	   Filter by connectivity.errors.message.code
+	*/
+	ConnectivityErrorsMessageCodeQueryParameter *string
+
+	/* ConnectivityErrorsMessageMessage.
+
+	   Filter by connectivity.errors.message.message
+	*/
+	ConnectivityErrorsMessageMessageQueryParameter *string
+
+	/* ConnectivityErrorsNodeName.
+
+	   Filter by connectivity.errors.node.name
+	*/
+	ConnectivityErrorsNodeNameQueryParameter *string
+
+	/* ConnectivityErrorsNodeUUID.
+
+	   Filter by connectivity.errors.node.uuid
+	*/
+	ConnectivityErrorsNodeUUIDQueryParameter *string
+
+	/* ConnectivityState.
+
+	   Filter by connectivity.state
+	*/
+	ConnectivityStateQueryParameter *string
 
 	/* Destination.
 
@@ -214,6 +262,17 @@ func (o *EmsDestinationCollectionGetParams) SetCertificateCaQueryParameter(certi
 	o.CertificateCaQueryParameter = certificateCa
 }
 
+// WithCertificateNameQueryParameter adds the certificateName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithCertificateNameQueryParameter(certificateName *string) *EmsDestinationCollectionGetParams {
+	o.SetCertificateNameQueryParameter(certificateName)
+	return o
+}
+
+// SetCertificateNameQueryParameter adds the certificateName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetCertificateNameQueryParameter(certificateName *string) {
+	o.CertificateNameQueryParameter = certificateName
+}
+
 // WithCertificateSerialNumberQueryParameter adds the certificateSerialNumber to the ems destination collection get params
 func (o *EmsDestinationCollectionGetParams) WithCertificateSerialNumberQueryParameter(certificateSerialNumber *string) *EmsDestinationCollectionGetParams {
 	o.SetCertificateSerialNumberQueryParameter(certificateSerialNumber)
@@ -223,6 +282,83 @@ func (o *EmsDestinationCollectionGetParams) WithCertificateSerialNumberQueryPara
 // SetCertificateSerialNumberQueryParameter adds the certificateSerialNumber to the ems destination collection get params
 func (o *EmsDestinationCollectionGetParams) SetCertificateSerialNumberQueryParameter(certificateSerialNumber *string) {
 	o.CertificateSerialNumberQueryParameter = certificateSerialNumber
+}
+
+// WithConnectivityErrorsMessageArgumentsCodeQueryParameter adds the connectivityErrorsMessageArgumentsCode to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageArgumentsCodeQueryParameter(connectivityErrorsMessageArgumentsCode *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsMessageArgumentsCodeQueryParameter(connectivityErrorsMessageArgumentsCode)
+	return o
+}
+
+// SetConnectivityErrorsMessageArgumentsCodeQueryParameter adds the connectivityErrorsMessageArgumentsCode to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageArgumentsCodeQueryParameter(connectivityErrorsMessageArgumentsCode *string) {
+	o.ConnectivityErrorsMessageArgumentsCodeQueryParameter = connectivityErrorsMessageArgumentsCode
+}
+
+// WithConnectivityErrorsMessageArgumentsMessageQueryParameter adds the connectivityErrorsMessageArgumentsMessage to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageArgumentsMessageQueryParameter(connectivityErrorsMessageArgumentsMessage *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsMessageArgumentsMessageQueryParameter(connectivityErrorsMessageArgumentsMessage)
+	return o
+}
+
+// SetConnectivityErrorsMessageArgumentsMessageQueryParameter adds the connectivityErrorsMessageArgumentsMessage to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageArgumentsMessageQueryParameter(connectivityErrorsMessageArgumentsMessage *string) {
+	o.ConnectivityErrorsMessageArgumentsMessageQueryParameter = connectivityErrorsMessageArgumentsMessage
+}
+
+// WithConnectivityErrorsMessageCodeQueryParameter adds the connectivityErrorsMessageCode to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageCodeQueryParameter(connectivityErrorsMessageCode *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsMessageCodeQueryParameter(connectivityErrorsMessageCode)
+	return o
+}
+
+// SetConnectivityErrorsMessageCodeQueryParameter adds the connectivityErrorsMessageCode to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageCodeQueryParameter(connectivityErrorsMessageCode *string) {
+	o.ConnectivityErrorsMessageCodeQueryParameter = connectivityErrorsMessageCode
+}
+
+// WithConnectivityErrorsMessageMessageQueryParameter adds the connectivityErrorsMessageMessage to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageMessageQueryParameter(connectivityErrorsMessageMessage *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsMessageMessageQueryParameter(connectivityErrorsMessageMessage)
+	return o
+}
+
+// SetConnectivityErrorsMessageMessageQueryParameter adds the connectivityErrorsMessageMessage to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageMessageQueryParameter(connectivityErrorsMessageMessage *string) {
+	o.ConnectivityErrorsMessageMessageQueryParameter = connectivityErrorsMessageMessage
+}
+
+// WithConnectivityErrorsNodeNameQueryParameter adds the connectivityErrorsNodeName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsNodeNameQueryParameter(connectivityErrorsNodeName *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsNodeNameQueryParameter(connectivityErrorsNodeName)
+	return o
+}
+
+// SetConnectivityErrorsNodeNameQueryParameter adds the connectivityErrorsNodeName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsNodeNameQueryParameter(connectivityErrorsNodeName *string) {
+	o.ConnectivityErrorsNodeNameQueryParameter = connectivityErrorsNodeName
+}
+
+// WithConnectivityErrorsNodeUUIDQueryParameter adds the connectivityErrorsNodeUUID to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsNodeUUIDQueryParameter(connectivityErrorsNodeUUID *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsNodeUUIDQueryParameter(connectivityErrorsNodeUUID)
+	return o
+}
+
+// SetConnectivityErrorsNodeUUIDQueryParameter adds the connectivityErrorsNodeUuid to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsNodeUUIDQueryParameter(connectivityErrorsNodeUUID *string) {
+	o.ConnectivityErrorsNodeUUIDQueryParameter = connectivityErrorsNodeUUID
+}
+
+// WithConnectivityStateQueryParameter adds the connectivityState to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityStateQueryParameter(connectivityState *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityStateQueryParameter(connectivityState)
+	return o
+}
+
+// SetConnectivityStateQueryParameter adds the connectivityState to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityStateQueryParameter(connectivityState *string) {
+	o.ConnectivityStateQueryParameter = connectivityState
 }
 
 // WithDestinationQueryParameter adds the destination to the ems destination collection get params
@@ -360,6 +496,23 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
+	if o.CertificateNameQueryParameter != nil {
+
+		// query param certificate.name
+		var qrCertificateName string
+
+		if o.CertificateNameQueryParameter != nil {
+			qrCertificateName = *o.CertificateNameQueryParameter
+		}
+		qCertificateName := qrCertificateName
+		if qCertificateName != "" {
+
+			if err := r.SetQueryParam("certificate.name", qCertificateName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CertificateSerialNumberQueryParameter != nil {
 
 		// query param certificate.serial_number
@@ -372,6 +525,125 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		if qCertificateSerialNumber != "" {
 
 			if err := r.SetQueryParam("certificate.serial_number", qCertificateSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityErrorsMessageArgumentsCodeQueryParameter != nil {
+
+		// query param connectivity.errors.message.arguments.code
+		var qrConnectivityErrorsMessageArgumentsCode string
+
+		if o.ConnectivityErrorsMessageArgumentsCodeQueryParameter != nil {
+			qrConnectivityErrorsMessageArgumentsCode = *o.ConnectivityErrorsMessageArgumentsCodeQueryParameter
+		}
+		qConnectivityErrorsMessageArgumentsCode := qrConnectivityErrorsMessageArgumentsCode
+		if qConnectivityErrorsMessageArgumentsCode != "" {
+
+			if err := r.SetQueryParam("connectivity.errors.message.arguments.code", qConnectivityErrorsMessageArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityErrorsMessageArgumentsMessageQueryParameter != nil {
+
+		// query param connectivity.errors.message.arguments.message
+		var qrConnectivityErrorsMessageArgumentsMessage string
+
+		if o.ConnectivityErrorsMessageArgumentsMessageQueryParameter != nil {
+			qrConnectivityErrorsMessageArgumentsMessage = *o.ConnectivityErrorsMessageArgumentsMessageQueryParameter
+		}
+		qConnectivityErrorsMessageArgumentsMessage := qrConnectivityErrorsMessageArgumentsMessage
+		if qConnectivityErrorsMessageArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("connectivity.errors.message.arguments.message", qConnectivityErrorsMessageArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityErrorsMessageCodeQueryParameter != nil {
+
+		// query param connectivity.errors.message.code
+		var qrConnectivityErrorsMessageCode string
+
+		if o.ConnectivityErrorsMessageCodeQueryParameter != nil {
+			qrConnectivityErrorsMessageCode = *o.ConnectivityErrorsMessageCodeQueryParameter
+		}
+		qConnectivityErrorsMessageCode := qrConnectivityErrorsMessageCode
+		if qConnectivityErrorsMessageCode != "" {
+
+			if err := r.SetQueryParam("connectivity.errors.message.code", qConnectivityErrorsMessageCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityErrorsMessageMessageQueryParameter != nil {
+
+		// query param connectivity.errors.message.message
+		var qrConnectivityErrorsMessageMessage string
+
+		if o.ConnectivityErrorsMessageMessageQueryParameter != nil {
+			qrConnectivityErrorsMessageMessage = *o.ConnectivityErrorsMessageMessageQueryParameter
+		}
+		qConnectivityErrorsMessageMessage := qrConnectivityErrorsMessageMessage
+		if qConnectivityErrorsMessageMessage != "" {
+
+			if err := r.SetQueryParam("connectivity.errors.message.message", qConnectivityErrorsMessageMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityErrorsNodeNameQueryParameter != nil {
+
+		// query param connectivity.errors.node.name
+		var qrConnectivityErrorsNodeName string
+
+		if o.ConnectivityErrorsNodeNameQueryParameter != nil {
+			qrConnectivityErrorsNodeName = *o.ConnectivityErrorsNodeNameQueryParameter
+		}
+		qConnectivityErrorsNodeName := qrConnectivityErrorsNodeName
+		if qConnectivityErrorsNodeName != "" {
+
+			if err := r.SetQueryParam("connectivity.errors.node.name", qConnectivityErrorsNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityErrorsNodeUUIDQueryParameter != nil {
+
+		// query param connectivity.errors.node.uuid
+		var qrConnectivityErrorsNodeUUID string
+
+		if o.ConnectivityErrorsNodeUUIDQueryParameter != nil {
+			qrConnectivityErrorsNodeUUID = *o.ConnectivityErrorsNodeUUIDQueryParameter
+		}
+		qConnectivityErrorsNodeUUID := qrConnectivityErrorsNodeUUID
+		if qConnectivityErrorsNodeUUID != "" {
+
+			if err := r.SetQueryParam("connectivity.errors.node.uuid", qConnectivityErrorsNodeUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityStateQueryParameter != nil {
+
+		// query param connectivity.state
+		var qrConnectivityState string
+
+		if o.ConnectivityStateQueryParameter != nil {
+			qrConnectivityState = *o.ConnectivityStateQueryParameter
+		}
+		qConnectivityState := qrConnectivityState
+		if qConnectivityState != "" {
+
+			if err := r.SetQueryParam("connectivity.state", qConnectivityState); err != nil {
 				return err
 			}
 		}

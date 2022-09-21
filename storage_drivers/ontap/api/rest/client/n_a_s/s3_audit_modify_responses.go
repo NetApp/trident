@@ -54,7 +54,7 @@ type S3AuditModifyAccepted struct {
 }
 
 func (o *S3AuditModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/s3audits/{svm.uuid}][%d] s3AuditModifyAccepted ", 202)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3AuditModifyAccepted ", 202)
 }
 
 func (o *S3AuditModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -123,7 +123,7 @@ func (o *S3AuditModifyDefault) Code() int {
 }
 
 func (o *S3AuditModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /protocols/s3audits/{svm.uuid}][%d] s3_audit_modify default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_modify default  %+v", o._statusCode, o.Payload)
 }
 func (o *S3AuditModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

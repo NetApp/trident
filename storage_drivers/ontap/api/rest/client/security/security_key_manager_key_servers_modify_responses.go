@@ -74,12 +74,19 @@ func NewSecurityKeyManagerKeyServersModifyDefault(code int) *SecurityKeyManagerK
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
+| 65536600 | Cannot modify a key server while a node is out quorum. |
 | 65536822 | Multitenant key management is not supported in the current cluster version. |
 | 65536824 | Multitenant key management is not supported in MetroCluster configurations. |
 | 65536828 | External key management is not enabled for the SVM. |
 | 65536843 | The key management server is not configured for the SVM. |
 | 65536845 | Missing username. |
 | 65536846 | Missing password. |
+| 65537400 | Exceeded maximum number of secondary key servers. |
+| 65538407 | A secondary key server is a duplicate of the associated primary key server. |
+| 65538408 | The list of secondary key servers contains duplicates. |
+| 65538413 | A secondary key server address is not formatted correctly. |
+| 65538502 | A secondary key server is also a primary key server. |
+| 65538503 | Support for adding secondary key servers requires an ECV of ONTAP 9.11.1 or later. |
 
 */
 type SecurityKeyManagerKeyServersModifyDefault struct {

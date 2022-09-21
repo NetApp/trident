@@ -126,6 +126,12 @@ type NetworkIPRoutesGetParams struct {
 	*/
 	MaxRecordsQueryParameter *int64
 
+	/* Metric.
+
+	   Filter by metric
+	*/
+	MetricQueryParameter *int64
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
@@ -358,6 +364,17 @@ func (o *NetworkIPRoutesGetParams) WithMaxRecordsQueryParameter(maxRecords *int6
 // SetMaxRecordsQueryParameter adds the maxRecords to the network ip routes get params
 func (o *NetworkIPRoutesGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
 	o.MaxRecordsQueryParameter = maxRecords
+}
+
+// WithMetricQueryParameter adds the metric to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) WithMetricQueryParameter(metric *int64) *NetworkIPRoutesGetParams {
+	o.SetMetricQueryParameter(metric)
+	return o
+}
+
+// SetMetricQueryParameter adds the metric to the network ip routes get params
+func (o *NetworkIPRoutesGetParams) SetMetricQueryParameter(metric *int64) {
+	o.MetricQueryParameter = metric
 }
 
 // WithOrderByQueryParameter adds the orderBy to the network ip routes get params
@@ -621,6 +638,23 @@ func (o *NetworkIPRoutesGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricQueryParameter != nil {
+
+		// query param metric
+		var qrMetric int64
+
+		if o.MetricQueryParameter != nil {
+			qrMetric = *o.MetricQueryParameter
+		}
+		qMetric := swag.FormatInt64(qrMetric)
+		if qMetric != "" {
+
+			if err := r.SetQueryParam("metric", qMetric); err != nil {
 				return err
 			}
 		}

@@ -334,6 +334,18 @@ type NetworkIPInterfacesGetParams struct {
 	*/
 	StatisticsTimestampQueryParameter *string
 
+	/* SubnetName.
+
+	   Filter by subnet.name
+	*/
+	SubnetNameQueryParameter *string
+
+	/* SubnetUUID.
+
+	   Filter by subnet.uuid
+	*/
+	SubnetUUIDQueryParameter *string
+
 	/* SvmName.
 
 	   Filter by svm.name
@@ -918,6 +930,28 @@ func (o *NetworkIPInterfacesGetParams) WithStatisticsTimestampQueryParameter(sta
 // SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the network ip interfaces get params
 func (o *NetworkIPInterfacesGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
 	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+}
+
+// WithSubnetNameQueryParameter adds the subnetName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithSubnetNameQueryParameter(subnetName *string) *NetworkIPInterfacesGetParams {
+	o.SetSubnetNameQueryParameter(subnetName)
+	return o
+}
+
+// SetSubnetNameQueryParameter adds the subnetName to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetSubnetNameQueryParameter(subnetName *string) {
+	o.SubnetNameQueryParameter = subnetName
+}
+
+// WithSubnetUUIDQueryParameter adds the subnetUUID to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithSubnetUUIDQueryParameter(subnetUUID *string) *NetworkIPInterfacesGetParams {
+	o.SetSubnetUUIDQueryParameter(subnetUUID)
+	return o
+}
+
+// SetSubnetUUIDQueryParameter adds the subnetUuid to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetSubnetUUIDQueryParameter(subnetUUID *string) {
+	o.SubnetUUIDQueryParameter = subnetUUID
 }
 
 // WithSVMNameQueryParameter adds the svmName to the network ip interfaces get params
@@ -1720,6 +1754,40 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qStatisticsTimestamp != "" {
 
 			if err := r.SetQueryParam("statistics.timestamp", qStatisticsTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubnetNameQueryParameter != nil {
+
+		// query param subnet.name
+		var qrSubnetName string
+
+		if o.SubnetNameQueryParameter != nil {
+			qrSubnetName = *o.SubnetNameQueryParameter
+		}
+		qSubnetName := qrSubnetName
+		if qSubnetName != "" {
+
+			if err := r.SetQueryParam("subnet.name", qSubnetName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubnetUUIDQueryParameter != nil {
+
+		// query param subnet.uuid
+		var qrSubnetUUID string
+
+		if o.SubnetUUIDQueryParameter != nil {
+			qrSubnetUUID = *o.SubnetUUIDQueryParameter
+		}
+		qSubnetUUID := qrSubnetUUID
+		if qSubnetUUID != "" {
+
+			if err := r.SetQueryParam("subnet.uuid", qSubnetUUID); err != nil {
 				return err
 			}
 		}

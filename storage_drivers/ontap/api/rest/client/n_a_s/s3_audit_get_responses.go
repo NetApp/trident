@@ -55,7 +55,7 @@ type S3AuditGetOK struct {
 }
 
 func (o *S3AuditGetOK) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3audits/{svm.uuid}][%d] s3AuditGetOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}/object-store][%d] s3AuditGetOK  %+v", 200, o.Payload)
 }
 func (o *S3AuditGetOK) GetPayload() *models.S3Audit {
 	return o.Payload
@@ -96,7 +96,7 @@ func (o *S3AuditGetDefault) Code() int {
 }
 
 func (o *S3AuditGetDefault) Error() string {
-	return fmt.Sprintf("[GET /protocols/s3audits/{svm.uuid}][%d] s3_audit_get default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_get default  %+v", o._statusCode, o.Payload)
 }
 func (o *S3AuditGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

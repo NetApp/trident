@@ -85,7 +85,9 @@ func NewSecurityKeyManagerKeyServersCreateDefault(code int) *SecurityKeyManagerK
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
-| 65536038 | A maximum of 4 active key servers are allowed. |
+| 65536038 | A maximum of 4 active primary key servers are allowed. |
+| 65536042 | Cannot add key server because it is already a secondary key server. |
+| 65536600 | Cannot add a key server while a node is out quorum. |
 | 65536821 | The certificate is not installed. |
 | 65536822 | Multitenant key management is not supported in the current cluster version. |
 | 65536824 | Multitenant key management is not supported in MetroCluster configurations. |

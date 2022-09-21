@@ -82,7 +82,7 @@ type Shelf struct {
 	// module type
 	// Example: iom6
 	// Read Only: true
-	// Enum: [unknown iom6 iom6e iom12 iom12e iom12f nsm100 psm3e]
+	// Enum: [unknown iom6 iom6e iom12 iom12b iom12e iom12f iom12g nsm100 nsm8e psm3e]
 	ModuleType string `json:"module_type,omitempty"`
 
 	// name
@@ -531,7 +531,7 @@ var shelfTypeModuleTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["unknown","iom6","iom6e","iom12","iom12e","iom12f","nsm100","psm3e"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["unknown","iom6","iom6e","iom12","iom12b","iom12e","iom12f","iom12g","nsm100","nsm8e","psm3e"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -586,6 +586,16 @@ const (
 	// Shelf
 	// module_type
 	// ModuleType
+	// iom12b
+	// END DEBUGGING
+	// ShelfModuleTypeIom12b captures enum value "iom12b"
+	ShelfModuleTypeIom12b string = "iom12b"
+
+	// BEGIN DEBUGGING
+	// shelf
+	// Shelf
+	// module_type
+	// ModuleType
 	// iom12e
 	// END DEBUGGING
 	// ShelfModuleTypeIom12e captures enum value "iom12e"
@@ -606,10 +616,30 @@ const (
 	// Shelf
 	// module_type
 	// ModuleType
+	// iom12g
+	// END DEBUGGING
+	// ShelfModuleTypeIom12g captures enum value "iom12g"
+	ShelfModuleTypeIom12g string = "iom12g"
+
+	// BEGIN DEBUGGING
+	// shelf
+	// Shelf
+	// module_type
+	// ModuleType
 	// nsm100
 	// END DEBUGGING
 	// ShelfModuleTypeNsm100 captures enum value "nsm100"
 	ShelfModuleTypeNsm100 string = "nsm100"
+
+	// BEGIN DEBUGGING
+	// shelf
+	// Shelf
+	// module_type
+	// ModuleType
+	// nsm8e
+	// END DEBUGGING
+	// ShelfModuleTypeNsm8e captures enum value "nsm8e"
+	ShelfModuleTypeNsm8e string = "nsm8e"
 
 	// BEGIN DEBUGGING
 	// shelf
@@ -2077,6 +2107,9 @@ func (m *ShelfAcpsItems0NodeLinks) UnmarshalBinary(b []byte) error {
 // swagger:model ShelfBaysItems0
 type ShelfBaysItems0 struct {
 
+	// drawer
+	Drawer *ShelfBaysItems0Drawer `json:"drawer,omitempty"`
+
 	// has disk
 	HasDisk bool `json:"has_disk,omitempty"`
 
@@ -2099,6 +2132,10 @@ type ShelfBaysItems0 struct {
 func (m *ShelfBaysItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDrawer(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
 	}
@@ -2110,6 +2147,23 @@ func (m *ShelfBaysItems0) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ShelfBaysItems0) validateDrawer(formats strfmt.Registry) error {
+	if swag.IsZero(m.Drawer) { // not required
+		return nil
+	}
+
+	if m.Drawer != nil {
+		if err := m.Drawer.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("drawer")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -2245,8 +2299,31 @@ func (m *ShelfBaysItems0) validateType(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf bays items0 based on context it is used
+// ContextValidate validate this shelf bays items0 based on the context it is used
 func (m *ShelfBaysItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDrawer(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfBaysItems0) contextValidateDrawer(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Drawer != nil {
+		if err := m.Drawer.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("drawer")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -2261,6 +2338,48 @@ func (m *ShelfBaysItems0) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ShelfBaysItems0) UnmarshalBinary(b []byte) error {
 	var res ShelfBaysItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfBaysItems0Drawer shelf bays items0 drawer
+//
+// swagger:model ShelfBaysItems0Drawer
+type ShelfBaysItems0Drawer struct {
+
+	// The drawer containing this bay
+	// Example: 1
+	ID int64 `json:"id,omitempty"`
+
+	// The drawer slot for this bay
+	// Example: 0
+	Slot int64 `json:"slot,omitempty"`
+}
+
+// Validate validates this shelf bays items0 drawer
+func (m *ShelfBaysItems0Drawer) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this shelf bays items0 drawer based on context it is used
+func (m *ShelfBaysItems0Drawer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfBaysItems0Drawer) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfBaysItems0Drawer) UnmarshalBinary(b []byte) error {
+	var res ShelfBaysItems0Drawer
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

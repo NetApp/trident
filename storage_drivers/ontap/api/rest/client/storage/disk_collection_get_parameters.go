@@ -90,11 +90,23 @@ type DiskCollectionGetParams struct {
 	*/
 	ClassQueryParameter *string
 
+	/* ComplianceStandard.
+
+	   Filter by compliance_standard
+	*/
+	ComplianceStandardQueryParameter *string
+
 	/* ContainerType.
 
 	   Filter by container_type
 	*/
 	ContainerTypeQueryParameter *string
+
+	/* ControlStandard.
+
+	   Filter by control_standard
+	*/
+	ControlStandardQueryParameter *string
 
 	/* DrNodeName.
 
@@ -282,11 +294,29 @@ type DiskCollectionGetParams struct {
 	*/
 	OutageReasonTargetQueryParameter *string
 
+	/* OverallSecurity.
+
+	   Filter by overall_security
+	*/
+	OverallSecurityQueryParameter *string
+
 	/* PathsInitiator.
 
 	   Filter by paths.initiator
 	*/
 	PathsInitiatorQueryParameter *string
+
+	/* PathsNodeName.
+
+	   Filter by paths.node.name
+	*/
+	PathsNodeNameQueryParameter *string
+
+	/* PathsNodeUUID.
+
+	   Filter by paths.node.uuid
+	*/
+	PathsNodeUUIDQueryParameter *string
 
 	/* PathsPortName.
 
@@ -300,6 +330,12 @@ type DiskCollectionGetParams struct {
 	*/
 	PathsPortTypeQueryParameter *string
 
+	/* PathsVmdiskHypervisorFileName.
+
+	   Filter by paths.vmdisk_hypervisor_file_name
+	*/
+	PathsVMdiskHypervisorFileNameQueryParameter *string
+
 	/* PathsWwnn.
 
 	   Filter by paths.wwnn
@@ -311,6 +347,12 @@ type DiskCollectionGetParams struct {
 	   Filter by paths.wwpn
 	*/
 	PathsWwpnQueryParameter *string
+
+	/* PhysicalSize.
+
+	   Filter by physical_size
+	*/
+	PhysicalSizeQueryParameter *int64
 
 	/* Pool.
 
@@ -345,6 +387,12 @@ type DiskCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeoutQueryParameter *int64
+
+	/* RightSizeSectorCount.
+
+	   Filter by right_size_sector_count
+	*/
+	RightSizeSectorCountQueryParameter *int64
 
 	/* Rpm.
 
@@ -412,6 +460,18 @@ type DiskCollectionGetParams struct {
 	*/
 	StatsThroughputQueryParameter *int64
 
+	/* StoragePoolName.
+
+	   Filter by storage_pool.name
+	*/
+	StoragePoolNameQueryParameter *string
+
+	/* StoragePoolUUID.
+
+	   Filter by storage_pool.uuid
+	*/
+	StoragePoolUUIDQueryParameter *string
+
 	/* Type.
 
 	   Filter by type
@@ -435,6 +495,24 @@ type DiskCollectionGetParams struct {
 	   Filter by vendor
 	*/
 	VendorQueryParameter *string
+
+	/* VirtualContainer.
+
+	   Filter by virtual.container
+	*/
+	VirtualContainerQueryParameter *string
+
+	/* VirtualObject.
+
+	   Filter by virtual.object
+	*/
+	VirtualObjectQueryParameter *string
+
+	/* VirtualStorageAccount.
+
+	   Filter by virtual.storage_account
+	*/
+	VirtualStorageAccountQueryParameter *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -558,6 +636,17 @@ func (o *DiskCollectionGetParams) SetClassQueryParameter(class *string) {
 	o.ClassQueryParameter = class
 }
 
+// WithComplianceStandardQueryParameter adds the complianceStandard to the disk collection get params
+func (o *DiskCollectionGetParams) WithComplianceStandardQueryParameter(complianceStandard *string) *DiskCollectionGetParams {
+	o.SetComplianceStandardQueryParameter(complianceStandard)
+	return o
+}
+
+// SetComplianceStandardQueryParameter adds the complianceStandard to the disk collection get params
+func (o *DiskCollectionGetParams) SetComplianceStandardQueryParameter(complianceStandard *string) {
+	o.ComplianceStandardQueryParameter = complianceStandard
+}
+
 // WithContainerTypeQueryParameter adds the containerType to the disk collection get params
 func (o *DiskCollectionGetParams) WithContainerTypeQueryParameter(containerType *string) *DiskCollectionGetParams {
 	o.SetContainerTypeQueryParameter(containerType)
@@ -567,6 +656,17 @@ func (o *DiskCollectionGetParams) WithContainerTypeQueryParameter(containerType 
 // SetContainerTypeQueryParameter adds the containerType to the disk collection get params
 func (o *DiskCollectionGetParams) SetContainerTypeQueryParameter(containerType *string) {
 	o.ContainerTypeQueryParameter = containerType
+}
+
+// WithControlStandardQueryParameter adds the controlStandard to the disk collection get params
+func (o *DiskCollectionGetParams) WithControlStandardQueryParameter(controlStandard *string) *DiskCollectionGetParams {
+	o.SetControlStandardQueryParameter(controlStandard)
+	return o
+}
+
+// SetControlStandardQueryParameter adds the controlStandard to the disk collection get params
+func (o *DiskCollectionGetParams) SetControlStandardQueryParameter(controlStandard *string) {
+	o.ControlStandardQueryParameter = controlStandard
 }
 
 // WithDrNodeNameQueryParameter adds the drNodeName to the disk collection get params
@@ -910,6 +1010,17 @@ func (o *DiskCollectionGetParams) SetOutageReasonTargetQueryParameter(outageReas
 	o.OutageReasonTargetQueryParameter = outageReasonTarget
 }
 
+// WithOverallSecurityQueryParameter adds the overallSecurity to the disk collection get params
+func (o *DiskCollectionGetParams) WithOverallSecurityQueryParameter(overallSecurity *string) *DiskCollectionGetParams {
+	o.SetOverallSecurityQueryParameter(overallSecurity)
+	return o
+}
+
+// SetOverallSecurityQueryParameter adds the overallSecurity to the disk collection get params
+func (o *DiskCollectionGetParams) SetOverallSecurityQueryParameter(overallSecurity *string) {
+	o.OverallSecurityQueryParameter = overallSecurity
+}
+
 // WithPathsInitiatorQueryParameter adds the pathsInitiator to the disk collection get params
 func (o *DiskCollectionGetParams) WithPathsInitiatorQueryParameter(pathsInitiator *string) *DiskCollectionGetParams {
 	o.SetPathsInitiatorQueryParameter(pathsInitiator)
@@ -919,6 +1030,28 @@ func (o *DiskCollectionGetParams) WithPathsInitiatorQueryParameter(pathsInitiato
 // SetPathsInitiatorQueryParameter adds the pathsInitiator to the disk collection get params
 func (o *DiskCollectionGetParams) SetPathsInitiatorQueryParameter(pathsInitiator *string) {
 	o.PathsInitiatorQueryParameter = pathsInitiator
+}
+
+// WithPathsNodeNameQueryParameter adds the pathsNodeName to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsNodeNameQueryParameter(pathsNodeName *string) *DiskCollectionGetParams {
+	o.SetPathsNodeNameQueryParameter(pathsNodeName)
+	return o
+}
+
+// SetPathsNodeNameQueryParameter adds the pathsNodeName to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsNodeNameQueryParameter(pathsNodeName *string) {
+	o.PathsNodeNameQueryParameter = pathsNodeName
+}
+
+// WithPathsNodeUUIDQueryParameter adds the pathsNodeUUID to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsNodeUUIDQueryParameter(pathsNodeUUID *string) *DiskCollectionGetParams {
+	o.SetPathsNodeUUIDQueryParameter(pathsNodeUUID)
+	return o
+}
+
+// SetPathsNodeUUIDQueryParameter adds the pathsNodeUuid to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsNodeUUIDQueryParameter(pathsNodeUUID *string) {
+	o.PathsNodeUUIDQueryParameter = pathsNodeUUID
 }
 
 // WithPathsPortNameQueryParameter adds the pathsPortName to the disk collection get params
@@ -943,6 +1076,17 @@ func (o *DiskCollectionGetParams) SetPathsPortTypeQueryParameter(pathsPortType *
 	o.PathsPortTypeQueryParameter = pathsPortType
 }
 
+// WithPathsVMdiskHypervisorFileNameQueryParameter adds the pathsVmdiskHypervisorFileName to the disk collection get params
+func (o *DiskCollectionGetParams) WithPathsVMdiskHypervisorFileNameQueryParameter(pathsVmdiskHypervisorFileName *string) *DiskCollectionGetParams {
+	o.SetPathsVMdiskHypervisorFileNameQueryParameter(pathsVmdiskHypervisorFileName)
+	return o
+}
+
+// SetPathsVMdiskHypervisorFileNameQueryParameter adds the pathsVmdiskHypervisorFileName to the disk collection get params
+func (o *DiskCollectionGetParams) SetPathsVMdiskHypervisorFileNameQueryParameter(pathsVmdiskHypervisorFileName *string) {
+	o.PathsVMdiskHypervisorFileNameQueryParameter = pathsVmdiskHypervisorFileName
+}
+
 // WithPathsWwnnQueryParameter adds the pathsWwnn to the disk collection get params
 func (o *DiskCollectionGetParams) WithPathsWwnnQueryParameter(pathsWwnn *string) *DiskCollectionGetParams {
 	o.SetPathsWwnnQueryParameter(pathsWwnn)
@@ -963,6 +1107,17 @@ func (o *DiskCollectionGetParams) WithPathsWwpnQueryParameter(pathsWwpn *string)
 // SetPathsWwpnQueryParameter adds the pathsWwpn to the disk collection get params
 func (o *DiskCollectionGetParams) SetPathsWwpnQueryParameter(pathsWwpn *string) {
 	o.PathsWwpnQueryParameter = pathsWwpn
+}
+
+// WithPhysicalSizeQueryParameter adds the physicalSize to the disk collection get params
+func (o *DiskCollectionGetParams) WithPhysicalSizeQueryParameter(physicalSize *int64) *DiskCollectionGetParams {
+	o.SetPhysicalSizeQueryParameter(physicalSize)
+	return o
+}
+
+// SetPhysicalSizeQueryParameter adds the physicalSize to the disk collection get params
+func (o *DiskCollectionGetParams) SetPhysicalSizeQueryParameter(physicalSize *int64) {
+	o.PhysicalSizeQueryParameter = physicalSize
 }
 
 // WithPoolQueryParameter adds the pool to the disk collection get params
@@ -1018,6 +1173,17 @@ func (o *DiskCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout 
 // SetReturnTimeoutQueryParameter adds the returnTimeout to the disk collection get params
 func (o *DiskCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
 	o.ReturnTimeoutQueryParameter = returnTimeout
+}
+
+// WithRightSizeSectorCountQueryParameter adds the rightSizeSectorCount to the disk collection get params
+func (o *DiskCollectionGetParams) WithRightSizeSectorCountQueryParameter(rightSizeSectorCount *int64) *DiskCollectionGetParams {
+	o.SetRightSizeSectorCountQueryParameter(rightSizeSectorCount)
+	return o
+}
+
+// SetRightSizeSectorCountQueryParameter adds the rightSizeSectorCount to the disk collection get params
+func (o *DiskCollectionGetParams) SetRightSizeSectorCountQueryParameter(rightSizeSectorCount *int64) {
+	o.RightSizeSectorCountQueryParameter = rightSizeSectorCount
 }
 
 // WithRpmQueryParameter adds the rpm to the disk collection get params
@@ -1141,6 +1307,28 @@ func (o *DiskCollectionGetParams) SetStatsThroughputQueryParameter(statsThroughp
 	o.StatsThroughputQueryParameter = statsThroughput
 }
 
+// WithStoragePoolNameQueryParameter adds the storagePoolName to the disk collection get params
+func (o *DiskCollectionGetParams) WithStoragePoolNameQueryParameter(storagePoolName *string) *DiskCollectionGetParams {
+	o.SetStoragePoolNameQueryParameter(storagePoolName)
+	return o
+}
+
+// SetStoragePoolNameQueryParameter adds the storagePoolName to the disk collection get params
+func (o *DiskCollectionGetParams) SetStoragePoolNameQueryParameter(storagePoolName *string) {
+	o.StoragePoolNameQueryParameter = storagePoolName
+}
+
+// WithStoragePoolUUIDQueryParameter adds the storagePoolUUID to the disk collection get params
+func (o *DiskCollectionGetParams) WithStoragePoolUUIDQueryParameter(storagePoolUUID *string) *DiskCollectionGetParams {
+	o.SetStoragePoolUUIDQueryParameter(storagePoolUUID)
+	return o
+}
+
+// SetStoragePoolUUIDQueryParameter adds the storagePoolUuid to the disk collection get params
+func (o *DiskCollectionGetParams) SetStoragePoolUUIDQueryParameter(storagePoolUUID *string) {
+	o.StoragePoolUUIDQueryParameter = storagePoolUUID
+}
+
 // WithTypeQueryParameter adds the typeVar to the disk collection get params
 func (o *DiskCollectionGetParams) WithTypeQueryParameter(typeVar *string) *DiskCollectionGetParams {
 	o.SetTypeQueryParameter(typeVar)
@@ -1183,6 +1371,39 @@ func (o *DiskCollectionGetParams) WithVendorQueryParameter(vendor *string) *Disk
 // SetVendorQueryParameter adds the vendor to the disk collection get params
 func (o *DiskCollectionGetParams) SetVendorQueryParameter(vendor *string) {
 	o.VendorQueryParameter = vendor
+}
+
+// WithVirtualContainerQueryParameter adds the virtualContainer to the disk collection get params
+func (o *DiskCollectionGetParams) WithVirtualContainerQueryParameter(virtualContainer *string) *DiskCollectionGetParams {
+	o.SetVirtualContainerQueryParameter(virtualContainer)
+	return o
+}
+
+// SetVirtualContainerQueryParameter adds the virtualContainer to the disk collection get params
+func (o *DiskCollectionGetParams) SetVirtualContainerQueryParameter(virtualContainer *string) {
+	o.VirtualContainerQueryParameter = virtualContainer
+}
+
+// WithVirtualObjectQueryParameter adds the virtualObject to the disk collection get params
+func (o *DiskCollectionGetParams) WithVirtualObjectQueryParameter(virtualObject *string) *DiskCollectionGetParams {
+	o.SetVirtualObjectQueryParameter(virtualObject)
+	return o
+}
+
+// SetVirtualObjectQueryParameter adds the virtualObject to the disk collection get params
+func (o *DiskCollectionGetParams) SetVirtualObjectQueryParameter(virtualObject *string) {
+	o.VirtualObjectQueryParameter = virtualObject
+}
+
+// WithVirtualStorageAccountQueryParameter adds the virtualStorageAccount to the disk collection get params
+func (o *DiskCollectionGetParams) WithVirtualStorageAccountQueryParameter(virtualStorageAccount *string) *DiskCollectionGetParams {
+	o.SetVirtualStorageAccountQueryParameter(virtualStorageAccount)
+	return o
+}
+
+// SetVirtualStorageAccountQueryParameter adds the virtualStorageAccount to the disk collection get params
+func (o *DiskCollectionGetParams) SetVirtualStorageAccountQueryParameter(virtualStorageAccount *string) {
+	o.VirtualStorageAccountQueryParameter = virtualStorageAccount
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1278,6 +1499,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.ComplianceStandardQueryParameter != nil {
+
+		// query param compliance_standard
+		var qrComplianceStandard string
+
+		if o.ComplianceStandardQueryParameter != nil {
+			qrComplianceStandard = *o.ComplianceStandardQueryParameter
+		}
+		qComplianceStandard := qrComplianceStandard
+		if qComplianceStandard != "" {
+
+			if err := r.SetQueryParam("compliance_standard", qComplianceStandard); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ContainerTypeQueryParameter != nil {
 
 		// query param container_type
@@ -1290,6 +1528,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qContainerType != "" {
 
 			if err := r.SetQueryParam("container_type", qContainerType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControlStandardQueryParameter != nil {
+
+		// query param control_standard
+		var qrControlStandard string
+
+		if o.ControlStandardQueryParameter != nil {
+			qrControlStandard = *o.ControlStandardQueryParameter
+		}
+		qControlStandard := qrControlStandard
+		if qControlStandard != "" {
+
+			if err := r.SetQueryParam("control_standard", qControlStandard); err != nil {
 				return err
 			}
 		}
@@ -1810,6 +2065,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.OverallSecurityQueryParameter != nil {
+
+		// query param overall_security
+		var qrOverallSecurity string
+
+		if o.OverallSecurityQueryParameter != nil {
+			qrOverallSecurity = *o.OverallSecurityQueryParameter
+		}
+		qOverallSecurity := qrOverallSecurity
+		if qOverallSecurity != "" {
+
+			if err := r.SetQueryParam("overall_security", qOverallSecurity); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.PathsInitiatorQueryParameter != nil {
 
 		// query param paths.initiator
@@ -1822,6 +2094,40 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qPathsInitiator != "" {
 
 			if err := r.SetQueryParam("paths.initiator", qPathsInitiator); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PathsNodeNameQueryParameter != nil {
+
+		// query param paths.node.name
+		var qrPathsNodeName string
+
+		if o.PathsNodeNameQueryParameter != nil {
+			qrPathsNodeName = *o.PathsNodeNameQueryParameter
+		}
+		qPathsNodeName := qrPathsNodeName
+		if qPathsNodeName != "" {
+
+			if err := r.SetQueryParam("paths.node.name", qPathsNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PathsNodeUUIDQueryParameter != nil {
+
+		// query param paths.node.uuid
+		var qrPathsNodeUUID string
+
+		if o.PathsNodeUUIDQueryParameter != nil {
+			qrPathsNodeUUID = *o.PathsNodeUUIDQueryParameter
+		}
+		qPathsNodeUUID := qrPathsNodeUUID
+		if qPathsNodeUUID != "" {
+
+			if err := r.SetQueryParam("paths.node.uuid", qPathsNodeUUID); err != nil {
 				return err
 			}
 		}
@@ -1861,6 +2167,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.PathsVMdiskHypervisorFileNameQueryParameter != nil {
+
+		// query param paths.vmdisk_hypervisor_file_name
+		var qrPathsVmdiskHypervisorFileName string
+
+		if o.PathsVMdiskHypervisorFileNameQueryParameter != nil {
+			qrPathsVmdiskHypervisorFileName = *o.PathsVMdiskHypervisorFileNameQueryParameter
+		}
+		qPathsVmdiskHypervisorFileName := qrPathsVmdiskHypervisorFileName
+		if qPathsVmdiskHypervisorFileName != "" {
+
+			if err := r.SetQueryParam("paths.vmdisk_hypervisor_file_name", qPathsVmdiskHypervisorFileName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.PathsWwnnQueryParameter != nil {
 
 		// query param paths.wwnn
@@ -1890,6 +2213,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qPathsWwpn != "" {
 
 			if err := r.SetQueryParam("paths.wwpn", qPathsWwpn); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PhysicalSizeQueryParameter != nil {
+
+		// query param physical_size
+		var qrPhysicalSize int64
+
+		if o.PhysicalSizeQueryParameter != nil {
+			qrPhysicalSize = *o.PhysicalSizeQueryParameter
+		}
+		qPhysicalSize := swag.FormatInt64(qrPhysicalSize)
+		if qPhysicalSize != "" {
+
+			if err := r.SetQueryParam("physical_size", qPhysicalSize); err != nil {
 				return err
 			}
 		}
@@ -1975,6 +2315,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RightSizeSectorCountQueryParameter != nil {
+
+		// query param right_size_sector_count
+		var qrRightSizeSectorCount int64
+
+		if o.RightSizeSectorCountQueryParameter != nil {
+			qrRightSizeSectorCount = *o.RightSizeSectorCountQueryParameter
+		}
+		qRightSizeSectorCount := swag.FormatInt64(qrRightSizeSectorCount)
+		if qRightSizeSectorCount != "" {
+
+			if err := r.SetQueryParam("right_size_sector_count", qRightSizeSectorCount); err != nil {
 				return err
 			}
 		}
@@ -2167,6 +2524,40 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.StoragePoolNameQueryParameter != nil {
+
+		// query param storage_pool.name
+		var qrStoragePoolName string
+
+		if o.StoragePoolNameQueryParameter != nil {
+			qrStoragePoolName = *o.StoragePoolNameQueryParameter
+		}
+		qStoragePoolName := qrStoragePoolName
+		if qStoragePoolName != "" {
+
+			if err := r.SetQueryParam("storage_pool.name", qStoragePoolName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StoragePoolUUIDQueryParameter != nil {
+
+		// query param storage_pool.uuid
+		var qrStoragePoolUUID string
+
+		if o.StoragePoolUUIDQueryParameter != nil {
+			qrStoragePoolUUID = *o.StoragePoolUUIDQueryParameter
+		}
+		qStoragePoolUUID := qrStoragePoolUUID
+		if qStoragePoolUUID != "" {
+
+			if err := r.SetQueryParam("storage_pool.uuid", qStoragePoolUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.TypeQueryParameter != nil {
 
 		// query param type
@@ -2230,6 +2621,57 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qVendor != "" {
 
 			if err := r.SetQueryParam("vendor", qVendor); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VirtualContainerQueryParameter != nil {
+
+		// query param virtual.container
+		var qrVirtualContainer string
+
+		if o.VirtualContainerQueryParameter != nil {
+			qrVirtualContainer = *o.VirtualContainerQueryParameter
+		}
+		qVirtualContainer := qrVirtualContainer
+		if qVirtualContainer != "" {
+
+			if err := r.SetQueryParam("virtual.container", qVirtualContainer); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VirtualObjectQueryParameter != nil {
+
+		// query param virtual.object
+		var qrVirtualObject string
+
+		if o.VirtualObjectQueryParameter != nil {
+			qrVirtualObject = *o.VirtualObjectQueryParameter
+		}
+		qVirtualObject := qrVirtualObject
+		if qVirtualObject != "" {
+
+			if err := r.SetQueryParam("virtual.object", qVirtualObject); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VirtualStorageAccountQueryParameter != nil {
+
+		// query param virtual.storage_account
+		var qrVirtualStorageAccount string
+
+		if o.VirtualStorageAccountQueryParameter != nil {
+			qrVirtualStorageAccount = *o.VirtualStorageAccountQueryParameter
+		}
+		qVirtualStorageAccount := qrVirtualStorageAccount
+		if qVirtualStorageAccount != "" {
+
+			if err := r.SetQueryParam("virtual.storage_account", qVirtualStorageAccount); err != nil {
 				return err
 			}
 		}

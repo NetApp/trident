@@ -31,7 +31,7 @@ type SANStorageDriver struct {
 	Config      drivers.OntapStorageDriverConfig
 	ips         []string
 	API         api.OntapAPI
-	telemetry   *TelemetryAbstraction
+	telemetry   *Telemetry
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
@@ -45,7 +45,7 @@ func (d *SANStorageDriver) GetAPI() api.OntapAPI {
 	return d.API
 }
 
-func (d *SANStorageDriver) GetTelemetry() *TelemetryAbstraction {
+func (d *SANStorageDriver) GetTelemetry() *Telemetry {
 	return d.telemetry
 }
 
@@ -89,7 +89,7 @@ func (d *SANStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriverAbstraction(ctx, config)
+	d.API, err = InitializeOntapDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
@@ -106,13 +106,13 @@ func (d *SANStorageDriver) Initialize(
 		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 	}
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommonAbstraction(ctx, d,
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
 	}
 
-	err = InitializeSANDriverAbstraction(ctx, driverContext, d.API, &d.Config, d.validate, backendUUID)
+	err = InitializeSANDriver(ctx, driverContext, d.API, &d.Config, d.validate, backendUUID)
 
 	// clean up igroup for failed driver
 	if err != nil {
@@ -126,7 +126,7 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	// Set up the autosupport heartbeat
-	d.telemetry = NewOntapTelemetryAbstraction(ctx, d)
+	d.telemetry = NewOntapTelemetry(ctx, d)
 	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	d.telemetry.TridentBackendUUID = backendUUID
 	d.telemetry.Start(ctx)
@@ -181,7 +181,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePoolsAbstraction(ctx, d.physicalPools, d.virtualPools, d,
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d,
 		api.MaxSANLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
@@ -219,7 +219,7 @@ func (d *SANStorageDriver) Create(
 
 	// If volume shall be mirrored, check that the SVM is peered with the other side
 	if volConfig.PeerVolumeHandle != "" {
-		if err = checkSVMPeeredAbstraction(ctx, volConfig, d.API.SVMName(), d.API); err != nil {
+		if err = checkSVMPeered(ctx, volConfig, d.API.SVMName(), d.API); err != nil {
 			return err
 		}
 	}
@@ -336,7 +336,7 @@ func (d *SANStorageDriver) Create(
 		aggregate := physicalPool.Name()
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
-		if aggrLimitsErr := checkAggregateLimitsAbstraction(
+		if aggrLimitsErr := checkAggregateLimits(
 			ctx, aggregate, spaceReserve, flexvolBufferSize, d.Config, d.GetAPI(),
 		); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
@@ -698,7 +698,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 
 		// Get target info
-		iSCSINodeName, _, err = GetISCSITargetInfoAbstraction(ctx, d.API, &d.Config)
+		iSCSINodeName, _, err = GetISCSITargetInfo(ctx, d.API, &d.Config)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Error("Could not get target info.")
 			return err
@@ -753,7 +753,7 @@ func (d *SANStorageDriver) Publish(
 	}
 
 	// Check if the volume is DP or RW and don't publish if DP
-	volIsRW, err := isFlexvolRWAbstraction(ctx, d.GetAPI(), name)
+	volIsRW, err := isFlexvolRW(ctx, d.GetAPI(), name)
 	if err != nil {
 		return err
 	}
@@ -766,16 +766,16 @@ func (d *SANStorageDriver) Publish(
 	// Use the node specific igroup if publish enforcement is enabled
 	if volConfig.AccessInfo.PublishEnforcement && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
-		err = ensureIGroupExistsAbstraction(ctx, d.GetAPI(), igroupName)
+		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName)
 	}
 
 	// Get target info
-	iSCSINodeName, _, err := GetISCSITargetInfoAbstraction(ctx, d.API, &d.Config)
+	iSCSINodeName, _, err := GetISCSITargetInfo(ctx, d.API, &d.Config)
 	if err != nil {
 		return err
 	}
 
-	err = PublishLUNAbstraction(ctx, d.API, &d.Config, d.ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, d.API, &d.Config, d.ips, publishInfo, lunPath, igroupName, iSCSINodeName)
 	if err != nil {
 		return fmt.Errorf("error publishing %s driver: %v", d.Name(), err)
 	}
@@ -921,7 +921,7 @@ func (d *SANStorageDriver) RestoreSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	return RestoreSnapshotAbstraction(ctx, snapConfig, &d.Config, d.API)
+	return RestoreSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
@@ -943,7 +943,7 @@ func (d *SANStorageDriver) DeleteSnapshot(
 	if err != nil {
 		if api.IsSnapshotBusyError(err) {
 			// Start a split here before returning the error so a subsequent delete attempt may succeed.
-			_ = SplitVolumeFromBusySnapshotAbstraction(ctx, snapConfig, &d.Config, d.API, d.API.VolumeCloneSplitStart)
+			_ = SplitVolumeFromBusySnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeCloneSplitStart)
 		}
 		// we must return the err, even if we started a split, so the snapshot delete is retried
 		return err
@@ -1034,7 +1034,7 @@ func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	volConfig.MirrorHandle = d.API.SVMName() + ":" + volConfig.InternalName
 
 	// Check if the volume is RW and don't map the lun if not RW
-	volIsRW, err := isFlexvolRWAbstraction(ctx, d.GetAPI(), volConfig.InternalName)
+	volIsRW, err := isFlexvolRW(ctx, d.GetAPI(), volConfig.InternalName)
 	if !volIsRW {
 		return err
 	}
@@ -1053,7 +1053,7 @@ func (d *SANStorageDriver) mapOntapSANLun(ctx context.Context, volConfig *storag
 		return err
 	}
 
-	err = PopulateOntapLunMappingAbstraction(ctx, d.API, &d.Config, d.ips, volConfig, lunID, lunPath,
+	err = PopulateOntapLunMapping(ctx, d.API, &d.Config, d.ips, volConfig, lunID, lunPath,
 		d.Config.IgroupName)
 	if err != nil {
 		return fmt.Errorf("error mapping LUN for %s driver: %v", d.Name(), err)
@@ -1259,7 +1259,7 @@ func (d *SANStorageDriver) Resize(
 		return fmt.Errorf("requested size %d is less than existing volume size %d", requestedSizeBytes, lunSizeBytes)
 	}
 
-	snapshotReserveInt, err := getSnapshotReserveFromOntapAbstraction(ctx, name, d.API.VolumeInfo)
+	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.VolumeInfo)
 	if err != nil {
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
 	}
@@ -1301,7 +1301,7 @@ func (d *SANStorageDriver) Resize(
 		}
 	}
 
-	if aggrLimitsErr := checkAggregateLimitsForFlexvolAbstraction(
+	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, name, newFlexvolSize, d.Config, d.GetAPI(),
 	); aggrLimitsErr != nil {
 		return aggrLimitsErr
@@ -1356,7 +1356,7 @@ func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*uti
 		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
 	}
 
-	return reconcileSANNodeAccessAbstraction(ctx, d.API, d.Config.IgroupName, nodeIQNs)
+	return reconcileSANNodeAccess(ctx, d.API, d.Config.IgroupName, nodeIQNs)
 }
 
 // String makes SANStorageDriver satisfy the Stringer interface.
@@ -1385,12 +1385,12 @@ func (d *SANStorageDriver) EstablishMirror(
 	}
 
 	// Validate replication policy, if it is invalid, use the backend policy
-	isAsync, err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+	isAsync, err := validateReplicationPolicy(ctx, replicationPolicy, d.API)
 	if err != nil {
 		Logc(ctx).Debugf("Replication policy given in TMR %s is invalid, using policy %s from backend.",
 			replicationPolicy, d.GetConfig().ReplicationPolicy)
 		replicationPolicy = d.GetConfig().ReplicationPolicy
-		isAsync, err = validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+		isAsync, err = validateReplicationPolicy(ctx, replicationPolicy, d.API)
 		if err != nil {
 			Logc(ctx).Debugf("Replication policy %s in backend should be valid.", replicationPolicy)
 		}
@@ -1425,12 +1425,12 @@ func (d *SANStorageDriver) ReestablishMirror(
 	}
 
 	// Validate replication policy, if it is invalid, use the backend policy
-	isAsync, err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+	isAsync, err := validateReplicationPolicy(ctx, replicationPolicy, d.API)
 	if err != nil {
 		Logc(ctx).Debugf("Replication policy given in TMR %s is invalid, using policy %s from backend.",
 			replicationPolicy, d.GetConfig().ReplicationPolicy)
 		replicationPolicy = d.GetConfig().ReplicationPolicy
-		isAsync, err = validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+		isAsync, err = validateReplicationPolicy(ctx, replicationPolicy, d.API)
 		if err != nil {
 			Logc(ctx).Debugf("Replication policy %s in backend should be valid.", replicationPolicy)
 		}

@@ -90,18 +90,6 @@ type SvmMigrationCollectionGetParams struct {
 	*/
 	DestinationIPspaceUUIDQueryParameter *string
 
-	/* DestinationVolumePlacementAggregatesName.
-
-	   Filter by destination.volume_placement.aggregates.name
-	*/
-	DestinationVolumePlacementAggregatesNameQueryParameter *string
-
-	/* DestinationVolumePlacementAggregatesUUID.
-
-	   Filter by destination.volume_placement.aggregates.uuid
-	*/
-	DestinationVolumePlacementAggregatesUUIDQueryParameter *string
-
 	/* Fields.
 
 	   Specify the fields to return.
@@ -370,28 +358,6 @@ func (o *SvmMigrationCollectionGetParams) WithDestinationIPspaceUUIDQueryParamet
 // SetDestinationIPspaceUUIDQueryParameter adds the destinationIpspaceUuid to the svm migration collection get params
 func (o *SvmMigrationCollectionGetParams) SetDestinationIPspaceUUIDQueryParameter(destinationIpspaceUUID *string) {
 	o.DestinationIPspaceUUIDQueryParameter = destinationIpspaceUUID
-}
-
-// WithDestinationVolumePlacementAggregatesNameQueryParameter adds the destinationVolumePlacementAggregatesName to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithDestinationVolumePlacementAggregatesNameQueryParameter(destinationVolumePlacementAggregatesName *string) *SvmMigrationCollectionGetParams {
-	o.SetDestinationVolumePlacementAggregatesNameQueryParameter(destinationVolumePlacementAggregatesName)
-	return o
-}
-
-// SetDestinationVolumePlacementAggregatesNameQueryParameter adds the destinationVolumePlacementAggregatesName to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetDestinationVolumePlacementAggregatesNameQueryParameter(destinationVolumePlacementAggregatesName *string) {
-	o.DestinationVolumePlacementAggregatesNameQueryParameter = destinationVolumePlacementAggregatesName
-}
-
-// WithDestinationVolumePlacementAggregatesUUIDQueryParameter adds the destinationVolumePlacementAggregatesUUID to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) WithDestinationVolumePlacementAggregatesUUIDQueryParameter(destinationVolumePlacementAggregatesUUID *string) *SvmMigrationCollectionGetParams {
-	o.SetDestinationVolumePlacementAggregatesUUIDQueryParameter(destinationVolumePlacementAggregatesUUID)
-	return o
-}
-
-// SetDestinationVolumePlacementAggregatesUUIDQueryParameter adds the destinationVolumePlacementAggregatesUuid to the svm migration collection get params
-func (o *SvmMigrationCollectionGetParams) SetDestinationVolumePlacementAggregatesUUIDQueryParameter(destinationVolumePlacementAggregatesUUID *string) {
-	o.DestinationVolumePlacementAggregatesUUIDQueryParameter = destinationVolumePlacementAggregatesUUID
 }
 
 // WithFieldsQueryParameter adds the fields to the svm migration collection get params
@@ -746,40 +712,6 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		if qDestinationIpspaceUUID != "" {
 
 			if err := r.SetQueryParam("destination.ipspace.uuid", qDestinationIpspaceUUID); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.DestinationVolumePlacementAggregatesNameQueryParameter != nil {
-
-		// query param destination.volume_placement.aggregates.name
-		var qrDestinationVolumePlacementAggregatesName string
-
-		if o.DestinationVolumePlacementAggregatesNameQueryParameter != nil {
-			qrDestinationVolumePlacementAggregatesName = *o.DestinationVolumePlacementAggregatesNameQueryParameter
-		}
-		qDestinationVolumePlacementAggregatesName := qrDestinationVolumePlacementAggregatesName
-		if qDestinationVolumePlacementAggregatesName != "" {
-
-			if err := r.SetQueryParam("destination.volume_placement.aggregates.name", qDestinationVolumePlacementAggregatesName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.DestinationVolumePlacementAggregatesUUIDQueryParameter != nil {
-
-		// query param destination.volume_placement.aggregates.uuid
-		var qrDestinationVolumePlacementAggregatesUUID string
-
-		if o.DestinationVolumePlacementAggregatesUUIDQueryParameter != nil {
-			qrDestinationVolumePlacementAggregatesUUID = *o.DestinationVolumePlacementAggregatesUUIDQueryParameter
-		}
-		qDestinationVolumePlacementAggregatesUUID := qrDestinationVolumePlacementAggregatesUUID
-		if qDestinationVolumePlacementAggregatesUUID != "" {
-
-			if err := r.SetQueryParam("destination.volume_placement.aggregates.uuid", qDestinationVolumePlacementAggregatesUUID); err != nil {
 				return err
 			}
 		}

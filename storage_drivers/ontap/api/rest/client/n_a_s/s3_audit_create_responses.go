@@ -55,7 +55,7 @@ type S3AuditCreateAccepted struct {
 }
 
 func (o *S3AuditCreateAccepted) Error() string {
-	return fmt.Sprintf("[POST /protocols/s3audits][%d] s3AuditCreateAccepted  %+v", 202, o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3AuditCreateAccepted  %+v", 202, o.Payload)
 }
 func (o *S3AuditCreateAccepted) GetPayload() *models.S3AuditResponse {
 	return o.Payload
@@ -134,7 +134,7 @@ func (o *S3AuditCreateDefault) Code() int {
 }
 
 func (o *S3AuditCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /protocols/s3audits][%d] s3_audit_create default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_create default  %+v", o._statusCode, o.Payload)
 }
 func (o *S3AuditCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

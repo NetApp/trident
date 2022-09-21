@@ -279,6 +279,7 @@ If not specified in POST, the following default property values are assigned:
 ### Related ONTAP commands
 * `volume file clone autodelete`
 * `volume file clone create`
+* `vserver nvme namespace convert-from-lun`
 * `vserver nvme namespace create`
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)

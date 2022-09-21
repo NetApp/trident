@@ -169,12 +169,6 @@ type PerformanceNamespaceMetricCollectionGetParams struct {
 	*/
 	StatusQueryParameter *string
 
-	/* ThroughputOther.
-
-	   Filter by throughput.other
-	*/
-	ThroughputOtherQueryParameter *int64
-
 	/* ThroughputRead.
 
 	   Filter by throughput.read
@@ -449,17 +443,6 @@ func (o *PerformanceNamespaceMetricCollectionGetParams) WithStatusQueryParameter
 // SetStatusQueryParameter adds the status to the performance namespace metric collection get params
 func (o *PerformanceNamespaceMetricCollectionGetParams) SetStatusQueryParameter(status *string) {
 	o.StatusQueryParameter = status
-}
-
-// WithThroughputOtherQueryParameter adds the throughputOther to the performance namespace metric collection get params
-func (o *PerformanceNamespaceMetricCollectionGetParams) WithThroughputOtherQueryParameter(throughputOther *int64) *PerformanceNamespaceMetricCollectionGetParams {
-	o.SetThroughputOtherQueryParameter(throughputOther)
-	return o
-}
-
-// SetThroughputOtherQueryParameter adds the throughputOther to the performance namespace metric collection get params
-func (o *PerformanceNamespaceMetricCollectionGetParams) SetThroughputOtherQueryParameter(throughputOther *int64) {
-	o.ThroughputOtherQueryParameter = throughputOther
 }
 
 // WithThroughputReadQueryParameter adds the throughputRead to the performance namespace metric collection get params
@@ -780,23 +763,6 @@ func (o *PerformanceNamespaceMetricCollectionGetParams) WriteToRequest(r runtime
 		if qStatus != "" {
 
 			if err := r.SetQueryParam("status", qStatus); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ThroughputOtherQueryParameter != nil {
-
-		// query param throughput.other
-		var qrThroughputOther int64
-
-		if o.ThroughputOtherQueryParameter != nil {
-			qrThroughputOther = *o.ThroughputOtherQueryParameter
-		}
-		qThroughputOther := swag.FormatInt64(qrThroughputOther)
-		if qThroughputOther != "" {
-
-			if err := r.SetQueryParam("throughput.other", qThroughputOther); err != nil {
 				return err
 			}
 		}

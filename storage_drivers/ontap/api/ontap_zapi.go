@@ -214,7 +214,7 @@ var featuresByVersion = map[Feature]*utils.Version{
 	FabricPoolForSVMDR:        utils.MustParseSemantic("9.5.0"),
 	QosPolicies:               utils.MustParseSemantic("9.8.0"),
 	LIFServices:               utils.MustParseSemantic("9.6.0"),
-} // TODO merage these 2
+}
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
 func (c Client) SupportsFeature(ctx context.Context, feature Feature) bool {
@@ -1570,7 +1570,7 @@ func (c Client) VolumeListByAttrs(
 	// Limit the Flexvols to those matching the specified attributes
 	query := &azgo.VolumeGetIterRequestQuery{}
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
-		SetName(azgo.VolumeNameType(prefix + "*")).
+		SetName(prefix).
 		SetContainingAggregateName(aggregate).
 		SetStyleExtended("flexvol")
 	queryVolSpaceAttrs := azgo.NewVolumeSpaceAttributesType().
@@ -2991,8 +2991,9 @@ func (c Client) TieringPolicyValue(ctx context.Context) string {
 // iSCSI initiator operations BEGIN
 
 // IscsiInitiatorAddAuth creates and sets the authorization details for a single initiator
-// equivalent to filer::> vserver iscsi security create -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd \
-//                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
+//
+//	equivalent to filer::> vserver iscsi security create -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd \
+//	                         -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
 func (c Client) IscsiInitiatorAddAuth(
 	initiator, authType, userName, passphrase, outboundUserName, outboundPassphrase string,
 ) (*azgo.IscsiInitiatorAddAuthResponse, error) {
@@ -3038,7 +3039,8 @@ func (c Client) IscsiInitiatorDeleteAuth(initiator string) (*azgo.IscsiInitiator
 
 // IscsiInitiatorGetAuth returns the authorization details for a single initiator
 // equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd
-//            or filer::> vserver iscsi security show -vserver SVM -initiator-name default
+//
+//	or filer::> vserver iscsi security show -vserver SVM -initiator-name default
 func (c Client) IscsiInitiatorGetAuth(initiator string) (*azgo.IscsiInitiatorGetAuthResponse, error) {
 	response, err := azgo.NewIscsiInitiatorGetAuthRequest().
 		SetInitiator(initiator).
@@ -3073,8 +3075,9 @@ func (c Client) IscsiInitiatorGetIter() ([]azgo.IscsiInitiatorListEntryInfoType,
 }
 
 // IscsiInitiatorModifyCHAPParams modifies the authorization details for a single initiator
-// equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd \
-//                          -user-name outboundUserName -outbound-user-name outboundPassphrase
+//
+//	equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd \
+//	                         -user-name outboundUserName -outbound-user-name outboundPassphrase
 func (c Client) IscsiInitiatorModifyCHAPParams(
 	initiator, userName, passphrase, outboundUserName, outboundPassphrase string,
 ) (*azgo.IscsiInitiatorModifyChapParamsResponse, error) {
@@ -3091,8 +3094,9 @@ func (c Client) IscsiInitiatorModifyCHAPParams(
 }
 
 // IscsiInitiatorSetDefaultAuth sets the authorization details for the default initiator
-// equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
-//                           -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
+//
+//	equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
+//	                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
 func (c Client) IscsiInitiatorSetDefaultAuth(
 	authType, userName, passphrase, outboundUserName, outboundPassphrase string,
 ) (*azgo.IscsiInitiatorSetDefaultAuthResponse, error) {

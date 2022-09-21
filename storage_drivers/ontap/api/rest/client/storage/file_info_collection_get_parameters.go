@@ -221,6 +221,18 @@ type FileInfoCollectionGetParams struct {
 	*/
 	HardLinksCountQueryParameter *int64
 
+	/* HolesSize.
+
+	   Filter by holes.size
+	*/
+	HolesSizeQueryParameter *int64
+
+	/* HolesStart.
+
+	   Filter by holes.start
+	*/
+	HolesStartQueryParameter *int64
+
 	/* InodeGeneration.
 
 	   Filter by inode_generation
@@ -724,6 +736,28 @@ func (o *FileInfoCollectionGetParams) WithHardLinksCountQueryParameter(hardLinks
 // SetHardLinksCountQueryParameter adds the hardLinksCount to the file info collection get params
 func (o *FileInfoCollectionGetParams) SetHardLinksCountQueryParameter(hardLinksCount *int64) {
 	o.HardLinksCountQueryParameter = hardLinksCount
+}
+
+// WithHolesSizeQueryParameter adds the holesSize to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithHolesSizeQueryParameter(holesSize *int64) *FileInfoCollectionGetParams {
+	o.SetHolesSizeQueryParameter(holesSize)
+	return o
+}
+
+// SetHolesSizeQueryParameter adds the holesSize to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetHolesSizeQueryParameter(holesSize *int64) {
+	o.HolesSizeQueryParameter = holesSize
+}
+
+// WithHolesStartQueryParameter adds the holesStart to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithHolesStartQueryParameter(holesStart *int64) *FileInfoCollectionGetParams {
+	o.SetHolesStartQueryParameter(holesStart)
+	return o
+}
+
+// SetHolesStartQueryParameter adds the holesStart to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetHolesStartQueryParameter(holesStart *int64) {
+	o.HolesStartQueryParameter = holesStart
 }
 
 // WithInodeGenerationQueryParameter adds the inodeGeneration to the file info collection get params
@@ -1428,6 +1462,40 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qHardLinksCount != "" {
 
 			if err := r.SetQueryParam("hard_links_count", qHardLinksCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HolesSizeQueryParameter != nil {
+
+		// query param holes.size
+		var qrHolesSize int64
+
+		if o.HolesSizeQueryParameter != nil {
+			qrHolesSize = *o.HolesSizeQueryParameter
+		}
+		qHolesSize := swag.FormatInt64(qrHolesSize)
+		if qHolesSize != "" {
+
+			if err := r.SetQueryParam("holes.size", qHolesSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HolesStartQueryParameter != nil {
+
+		// query param holes.start
+		var qrHolesStart int64
+
+		if o.HolesStartQueryParameter != nil {
+			qrHolesStart = *o.HolesStartQueryParameter
+		}
+		qHolesStart := swag.FormatInt64(qrHolesStart)
+		if qHolesStart != "" {
+
+			if err := r.SetQueryParam("holes.start", qHolesStart); err != nil {
 				return err
 			}
 		}

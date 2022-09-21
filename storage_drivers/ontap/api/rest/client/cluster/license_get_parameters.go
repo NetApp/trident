@@ -60,6 +60,24 @@ func NewLicenseGetParamsWithHTTPClient(client *http.Client) *LicenseGetParams {
 */
 type LicenseGetParams struct {
 
+	/* Description.
+
+	   Filter by description
+	*/
+	DescriptionQueryParameter *string
+
+	/* EntitlementAction.
+
+	   Filter by entitlement.action
+	*/
+	EntitlementActionQueryParameter *string
+
+	/* EntitlementRisk.
+
+	   Filter by entitlement.risk
+	*/
+	EntitlementRiskQueryParameter *string
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -125,6 +143,12 @@ type LicenseGetParams struct {
 	   Filter by licenses.serial_number
 	*/
 	LicensesSerialNumberQueryParameter *string
+
+	/* LicensesShutdownImminent.
+
+	   Filter by licenses.shutdown_imminent
+	*/
+	LicensesShutdownImminentQueryParameter *bool
 
 	/* LicensesStartTime.
 
@@ -201,6 +225,39 @@ func (o *LicenseGetParams) WithHTTPClient(client *http.Client) *LicenseGetParams
 // SetHTTPClient adds the HTTPClient to the license get params
 func (o *LicenseGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithDescriptionQueryParameter adds the description to the license get params
+func (o *LicenseGetParams) WithDescriptionQueryParameter(description *string) *LicenseGetParams {
+	o.SetDescriptionQueryParameter(description)
+	return o
+}
+
+// SetDescriptionQueryParameter adds the description to the license get params
+func (o *LicenseGetParams) SetDescriptionQueryParameter(description *string) {
+	o.DescriptionQueryParameter = description
+}
+
+// WithEntitlementActionQueryParameter adds the entitlementAction to the license get params
+func (o *LicenseGetParams) WithEntitlementActionQueryParameter(entitlementAction *string) *LicenseGetParams {
+	o.SetEntitlementActionQueryParameter(entitlementAction)
+	return o
+}
+
+// SetEntitlementActionQueryParameter adds the entitlementAction to the license get params
+func (o *LicenseGetParams) SetEntitlementActionQueryParameter(entitlementAction *string) {
+	o.EntitlementActionQueryParameter = entitlementAction
+}
+
+// WithEntitlementRiskQueryParameter adds the entitlementRisk to the license get params
+func (o *LicenseGetParams) WithEntitlementRiskQueryParameter(entitlementRisk *string) *LicenseGetParams {
+	o.SetEntitlementRiskQueryParameter(entitlementRisk)
+	return o
+}
+
+// SetEntitlementRiskQueryParameter adds the entitlementRisk to the license get params
+func (o *LicenseGetParams) SetEntitlementRiskQueryParameter(entitlementRisk *string) {
+	o.EntitlementRiskQueryParameter = entitlementRisk
 }
 
 // WithFieldsQueryParameter adds the fields to the license get params
@@ -324,6 +381,17 @@ func (o *LicenseGetParams) SetLicensesSerialNumberQueryParameter(licensesSerialN
 	o.LicensesSerialNumberQueryParameter = licensesSerialNumber
 }
 
+// WithLicensesShutdownImminentQueryParameter adds the licensesShutdownImminent to the license get params
+func (o *LicenseGetParams) WithLicensesShutdownImminentQueryParameter(licensesShutdownImminent *bool) *LicenseGetParams {
+	o.SetLicensesShutdownImminentQueryParameter(licensesShutdownImminent)
+	return o
+}
+
+// SetLicensesShutdownImminentQueryParameter adds the licensesShutdownImminent to the license get params
+func (o *LicenseGetParams) SetLicensesShutdownImminentQueryParameter(licensesShutdownImminent *bool) {
+	o.LicensesShutdownImminentQueryParameter = licensesShutdownImminent
+}
+
 // WithLicensesStartTimeQueryParameter adds the licensesStartTime to the license get params
 func (o *LicenseGetParams) WithLicensesStartTimeQueryParameter(licensesStartTime *string) *LicenseGetParams {
 	o.SetLicensesStartTimeQueryParameter(licensesStartTime)
@@ -375,6 +443,57 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		return err
 	}
 	var res []error
+
+	if o.DescriptionQueryParameter != nil {
+
+		// query param description
+		var qrDescription string
+
+		if o.DescriptionQueryParameter != nil {
+			qrDescription = *o.DescriptionQueryParameter
+		}
+		qDescription := qrDescription
+		if qDescription != "" {
+
+			if err := r.SetQueryParam("description", qDescription); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EntitlementActionQueryParameter != nil {
+
+		// query param entitlement.action
+		var qrEntitlementAction string
+
+		if o.EntitlementActionQueryParameter != nil {
+			qrEntitlementAction = *o.EntitlementActionQueryParameter
+		}
+		qEntitlementAction := qrEntitlementAction
+		if qEntitlementAction != "" {
+
+			if err := r.SetQueryParam("entitlement.action", qEntitlementAction); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EntitlementRiskQueryParameter != nil {
+
+		// query param entitlement.risk
+		var qrEntitlementRisk string
+
+		if o.EntitlementRiskQueryParameter != nil {
+			qrEntitlementRisk = *o.EntitlementRiskQueryParameter
+		}
+		qEntitlementRisk := qrEntitlementRisk
+		if qEntitlementRisk != "" {
+
+			if err := r.SetQueryParam("entitlement.risk", qEntitlementRisk); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.FieldsQueryParameter != nil {
 
@@ -552,6 +671,23 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		if qLicensesSerialNumber != "" {
 
 			if err := r.SetQueryParam("licenses.serial_number", qLicensesSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LicensesShutdownImminentQueryParameter != nil {
+
+		// query param licenses.shutdown_imminent
+		var qrLicensesShutdownImminent bool
+
+		if o.LicensesShutdownImminentQueryParameter != nil {
+			qrLicensesShutdownImminent = *o.LicensesShutdownImminentQueryParameter
+		}
+		qLicensesShutdownImminent := swag.FormatBool(qrLicensesShutdownImminent)
+		if qLicensesShutdownImminent != "" {
+
+			if err := r.SetQueryParam("licenses.shutdown_imminent", qLicensesShutdownImminent); err != nil {
 				return err
 			}
 		}

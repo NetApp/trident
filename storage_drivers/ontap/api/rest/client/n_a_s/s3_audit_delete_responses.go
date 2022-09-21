@@ -54,7 +54,7 @@ type S3AuditDeleteAccepted struct {
 }
 
 func (o *S3AuditDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/s3audits/{svm.uuid}][%d] s3AuditDeleteAccepted ", 202)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted ", 202)
 }
 
 func (o *S3AuditDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -91,7 +91,7 @@ func (o *S3AuditDeleteDefault) Code() int {
 }
 
 func (o *S3AuditDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/s3audits/{svm.uuid}][%d] s3_audit_delete default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_delete default  %+v", o._statusCode, o.Payload)
 }
 func (o *S3AuditDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

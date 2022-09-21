@@ -36,17 +36,22 @@ type HostRecord struct {
 	// Read Only: true
 	Hostname string `json:"hostname,omitempty"`
 
-	// List of IPv4 addresses
+	// List of IPv4 addresses.
 	//
 	// Example: ["127.0.0.1"]
 	// Read Only: true
 	IPV4Addresses []string `json:"ipv4_addresses,omitempty"`
 
-	// List of IPv6 addresses
+	// List of IPv6 addresses.
 	//
 	// Example: ["::1"]
 	// Read Only: true
 	IPV6Addresses []string `json:"ipv6_addresses,omitempty"`
+
+	// Source used for lookup.
+	//
+	// Example: Files
+	Source string `json:"source,omitempty"`
 
 	// svm
 	Svm *HostRecordSvm `json:"svm,omitempty"`

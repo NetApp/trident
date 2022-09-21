@@ -60,6 +60,18 @@ func NewSnapmirrorPoliciesGetParamsWithHTTPClient(client *http.Client) *Snapmirr
 */
 type SnapmirrorPoliciesGetParams struct {
 
+	/* ArchiveAfterDays.
+
+	   Filter by archive.after_days
+	*/
+	ArchiveAfterDaysQueryParameter *int64
+
+	/* ArchiveEnabled.
+
+	   Filter by archive.enabled
+	*/
+	ArchiveEnabledQueryParameter *bool
+
 	/* Comment.
 
 	   Filter by comment
@@ -71,6 +83,18 @@ type SnapmirrorPoliciesGetParams struct {
 	   Filter by copy_all_source_snapshots
 	*/
 	CopyAllSourceSnapshotsQueryParameter *bool
+
+	/* CopyLatestSourceSnapshot.
+
+	   Filter by copy_latest_source_snapshot
+	*/
+	CopyLatestSourceSnapshotQueryParameter *bool
+
+	/* CreateSnapshotOnSource.
+
+	   Filter by create_snapshot_on_source
+	*/
+	CreateSnapshotOnSourceQueryParameter *bool
 
 	/* Fields.
 
@@ -132,6 +156,12 @@ type SnapmirrorPoliciesGetParams struct {
 	*/
 	RetentionLabelQueryParameter *string
 
+	/* RetentionPeriod.
+
+	   Filter by retention.period
+	*/
+	RetentionPeriodQueryParameter *string
+
 	/* RetentionPrefix.
 
 	   Filter by retention.prefix
@@ -165,6 +195,12 @@ type SnapmirrorPoliciesGetParams struct {
 	   Filter by scope
 	*/
 	ScopeQueryParameter *string
+
+	/* SnapshotLockMode.
+
+	   Filter by snapshot_lock_mode
+	*/
+	SnapshotLockModeQueryParameter *string
 
 	/* SvmName.
 
@@ -293,6 +329,28 @@ func (o *SnapmirrorPoliciesGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithArchiveAfterDaysQueryParameter adds the archiveAfterDays to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithArchiveAfterDaysQueryParameter(archiveAfterDays *int64) *SnapmirrorPoliciesGetParams {
+	o.SetArchiveAfterDaysQueryParameter(archiveAfterDays)
+	return o
+}
+
+// SetArchiveAfterDaysQueryParameter adds the archiveAfterDays to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetArchiveAfterDaysQueryParameter(archiveAfterDays *int64) {
+	o.ArchiveAfterDaysQueryParameter = archiveAfterDays
+}
+
+// WithArchiveEnabledQueryParameter adds the archiveEnabled to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithArchiveEnabledQueryParameter(archiveEnabled *bool) *SnapmirrorPoliciesGetParams {
+	o.SetArchiveEnabledQueryParameter(archiveEnabled)
+	return o
+}
+
+// SetArchiveEnabledQueryParameter adds the archiveEnabled to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetArchiveEnabledQueryParameter(archiveEnabled *bool) {
+	o.ArchiveEnabledQueryParameter = archiveEnabled
+}
+
 // WithCommentQueryParameter adds the comment to the snapmirror policies get params
 func (o *SnapmirrorPoliciesGetParams) WithCommentQueryParameter(comment *string) *SnapmirrorPoliciesGetParams {
 	o.SetCommentQueryParameter(comment)
@@ -313,6 +371,28 @@ func (o *SnapmirrorPoliciesGetParams) WithCopyAllSourceSnapshotsQueryParameter(c
 // SetCopyAllSourceSnapshotsQueryParameter adds the copyAllSourceSnapshots to the snapmirror policies get params
 func (o *SnapmirrorPoliciesGetParams) SetCopyAllSourceSnapshotsQueryParameter(copyAllSourceSnapshots *bool) {
 	o.CopyAllSourceSnapshotsQueryParameter = copyAllSourceSnapshots
+}
+
+// WithCopyLatestSourceSnapshotQueryParameter adds the copyLatestSourceSnapshot to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithCopyLatestSourceSnapshotQueryParameter(copyLatestSourceSnapshot *bool) *SnapmirrorPoliciesGetParams {
+	o.SetCopyLatestSourceSnapshotQueryParameter(copyLatestSourceSnapshot)
+	return o
+}
+
+// SetCopyLatestSourceSnapshotQueryParameter adds the copyLatestSourceSnapshot to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetCopyLatestSourceSnapshotQueryParameter(copyLatestSourceSnapshot *bool) {
+	o.CopyLatestSourceSnapshotQueryParameter = copyLatestSourceSnapshot
+}
+
+// WithCreateSnapshotOnSourceQueryParameter adds the createSnapshotOnSource to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithCreateSnapshotOnSourceQueryParameter(createSnapshotOnSource *bool) *SnapmirrorPoliciesGetParams {
+	o.SetCreateSnapshotOnSourceQueryParameter(createSnapshotOnSource)
+	return o
+}
+
+// SetCreateSnapshotOnSourceQueryParameter adds the createSnapshotOnSource to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetCreateSnapshotOnSourceQueryParameter(createSnapshotOnSource *bool) {
+	o.CreateSnapshotOnSourceQueryParameter = createSnapshotOnSource
 }
 
 // WithFieldsQueryParameter adds the fields to the snapmirror policies get params
@@ -425,6 +505,17 @@ func (o *SnapmirrorPoliciesGetParams) SetRetentionLabelQueryParameter(retentionL
 	o.RetentionLabelQueryParameter = retentionLabel
 }
 
+// WithRetentionPeriodQueryParameter adds the retentionPeriod to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRetentionPeriodQueryParameter(retentionPeriod *string) *SnapmirrorPoliciesGetParams {
+	o.SetRetentionPeriodQueryParameter(retentionPeriod)
+	return o
+}
+
+// SetRetentionPeriodQueryParameter adds the retentionPeriod to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRetentionPeriodQueryParameter(retentionPeriod *string) {
+	o.RetentionPeriodQueryParameter = retentionPeriod
+}
+
 // WithRetentionPrefixQueryParameter adds the retentionPrefix to the snapmirror policies get params
 func (o *SnapmirrorPoliciesGetParams) WithRetentionPrefixQueryParameter(retentionPrefix *string) *SnapmirrorPoliciesGetParams {
 	o.SetRetentionPrefixQueryParameter(retentionPrefix)
@@ -478,6 +569,17 @@ func (o *SnapmirrorPoliciesGetParams) WithScopeQueryParameter(scope *string) *Sn
 // SetScopeQueryParameter adds the scope to the snapmirror policies get params
 func (o *SnapmirrorPoliciesGetParams) SetScopeQueryParameter(scope *string) {
 	o.ScopeQueryParameter = scope
+}
+
+// WithSnapshotLockModeQueryParameter adds the snapshotLockMode to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithSnapshotLockModeQueryParameter(snapshotLockMode *string) *SnapmirrorPoliciesGetParams {
+	o.SetSnapshotLockModeQueryParameter(snapshotLockMode)
+	return o
+}
+
+// SetSnapshotLockModeQueryParameter adds the snapshotLockMode to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetSnapshotLockModeQueryParameter(snapshotLockMode *string) {
+	o.SnapshotLockModeQueryParameter = snapshotLockMode
 }
 
 // WithSVMNameQueryParameter adds the svmName to the snapmirror policies get params
@@ -598,6 +700,40 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
+	if o.ArchiveAfterDaysQueryParameter != nil {
+
+		// query param archive.after_days
+		var qrArchiveAfterDays int64
+
+		if o.ArchiveAfterDaysQueryParameter != nil {
+			qrArchiveAfterDays = *o.ArchiveAfterDaysQueryParameter
+		}
+		qArchiveAfterDays := swag.FormatInt64(qrArchiveAfterDays)
+		if qArchiveAfterDays != "" {
+
+			if err := r.SetQueryParam("archive.after_days", qArchiveAfterDays); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ArchiveEnabledQueryParameter != nil {
+
+		// query param archive.enabled
+		var qrArchiveEnabled bool
+
+		if o.ArchiveEnabledQueryParameter != nil {
+			qrArchiveEnabled = *o.ArchiveEnabledQueryParameter
+		}
+		qArchiveEnabled := swag.FormatBool(qrArchiveEnabled)
+		if qArchiveEnabled != "" {
+
+			if err := r.SetQueryParam("archive.enabled", qArchiveEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CommentQueryParameter != nil {
 
 		// query param comment
@@ -627,6 +763,40 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qCopyAllSourceSnapshots != "" {
 
 			if err := r.SetQueryParam("copy_all_source_snapshots", qCopyAllSourceSnapshots); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyLatestSourceSnapshotQueryParameter != nil {
+
+		// query param copy_latest_source_snapshot
+		var qrCopyLatestSourceSnapshot bool
+
+		if o.CopyLatestSourceSnapshotQueryParameter != nil {
+			qrCopyLatestSourceSnapshot = *o.CopyLatestSourceSnapshotQueryParameter
+		}
+		qCopyLatestSourceSnapshot := swag.FormatBool(qrCopyLatestSourceSnapshot)
+		if qCopyLatestSourceSnapshot != "" {
+
+			if err := r.SetQueryParam("copy_latest_source_snapshot", qCopyLatestSourceSnapshot); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CreateSnapshotOnSourceQueryParameter != nil {
+
+		// query param create_snapshot_on_source
+		var qrCreateSnapshotOnSource bool
+
+		if o.CreateSnapshotOnSourceQueryParameter != nil {
+			qrCreateSnapshotOnSource = *o.CreateSnapshotOnSourceQueryParameter
+		}
+		qCreateSnapshotOnSource := swag.FormatBool(qrCreateSnapshotOnSource)
+		if qCreateSnapshotOnSource != "" {
+
+			if err := r.SetQueryParam("create_snapshot_on_source", qCreateSnapshotOnSource); err != nil {
 				return err
 			}
 		}
@@ -790,6 +960,23 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
+	if o.RetentionPeriodQueryParameter != nil {
+
+		// query param retention.period
+		var qrRetentionPeriod string
+
+		if o.RetentionPeriodQueryParameter != nil {
+			qrRetentionPeriod = *o.RetentionPeriodQueryParameter
+		}
+		qRetentionPeriod := qrRetentionPeriod
+		if qRetentionPeriod != "" {
+
+			if err := r.SetQueryParam("retention.period", qRetentionPeriod); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.RetentionPrefixQueryParameter != nil {
 
 		// query param retention.prefix
@@ -870,6 +1057,23 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qScope != "" {
 
 			if err := r.SetQueryParam("scope", qScope); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotLockModeQueryParameter != nil {
+
+		// query param snapshot_lock_mode
+		var qrSnapshotLockMode string
+
+		if o.SnapshotLockModeQueryParameter != nil {
+			qrSnapshotLockMode = *o.SnapshotLockModeQueryParameter
+		}
+		qSnapshotLockMode := qrSnapshotLockMode
+		if qSnapshotLockMode != "" {
+
+			if err := r.SetQueryParam("snapshot_lock_mode", qSnapshotLockMode); err != nil {
 				return err
 			}
 		}

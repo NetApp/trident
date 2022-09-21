@@ -72,6 +72,14 @@ type ClientService interface {
 
 	SvmPeerPermissionModify(params *SvmPeerPermissionModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionModifyOK, error)
 
+	TopMetricsSvmClientCollectionGet(params *TopMetricsSvmClientCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmClientCollectionGetOK, error)
+
+	TopMetricsSvmDirectoryCollectionGet(params *TopMetricsSvmDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmDirectoryCollectionGetOK, error)
+
+	TopMetricsSvmFileCollectionGet(params *TopMetricsSvmFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmFileCollectionGetOK, error)
+
+	TopMetricsSvmUserCollectionGet(params *TopMetricsSvmUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmUserCollectionGetOK, error)
+
 	WebSvmGet(params *WebSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebSvmGetOK, error)
 
 	WebSvmModify(params *WebSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebSvmModifyOK, *WebSvmModifyAccepted, error)
@@ -180,6 +188,8 @@ func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runti
 * `name` - Name of the SVM to be created.
 ### Recommended optional properties
 * `ipspace.name` or `ipspace.uuid` - IPspace of the SVM
+* `is_space_reporting_logical` - Logical Space Reporting parameter of the SVM
+* `is_space_enforcement_logical` - Logical Space Enforcement parameter of the SVM
 * `ip_interfaces` - If provided, the following fields are required:
 * `ip_interfaces.name` - Name of the interface
 * `ip_interfaces.ip.address` - IP address
@@ -550,7 +560,7 @@ Optionally, you can specify the aggregate list for creating the volumes, and IPs
 * `source.cluster.name` or `source.cluster.uuid` - Source cluster name or source cluster UUID
 ### Optional properties
 * `destination.ipspace.name` or `destination.ipspace.uuid` - Destination IP Space name or UUID where the vserver will be migrated to.
-* `destination.volume_placement.aggregates` - List of aggregates where the migrating volumes should go on destination.
+* `destination.volume_placement.aggregates` - List of aggregates where the migrating volumes should go on the destination.
 * `auto_cutover` - Option to specify whether to perform cutover automatically. Default is true.
 * `auto_source_cleanup` - Option to specify whether to perform souce cleanup automatically. Default is true.
 * `check_only` - Option to perform all the prechecks for migrate without actually starting the migrate. Default is false.
@@ -1424,6 +1434,158 @@ func (a *Client) SvmPeerPermissionModify(params *SvmPeerPermissionModifyParams, 
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmPeerPermissionModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TopMetricsSvmClientCollectionGet Retrieves a list of clients with the most IO activity.
+*/
+func (a *Client) TopMetricsSvmClientCollectionGet(params *TopMetricsSvmClientCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmClientCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTopMetricsSvmClientCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "top_metrics_svm_client_collection_get",
+		Method:             "GET",
+		PathPattern:        "/svm/svms/{svm.uuid}/top-metrics/clients",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TopMetricsSvmClientCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TopMetricsSvmClientCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TopMetricsSvmClientCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TopMetricsSvmDirectoryCollectionGet Retrieves a list of directories with the most IO activity.
+*/
+func (a *Client) TopMetricsSvmDirectoryCollectionGet(params *TopMetricsSvmDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmDirectoryCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTopMetricsSvmDirectoryCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "top_metrics_svm_directory_collection_get",
+		Method:             "GET",
+		PathPattern:        "/svm/svms/{svm.uuid}/top-metrics/directories",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TopMetricsSvmDirectoryCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TopMetricsSvmDirectoryCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TopMetricsSvmDirectoryCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TopMetricsSvmFileCollectionGet Retrieves a list of files with the most IO activity.
+*/
+func (a *Client) TopMetricsSvmFileCollectionGet(params *TopMetricsSvmFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmFileCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTopMetricsSvmFileCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "top_metrics_svm_file_collection_get",
+		Method:             "GET",
+		PathPattern:        "/svm/svms/{svm.uuid}/top-metrics/files",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TopMetricsSvmFileCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TopMetricsSvmFileCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TopMetricsSvmFileCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TopMetricsSvmUserCollectionGet Retrieves a list of users with the most IO activity.
+*/
+func (a *Client) TopMetricsSvmUserCollectionGet(params *TopMetricsSvmUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmUserCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTopMetricsSvmUserCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "top_metrics_svm_user_collection_get",
+		Method:             "GET",
+		PathPattern:        "/svm/svms/{svm.uuid}/top-metrics/users",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TopMetricsSvmUserCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TopMetricsSvmUserCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TopMetricsSvmUserCollectionGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

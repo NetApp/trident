@@ -19,6 +19,15 @@ import (
 // swagger:model svm_migration_transfer_state
 type SvmMigrationTransferState string
 
+func NewSvmMigrationTransferState(value SvmMigrationTransferState) *SvmMigrationTransferState {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated SvmMigrationTransferState.
+func (m SvmMigrationTransferState) Pointer() *SvmMigrationTransferState {
+	return &m
+}
+
 const (
 
 	// SvmMigrationTransferStateIdle captures enum value "Idle"

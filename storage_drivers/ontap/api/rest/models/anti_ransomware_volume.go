@@ -41,6 +41,9 @@ type AntiRansomwareVolume struct {
 	// Enum: [disabled disable_in_progress dry_run enabled paused enable_paused dry_run_paused]
 	State string `json:"state,omitempty"`
 
+	// Indicates whether or not to set the surge values as historical values.
+	SurgeAsNormal bool `json:"surge_as_normal,omitempty"`
+
 	// suspect files
 	SuspectFiles []*AntiRansomwareVolumeSuspectFilesItems0 `json:"suspect_files,omitempty"`
 }
@@ -570,6 +573,10 @@ type AntiRansomwareVolumeSuspectFilesItems0 struct {
 	// Read Only: true
 	Count int64 `json:"count,omitempty"`
 
+	// Indicates the entropy level of this file type.
+	// Read Only: true
+	Entropy string `json:"entropy,omitempty"`
+
 	// File formats observed by the Anti-ransomware analytics engine on the volume.
 	// Read Only: true
 	Format string `json:"format,omitempty"`
@@ -588,6 +595,10 @@ func (m *AntiRansomwareVolumeSuspectFilesItems0) ContextValidate(ctx context.Con
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateEntropy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFormat(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -601,6 +612,15 @@ func (m *AntiRansomwareVolumeSuspectFilesItems0) ContextValidate(ctx context.Con
 func (m *AntiRansomwareVolumeSuspectFilesItems0) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "count", "body", int64(m.Count)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeSuspectFilesItems0) contextValidateEntropy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "entropy", "body", string(m.Entropy)); err != nil {
 		return err
 	}
 

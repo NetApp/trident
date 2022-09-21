@@ -38,7 +38,23 @@ type ClientService interface {
 
 	DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSModifyOK, error)
 
+	GlobalCacheSettingGet(params *GlobalCacheSettingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GlobalCacheSettingGetOK, error)
+
+	GlobalCacheSettingModify(params *GlobalCacheSettingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GlobalCacheSettingModifyOK, error)
+
+	GroupMembershipSettingsCollectionGet(params *GroupMembershipSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsCollectionGetOK, error)
+
+	GroupMembershipSettingsGet(params *GroupMembershipSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsGetOK, error)
+
+	GroupMembershipSettingsModify(params *GroupMembershipSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsModifyOK, error)
+
 	HostRecordGet(params *HostRecordGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostRecordGetOK, error)
+
+	HostsSettingsCollectionGet(params *HostsSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsCollectionGetOK, error)
+
+	HostsSettingsGet(params *HostsSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsGetOK, error)
+
+	HostsSettingsModify(params *HostsSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsModifyOK, error)
 
 	LdapCollectionGet(params *LdapCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapCollectionGetOK, error)
 
@@ -49,6 +65,16 @@ type ClientService interface {
 	LdapGet(params *LdapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapGetOK, error)
 
 	LdapModify(params *LdapModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapModifyOK, error)
+
+	LdapSchemaCollectionGet(params *LdapSchemaCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaCollectionGetOK, error)
+
+	LdapSchemaCreate(params *LdapSchemaCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaCreateCreated, error)
+
+	LdapSchemaDelete(params *LdapSchemaDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaDeleteOK, error)
+
+	LdapSchemaGet(params *LdapSchemaGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaGetOK, error)
+
+	LdapSchemaModify(params *LdapSchemaModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaModifyOK, error)
 
 	LocalHostCollectionGet(params *LocalHostCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostCollectionGetOK, error)
 
@@ -70,6 +96,16 @@ type ClientService interface {
 
 	NameMappingPositionGet(params *NameMappingPositionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingPositionGetOK, error)
 
+	NetgroupFileDelete(params *NetgroupFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupFileDeleteOK, error)
+
+	NetgroupFileGet(params *NetgroupFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupFileGetOK, error)
+
+	NetgroupsSettingsCollectionGet(params *NetgroupsSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsCollectionGetOK, error)
+
+	NetgroupsSettingsGet(params *NetgroupsSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsGetOK, error)
+
+	NetgroupsSettingsModify(params *NetgroupsSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsModifyOK, error)
+
 	NisCollectionGet(params *NisCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisCollectionGetOK, error)
 
 	NisCreate(params *NisCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisCreateCreated, error)
@@ -90,6 +126,12 @@ type ClientService interface {
 
 	UnixGroupModify(params *UnixGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupModifyOK, error)
 
+	UnixGroupSettingsCollectionGet(params *UnixGroupSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsCollectionGetOK, error)
+
+	UnixGroupSettingsGet(params *UnixGroupSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsGetOK, error)
+
+	UnixGroupSettingsModify(params *UnixGroupSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsModifyOK, error)
+
 	UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUserDeleteOK, error)
 
 	UnixGroupUsersCollectionGet(params *UnixGroupUsersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCollectionGetOK, error)
@@ -107,6 +149,12 @@ type ClientService interface {
 	UnixUserGet(params *UnixUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserGetOK, error)
 
 	UnixUserModify(params *UnixUserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserModifyOK, error)
+
+	UnixUserSettingsCollectionGet(params *UnixUserSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsCollectionGetOK, error)
+
+	UnixUserSettingsGet(params *UnixUserSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsGetOK, error)
+
+	UnixUserSettingsModify(params *UnixUserSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsModifyOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -383,6 +431,226 @@ func (a *Client) DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
+  GlobalCacheSettingGet Retrieves a global nameservice cache setting.
+### Related ONTAP commands
+* `vserver services name-service cache settings show`
+### Learn more
+* [`DOC /name-services/cache/setting`](#docs-name-services-name-services_cache_setting)
+
+*/
+func (a *Client) GlobalCacheSettingGet(params *GlobalCacheSettingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GlobalCacheSettingGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGlobalCacheSettingGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "global_cache_setting_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/setting",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GlobalCacheSettingGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GlobalCacheSettingGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GlobalCacheSettingGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  GlobalCacheSettingModify Updates a global nameservice cache setting.
+### Important notes
+  - Both the cache eviction time and remote fetch option can be modified.
+### Related ONTAP commands
+* `vserver services name-service cache settings modify`
+### Learn more
+* [`DOC /name-services/cache/setting`](#docs-name-services-name-services_cache_setting)
+
+*/
+func (a *Client) GlobalCacheSettingModify(params *GlobalCacheSettingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GlobalCacheSettingModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGlobalCacheSettingModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "global_cache_setting_modify",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/setting",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GlobalCacheSettingModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GlobalCacheSettingModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GlobalCacheSettingModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  GroupMembershipSettingsCollectionGet Retrieves group-membership cache settings.
+### Related ONTAP commands
+* `vserver services name-service cache group-membership settings show`
+### Learn more
+* [`DOC /name-services/cache/group-membership/settings`](#docs-name-services-name-services_cache_group-membership_settings)
+
+*/
+func (a *Client) GroupMembershipSettingsCollectionGet(params *GroupMembershipSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupMembershipSettingsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_membership_settings_collection_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/group-membership/settings",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupMembershipSettingsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupMembershipSettingsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupMembershipSettingsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  GroupMembershipSettingsGet Retrieves a group-membership cache setting for a given SVM.
+### Related ONTAP commands
+* `vserver services name-service cache group-membership settings show`
+### Learn more
+* [`DOC /name-services/cache/group-membership/settings`](#docs-name-services-name-services_cache_group-membership_settings)
+
+*/
+func (a *Client) GroupMembershipSettingsGet(params *GroupMembershipSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupMembershipSettingsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_membership_settings_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/group-membership/settings/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupMembershipSettingsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupMembershipSettingsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupMembershipSettingsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  GroupMembershipSettingsModify Updates a group-membership cache setting.
+### Important notes
+  - svm.uuid field cannot be empty.
+  - Returns success in case no values are provided for update.
+### Related ONTAP commands
+* `vserver services name-service cache group-membership settings modify`
+### Learn more
+* [`DOC /name-services/cache/group-membership/settings`](#docs-name-services-name-services_cache_group-membership_settings)
+
+*/
+func (a *Client) GroupMembershipSettingsModify(params *GroupMembershipSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupMembershipSettingsModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_membership_settings_modify",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/group-membership/settings/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupMembershipSettingsModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupMembershipSettingsModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupMembershipSettingsModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   HostRecordGet Retrieves the IP address of the specified hostname.
 ### Related ONTAP commands
 * `vserver services name-service getxxbyyy getnameinfo`
@@ -421,6 +689,138 @@ func (a *Client) HostRecordGet(params *HostRecordGetParams, authInfo runtime.Cli
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*HostRecordGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  HostsSettingsCollectionGet Retrieves host cache settings.
+### Related ONTAP commands
+* `vserver services name-service cache hosts settings show`
+### Learn more
+* [`DOC /name-services/cache/host/settings`](#docs-name-services-name-services_cache_host_settings)
+
+*/
+func (a *Client) HostsSettingsCollectionGet(params *HostsSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewHostsSettingsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "hosts_settings_collection_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/host/settings",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &HostsSettingsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*HostsSettingsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*HostsSettingsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  HostsSettingsGet Retrieves a host cache setting for a given SVM.
+### Related ONTAP commands
+* `vserver services name-service cache hosts settings show`
+### Learn more
+* [`DOC /name-services/cache/host/settings`](#docs-name-services-name-services_cache_host_settings)
+
+*/
+func (a *Client) HostsSettingsGet(params *HostsSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewHostsSettingsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "hosts_settings_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/host/settings/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &HostsSettingsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*HostsSettingsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*HostsSettingsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  HostsSettingsModify Updates a host cache setting.
+### Important notes
+  - svm.uuid field cannot be empty.
+  - Returns success in case no values are provided for update.
+### Related ONTAP commands
+* `vserver services name-service cache hosts settings modify`
+### Learn more
+* [`DOC /name-services/cache/host/settings`](#docs-name-services-name-services_cache_host_settings)
+
+*/
+func (a *Client) HostsSettingsModify(params *HostsSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewHostsSettingsModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "hosts_settings_modify",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/host/settings/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &HostsSettingsModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*HostsSettingsModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*HostsSettingsModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -664,6 +1064,217 @@ func (a *Client) LdapModify(params *LdapModifyParams, authInfo runtime.ClientAut
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LdapModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LdapSchemaCollectionGet Retrieves all the LDAP schemas.
+### Related ONTAP commands
+* `vserver services name-service ldap client schema show`
+
+*/
+func (a *Client) LdapSchemaCollectionGet(params *LdapSchemaCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLdapSchemaCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ldap_schema_collection_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/ldap-schemas",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LdapSchemaCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LdapSchemaCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LdapSchemaCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LdapSchemaCreate Creates an LDAP schema.
+### Important notes
+* To create a new schema, first create a copy of the default schemas provided by ONTAP and then modify the copy accordingly.
+* If no value is specified for the owner.uuid or owner.name fields, the cserver UUID and name are used by default.
+### Related ONTAP commands
+* `vserver services name-service ldap client schema copy`
+
+*/
+func (a *Client) LdapSchemaCreate(params *LdapSchemaCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLdapSchemaCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ldap_schema_create",
+		Method:             "POST",
+		PathPattern:        "/name-services/ldap-schemas",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LdapSchemaCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LdapSchemaCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LdapSchemaCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LdapSchemaDelete Deletes an existing schema.
+### Related ONTAP commands
+* `vserver services name-service ldap client schema delete`
+
+*/
+func (a *Client) LdapSchemaDelete(params *LdapSchemaDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLdapSchemaDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ldap_schema_delete",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/ldap-schemas/{owner.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LdapSchemaDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LdapSchemaDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LdapSchemaDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LdapSchemaGet Retrieves LDAP schema details for a given owner and schema.
+### Related ONTAP commands
+* `vserver services name-service ldap client schema show`
+
+*/
+func (a *Client) LdapSchemaGet(params *LdapSchemaGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLdapSchemaGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ldap_schema_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/ldap-schemas/{owner.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LdapSchemaGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LdapSchemaGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LdapSchemaGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LdapSchemaModify Updates LDAP schema details for a given owner and schema.
+### Important notes
+* The default LDAP schemas provided by ONTAP cannot be modified.
+* LDAP schemas can only be modified by the owner of the schema.
+### Related ONTAP commands
+* `vserver services name-service ldap client schema modify`
+
+*/
+func (a *Client) LdapSchemaModify(params *LdapSchemaModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLdapSchemaModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ldap_schema_modify",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/ldap-schemas/{owner.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LdapSchemaModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LdapSchemaModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LdapSchemaModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1114,10 +1725,234 @@ func (a *Client) NameMappingPositionGet(params *NameMappingPositionGetParams, au
 }
 
 /*
+  NetgroupFileDelete Deletes the netgroup file for a given SVM.
+### Related ONTAP commands
+* `vserver services name-service netgroup file delete`
+### Learn more
+* [`DOC /name-services/netgroup-files/{svm.uuid}`](#docs-name-services-name-services_netgroup-files_{svm.uuid})
+
+*/
+func (a *Client) NetgroupFileDelete(params *NetgroupFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupFileDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetgroupFileDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "netgroup_file_delete",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/netgroup-files/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetgroupFileDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetgroupFileDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetgroupFileDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  NetgroupFileGet Retrieves the netgroup file details for a given SVM if the header is set as "accept: application/json".
+If the header is set as "accept: multipart/form-data", the raw netgroup file of the given SVM is retrieved.
+### Important notes
+* For a raw netgroup file, set the header as "accept: multipart/form-data" else "accept: application/json" for netgroup file details.
+* Maximum size supported for raw netgroup file is 5MB, but netgroup file details of any valid SVM can be retrived if present.
+### Related ONTAP commands
+* `vserver services name-service netgroup status`
+* `vserver services name-service netgroup file show`
+### Learn more
+* [`DOC /name-services/netgroup-files/{svm.uuid}`](#docs-name-services-name-services_netgroup-files_{svm.uuid})
+
+*/
+func (a *Client) NetgroupFileGet(params *NetgroupFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupFileGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetgroupFileGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "netgroup_file_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/netgroup-files/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetgroupFileGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetgroupFileGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetgroupFileGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  NetgroupsSettingsCollectionGet Retrieves netgroups cache settings.
+### Related ONTAP commands
+* `vserver services name-service cache netgroups settings show`
+### Learn more
+* [`DOC /name-services/cache/netgroup/settings`](#docs-name-services-name-services_cache_netgroup_settings)
+
+*/
+func (a *Client) NetgroupsSettingsCollectionGet(params *NetgroupsSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetgroupsSettingsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "netgroups_settings_collection_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/netgroup/settings",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetgroupsSettingsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetgroupsSettingsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetgroupsSettingsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  NetgroupsSettingsGet Retrieves a netgroup cache setting for a given SVM.
+### Related ONTAP commands
+* `vserver services name-service cache netgroups settings show`
+### Learn more
+* [`DOC /name-services/cache/netgroup/settings`](#docs-name-services-name-services_cache_netgroup_settings)
+
+*/
+func (a *Client) NetgroupsSettingsGet(params *NetgroupsSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetgroupsSettingsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "netgroups_settings_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/netgroup/settings/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetgroupsSettingsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetgroupsSettingsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetgroupsSettingsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  NetgroupsSettingsModify Updates a netgroup cache setting.
+### Important notes
+  - svm.uuid field cannot be empty.
+  - Returns success in case no values are provided for update.
+### Related ONTAP commands
+* `vserver services name-service cache netgroups settings modify`
+### Learn more
+* [`DOC /name-services/cache/netgroup/settings`](#docs-name-services-name-services_cache_netgroup_settings)
+
+*/
+func (a *Client) NetgroupsSettingsModify(params *NetgroupsSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetgroupsSettingsModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "netgroups_settings_modify",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/netgroup/settings/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetgroupsSettingsModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetgroupsSettingsModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetgroupsSettingsModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   NisCollectionGet Retrieves NIS domain configurations of all the SVMs. The bound_servers field indicates the successfully bound NIS servers. Lookups and authentications fail if there are no bound servers.
 ### Related ONTAP commands
 * `vserver services name-service nis-domain show`
 * `vserver services name-service nis-domain show-bound`
+* `vserver services name-service nis-domain show-bound-debug`
 ### Learn more
 * [`DOC /name-services/nis`](#docs-name-services-name-services_nis)
 
@@ -1259,6 +2094,7 @@ func (a *Client) NisDelete(params *NisDeleteParams, authInfo runtime.ClientAuthI
 ### Related ONTAP commands
 * `vserver services name-service nis-domain show`
 * `vserver services name-service nis-domain show-bound`
+* `vserver services name-service nis-domain show-bound-debug`
 ### Learn more
 * [`DOC /name-services/nis`](#docs-name-services-name-services_nis)
 
@@ -1393,6 +2229,8 @@ func (a *Client) UnixGroupCollectionGet(params *UnixGroupCollectionGetParams, au
 /*
   UnixGroupCreate Creates the local UNIX group configuration for the specified SVM.<br/>
 Group name and group ID are mandatory parameters.
+### Important notes
+* The default limit for local UNIX groups and group members is 32768.
 ### Learn more
 * [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
 
@@ -1557,6 +2395,138 @@ func (a *Client) UnixGroupModify(params *UnixGroupModifyParams, authInfo runtime
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*UnixGroupModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupSettingsCollectionGet Retrieves unix-group cache settings.
+### Related ONTAP commands
+* `vserver services name-service cache unix-group settings show`
+### Learn more
+* [`DOC /name-services/cache/unix-group/settings`](#docs-name-services-name-services_cache_unix-group_settings)
+
+*/
+func (a *Client) UnixGroupSettingsCollectionGet(params *UnixGroupSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupSettingsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_settings_collection_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/unix-group/settings",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupSettingsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupSettingsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupSettingsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupSettingsGet Retrieves a unix-group cache setting for a given SVM.
+### Related ONTAP commands
+* `vserver services name-service cache unix-group settings show`
+### Learn more
+* [`DOC /name-services/cache/unix-group/settings`](#docs-name-services-name-services_cache_unix-group_settings)
+
+*/
+func (a *Client) UnixGroupSettingsGet(params *UnixGroupSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupSettingsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_settings_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/unix-group/settings/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupSettingsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupSettingsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupSettingsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupSettingsModify Updates unix-group cache settings.
+### Important notes
+  - svm.uuid field cannot be empty.
+  - Returns success in case no values are provided for update.
+### Related ONTAP commands
+* `vserver services name-service cache unix-group settings modify`
+### Learn more
+* [`DOC /name-services/cache/unix-group/settings`](#docs-name-services-name-services_cache_unix-group_settings)
+
+*/
+func (a *Client) UnixGroupSettingsModify(params *UnixGroupSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupSettingsModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_settings_modify",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/unix-group/settings/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupSettingsModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupSettingsModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupSettingsModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1732,6 +2702,8 @@ func (a *Client) UnixGroupUsersGet(params *UnixGroupUsersGetParams, authInfo run
 
 /*
   UnixUserCollectionGet Retrieves all of the UNIX users for all of the SVMs.
+### Important notes
+* The current UNIX users count can be retrieved from the num_records field by calling the API with the paramter "return_records=false".
 ### Related ONTAP commands
 * `vserver services name-service unix-user show`
 
@@ -1773,6 +2745,8 @@ func (a *Client) UnixUserCollectionGet(params *UnixUserCollectionGetParams, auth
 
 /*
   UnixUserCreate Creates the local UNIX user configuration for an SVM.<br/>
+### Important notes
+* The default limit for local UNIX users is 32768.
 
 */
 func (a *Client) UnixUserCreate(params *UnixUserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserCreateCreated, error) {
@@ -1928,6 +2902,138 @@ func (a *Client) UnixUserModify(params *UnixUserModifyParams, authInfo runtime.C
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*UnixUserModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixUserSettingsCollectionGet Retrieves unix-user cache settings.
+### Related ONTAP commands
+* `vserver services name-service cache unix-user settings show`
+### Learn more
+* [`DOC /name-services/cache/unix-user/settings`](#docs-name-services-name-services_cache_unix-user_settings)
+
+*/
+func (a *Client) UnixUserSettingsCollectionGet(params *UnixUserSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserSettingsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_settings_collection_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/unix-user/settings",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserSettingsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserSettingsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserSettingsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixUserSettingsGet Retrieves unix-user cache settings for a given SVM.
+### Related ONTAP commands
+* `vserver services name-service cache unix-user settings show`
+### Learn more
+* [`DOC /name-services/cache/unix-user/settings`](#docs-name-services-name-services_cache_unix-user_settings)
+
+*/
+func (a *Client) UnixUserSettingsGet(params *UnixUserSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserSettingsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_settings_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/cache/unix-user/settings/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserSettingsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserSettingsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserSettingsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixUserSettingsModify Updates a unix-user cache setting.
+### Important notes
+  - svm.uuid field cannot be empty.
+  - Returns success in case no values are provided for update.
+### Related ONTAP commands
+* `vserver services name-service cache unix-user settings modify`
+### Learn more
+* [`DOC /name-services/cache/unix-user/settings`](#docs-name-services-name-services_cache_unix-user_settings)
+
+*/
+func (a *Client) UnixUserSettingsModify(params *UnixUserSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserSettingsModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_settings_modify",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/cache/unix-user/settings/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserSettingsModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserSettingsModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserSettingsModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

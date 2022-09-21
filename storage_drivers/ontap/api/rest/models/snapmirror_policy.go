@@ -27,14 +27,23 @@ type SnapmirrorPolicy struct {
 	// Comment associated with the policy.
 	Comment string `json:"comment,omitempty"`
 
-	// Specifies whether all source Snapshot copies should be copied to the destination on a transfer rather than specifying specific retentions. This is applicable only to async policies.
-	CopyAllSourceSnapshots *bool `json:"copy_all_source_snapshots,omitempty"`
+	// Specifies that all the source Snapshot copies (including the one created by SnapMirror before the transfer begins) should be copied to the destination on a transfer. "Retention" properties cannot be specified along with this property. This is applicable only to async policies. Property can only be set to 'true'.
+	// Example: true
+	CopyAllSourceSnapshots bool `json:"copy_all_source_snapshots,omitempty"`
+
+	// Specifies that the latest source Snapshot copy (created by SnapMirror before the transfer begins) should be copied to the destination on a transfer. "Retention" properties cannot be specified along with this property. This is applicable only to async policies. Property can only be set to 'true'.
+	// Example: true
+	CopyLatestSourceSnapshot bool `json:"copy_latest_source_snapshot,omitempty"`
+
+	// Specifies whether a new Snapshot copy should be created on the source at the beginning of an update or resync operation. This is applicable only to async policies. Property can only be set to 'false'.
+	// Example: false
+	CreateSnapshotOnSource bool `json:"create_snapshot_on_source,omitempty"`
 
 	// Specifies which configuration of the source SVM is replicated to the destination SVM. This property is applicable only for SVM data protection with "async" policy type.
 	// Enum: [full exclude_network_config exclude_network_and_protocol_config]
 	IdentityPreservation string `json:"identity_preservation,omitempty"`
 
-	// name
+	// Name of the policy.
 	// Example: Asynchronous
 	Name string `json:"name,omitempty"`
 
@@ -1083,7 +1092,7 @@ func (m *SnapmirrorPolicySyncCommonSnapshotScheduleLinks) UnmarshalBinary(b []by
 	return nil
 }
 
-// SnapmirrorPolicyTransferSchedule The schedule used to update asynchronous relationships.
+// SnapmirrorPolicyTransferSchedule The schedule used to update asynchronous relationships. Only cron schedules are supported for SnapMirror.
 //
 // swagger:model SnapmirrorPolicyTransferSchedule
 type SnapmirrorPolicyTransferSchedule struct {

@@ -16,7 +16,7 @@ import (
 )
 
 // FcInterface A Fibre Channel (FC) interface is the logical endpoint for FC network connections to an SVM. An FC interface provides FC access to storage within the interface SVM using either Fibre Channel Protocol or NVMe over Fibre Channel (NVMe/FC).<br/>
-// An FC interface is created on an FC port which is located on a cluster node. The FC port must be specified to identify the location of the interface for a POST or PATCH operation that relocates an interface. You can identify the port by supplying either the node and port names or the port UUID.
+// An FC interface is created on an FC port which is located on a cluster node. The FC port must be specified to identify the location of the interface for a POST or PATCH operation that relocates an interface. You can identify the port by supplying either the cluster node and port names or the port UUID.
 //
 // swagger:model fc_interface
 type FcInterface struct {
@@ -57,7 +57,7 @@ type FcInterface struct {
 	PortAddress string `json:"port_address,omitempty"`
 
 	// The current operational state of the FC interface. The state is set to _down_ if the interface is not enabled.<br/>
-	// If the node hosting the port is down or unavailable, no state value is returned.
+	// If the cluster node hosting the port is down or unavailable, no state value is returned.
 	//
 	// Read Only: true
 	// Enum: [up down]
@@ -592,7 +592,7 @@ func (m *FcInterfaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcInterfaceLocation The location of the FC interface is defined by the location of its port. An FC port is identified by its UUID, or a combination of its node name and port name. Either the UUID or the node name and port name are required for POST. To move an interface, supply either the UUID or the node name and port name in a PATCH.<br/>
+// FcInterfaceLocation The location of the FC interface is defined by the location of its port. An FC port is identified by its UUID, or a combination of its cluster node name and port name. Either the UUID or the cluster node name and port name are required for POST. To move an interface, supply either the UUID or the cluster node name and port name in a PATCH.<br/>
 // The location of an FC interface can be set using "location.home_node" and "location.home_port" during a POST or PATCH. "location.node" and "location.port" refer to the current location of the FC interface. This can be different from "location.home_node" and "location.home_port" in instances where the FC interface failed over due to an offline node.
 //
 //
@@ -603,7 +603,7 @@ type FcInterfaceLocation struct {
 	HomeNode *FcInterfaceLocationHomeNode `json:"home_node,omitempty"`
 
 	// home port
-	HomePort *FcPortReference `json:"home_port,omitempty"`
+	HomePort *FcInterfaceLocationHomePort `json:"home_port,omitempty"`
 
 	// Indicates whether or not the FC interface currently resides on the home node.
 	// Read Only: true
@@ -613,7 +613,7 @@ type FcInterfaceLocation struct {
 	Node *FcInterfaceLocationNode `json:"node,omitempty"`
 
 	// port
-	Port *FcPortReference `json:"port,omitempty"`
+	Port *FcInterfaceLocationPort `json:"port,omitempty"`
 }
 
 // Validate validates this fc interface location
@@ -1003,6 +1003,271 @@ func (m *FcInterfaceLocationHomeNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// FcInterfaceLocationHomePort An FC port is the physical port of an FC adapter on a cluster node that can be connected to an FC network.
+//
+//
+// swagger:model FcInterfaceLocationHomePort
+type FcInterfaceLocationHomePort struct {
+
+	// links
+	Links *FcInterfaceLocationHomePortLinks `json:"_links,omitempty"`
+
+	// The name of the FC port.
+	//
+	// Example: 0a
+	Name string `json:"name,omitempty"`
+
+	// node
+	Node *FcInterfaceLocationHomePortNode `json:"node,omitempty"`
+
+	// The unique identifier of the FC port.
+	//
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this fc interface location home port
+func (m *FcInterfaceLocationHomePort) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FcInterfaceLocationHomePort) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "home_port" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FcInterfaceLocationHomePort) validateNode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Node) { // not required
+		return nil
+	}
+
+	if m.Node != nil {
+		if err := m.Node.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "home_port" + "." + "node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this fc interface location home port based on the context it is used
+func (m *FcInterfaceLocationHomePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FcInterfaceLocationHomePort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "home_port" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FcInterfaceLocationHomePort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Node != nil {
+		if err := m.Node.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "home_port" + "." + "node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FcInterfaceLocationHomePort) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FcInterfaceLocationHomePort) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceLocationHomePort
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FcInterfaceLocationHomePortLinks fc interface location home port links
+//
+// swagger:model FcInterfaceLocationHomePortLinks
+type FcInterfaceLocationHomePortLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this fc interface location home port links
+func (m *FcInterfaceLocationHomePortLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FcInterfaceLocationHomePortLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "home_port" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this fc interface location home port links based on the context it is used
+func (m *FcInterfaceLocationHomePortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FcInterfaceLocationHomePortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "home_port" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FcInterfaceLocationHomePortLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FcInterfaceLocationHomePortLinks) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceLocationHomePortLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FcInterfaceLocationHomePortNode The node on which the FC port is located.
+//
+//
+// swagger:model FcInterfaceLocationHomePortNode
+type FcInterfaceLocationHomePortNode struct {
+
+	// The name of the node on which the FC port is located.
+	//
+	// Example: node1
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this fc interface location home port node
+func (m *FcInterfaceLocationHomePortNode) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this fc interface location home port node based on context it is used
+func (m *FcInterfaceLocationHomePortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FcInterfaceLocationHomePortNode) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FcInterfaceLocationHomePortNode) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceLocationHomePortNode
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // FcInterfaceLocationNode fc interface location node
 //
 // swagger:model FcInterfaceLocationNode
@@ -1176,6 +1441,271 @@ func (m *FcInterfaceLocationNodeLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *FcInterfaceLocationNodeLinks) UnmarshalBinary(b []byte) error {
 	var res FcInterfaceLocationNodeLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FcInterfaceLocationPort An FC port is the physical port of an FC adapter on a cluster node that can be connected to an FC network.
+//
+//
+// swagger:model FcInterfaceLocationPort
+type FcInterfaceLocationPort struct {
+
+	// links
+	Links *FcInterfaceLocationPortLinks `json:"_links,omitempty"`
+
+	// The name of the FC port.
+	//
+	// Example: 0a
+	Name string `json:"name,omitempty"`
+
+	// node
+	Node *FcInterfaceLocationPortNode `json:"node,omitempty"`
+
+	// The unique identifier of the FC port.
+	//
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this fc interface location port
+func (m *FcInterfaceLocationPort) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FcInterfaceLocationPort) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "port" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FcInterfaceLocationPort) validateNode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Node) { // not required
+		return nil
+	}
+
+	if m.Node != nil {
+		if err := m.Node.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "port" + "." + "node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this fc interface location port based on the context it is used
+func (m *FcInterfaceLocationPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FcInterfaceLocationPort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "port" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FcInterfaceLocationPort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Node != nil {
+		if err := m.Node.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "port" + "." + "node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FcInterfaceLocationPort) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FcInterfaceLocationPort) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceLocationPort
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FcInterfaceLocationPortLinks fc interface location port links
+//
+// swagger:model FcInterfaceLocationPortLinks
+type FcInterfaceLocationPortLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this fc interface location port links
+func (m *FcInterfaceLocationPortLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FcInterfaceLocationPortLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "port" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this fc interface location port links based on the context it is used
+func (m *FcInterfaceLocationPortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FcInterfaceLocationPortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "port" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FcInterfaceLocationPortLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FcInterfaceLocationPortLinks) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceLocationPortLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FcInterfaceLocationPortNode The node on which the FC port is located.
+//
+//
+// swagger:model FcInterfaceLocationPortNode
+type FcInterfaceLocationPortNode struct {
+
+	// The name of the node on which the FC port is located.
+	//
+	// Example: node1
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this fc interface location port node
+func (m *FcInterfaceLocationPortNode) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this fc interface location port node based on context it is used
+func (m *FcInterfaceLocationPortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FcInterfaceLocationPortNode) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FcInterfaceLocationPortNode) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceLocationPortNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

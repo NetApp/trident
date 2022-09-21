@@ -22,7 +22,8 @@ type PortsetInterfaceResponse struct {
 	// links
 	Links *PortsetInterfaceResponseLinks `json:"_links,omitempty"`
 
-	// Number of records.
+	// The number of records in the response.
+	// Example: 1
 	NumRecords int64 `json:"num_records,omitempty"`
 
 	// records

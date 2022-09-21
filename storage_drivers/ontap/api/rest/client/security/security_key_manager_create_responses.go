@@ -85,7 +85,7 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
-| 65536038 | A maximum of 4 active key servers are allowed. |
+| 65536038 | A maximum of 4 active primary key servers are allowed. |
 | 65536214 | Failed to generate cluster key encryption key. |
 | 65536216 | Failed to add cluster key encryption key. |
 | 65536310 | Failed to setup the Onboard Key Manager because the MetroCluster peer is unhealthy. |

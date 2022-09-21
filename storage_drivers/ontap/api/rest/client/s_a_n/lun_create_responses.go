@@ -120,7 +120,13 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 | 5374928 | An incomplete attribute name/value pair was supplied. |
 | 5374929 | The combined sizes of an attribute name and value are too large. |
 | 5374932 | A name for an attribute was duplicated. |
+| 5374942 | The property cannot be specified at the same time when creating a LUN as a clone. The `target` property of the error object identifies the other property given with clone. |
+| 5374943 | The property cannot be specified at the same time when creating a LUN as a copy. The `target` property of the error object identifies the other property given with copy. |
+| 5374944 | The property cannot be specified when converting an NVMe namespace into a LUN. The `target` property of the error object identifies the property. |
 | 13565952 | The LUN clone request failed. |
+| 72089755 | NVMe namespace with a block size of 4096 bytes cannot be converted to a LUN. |
+| 72089756 | Namespace is currently mapped to subsystem. |
+| 72089757 | NVMe namespace in a Snapshot copy cannot be converted to a LUN. |
 
 */
 type LunCreateDefault struct {

@@ -32,6 +32,14 @@ type MetroclusterInterconnect struct {
 	// List of objects which contain interface information such as its IP address, netmask and gateway.
 	Interfaces []*MetroclusterInterconnectInterfacesItems0 `json:"interfaces,omitempty"`
 
+	// mirror
+	Mirror *MetroclusterInterconnectMirror `json:"mirror,omitempty"`
+
+	// Displays the NVRAM mirror multipath policy for the nodes configured in a MetroCluster.
+	// Read Only: true
+	// Enum: [no_mp static_map dynamic_map round_robin]
+	MultipathPolicy string `json:"multipath_policy,omitempty"`
+
 	// node
 	Node *MetroclusterInterconnectNode `json:"node,omitempty"`
 
@@ -71,6 +79,14 @@ func (m *MetroclusterInterconnect) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateInterfaces(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMirror(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMultipathPolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -145,6 +161,99 @@ func (m *MetroclusterInterconnect) validateInterfaces(formats strfmt.Registry) e
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *MetroclusterInterconnect) validateMirror(formats strfmt.Registry) error {
+	if swag.IsZero(m.Mirror) { // not required
+		return nil
+	}
+
+	if m.Mirror != nil {
+		if err := m.Mirror.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("mirror")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var metroclusterInterconnectTypeMultipathPolicyPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_mp","static_map","dynamic_map","round_robin"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		metroclusterInterconnectTypeMultipathPolicyPropEnum = append(metroclusterInterconnectTypeMultipathPolicyPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// metrocluster_interconnect
+	// MetroclusterInterconnect
+	// multipath_policy
+	// MultipathPolicy
+	// no_mp
+	// END DEBUGGING
+	// MetroclusterInterconnectMultipathPolicyNoMp captures enum value "no_mp"
+	MetroclusterInterconnectMultipathPolicyNoMp string = "no_mp"
+
+	// BEGIN DEBUGGING
+	// metrocluster_interconnect
+	// MetroclusterInterconnect
+	// multipath_policy
+	// MultipathPolicy
+	// static_map
+	// END DEBUGGING
+	// MetroclusterInterconnectMultipathPolicyStaticMap captures enum value "static_map"
+	MetroclusterInterconnectMultipathPolicyStaticMap string = "static_map"
+
+	// BEGIN DEBUGGING
+	// metrocluster_interconnect
+	// MetroclusterInterconnect
+	// multipath_policy
+	// MultipathPolicy
+	// dynamic_map
+	// END DEBUGGING
+	// MetroclusterInterconnectMultipathPolicyDynamicMap captures enum value "dynamic_map"
+	MetroclusterInterconnectMultipathPolicyDynamicMap string = "dynamic_map"
+
+	// BEGIN DEBUGGING
+	// metrocluster_interconnect
+	// MetroclusterInterconnect
+	// multipath_policy
+	// MultipathPolicy
+	// round_robin
+	// END DEBUGGING
+	// MetroclusterInterconnectMultipathPolicyRoundRobin captures enum value "round_robin"
+	MetroclusterInterconnectMultipathPolicyRoundRobin string = "round_robin"
+)
+
+// prop value enum
+func (m *MetroclusterInterconnect) validateMultipathPolicyEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterInterconnectTypeMultipathPolicyPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MetroclusterInterconnect) validateMultipathPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.MultipathPolicy) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateMultipathPolicyEnum("multipath_policy", "body", m.MultipathPolicy); err != nil {
+		return err
 	}
 
 	return nil
@@ -388,6 +497,14 @@ func (m *MetroclusterInterconnect) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateMirror(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMultipathPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -450,6 +567,29 @@ func (m *MetroclusterInterconnect) contextValidateInterfaces(ctx context.Context
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *MetroclusterInterconnect) contextValidateMirror(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Mirror != nil {
+		if err := m.Mirror.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("mirror")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterInterconnect) contextValidateMultipathPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "multipath_policy", "body", string(m.MultipathPolicy)); err != nil {
+		return err
 	}
 
 	return nil
@@ -606,6 +746,141 @@ func (m *MetroclusterInterconnectInterfacesItems0) MarshalBinary() ([]byte, erro
 // UnmarshalBinary interface implementation
 func (m *MetroclusterInterconnectInterfacesItems0) UnmarshalBinary(b []byte) error {
 	var res MetroclusterInterconnectInterfacesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterInterconnectMirror metrocluster interconnect mirror
+//
+// swagger:model MetroclusterInterconnectMirror
+type MetroclusterInterconnectMirror struct {
+
+	// Specifies the administrative state of the NVRAM mirror between partner nodes.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Specifies the operational state of the NVRAM mirror between partner nodes.
+	// Read Only: true
+	// Enum: [online offline unknown]
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this metrocluster interconnect mirror
+func (m *MetroclusterInterconnectMirror) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var metroclusterInterconnectMirrorTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["online","offline","unknown"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		metroclusterInterconnectMirrorTypeStatePropEnum = append(metroclusterInterconnectMirrorTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// MetroclusterInterconnectMirror
+	// MetroclusterInterconnectMirror
+	// state
+	// State
+	// online
+	// END DEBUGGING
+	// MetroclusterInterconnectMirrorStateOnline captures enum value "online"
+	MetroclusterInterconnectMirrorStateOnline string = "online"
+
+	// BEGIN DEBUGGING
+	// MetroclusterInterconnectMirror
+	// MetroclusterInterconnectMirror
+	// state
+	// State
+	// offline
+	// END DEBUGGING
+	// MetroclusterInterconnectMirrorStateOffline captures enum value "offline"
+	MetroclusterInterconnectMirrorStateOffline string = "offline"
+
+	// BEGIN DEBUGGING
+	// MetroclusterInterconnectMirror
+	// MetroclusterInterconnectMirror
+	// state
+	// State
+	// unknown
+	// END DEBUGGING
+	// MetroclusterInterconnectMirrorStateUnknown captures enum value "unknown"
+	MetroclusterInterconnectMirrorStateUnknown string = "unknown"
+)
+
+// prop value enum
+func (m *MetroclusterInterconnectMirror) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterInterconnectMirrorTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MetroclusterInterconnectMirror) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("mirror"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this metrocluster interconnect mirror based on the context it is used
+func (m *MetroclusterInterconnectMirror) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterInterconnectMirror) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "mirror"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterInterconnectMirror) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterInterconnectMirror) UnmarshalBinary(b []byte) error {
+	var res MetroclusterInterconnectMirror
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

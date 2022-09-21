@@ -30,6 +30,10 @@ type Port struct {
 	// enabled
 	Enabled bool `json:"enabled,omitempty"`
 
+	// Number of interfaces hosted. This field is only applicable for cluster administrators. No value is returned for SVM administrators. If the node hosting a port is not healthy no value will be returned.
+	// Read Only: true
+	InterfaceCount int64 `json:"interface_count,omitempty"`
+
 	// lag
 	Lag *PortLag `json:"lag,omitempty"`
 
@@ -567,6 +571,10 @@ func (m *Port) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateInterfaceCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateLag(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -648,6 +656,15 @@ func (m *Port) contextValidateBroadcastDomain(ctx context.Context, formats strfm
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Port) contextValidateInterfaceCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "interface_count", "body", int64(m.InterfaceCount)); err != nil {
+		return err
 	}
 
 	return nil
@@ -1099,7 +1116,7 @@ type PortLag struct {
 	// Enum: [port ip mac sequential]
 	DistributionPolicy string `json:"distribution_policy,omitempty"`
 
-	// member ports
+	// Array of ports belonging to the LAG, regardless of their state.
 	MemberPorts []*PortLagMemberPortsItems0 `json:"member_ports,omitempty"`
 
 	// Determines how the ports interact with the switch.
@@ -1399,7 +1416,7 @@ func (m *PortLag) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortLagActivePortsItems0 Port UUID along with readable names. Either the UUID or both names may be supplied on input.
+// PortLagActivePortsItems0 port lag active ports items0
 //
 // swagger:model PortLagActivePortsItems0
 type PortLagActivePortsItems0 struct {
@@ -1659,7 +1676,7 @@ func (m *PortLagActivePortsItems0Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortLagMemberPortsItems0 Port UUID along with readable names. Either the UUID or both names may be supplied on input.
+// PortLagMemberPortsItems0 port lag member ports items0
 //
 // swagger:model PortLagMemberPortsItems0
 type PortLagMemberPortsItems0 struct {
@@ -3674,7 +3691,7 @@ func (m *PortVlan) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortVlanBasePort Port UUID along with readable names. Either the UUID or both names may be supplied on input.
+// PortVlanBasePort port vlan base port
 //
 // swagger:model PortVlanBasePort
 type PortVlanBasePort struct {

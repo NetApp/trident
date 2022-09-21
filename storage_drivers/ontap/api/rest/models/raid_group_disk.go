@@ -564,7 +564,7 @@ func (m *RaidGroupDisk) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RaidGroupDiskDisk Disk
+// RaidGroupDiskDisk raid group disk disk
 //
 // swagger:model RaidGroupDiskDisk
 type RaidGroupDiskDisk struct {

@@ -82,7 +82,11 @@ func NewSnapshotCollectionGetDefault(code int) *SnapshotCollectionGetDefault {
 
 /* SnapshotCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Code
+| Error Code | Description |
+| ---------- | ----------- |
+| 918235     | The specified volume is invalid. |
+
 */
 type SnapshotCollectionGetDefault struct {
 	_statusCode int

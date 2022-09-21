@@ -47,6 +47,9 @@ type Job struct {
 	// Read Only: true
 	Message string `json:"message,omitempty"`
 
+	// node
+	Node *JobNode `json:"node,omitempty"`
+
 	// The time the job started.
 	// Read Only: true
 	// Format: date-time
@@ -80,6 +83,10 @@ func (m *Job) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNode(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -143,6 +150,23 @@ func (m *Job) validateError(formats strfmt.Registry) error {
 		if err := m.Error.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Job) validateNode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Node) { // not required
+		return nil
+	}
+
+	if m.Node != nil {
+		if err := m.Node.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node")
 			}
 			return err
 		}
@@ -306,6 +330,10 @@ func (m *Job) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStartTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -387,6 +415,20 @@ func (m *Job) contextValidateMessage(ctx context.Context, formats strfmt.Registr
 
 	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Job) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Node != nil {
+		if err := m.Node.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -686,6 +728,48 @@ func (m *JobLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *JobLinks) UnmarshalBinary(b []byte) error {
 	var res JobLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// JobNode The node where this job was run
+//
+// swagger:model JobNode
+type JobNode struct {
+
+	// The name of the node
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this job node
+func (m *JobNode) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this job node based on the context it is used
+func (m *JobNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *JobNode) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *JobNode) UnmarshalBinary(b []byte) error {
+	var res JobNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

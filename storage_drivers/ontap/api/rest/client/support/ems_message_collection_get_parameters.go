@@ -130,6 +130,12 @@ type EmsMessageCollectionGetParams struct {
 	*/
 	SnmpTrapTypeQueryParameter *string
 
+	/* Stateful.
+
+	   Filter by stateful
+	*/
+	StatefulQueryParameter *bool
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -318,6 +324,17 @@ func (o *EmsMessageCollectionGetParams) SetSnmpTrapTypeQueryParameter(snmpTrapTy
 	o.SnmpTrapTypeQueryParameter = snmpTrapType
 }
 
+// WithStatefulQueryParameter adds the stateful to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) WithStatefulQueryParameter(stateful *bool) *EmsMessageCollectionGetParams {
+	o.SetStatefulQueryParameter(stateful)
+	return o
+}
+
+// SetStatefulQueryParameter adds the stateful to the ems message collection get params
+func (o *EmsMessageCollectionGetParams) SetStatefulQueryParameter(stateful *bool) {
+	o.StatefulQueryParameter = stateful
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -496,6 +513,23 @@ func (o *EmsMessageCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		if qSnmpTrapType != "" {
 
 			if err := r.SetQueryParam("snmp_trap_type", qSnmpTrapType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatefulQueryParameter != nil {
+
+		// query param stateful
+		var qrStateful bool
+
+		if o.StatefulQueryParameter != nil {
+			qrStateful = *o.StatefulQueryParameter
+		}
+		qStateful := swag.FormatBool(qrStateful)
+		if qStateful != "" {
+
+			if err := r.SetQueryParam("stateful", qStateful); err != nil {
 				return err
 			}
 		}

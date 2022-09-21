@@ -40,6 +40,8 @@ type ClientService interface {
 
 	CifsCollectionPerformanceMetricsGet(params *CifsCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsCollectionPerformanceMetricsGetOK, error)
 
+	CifsConnectionCollectionGet(params *CifsConnectionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsConnectionCollectionGetOK, error)
+
 	CifsDomainCollectionGet(params *CifsDomainCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainCollectionGetOK, error)
 
 	CifsDomainGet(params *CifsDomainGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainGetOK, error)
@@ -53,6 +55,12 @@ type ClientService interface {
 	CifsDomainPreferredDcGet(params *CifsDomainPreferredDcGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcGetOK, error)
 
 	CifsHomedirSearchPathGet(params *CifsHomedirSearchPathGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsHomedirSearchPathGetOK, error)
+
+	CifsOpenFileCollectionGet(params *CifsOpenFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileCollectionGetOK, error)
+
+	CifsOpenFileDelete(params *CifsOpenFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileDeleteOK, error)
+
+	CifsOpenFileGet(params *CifsOpenFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileGetOK, error)
 
 	CifsSearchPathCollectionGet(params *CifsSearchPathCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathCollectionGetOK, error)
 
@@ -141,22 +149,6 @@ type ClientService interface {
 	ExportRuleGet(params *ExportRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleGetOK, error)
 
 	ExportRuleModify(params *ExportRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleModifyOK, error)
-
-	FileAccessEventCollectionGet(params *FileAccessEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventCollectionGetOK, error)
-
-	FileAccessEventDelete(params *FileAccessEventDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventDeleteOK, error)
-
-	FileAccessEventGet(params *FileAccessEventGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventGetOK, error)
-
-	FileAccessFilterCollectionGet(params *FileAccessFilterCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterCollectionGetOK, error)
-
-	FileAccessFilterCreate(params *FileAccessFilterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterCreateCreated, error)
-
-	FileAccessFilterDelete(params *FileAccessFilterDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterDeleteOK, error)
-
-	FileAccessFilterGet(params *FileAccessFilterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterGetOK, error)
-
-	FileAccessFilterModify(params *FileAccessFilterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterModifyOK, error)
 
 	FileDirectorySecurityACLCreate(params *FileDirectorySecurityACLCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLCreateAccepted, error)
 
@@ -262,7 +254,17 @@ type ClientService interface {
 
 	LocalCifsUserModify(params *LocalCifsUserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserModifyOK, error)
 
+	LocalCifsUsersAndGroupsImportCreate(params *LocalCifsUsersAndGroupsImportCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportCreateAccepted, error)
+
+	LocalCifsUsersAndGroupsImportGet(params *LocalCifsUsersAndGroupsImportGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportGetOK, error)
+
+	LocalCifsUsersAndGroupsImportModify(params *LocalCifsUsersAndGroupsImportModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportModifyAccepted, error)
+
+	NetbiosCollectionGet(params *NetbiosCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetbiosCollectionGetOK, error)
+
 	NfsClientsGet(params *NfsClientsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsGetOK, error)
+
+	NfsClientsMapGet(params *NfsClientsMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsMapGetOK, error)
 
 	NfsCollectionGet(params *NfsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsCollectionGetOK, error)
 
@@ -276,25 +278,25 @@ type ClientService interface {
 
 	NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsModifyOK, error)
 
-	S3AuditCollectionGet(params *S3AuditCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCollectionGetOK, error)
-
 	S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCreateAccepted, error)
 
 	S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditDeleteAccepted, error)
 
-	S3AuditEventSelectorCollectionGet(params *S3AuditEventSelectorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorCollectionGetOK, error)
-
-	S3AuditEventSelectorCreate(params *S3AuditEventSelectorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorCreateAccepted, error)
-
-	S3AuditEventSelectorDelete(params *S3AuditEventSelectorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorDeleteAccepted, error)
-
-	S3AuditEventSelectorGet(params *S3AuditEventSelectorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorGetOK, error)
-
-	S3AuditEventSelectorModify(params *S3AuditEventSelectorModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorModifyAccepted, error)
-
 	S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditGetOK, error)
 
 	S3AuditModify(params *S3AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditModifyAccepted, error)
+
+	ShadowcopyCollectionGet(params *ShadowcopyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyCollectionGetOK, error)
+
+	ShadowcopyGet(params *ShadowcopyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyGetOK, error)
+
+	ShadowcopyModify(params *ShadowcopyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyModifyOK, error)
+
+	ShadowcopySetCollectionGet(params *ShadowcopySetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetCollectionGetOK, error)
+
+	ShadowcopySetGet(params *ShadowcopySetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetGetOK, error)
+
+	ShadowcopySetModify(params *ShadowcopySetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetModifyOK, error)
 
 	UserGroupPrivilegesCollectionGet(params *UserGroupPrivilegesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesCollectionGetOK, error)
 
@@ -309,6 +311,8 @@ type ClientService interface {
 	VscanConfigDelete(params *VscanConfigDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanConfigDeleteOK, error)
 
 	VscanCreate(params *VscanCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanCreateCreated, error)
+
+	VscanEventCollectionGet(params *VscanEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanEventCollectionGetOK, error)
 
 	VscanGet(params *VscanGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanGetOK, error)
 
@@ -620,6 +624,49 @@ func (a *Client) CifsCollectionPerformanceMetricsGet(params *CifsCollectionPerfo
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CifsCollectionPerformanceMetricsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsConnectionCollectionGet Retrieves the CIFS connection information for all SVMs.
+### Related ONTAP commands
+  * `vserver cifs connection show`
+### Learn more
+* [`DOC /protocols/cifs/connections`](#docs-NAS-protocols_cifs_connections)
+
+*/
+func (a *Client) CifsConnectionCollectionGet(params *CifsConnectionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsConnectionCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsConnectionCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_connection_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/connections",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsConnectionCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsConnectionCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsConnectionCollectionGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -943,6 +990,123 @@ func (a *Client) CifsHomedirSearchPathGet(params *CifsHomedirSearchPathGetParams
 }
 
 /*
+  CifsOpenFileCollectionGet Retrieves CIFS Open Files
+*/
+func (a *Client) CifsOpenFileCollectionGet(params *CifsOpenFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsOpenFileCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_open_file_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/session/files",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsOpenFileCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsOpenFileCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsOpenFileCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsOpenFileDelete Closes open files identified by svm.uuid, file.identifier, connection.identifier and session_id.
+### Learn more
+* [`DOC /protocols/cifs/session/files`](#docs-NAS-protocols_cifs_session_files)
+
+*/
+func (a *Client) CifsOpenFileDelete(params *CifsOpenFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsOpenFileDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_open_file_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsOpenFileDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsOpenFileDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsOpenFileDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsOpenFileGet Retrieves specific CIFS Open File
+*/
+func (a *Client) CifsOpenFileGet(params *CifsOpenFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsOpenFileGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_open_file_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsOpenFileGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsOpenFileGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsOpenFileGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   CifsSearchPathCollectionGet Retrieves CIFS home directory search paths.
 ### Related ONTAP commands
 * `cifs server home-directory search-path show`
@@ -1241,7 +1405,9 @@ func (a *Client) CifsServiceCreate(params *CifsServiceCreateParams, authInfo run
 }
 
 /*
-  CifsServiceDelete Deletes a CIFS server and related CIFS configurations.
+  CifsServiceDelete Deletes a CIFS server and related CIFS configurations.<br/>
+If "force" field is set along with user login credentials, the local CIFS configuration will be deleted irrespective of any communication errors. The default value for this field is false.
+If "force" field alone is set without passing the user login credentials, the local CIFS configuration will be deleted by not making any request to Active Directory, but the option will be enable only for the VseverDR enabled SVMs. The default value for this field is false.
 ### Related ONTAP commands
 * `vserver cifs server delete`
 * `vserver cifs remove-netbios-aliases`
@@ -2938,334 +3104,6 @@ func (a *Client) ExportRuleModify(params *ExportRuleModifyParams, authInfo runti
 }
 
 /*
-  FileAccessEventCollectionGet Retrieves the trace results for access allowed or denied events.
-### Related ONTAP commands
-* `vserver security trace trace-result show`
-
-*/
-func (a *Client) FileAccessEventCollectionGet(params *FileAccessEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventCollectionGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewFileAccessEventCollectionGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "file_access_event_collection_get",
-		Method:             "GET",
-		PathPattern:        "/protocols/file-access-tracing/events",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &FileAccessEventCollectionGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*FileAccessEventCollectionGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*FileAccessEventCollectionGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  FileAccessEventDelete Deletes trace results.
-### Related ONTAP commands
-* `vserver security trace result delete`
-
-*/
-func (a *Client) FileAccessEventDelete(params *FileAccessEventDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventDeleteOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewFileAccessEventDeleteParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "file_access_event_delete",
-		Method:             "DELETE",
-		PathPattern:        "/protocols/file-access-tracing/events/{node.uuid}/{svm.uuid}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &FileAccessEventDeleteReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*FileAccessEventDeleteOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*FileAccessEventDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  FileAccessEventGet Retrieves trace results for the specified sequence number.
-### Related ONTAP commands
-* `vserver security trace trace-result show`
-
-*/
-func (a *Client) FileAccessEventGet(params *FileAccessEventGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewFileAccessEventGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "file_access_event_get",
-		Method:             "GET",
-		PathPattern:        "/protocols/file-access-tracing/events/{node.uuid}/{svm.uuid}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &FileAccessEventGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*FileAccessEventGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*FileAccessEventGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  FileAccessFilterCollectionGet Retrieves information about security trace filter entries.
-### Related ONTAP commands
-* `vserver security trace filter show`
-
-*/
-func (a *Client) FileAccessFilterCollectionGet(params *FileAccessFilterCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterCollectionGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewFileAccessFilterCollectionGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "file_access_filter_collection_get",
-		Method:             "GET",
-		PathPattern:        "/protocols/file-access-tracing/filters",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &FileAccessFilterCollectionGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*FileAccessFilterCollectionGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*FileAccessFilterCollectionGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  FileAccessFilterCreate Creates security trace filter entries.
-### Related ONTAP commands
-* `vserver security trace filter create`
-
-*/
-func (a *Client) FileAccessFilterCreate(params *FileAccessFilterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterCreateCreated, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewFileAccessFilterCreateParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "file_access_filter_create",
-		Method:             "POST",
-		PathPattern:        "/protocols/file-access-tracing/filters",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &FileAccessFilterCreateReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*FileAccessFilterCreateCreated)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*FileAccessFilterCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  FileAccessFilterDelete Deletes security trace filters.
-### Related ONTAP commands
-* `vserver security trace filter delete`
-
-*/
-func (a *Client) FileAccessFilterDelete(params *FileAccessFilterDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterDeleteOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewFileAccessFilterDeleteParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "file_access_filter_delete",
-		Method:             "DELETE",
-		PathPattern:        "/protocols/file-access-tracing/filters/{svm.uuid}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &FileAccessFilterDeleteReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*FileAccessFilterDeleteOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*FileAccessFilterDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  FileAccessFilterGet Retrieves information about security trace filter entries.
-### Related ONTAP commands
-* `vserver security trace filter show`
-
-*/
-func (a *Client) FileAccessFilterGet(params *FileAccessFilterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewFileAccessFilterGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "file_access_filter_get",
-		Method:             "GET",
-		PathPattern:        "/protocols/file-access-tracing/filters/{svm.uuid}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &FileAccessFilterGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*FileAccessFilterGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*FileAccessFilterGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  FileAccessFilterModify Updates security trace filter entries.
-### Related ONTAP commands
-* `vserver security trace filter modify`
-
-*/
-func (a *Client) FileAccessFilterModify(params *FileAccessFilterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterModifyOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewFileAccessFilterModifyParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "file_access_filter_modify",
-		Method:             "PATCH",
-		PathPattern:        "/protocols/file-access-tracing/filters/{svm.uuid}/{index}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &FileAccessFilterModifyReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*FileAccessFilterModifyOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*FileAccessFilterModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
   FileDirectorySecurityACLCreate Adds the new SACL/DACL ACE.
 You must keep the following points in mind while using these endpoints:
 * SLAG applies to all files and/or directories in a volume hence, inheritance is not required to be propagated.
@@ -3922,6 +3760,7 @@ func (a *Client) FpolicyEngineCollectionGet(params *FpolicyEngineCollectionGetPa
 * `secondary_servers` - It is recommended to configure secondary FPolicy server to which the node will send notifications when the primary server is down.
 ### Default property values
 * `type` - _synchronous_
+* `format` - _xml_
 ### Related ONTAP commands
 * `fpolicy policy external-engine create`
 ### Learn more
@@ -5649,6 +5488,188 @@ func (a *Client) LocalCifsUserModify(params *LocalCifsUserModifyParams, authInfo
 }
 
 /*
+  LocalCifsUsersAndGroupsImportCreate Loads CIFS local users,groups and group memberships file from the specified URL.<br/>
+### Important notes
+Existing CIFS local users, groups, and group memberships will be replaced with the contents of the file.
+### Required properties
+- import_uri.path
+- decryption_password
+### Optional properties
+- import_uri.username
+- import_uri.password
+### Related ONTAP commands
+* `vserver cifs users-and-groups import load-from-uri`
+
+*/
+func (a *Client) LocalCifsUsersAndGroupsImportCreate(params *LocalCifsUsersAndGroupsImportCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsUsersAndGroupsImportCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_users_and_groups_import_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/cifs/users-and-groups/bulk-import/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsUsersAndGroupsImportCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsUsersAndGroupsImportCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsUsersAndGroupsImportCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsUsersAndGroupsImportGet Retrieves information about the import operation status of the CIFS local users,
+groups, and group memberships.
+### Related ONTAP commands
+* `vserver cifs users-and-groups import get-status`
+
+*/
+func (a *Client) LocalCifsUsersAndGroupsImportGet(params *LocalCifsUsersAndGroupsImportGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsUsersAndGroupsImportGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_users_and_groups_import_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/users-and-groups/bulk-import/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsUsersAndGroupsImportGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsUsersAndGroupsImportGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsUsersAndGroupsImportGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsUsersAndGroupsImportModify Upload the status of the bulk-import of the specified SVM to the specified URI.
+### Important notes
+* Only the status of the last bulk-import will be uploaded and not the status of the previous bulk-imports.
+### Required properties
+- status_uri.path - URI to which the status needs to be uploaded.
+### Optional properties
+- status_uri.username - Username of the specified URI.
+- status_uri.password - Password of the specified URI.
+### Related ONTAP commands
+* `vserver cifs users-and-groups import get-status`
+
+*/
+func (a *Client) LocalCifsUsersAndGroupsImportModify(params *LocalCifsUsersAndGroupsImportModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsUsersAndGroupsImportModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_users_and_groups_import_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/users-and-groups/bulk-import/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsUsersAndGroupsImportModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsUsersAndGroupsImportModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsUsersAndGroupsImportModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  NetbiosCollectionGet Retrieves NetBIOS information.
+### Related ONTAP commands
+* ` vserver cifs nbstat`
+### Learn more
+* [`DOC /protocols/cifs/netbios`](#docs-NAS-protocols_cifs_netbios)
+
+*/
+func (a *Client) NetbiosCollectionGet(params *NetbiosCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetbiosCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNetbiosCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "netbios_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/netbios",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NetbiosCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NetbiosCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NetbiosCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   NfsClientsGet Retrieves the NFS configuration of SVMs.
 ### Expensive properties
 export_policy.id is expensive field. It is not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
@@ -5691,11 +5712,73 @@ func (a *Client) NfsClientsGet(params *NfsClientsGetParams, authInfo runtime.Cli
 }
 
 /*
+  NfsClientsMapGet Retrieves NFS clients information.
+
+*/
+func (a *Client) NfsClientsMapGet(params *NfsClientsMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsMapGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNfsClientsMapGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nfs_clients_map_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/nfs/connected-client-maps",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NfsClientsMapGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NfsClientsMapGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NfsClientsMapGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   NfsCollectionGet Retrieves the NFS configuration of SVMs.
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
+### Advanced properties
+* `security.rpcsec_context_idle`
+* `security.ntfs_unix_security`
+* `security.chown_mode`
+* `security.nt_acl_display_permission`
+* `protocol.v3_features.ejukebox_enabled`
+* `protocol.v3_features.connection_drop`
+* `protocol.v3_features.fsid_change`
+* `protocol.v3_features.mount_daemon_port`
+* `protocol.v3_features.network_lock_manager_port`
+* `protocol.v3_features.network_status_monitor_port`
+* `protocol.v3_features.rquota_daemon_port`
+* `protocol.v41_features.implementation_domain`
+* `protocol.v41_features.implementation_name`
+* `protocol.v40_features.acl_max_aces`
+* `windows.map_unknown_uid_to_default_user`
+* `exports.netgroup_trust_any_nsswitch_no_match`
+* `credential_cache.negative_ttl`
+* `transport.tcp_max_transfer_size`
+* `root.*`
+### Diagnostic properties
+* `credential_cache.transient_error_ttl`
+* `access_cache_config.ttl_failure`
 ### Related ONTAP commands
 * `vserver nfs show`
 * `vserver nfs status`
@@ -5804,7 +5887,6 @@ If not specified in POST, the following default property values are assigned:
 * `showmount_enabled` - _true_
 * `auth_sys_extended_groups_enabled` - _false_
 * `extended_groups_limit` - _32_
-* `positive_cached_credential_ttl` - _7200000_
 * `qtree.export_enabled` - _false_
 * `qtree.validate_export` - _true_
 * `access_cache_config.ttl_positive` - _60_
@@ -5812,6 +5894,35 @@ If not specified in POST, the following default property values are assigned:
 * `access_cache_config.ttl_failure` - _1_
 * `access_cache_config.harvest_timeout` - _3600_
 * `access_cache_config.isDnsTTLEnabled` - _false_
+* `file_session_io_grouping_count` - _5000_
+* `file_session_io_grouping_duration` - _120_
+* `security.nt_acl_display_permission` - _false_
+* `exports.netgroup_trust_any_nsswitch_no_match` - _false_
+* `exports.name_service_lookup_protocol` - _udp_
+* `security.permitted_encryption_types` - [aes-256,aes-128,des3,des]
+* `security.rpcsec_context_idle` - _0_
+* `security.chown_mode` - _use_export_policy_
+* `security.ntfs_unix_security` - _use_export_policy_
+* `windows.v3_ms_dos_client_enabled` - _false_
+* `windows.default_user` - ""
+* `windows.map_unknown_uid_to_default_user` - _true_
+* `credential_cache.positive_ttl` - _86400000_
+* `credential_cache.negative_ttl` - _7200000_
+* `credential_cache.transient_error_ttl` - _30000_
+* `protocol.v40_features.acl_preserve` - _true_
+* `protocol.v41_features.implementation_domain` - 'netapp.com'
+* `protocol.v40_features.acl_max_aces` - _400_
+* `protocol.v3_features.ejukebox_enabled` - _true_
+* `protocol.v3_features.connection_drop` - _true_
+* `protocol.v3_features.fsid_change` - _true_
+* `protocol.v3_features.mount_daemon_port` - _635_
+* `protocol.v3_features.network_lock_manager_port` - _4045_
+* `protocol.v3_features.network_status_monitor_port` - _4046_
+* `protocol.v3_features.rquota_daemon_port` - _4046_
+* `protocol.v3_features.mount_root_only` - _true_
+* `transport.tcp_max_transfer_size` - _65536_
+* `root.ignore_nt_acl` - _false_
+* `root.skip_write_permission_check` - _false_
 ### Related ONTAP commands
 * `vserver nfs create`
 * `export-policy access-cache config show`
@@ -5989,57 +6100,13 @@ func (a *Client) NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  S3AuditCollectionGet Retrieves S3 audit configurations.
-### Related ONTAP commands
-* `vserver object-store-server audit show`
-### Learn more
-* [`DOC /protocols/s3audits`](#docs-NAS-protocols_s3audits)
-
-*/
-func (a *Client) S3AuditCollectionGet(params *S3AuditCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCollectionGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewS3AuditCollectionGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "s3_audit_collection_get",
-		Method:             "GET",
-		PathPattern:        "/protocols/s3audits",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &S3AuditCollectionGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*S3AuditCollectionGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*S3AuditCollectionGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
   S3AuditCreate Creates an S3 audit configuration.
 ### Required properties
-* `svm.uuid` or `svm.name` - Existing SVM for which audit configuration is to be created.
 * `log_path` - Path in the owning SVM namespace that is used to store audit logs.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `enabled` - _true_
-* `events.data` - _false_
+* `events.data` - _true_
 * `events.management` - _false_
 * `log.format` - _json_
 * `log.retention.count` - _0_
@@ -6050,7 +6117,7 @@ If not specified in POST, the following default property values are assigned:
 * `vserver object-store-server audit create`
 * `vserver object-store-server audit enable`
 ### Learn more
-* [`DOC /protocols/s3audits`](#docs-NAS-protocols_s3audits)
+* [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
 
 */
 func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCreateAccepted, error) {
@@ -6061,7 +6128,7 @@ func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.Cli
 	op := &runtime.ClientOperation{
 		ID:                 "s3_audit_create",
 		Method:             "POST",
-		PathPattern:        "/protocols/s3audits",
+		PathPattern:        "/protocols/audit/{svm.uuid}/object-store",
 		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
 		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
 		Schemes:            []string{"https"},
@@ -6094,7 +6161,7 @@ func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.Cli
 * `vserver object-store-server audit disable`
 * `vserver object-store-server audit delete`
 ### Learn more
-* [`DOC /protocols/s3audits`](#docs-NAS-protocols_s3audits)
+* [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
 
 */
 func (a *Client) S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditDeleteAccepted, error) {
@@ -6105,7 +6172,7 @@ func (a *Client) S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.Cli
 	op := &runtime.ClientOperation{
 		ID:                 "s3_audit_delete",
 		Method:             "DELETE",
-		PathPattern:        "/protocols/s3audits/{svm.uuid}",
+		PathPattern:        "/protocols/audit/{svm.uuid}/object-store",
 		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
 		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
 		Schemes:            []string{"https"},
@@ -6133,233 +6200,11 @@ func (a *Client) S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.Cli
 }
 
 /*
-  S3AuditEventSelectorCollectionGet Retrieves all S3 audit event-selector configurations for all SVMs.
-### Related ONTAP commands
-* `vserver object-store-server audit event-selector show`
-### Learn more
-* [`DOC /protocols/event-selectors`](#docs-NAS-protocols_event-selectors)
-
-*/
-func (a *Client) S3AuditEventSelectorCollectionGet(params *S3AuditEventSelectorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorCollectionGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewS3AuditEventSelectorCollectionGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "s3_audit_event_selector_collection_get",
-		Method:             "GET",
-		PathPattern:        "/protocols/event-selectors",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &S3AuditEventSelectorCollectionGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*S3AuditEventSelectorCollectionGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*S3AuditEventSelectorCollectionGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  S3AuditEventSelectorCreate Creates an S3 audit event selector configuration.
-### Required properties
-* `svm.name` - Existing SVM for which an S3 audit event selector configuration is to be created.
-* `bucket` - Existing bucket name for which an S3 audit event selector is to be created.
-### Default property values
-If not specified in POST, the following default property values are assigned:
-* `access` - _all_
-* `permission` - _all_
-### Related ONTAP commands
-* `vserver object-store-server audit event-selector create`
-### Learn more
-* [`DOC /protocols/event-selectors`](#docs-NAS-protocols_event-selectors)
-
-*/
-func (a *Client) S3AuditEventSelectorCreate(params *S3AuditEventSelectorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorCreateAccepted, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewS3AuditEventSelectorCreateParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "s3_audit_event_selector_create",
-		Method:             "POST",
-		PathPattern:        "/protocols/event-selectors",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &S3AuditEventSelectorCreateReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*S3AuditEventSelectorCreateAccepted)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*S3AuditEventSelectorCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  S3AuditEventSelectorDelete Deletes an S3 audit event selector configuration.
-### Related ONTAP commands
-* `vserver object-store-server audit event selector delete`
-### Learn more
-* [`DOC /protocols/event-selectors`](#docs-NAS-protocols_event-selectors)
-
-*/
-func (a *Client) S3AuditEventSelectorDelete(params *S3AuditEventSelectorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorDeleteAccepted, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewS3AuditEventSelectorDeleteParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "s3_audit_event_selector_delete",
-		Method:             "DELETE",
-		PathPattern:        "/protocols/event-selectors/{svm.uuid}/{bucket}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &S3AuditEventSelectorDeleteReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*S3AuditEventSelectorDeleteAccepted)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*S3AuditEventSelectorDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  S3AuditEventSelectorGet Retrieves an S3 audit event selector configuration for an SVM.
-### Related ONTAP commands
-* `vserver object-store-server audit event-selector show`
-### Learn more
-* [`DOC /protocols/event-selectors`](#docs-NAS-protocols_event-selectors)
-
-*/
-func (a *Client) S3AuditEventSelectorGet(params *S3AuditEventSelectorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewS3AuditEventSelectorGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "s3_audit_event_selector_get",
-		Method:             "GET",
-		PathPattern:        "/protocols/event-selectors/{svm.uuid}/{bucket}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &S3AuditEventSelectorGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*S3AuditEventSelectorGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*S3AuditEventSelectorGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  S3AuditEventSelectorModify Updates an S3 audit event selector configuration for an SVM.
-### Related ONTAP commands
-* `vserver object-store-server audit event-selector modify`
-### Learn more
-* [`DOC /protocols/event-selectors`](#docs-NAS-protocols_event-selectors)
-
-*/
-func (a *Client) S3AuditEventSelectorModify(params *S3AuditEventSelectorModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorModifyAccepted, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewS3AuditEventSelectorModifyParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "s3_audit_event_selector_modify",
-		Method:             "PATCH",
-		PathPattern:        "/protocols/event-selectors/{svm.uuid}/{bucket}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &S3AuditEventSelectorModifyReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*S3AuditEventSelectorModifyAccepted)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*S3AuditEventSelectorModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  S3AuditGet Retrieves an S3 audit configuration for an SVM.
+  S3AuditGet Retrieves S3 audit configurations.
 ### Related ONTAP commands
 * `vserver object-store-server audit show`
 ### Learn more
-* [`DOC /protocols/s3audits`](#docs-NAS-protocols_s3audits)
+* [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
 
 */
 func (a *Client) S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditGetOK, error) {
@@ -6370,7 +6215,7 @@ func (a *Client) S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAut
 	op := &runtime.ClientOperation{
 		ID:                 "s3_audit_get",
 		Method:             "GET",
-		PathPattern:        "/protocols/s3audits/{svm.uuid}",
+		PathPattern:        "/protocols/audit/{svm.uuid}/object-store",
 		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
 		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
 		Schemes:            []string{"https"},
@@ -6399,10 +6244,12 @@ func (a *Client) S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAut
 
 /*
   S3AuditModify Updates an S3 audit configuration for an SVM.
+### Important notes
+* `events` - Not specifying either data or management is equivalent to setting it to false.
 ### Related ONTAP commands
 * `vserver object-store-server audit modify`
 ### Learn more
-* [`DOC /protocols/s3audits`](#docs-NAS-protocols_s3audits)
+* [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
 
 */
 func (a *Client) S3AuditModify(params *S3AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditModifyAccepted, error) {
@@ -6413,7 +6260,7 @@ func (a *Client) S3AuditModify(params *S3AuditModifyParams, authInfo runtime.Cli
 	op := &runtime.ClientOperation{
 		ID:                 "s3_audit_modify",
 		Method:             "PATCH",
-		PathPattern:        "/protocols/s3audits/{svm.uuid}",
+		PathPattern:        "/protocols/audit/{svm.uuid}/object-store",
 		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
 		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
 		Schemes:            []string{"https"},
@@ -6437,6 +6284,260 @@ func (a *Client) S3AuditModify(params *S3AuditModifyParams, authInfo runtime.Cli
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3AuditModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ShadowcopyCollectionGet Retrieves Shadowcopies
+### Related ONTAP commands
+* `vserver cifs shadowcopy show-shares`
+### Learn more
+* [`DOC /protocols/cifs/shadow-copies`](#docs-NAS-protocols_cifs_shadow-copies)
+
+*/
+func (a *Client) ShadowcopyCollectionGet(params *ShadowcopyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewShadowcopyCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "shadowcopy_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/shadow-copies",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ShadowcopyCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ShadowcopyCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ShadowcopyCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ShadowcopyGet Retrieves a Shadowcopy
+### Related ONTAP commands
+* `vserver cifs shadowcopy show-shares`
+### Learn more
+* [`DOC /protocols/cifs/shadow-copies`](#docs-NAS-protocols_cifs_shadow-copies)
+
+*/
+func (a *Client) ShadowcopyGet(params *ShadowcopyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewShadowcopyGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "shadowcopy_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/shadow-copies/{client_uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ShadowcopyGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ShadowcopyGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ShadowcopyGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ShadowcopyModify Specify list Files to be added as a part of Shadowcopy creation
+### Learn more
+* [`DOC /protocols/cifs/shadow-copies`](#docs-NAS-protocols_cifs_shadow-copies)
+
+*/
+func (a *Client) ShadowcopyModify(params *ShadowcopyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewShadowcopyModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "shadowcopy_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/shadow-copies/{client_uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ShadowcopyModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ShadowcopyModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ShadowcopyModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ShadowcopySetCollectionGet Retrieves Shadowcopy Sets.
+### Related ONTAP commands
+* `vserver cifs shadowcopy show-sets`
+### Learn more
+* [`DOC /protocols/cifs/shadow-copies`](#docs-NAS-protocols_cifs_shadow-copies)
+
+*/
+func (a *Client) ShadowcopySetCollectionGet(params *ShadowcopySetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewShadowcopySetCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "shadowcopy_set_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/shadowcopy-sets",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ShadowcopySetCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ShadowcopySetCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ShadowcopySetCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ShadowcopySetGet Retrieves a Shadowcopy set
+### Related ONTAP commands
+* `vserver cifs shadowcopy show-sets`
+### Learn more
+* [`DOC /protocols/cifs/shadow-copies`](#docs-NAS-protocols_cifs_shadow-copies)
+
+*/
+func (a *Client) ShadowcopySetGet(params *ShadowcopySetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewShadowcopySetGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "shadowcopy_set_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/shadowcopy-sets/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ShadowcopySetGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ShadowcopySetGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ShadowcopySetGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ShadowcopySetModify Updates a Shadowcopy set
+### Learn more
+* [`DOC /protocols/cifs/shadowcopy`](#docs-NAS-protocols_cifs_shadowcopy)
+
+*/
+func (a *Client) ShadowcopySetModify(params *ShadowcopySetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewShadowcopySetModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "shadowcopy_set_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/shadowcopy-sets/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ShadowcopySetModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ShadowcopySetModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ShadowcopySetModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -6788,6 +6889,47 @@ func (a *Client) VscanCreate(params *VscanCreateParams, authInfo runtime.ClientA
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*VscanCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  VscanEventCollectionGet Retrieves Vscan events, which are generated by the cluster to capture important events.
+### Related ONTAP commands
+* `vserver vscan show-events`
+
+*/
+func (a *Client) VscanEventCollectionGet(params *VscanEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanEventCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVscanEventCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vscan_event_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/vscan/{svm.uuid}/events",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VscanEventCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VscanEventCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VscanEventCollectionGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

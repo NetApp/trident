@@ -80,7 +80,9 @@ func NewKeyManagerConfigModifyDefault(code int) *KeyManagerConfigModifyDefault {
 | 65536807 | MetroCluster cannot be configured while in Common Criteria mode. |
 | 65536809 | Common Criteria mode is disabled on the cluster. Contact technical support for assistance in enabling Common Criteria mode. |
 | 65537302 | The passphrase field is required when changing cc_mode_enabled to true. |
+| 65537303 | Modifying polling period requires an effective cluster version of ONTAP 9.10 or later. |
 | 65537304 | Unable to modify polling period because no external key management is configured on the cluster. |
+| 65538404 | Modifying cloud keymanager retry count requires an effective cluster version of ONTAP 9.11 or later. |
 
 */
 type KeyManagerConfigModifyDefault struct {

@@ -73,6 +73,15 @@ type CifsServiceOptions struct {
 	//
 	Referral *bool `json:"referral,omitempty"`
 
+	// Specifies whether or not to enable the Shadowcopy Feature. This feature enables
+	// to take share-based backup copies of data that is in a data-consistent state at
+	// a specific point in time where the data is accessed over SMB 3.0 shares.
+	//
+	Shadowcopy *bool `json:"shadowcopy,omitempty"`
+
+	// Specifies the maximum level of subdirectories on which ONTAP should create shadow copies.
+	ShadowcopyDirDepth *int64 `json:"shadowcopy_dir_depth,omitempty"`
+
 	// Specifies the maximum number of outstanding requests on a CIFS connection.
 	// Example: 128
 	// Maximum: 8192

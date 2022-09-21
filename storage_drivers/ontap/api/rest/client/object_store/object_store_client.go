@@ -229,6 +229,7 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 - Constituents per aggregate specifies the number of components (or FlexVol volumes) per aggregate. Is specified only when an aggregate list is explicitly defined.
 - An access policy can be created along with a bucket create. If creating an access policy fails, bucket configurations are saved and the access policy can be created using the PATCH endpoint.
 - "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
+- "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
 ### Required properties
 * `svm.uuid or svm.name` - Existing SVM in which to create the bucket configuration.
 * `name` - Bucket name that is to be created.
@@ -238,15 +239,18 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 * `size` - Specifying the bucket size is recommended.
 * `policy` - Specifying a policy enables users to perform operations on buckets; specifying the resource permissions is recommended.
 * `qos_policy` - A QoS policy for buckets.
+* `audit_event_selector` - Audit policy for buckets.
+* `versioning_state` - Versioning state for buckets.
 ### Default property values
 * `size` - 800MB
 * `comment` - ""
 * `aggregates` - No default value.
 * `constituents_per_aggregate` - _4_ , if an aggregates list is specified. Otherwise, no default value.
-* `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging.
+* `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging, GetBucketVersioning, PutBucketVersioning.
 * `policy.statements.principals` - all S3 users and groups in the SVM.
 * `policy.statements.resources` - all objects in the bucket.
 * `policy.statements.conditions` - list of bucket policy conditions.
+* `versioning_state` - disabled.
 ### Related ONTAP commands
 * `vserver object-store-server bucket create`
 * `vserver object-store-server bucket policy statement create`
@@ -387,6 +391,8 @@ func (a *Client) S3BucketGet(params *S3BucketGetParams, authInfo runtime.ClientA
   * `size` - Bucket size.
   * `policy` - An access policy for resources (buckets and objects) that defines their permissions. New policies are created after existing policies are deleted. To retain any of the existing policy statements, you need to specify those statements again. Also, policy conditions can be specified as part of a bucket policy.
   * `qos_policy` - A QoS policy for buckets.
+  * `audit_event_selector` - Audit policy for buckets. None can be specified for both access and permission to remove an audit event selector.
+  * `versioning-state` - Versioning state of the buckets.
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
 * `vserver object-store-server bucket policy statement modify`
@@ -438,6 +444,7 @@ func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.C
 - Constituents per aggregate specifies the number of components (or FlexVols) per aggregate. Is specified only when an aggregate list is explicitly defined.
 - An access policy can be created when a bucket is created.
 - "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
+- "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the bucket configuration.
 * `name` - Bucket name that is to be created.
@@ -447,16 +454,19 @@ func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.C
 * `size` - Specifying the bucket size is recommended.
 * `policy` - Specifying policy enables users to perform operations on buckets. Hence specifying the resource permissions is recommended.
 * `qos_policy` - A QoS policy for buckets.
+* `audit_event_selector` - Audit policy for buckets.
+* `versioning_state` - Versioning state for buckets.
 ### Default property values
 * `size` - 800MB
 * `comment` - ""
 * `aggregates` - No default value.
 * `constituents_per_aggregate` - _4_ , if an aggregates list is specified. Otherwise, no default value.
-* `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging.
+* `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging, GetBucketVersioning, PutBucketVersioning.
 * `policy.statements.principals` - all S3 users and groups in the SVM.
 * `policy.statements.resources` - all objects in the bucket.
 * `policy.statements.conditions` - list of bucket policy conditions.
 * `qos-policy` - No default value.
+* `versioning_state` - disabled.
 ### Related ONTAP commands
 * `vserver object-store-server bucket create`
 * `vserver object-store-server bucket policy statement create`
@@ -598,6 +608,8 @@ func (a *Client) S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.C
   * `size` - Bucket size.
   * `policy` - An access policy for resources (buckets and objects) that defines their permissions. New policies are created after existing policies are deleted. To retain any of the existing policy statements, you need to specify those statements again. Policy conditions can also be modified using this API.
   * `qos_policy` - A QoS policy for buckets.
+  * `audit_event_selector` - Audit policy for buckets.  None can be specified for both access and permission to remove audit event selector.
+  * `versioning_state` - Versioning state for buckets.
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
 * `vserver object-store-server bucket policy statement modify`
@@ -925,7 +937,7 @@ func (a *Client) S3PolicyCollectionGet(params *S3PolicyCollectionGetParams, auth
 ### Recommended optional properties
 * `comment` - Short description about the S3 policy.
 * `statements.effect` - Indicates whether to allow or deny access.
-* `statements.actions` - List of actions that can be allowed or denied access. Example: GetObject, PutObject, DeleteObject, ListBucket, ListMyBuckets, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging.
+* `statements.actions` - List of actions that can be allowed or denied access. Example: GetObject, PutObject, DeleteObject, ListBucket, ListMyBuckets, ListBucketMultipartUploads, ListMultipartUploadParts, CreateBucket, DeleteBucket, GetObjectTagging, PutObjectTagging, DeleteObjectTagging, GetBucketVersioning, PutBucketVersioning.
 * `statements.resources` - Buckets or objects that can be allowed or denied access.
 * `statements.sid` - Statement identifier providing additional information about the statement.
 ### Related ONTAP commands

@@ -78,6 +78,12 @@ type AccountCollectionGetParams struct {
 	*/
 	ApplicationsSecondAuthenticationMethodQueryParameter *string
 
+	/* AuthenticationMethods.
+
+	   Filter by authentication_methods
+	*/
+	AuthenticationMethodsQueryParameter *string
+
 	/* Comment.
 
 	   Filter by comment
@@ -89,6 +95,12 @@ type AccountCollectionGetParams struct {
 	   Specify the fields to return.
 	*/
 	FieldsQueryParameter []string
+
+	/* LdapFastbind.
+
+	   Filter by ldap_fastbind
+	*/
+	LdapFastbindQueryParameter *bool
 
 	/* Locked.
 
@@ -126,6 +138,18 @@ type AccountCollectionGetParams struct {
 	*/
 	OwnerUUIDQueryParameter *string
 
+	/* PasswordHashAlgorithm.
+
+	   Filter by password_hash_algorithm
+	*/
+	PasswordHashAlgorithmQueryParameter *string
+
+	/* PublicKey.
+
+	   Filter by public_key
+	*/
+	PublicKeyQueryParameter *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -153,6 +177,12 @@ type AccountCollectionGetParams struct {
 	   Filter by scope
 	*/
 	ScopeQueryParameter *string
+
+	/* SslCaCertificate.
+
+	   Filter by ssl_ca_certificate
+	*/
+	SslCaCertificateQueryParameter *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -254,6 +284,17 @@ func (o *AccountCollectionGetParams) SetApplicationsSecondAuthenticationMethodQu
 	o.ApplicationsSecondAuthenticationMethodQueryParameter = applicationsSecondAuthenticationMethod
 }
 
+// WithAuthenticationMethodsQueryParameter adds the authenticationMethods to the account collection get params
+func (o *AccountCollectionGetParams) WithAuthenticationMethodsQueryParameter(authenticationMethods *string) *AccountCollectionGetParams {
+	o.SetAuthenticationMethodsQueryParameter(authenticationMethods)
+	return o
+}
+
+// SetAuthenticationMethodsQueryParameter adds the authenticationMethods to the account collection get params
+func (o *AccountCollectionGetParams) SetAuthenticationMethodsQueryParameter(authenticationMethods *string) {
+	o.AuthenticationMethodsQueryParameter = authenticationMethods
+}
+
 // WithCommentQueryParameter adds the comment to the account collection get params
 func (o *AccountCollectionGetParams) WithCommentQueryParameter(comment *string) *AccountCollectionGetParams {
 	o.SetCommentQueryParameter(comment)
@@ -274,6 +315,17 @@ func (o *AccountCollectionGetParams) WithFieldsQueryParameter(fields []string) *
 // SetFieldsQueryParameter adds the fields to the account collection get params
 func (o *AccountCollectionGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
+}
+
+// WithLdapFastbindQueryParameter adds the ldapFastbind to the account collection get params
+func (o *AccountCollectionGetParams) WithLdapFastbindQueryParameter(ldapFastbind *bool) *AccountCollectionGetParams {
+	o.SetLdapFastbindQueryParameter(ldapFastbind)
+	return o
+}
+
+// SetLdapFastbindQueryParameter adds the ldapFastbind to the account collection get params
+func (o *AccountCollectionGetParams) SetLdapFastbindQueryParameter(ldapFastbind *bool) {
+	o.LdapFastbindQueryParameter = ldapFastbind
 }
 
 // WithLockedQueryParameter adds the locked to the account collection get params
@@ -342,6 +394,28 @@ func (o *AccountCollectionGetParams) SetOwnerUUIDQueryParameter(ownerUUID *strin
 	o.OwnerUUIDQueryParameter = ownerUUID
 }
 
+// WithPasswordHashAlgorithmQueryParameter adds the passwordHashAlgorithm to the account collection get params
+func (o *AccountCollectionGetParams) WithPasswordHashAlgorithmQueryParameter(passwordHashAlgorithm *string) *AccountCollectionGetParams {
+	o.SetPasswordHashAlgorithmQueryParameter(passwordHashAlgorithm)
+	return o
+}
+
+// SetPasswordHashAlgorithmQueryParameter adds the passwordHashAlgorithm to the account collection get params
+func (o *AccountCollectionGetParams) SetPasswordHashAlgorithmQueryParameter(passwordHashAlgorithm *string) {
+	o.PasswordHashAlgorithmQueryParameter = passwordHashAlgorithm
+}
+
+// WithPublicKeyQueryParameter adds the publicKey to the account collection get params
+func (o *AccountCollectionGetParams) WithPublicKeyQueryParameter(publicKey *string) *AccountCollectionGetParams {
+	o.SetPublicKeyQueryParameter(publicKey)
+	return o
+}
+
+// SetPublicKeyQueryParameter adds the publicKey to the account collection get params
+func (o *AccountCollectionGetParams) SetPublicKeyQueryParameter(publicKey *string) {
+	o.PublicKeyQueryParameter = publicKey
+}
+
 // WithReturnRecordsQueryParameter adds the returnRecords to the account collection get params
 func (o *AccountCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AccountCollectionGetParams {
 	o.SetReturnRecordsQueryParameter(returnRecords)
@@ -384,6 +458,17 @@ func (o *AccountCollectionGetParams) WithScopeQueryParameter(scope *string) *Acc
 // SetScopeQueryParameter adds the scope to the account collection get params
 func (o *AccountCollectionGetParams) SetScopeQueryParameter(scope *string) {
 	o.ScopeQueryParameter = scope
+}
+
+// WithSslCaCertificateQueryParameter adds the sslCaCertificate to the account collection get params
+func (o *AccountCollectionGetParams) WithSslCaCertificateQueryParameter(sslCaCertificate *string) *AccountCollectionGetParams {
+	o.SetSslCaCertificateQueryParameter(sslCaCertificate)
+	return o
+}
+
+// SetSslCaCertificateQueryParameter adds the sslCaCertificate to the account collection get params
+func (o *AccountCollectionGetParams) SetSslCaCertificateQueryParameter(sslCaCertificate *string) {
+	o.SslCaCertificateQueryParameter = sslCaCertificate
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -445,6 +530,23 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.AuthenticationMethodsQueryParameter != nil {
+
+		// query param authentication_methods
+		var qrAuthenticationMethods string
+
+		if o.AuthenticationMethodsQueryParameter != nil {
+			qrAuthenticationMethods = *o.AuthenticationMethodsQueryParameter
+		}
+		qAuthenticationMethods := qrAuthenticationMethods
+		if qAuthenticationMethods != "" {
+
+			if err := r.SetQueryParam("authentication_methods", qAuthenticationMethods); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CommentQueryParameter != nil {
 
 		// query param comment
@@ -470,6 +572,23 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.LdapFastbindQueryParameter != nil {
+
+		// query param ldap_fastbind
+		var qrLdapFastbind bool
+
+		if o.LdapFastbindQueryParameter != nil {
+			qrLdapFastbind = *o.LdapFastbindQueryParameter
+		}
+		qLdapFastbind := swag.FormatBool(qrLdapFastbind)
+		if qLdapFastbind != "" {
+
+			if err := r.SetQueryParam("ldap_fastbind", qLdapFastbind); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -569,6 +688,40 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.PasswordHashAlgorithmQueryParameter != nil {
+
+		// query param password_hash_algorithm
+		var qrPasswordHashAlgorithm string
+
+		if o.PasswordHashAlgorithmQueryParameter != nil {
+			qrPasswordHashAlgorithm = *o.PasswordHashAlgorithmQueryParameter
+		}
+		qPasswordHashAlgorithm := qrPasswordHashAlgorithm
+		if qPasswordHashAlgorithm != "" {
+
+			if err := r.SetQueryParam("password_hash_algorithm", qPasswordHashAlgorithm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PublicKeyQueryParameter != nil {
+
+		// query param public_key
+		var qrPublicKey string
+
+		if o.PublicKeyQueryParameter != nil {
+			qrPublicKey = *o.PublicKeyQueryParameter
+		}
+		qPublicKey := qrPublicKey
+		if qPublicKey != "" {
+
+			if err := r.SetQueryParam("public_key", qPublicKey); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
@@ -632,6 +785,23 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qScope != "" {
 
 			if err := r.SetQueryParam("scope", qScope); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SslCaCertificateQueryParameter != nil {
+
+		// query param ssl_ca_certificate
+		var qrSslCaCertificate string
+
+		if o.SslCaCertificateQueryParameter != nil {
+			qrSslCaCertificate = *o.SslCaCertificateQueryParameter
+		}
+		qSslCaCertificate := qrSslCaCertificate
+		if qSslCaCertificate != "" {
+
+			if err := r.SetQueryParam("ssl_ca_certificate", qSslCaCertificate); err != nil {
 				return err
 			}
 		}

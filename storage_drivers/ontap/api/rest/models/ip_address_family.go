@@ -19,6 +19,15 @@ import (
 // swagger:model ip_address_family
 type IPAddressFamily string
 
+func NewIPAddressFamily(value IPAddressFamily) *IPAddressFamily {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated IPAddressFamily.
+func (m IPAddressFamily) Pointer() *IPAddressFamily {
+	return &m
+}
+
 const (
 
 	// IPAddressFamilyIPV4 captures enum value "ipv4"

@@ -294,6 +294,48 @@ type NodesGetParams struct {
 	*/
 	HaGivebackStateQueryParameter *string
 
+	/* HaGivebackStatusAggregateName.
+
+	   Filter by ha.giveback.status.aggregate.name
+	*/
+	HaGivebackStatusAggregateNameQueryParameter *string
+
+	/* HaGivebackStatusAggregateUUID.
+
+	   Filter by ha.giveback.status.aggregate.uuid
+	*/
+	HaGivebackStatusAggregateUUIDQueryParameter *string
+
+	/* HaGivebackStatusErrorCode.
+
+	   Filter by ha.giveback.status.error.code
+	*/
+	HaGivebackStatusErrorCodeQueryParameter *string
+
+	/* HaGivebackStatusErrorMessage.
+
+	   Filter by ha.giveback.status.error.message
+	*/
+	HaGivebackStatusErrorMessageQueryParameter *string
+
+	/* HaGivebackStatusState.
+
+	   Filter by ha.giveback.status.state
+	*/
+	HaGivebackStatusStateQueryParameter *string
+
+	/* HaInterconnectAdapter.
+
+	   Filter by ha.interconnect.adapter
+	*/
+	HaInterconnectAdapterQueryParameter *string
+
+	/* HaInterconnectState.
+
+	   Filter by ha.interconnect.state
+	*/
+	HaInterconnectStateQueryParameter *string
+
 	/* HaPartnersName.
 
 	   Filter by ha.partners.name
@@ -335,6 +377,72 @@ type NodesGetParams struct {
 	   Filter by ha.takeover.state
 	*/
 	HaTakeoverStateQueryParameter *string
+
+	/* HwAssistStatusEnabled.
+
+	   Filter by hw_assist.status.enabled
+	*/
+	HwAssistStatusEnabledQueryParameter *bool
+
+	/* HwAssistStatusLocalIP.
+
+	   Filter by hw_assist.status.local.ip
+	*/
+	HwAssistStatusLocalIPQueryParameter *string
+
+	/* HwAssistStatusLocalPort.
+
+	   Filter by hw_assist.status.local.port
+	*/
+	HwAssistStatusLocalPortQueryParameter *int64
+
+	/* HwAssistStatusLocalState.
+
+	   Filter by hw_assist.status.local.state
+	*/
+	HwAssistStatusLocalStateQueryParameter *string
+
+	/* HwAssistStatusPartnerIP.
+
+	   Filter by hw_assist.status.partner.ip
+	*/
+	HwAssistStatusPartnerIPQueryParameter *string
+
+	/* HwAssistStatusPartnerPort.
+
+	   Filter by hw_assist.status.partner.port
+	*/
+	HwAssistStatusPartnerPortQueryParameter *int64
+
+	/* HwAssistStatusPartnerState.
+
+	   Filter by hw_assist.status.partner.state
+	*/
+	HwAssistStatusPartnerStateQueryParameter *string
+
+	/* IsAllFlashOptimized.
+
+	   Filter by is_all_flash_optimized
+	*/
+	IsAllFlashOptimizedQueryParameter *bool
+
+	/* IsAllFlashSelectOptimized.
+
+	   Filter by is_all_flash_select_optimized
+	*/
+	IsAllFlashSelectOptimizedQueryParameter *bool
+
+	/* IsCapacityOptimized.
+
+	   Filter by is_capacity_optimized
+	*/
+	IsCapacityOptimizedQueryParameter *bool
+
+	/* IsPerformanceOptimized.
+
+	   Filter by is_performance_optimized
+	*/
+	IsPerformanceOptimizedQueryParameter *bool
 
 	/* IsSparesLow.
 
@@ -483,6 +591,36 @@ type NodesGetParams struct {
 	   Filter by serial_number
 	*/
 	SerialNumberQueryParameter *string
+
+	/* ServiceProcessorAPIServiceEnabled.
+
+	   Filter by service_processor.api_service.enabled
+	*/
+	ServiceProcessorAPIServiceEnabledQueryParameter *bool
+
+	/* ServiceProcessorAPIServiceLimitAccess.
+
+	   Filter by service_processor.api_service.limit_access
+	*/
+	ServiceProcessorAPIServiceLimitAccessQueryParameter *bool
+
+	/* ServiceProcessorAPIServicePort.
+
+	   Filter by service_processor.api_service.port
+	*/
+	ServiceProcessorAPIServicePortQueryParameter *int64
+
+	/* ServiceProcessorAutoConfigIPV4Subnet.
+
+	   Filter by service_processor.auto_config.ipv4_subnet
+	*/
+	ServiceProcessorAutoConfigIPV4SubnetQueryParameter *string
+
+	/* ServiceProcessorAutoConfigIPV6Subnet.
+
+	   Filter by service_processor.auto_config.ipv6_subnet
+	*/
+	ServiceProcessorAutoConfigIPV6SubnetQueryParameter *string
 
 	/* ServiceProcessorAutoupdateEnabled.
 
@@ -706,11 +844,53 @@ type NodesGetParams struct {
 	*/
 	VersionMinorQueryParameter *int64
 
+	/* VersionPatch.
+
+	   Filter by version.patch
+	*/
+	VersionPatchQueryParameter *string
+
+	/* VMAccountID.
+
+	   Filter by vm.account_id
+	*/
+	VMAccountIDQueryParameter *string
+
+	/* VMDeploymentID.
+
+	   Filter by vm.deployment_id
+	*/
+	VMDeploymentIDQueryParameter *string
+
+	/* VMFaultDomain.
+
+	   Filter by vm.fault_domain
+	*/
+	VMFaultDomainQueryParameter *string
+
+	/* VMInstanceID.
+
+	   Filter by vm.instance_id
+	*/
+	VMInstanceIDQueryParameter *string
+
+	/* VMPrimaryIP.
+
+	   Filter by vm.primary_ip
+	*/
+	VMPrimaryIPQueryParameter *string
+
 	/* VMProviderType.
 
 	   Filter by vm.provider_type
 	*/
 	VMProviderTypeQueryParameter *string
+
+	/* VMUpdateDomain.
+
+	   Filter by vm.update_domain
+	*/
+	VMUpdateDomainQueryParameter *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -1208,6 +1388,83 @@ func (o *NodesGetParams) SetHaGivebackStateQueryParameter(haGivebackState *strin
 	o.HaGivebackStateQueryParameter = haGivebackState
 }
 
+// WithHaGivebackStatusAggregateNameQueryParameter adds the haGivebackStatusAggregateName to the nodes get params
+func (o *NodesGetParams) WithHaGivebackStatusAggregateNameQueryParameter(haGivebackStatusAggregateName *string) *NodesGetParams {
+	o.SetHaGivebackStatusAggregateNameQueryParameter(haGivebackStatusAggregateName)
+	return o
+}
+
+// SetHaGivebackStatusAggregateNameQueryParameter adds the haGivebackStatusAggregateName to the nodes get params
+func (o *NodesGetParams) SetHaGivebackStatusAggregateNameQueryParameter(haGivebackStatusAggregateName *string) {
+	o.HaGivebackStatusAggregateNameQueryParameter = haGivebackStatusAggregateName
+}
+
+// WithHaGivebackStatusAggregateUUIDQueryParameter adds the haGivebackStatusAggregateUUID to the nodes get params
+func (o *NodesGetParams) WithHaGivebackStatusAggregateUUIDQueryParameter(haGivebackStatusAggregateUUID *string) *NodesGetParams {
+	o.SetHaGivebackStatusAggregateUUIDQueryParameter(haGivebackStatusAggregateUUID)
+	return o
+}
+
+// SetHaGivebackStatusAggregateUUIDQueryParameter adds the haGivebackStatusAggregateUuid to the nodes get params
+func (o *NodesGetParams) SetHaGivebackStatusAggregateUUIDQueryParameter(haGivebackStatusAggregateUUID *string) {
+	o.HaGivebackStatusAggregateUUIDQueryParameter = haGivebackStatusAggregateUUID
+}
+
+// WithHaGivebackStatusErrorCodeQueryParameter adds the haGivebackStatusErrorCode to the nodes get params
+func (o *NodesGetParams) WithHaGivebackStatusErrorCodeQueryParameter(haGivebackStatusErrorCode *string) *NodesGetParams {
+	o.SetHaGivebackStatusErrorCodeQueryParameter(haGivebackStatusErrorCode)
+	return o
+}
+
+// SetHaGivebackStatusErrorCodeQueryParameter adds the haGivebackStatusErrorCode to the nodes get params
+func (o *NodesGetParams) SetHaGivebackStatusErrorCodeQueryParameter(haGivebackStatusErrorCode *string) {
+	o.HaGivebackStatusErrorCodeQueryParameter = haGivebackStatusErrorCode
+}
+
+// WithHaGivebackStatusErrorMessageQueryParameter adds the haGivebackStatusErrorMessage to the nodes get params
+func (o *NodesGetParams) WithHaGivebackStatusErrorMessageQueryParameter(haGivebackStatusErrorMessage *string) *NodesGetParams {
+	o.SetHaGivebackStatusErrorMessageQueryParameter(haGivebackStatusErrorMessage)
+	return o
+}
+
+// SetHaGivebackStatusErrorMessageQueryParameter adds the haGivebackStatusErrorMessage to the nodes get params
+func (o *NodesGetParams) SetHaGivebackStatusErrorMessageQueryParameter(haGivebackStatusErrorMessage *string) {
+	o.HaGivebackStatusErrorMessageQueryParameter = haGivebackStatusErrorMessage
+}
+
+// WithHaGivebackStatusStateQueryParameter adds the haGivebackStatusState to the nodes get params
+func (o *NodesGetParams) WithHaGivebackStatusStateQueryParameter(haGivebackStatusState *string) *NodesGetParams {
+	o.SetHaGivebackStatusStateQueryParameter(haGivebackStatusState)
+	return o
+}
+
+// SetHaGivebackStatusStateQueryParameter adds the haGivebackStatusState to the nodes get params
+func (o *NodesGetParams) SetHaGivebackStatusStateQueryParameter(haGivebackStatusState *string) {
+	o.HaGivebackStatusStateQueryParameter = haGivebackStatusState
+}
+
+// WithHaInterconnectAdapterQueryParameter adds the haInterconnectAdapter to the nodes get params
+func (o *NodesGetParams) WithHaInterconnectAdapterQueryParameter(haInterconnectAdapter *string) *NodesGetParams {
+	o.SetHaInterconnectAdapterQueryParameter(haInterconnectAdapter)
+	return o
+}
+
+// SetHaInterconnectAdapterQueryParameter adds the haInterconnectAdapter to the nodes get params
+func (o *NodesGetParams) SetHaInterconnectAdapterQueryParameter(haInterconnectAdapter *string) {
+	o.HaInterconnectAdapterQueryParameter = haInterconnectAdapter
+}
+
+// WithHaInterconnectStateQueryParameter adds the haInterconnectState to the nodes get params
+func (o *NodesGetParams) WithHaInterconnectStateQueryParameter(haInterconnectState *string) *NodesGetParams {
+	o.SetHaInterconnectStateQueryParameter(haInterconnectState)
+	return o
+}
+
+// SetHaInterconnectStateQueryParameter adds the haInterconnectState to the nodes get params
+func (o *NodesGetParams) SetHaInterconnectStateQueryParameter(haInterconnectState *string) {
+	o.HaInterconnectStateQueryParameter = haInterconnectState
+}
+
 // WithHaPartnersNameQueryParameter adds the haPartnersName to the nodes get params
 func (o *NodesGetParams) WithHaPartnersNameQueryParameter(haPartnersName *string) *NodesGetParams {
 	o.SetHaPartnersNameQueryParameter(haPartnersName)
@@ -1283,6 +1540,127 @@ func (o *NodesGetParams) WithHaTakeoverStateQueryParameter(haTakeoverState *stri
 // SetHaTakeoverStateQueryParameter adds the haTakeoverState to the nodes get params
 func (o *NodesGetParams) SetHaTakeoverStateQueryParameter(haTakeoverState *string) {
 	o.HaTakeoverStateQueryParameter = haTakeoverState
+}
+
+// WithHwAssistStatusEnabledQueryParameter adds the hwAssistStatusEnabled to the nodes get params
+func (o *NodesGetParams) WithHwAssistStatusEnabledQueryParameter(hwAssistStatusEnabled *bool) *NodesGetParams {
+	o.SetHwAssistStatusEnabledQueryParameter(hwAssistStatusEnabled)
+	return o
+}
+
+// SetHwAssistStatusEnabledQueryParameter adds the hwAssistStatusEnabled to the nodes get params
+func (o *NodesGetParams) SetHwAssistStatusEnabledQueryParameter(hwAssistStatusEnabled *bool) {
+	o.HwAssistStatusEnabledQueryParameter = hwAssistStatusEnabled
+}
+
+// WithHwAssistStatusLocalIPQueryParameter adds the hwAssistStatusLocalIP to the nodes get params
+func (o *NodesGetParams) WithHwAssistStatusLocalIPQueryParameter(hwAssistStatusLocalIP *string) *NodesGetParams {
+	o.SetHwAssistStatusLocalIPQueryParameter(hwAssistStatusLocalIP)
+	return o
+}
+
+// SetHwAssistStatusLocalIPQueryParameter adds the hwAssistStatusLocalIp to the nodes get params
+func (o *NodesGetParams) SetHwAssistStatusLocalIPQueryParameter(hwAssistStatusLocalIP *string) {
+	o.HwAssistStatusLocalIPQueryParameter = hwAssistStatusLocalIP
+}
+
+// WithHwAssistStatusLocalPortQueryParameter adds the hwAssistStatusLocalPort to the nodes get params
+func (o *NodesGetParams) WithHwAssistStatusLocalPortQueryParameter(hwAssistStatusLocalPort *int64) *NodesGetParams {
+	o.SetHwAssistStatusLocalPortQueryParameter(hwAssistStatusLocalPort)
+	return o
+}
+
+// SetHwAssistStatusLocalPortQueryParameter adds the hwAssistStatusLocalPort to the nodes get params
+func (o *NodesGetParams) SetHwAssistStatusLocalPortQueryParameter(hwAssistStatusLocalPort *int64) {
+	o.HwAssistStatusLocalPortQueryParameter = hwAssistStatusLocalPort
+}
+
+// WithHwAssistStatusLocalStateQueryParameter adds the hwAssistStatusLocalState to the nodes get params
+func (o *NodesGetParams) WithHwAssistStatusLocalStateQueryParameter(hwAssistStatusLocalState *string) *NodesGetParams {
+	o.SetHwAssistStatusLocalStateQueryParameter(hwAssistStatusLocalState)
+	return o
+}
+
+// SetHwAssistStatusLocalStateQueryParameter adds the hwAssistStatusLocalState to the nodes get params
+func (o *NodesGetParams) SetHwAssistStatusLocalStateQueryParameter(hwAssistStatusLocalState *string) {
+	o.HwAssistStatusLocalStateQueryParameter = hwAssistStatusLocalState
+}
+
+// WithHwAssistStatusPartnerIPQueryParameter adds the hwAssistStatusPartnerIP to the nodes get params
+func (o *NodesGetParams) WithHwAssistStatusPartnerIPQueryParameter(hwAssistStatusPartnerIP *string) *NodesGetParams {
+	o.SetHwAssistStatusPartnerIPQueryParameter(hwAssistStatusPartnerIP)
+	return o
+}
+
+// SetHwAssistStatusPartnerIPQueryParameter adds the hwAssistStatusPartnerIp to the nodes get params
+func (o *NodesGetParams) SetHwAssistStatusPartnerIPQueryParameter(hwAssistStatusPartnerIP *string) {
+	o.HwAssistStatusPartnerIPQueryParameter = hwAssistStatusPartnerIP
+}
+
+// WithHwAssistStatusPartnerPortQueryParameter adds the hwAssistStatusPartnerPort to the nodes get params
+func (o *NodesGetParams) WithHwAssistStatusPartnerPortQueryParameter(hwAssistStatusPartnerPort *int64) *NodesGetParams {
+	o.SetHwAssistStatusPartnerPortQueryParameter(hwAssistStatusPartnerPort)
+	return o
+}
+
+// SetHwAssistStatusPartnerPortQueryParameter adds the hwAssistStatusPartnerPort to the nodes get params
+func (o *NodesGetParams) SetHwAssistStatusPartnerPortQueryParameter(hwAssistStatusPartnerPort *int64) {
+	o.HwAssistStatusPartnerPortQueryParameter = hwAssistStatusPartnerPort
+}
+
+// WithHwAssistStatusPartnerStateQueryParameter adds the hwAssistStatusPartnerState to the nodes get params
+func (o *NodesGetParams) WithHwAssistStatusPartnerStateQueryParameter(hwAssistStatusPartnerState *string) *NodesGetParams {
+	o.SetHwAssistStatusPartnerStateQueryParameter(hwAssistStatusPartnerState)
+	return o
+}
+
+// SetHwAssistStatusPartnerStateQueryParameter adds the hwAssistStatusPartnerState to the nodes get params
+func (o *NodesGetParams) SetHwAssistStatusPartnerStateQueryParameter(hwAssistStatusPartnerState *string) {
+	o.HwAssistStatusPartnerStateQueryParameter = hwAssistStatusPartnerState
+}
+
+// WithIsAllFlashOptimizedQueryParameter adds the isAllFlashOptimized to the nodes get params
+func (o *NodesGetParams) WithIsAllFlashOptimizedQueryParameter(isAllFlashOptimized *bool) *NodesGetParams {
+	o.SetIsAllFlashOptimizedQueryParameter(isAllFlashOptimized)
+	return o
+}
+
+// SetIsAllFlashOptimizedQueryParameter adds the isAllFlashOptimized to the nodes get params
+func (o *NodesGetParams) SetIsAllFlashOptimizedQueryParameter(isAllFlashOptimized *bool) {
+	o.IsAllFlashOptimizedQueryParameter = isAllFlashOptimized
+}
+
+// WithIsAllFlashSelectOptimizedQueryParameter adds the isAllFlashSelectOptimized to the nodes get params
+func (o *NodesGetParams) WithIsAllFlashSelectOptimizedQueryParameter(isAllFlashSelectOptimized *bool) *NodesGetParams {
+	o.SetIsAllFlashSelectOptimizedQueryParameter(isAllFlashSelectOptimized)
+	return o
+}
+
+// SetIsAllFlashSelectOptimizedQueryParameter adds the isAllFlashSelectOptimized to the nodes get params
+func (o *NodesGetParams) SetIsAllFlashSelectOptimizedQueryParameter(isAllFlashSelectOptimized *bool) {
+	o.IsAllFlashSelectOptimizedQueryParameter = isAllFlashSelectOptimized
+}
+
+// WithIsCapacityOptimizedQueryParameter adds the isCapacityOptimized to the nodes get params
+func (o *NodesGetParams) WithIsCapacityOptimizedQueryParameter(isCapacityOptimized *bool) *NodesGetParams {
+	o.SetIsCapacityOptimizedQueryParameter(isCapacityOptimized)
+	return o
+}
+
+// SetIsCapacityOptimizedQueryParameter adds the isCapacityOptimized to the nodes get params
+func (o *NodesGetParams) SetIsCapacityOptimizedQueryParameter(isCapacityOptimized *bool) {
+	o.IsCapacityOptimizedQueryParameter = isCapacityOptimized
+}
+
+// WithIsPerformanceOptimizedQueryParameter adds the isPerformanceOptimized to the nodes get params
+func (o *NodesGetParams) WithIsPerformanceOptimizedQueryParameter(isPerformanceOptimized *bool) *NodesGetParams {
+	o.SetIsPerformanceOptimizedQueryParameter(isPerformanceOptimized)
+	return o
+}
+
+// SetIsPerformanceOptimizedQueryParameter adds the isPerformanceOptimized to the nodes get params
+func (o *NodesGetParams) SetIsPerformanceOptimizedQueryParameter(isPerformanceOptimized *bool) {
+	o.IsPerformanceOptimizedQueryParameter = isPerformanceOptimized
 }
 
 // WithIsSparesLowQueryParameter adds the isSparesLow to the nodes get params
@@ -1547,6 +1925,61 @@ func (o *NodesGetParams) WithSerialNumberQueryParameter(serialNumber *string) *N
 // SetSerialNumberQueryParameter adds the serialNumber to the nodes get params
 func (o *NodesGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
 	o.SerialNumberQueryParameter = serialNumber
+}
+
+// WithServiceProcessorAPIServiceEnabledQueryParameter adds the serviceProcessorAPIServiceEnabled to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorAPIServiceEnabledQueryParameter(serviceProcessorAPIServiceEnabled *bool) *NodesGetParams {
+	o.SetServiceProcessorAPIServiceEnabledQueryParameter(serviceProcessorAPIServiceEnabled)
+	return o
+}
+
+// SetServiceProcessorAPIServiceEnabledQueryParameter adds the serviceProcessorApiServiceEnabled to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorAPIServiceEnabledQueryParameter(serviceProcessorAPIServiceEnabled *bool) {
+	o.ServiceProcessorAPIServiceEnabledQueryParameter = serviceProcessorAPIServiceEnabled
+}
+
+// WithServiceProcessorAPIServiceLimitAccessQueryParameter adds the serviceProcessorAPIServiceLimitAccess to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorAPIServiceLimitAccessQueryParameter(serviceProcessorAPIServiceLimitAccess *bool) *NodesGetParams {
+	o.SetServiceProcessorAPIServiceLimitAccessQueryParameter(serviceProcessorAPIServiceLimitAccess)
+	return o
+}
+
+// SetServiceProcessorAPIServiceLimitAccessQueryParameter adds the serviceProcessorApiServiceLimitAccess to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorAPIServiceLimitAccessQueryParameter(serviceProcessorAPIServiceLimitAccess *bool) {
+	o.ServiceProcessorAPIServiceLimitAccessQueryParameter = serviceProcessorAPIServiceLimitAccess
+}
+
+// WithServiceProcessorAPIServicePortQueryParameter adds the serviceProcessorAPIServicePort to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorAPIServicePortQueryParameter(serviceProcessorAPIServicePort *int64) *NodesGetParams {
+	o.SetServiceProcessorAPIServicePortQueryParameter(serviceProcessorAPIServicePort)
+	return o
+}
+
+// SetServiceProcessorAPIServicePortQueryParameter adds the serviceProcessorApiServicePort to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorAPIServicePortQueryParameter(serviceProcessorAPIServicePort *int64) {
+	o.ServiceProcessorAPIServicePortQueryParameter = serviceProcessorAPIServicePort
+}
+
+// WithServiceProcessorAutoConfigIPV4SubnetQueryParameter adds the serviceProcessorAutoConfigIPV4Subnet to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorAutoConfigIPV4SubnetQueryParameter(serviceProcessorAutoConfigIPV4Subnet *string) *NodesGetParams {
+	o.SetServiceProcessorAutoConfigIPV4SubnetQueryParameter(serviceProcessorAutoConfigIPV4Subnet)
+	return o
+}
+
+// SetServiceProcessorAutoConfigIPV4SubnetQueryParameter adds the serviceProcessorAutoConfigIpv4Subnet to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorAutoConfigIPV4SubnetQueryParameter(serviceProcessorAutoConfigIPV4Subnet *string) {
+	o.ServiceProcessorAutoConfigIPV4SubnetQueryParameter = serviceProcessorAutoConfigIPV4Subnet
+}
+
+// WithServiceProcessorAutoConfigIPV6SubnetQueryParameter adds the serviceProcessorAutoConfigIPV6Subnet to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorAutoConfigIPV6SubnetQueryParameter(serviceProcessorAutoConfigIPV6Subnet *string) *NodesGetParams {
+	o.SetServiceProcessorAutoConfigIPV6SubnetQueryParameter(serviceProcessorAutoConfigIPV6Subnet)
+	return o
+}
+
+// SetServiceProcessorAutoConfigIPV6SubnetQueryParameter adds the serviceProcessorAutoConfigIpv6Subnet to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorAutoConfigIPV6SubnetQueryParameter(serviceProcessorAutoConfigIPV6Subnet *string) {
+	o.ServiceProcessorAutoConfigIPV6SubnetQueryParameter = serviceProcessorAutoConfigIPV6Subnet
 }
 
 // WithServiceProcessorAutoupdateEnabledQueryParameter adds the serviceProcessorAutoupdateEnabled to the nodes get params
@@ -1956,6 +2389,72 @@ func (o *NodesGetParams) SetVersionMinorQueryParameter(versionMinor *int64) {
 	o.VersionMinorQueryParameter = versionMinor
 }
 
+// WithVersionPatchQueryParameter adds the versionPatch to the nodes get params
+func (o *NodesGetParams) WithVersionPatchQueryParameter(versionPatch *string) *NodesGetParams {
+	o.SetVersionPatchQueryParameter(versionPatch)
+	return o
+}
+
+// SetVersionPatchQueryParameter adds the versionPatch to the nodes get params
+func (o *NodesGetParams) SetVersionPatchQueryParameter(versionPatch *string) {
+	o.VersionPatchQueryParameter = versionPatch
+}
+
+// WithVMAccountIDQueryParameter adds the vMAccountID to the nodes get params
+func (o *NodesGetParams) WithVMAccountIDQueryParameter(vMAccountID *string) *NodesGetParams {
+	o.SetVMAccountIDQueryParameter(vMAccountID)
+	return o
+}
+
+// SetVMAccountIDQueryParameter adds the vmAccountId to the nodes get params
+func (o *NodesGetParams) SetVMAccountIDQueryParameter(vMAccountID *string) {
+	o.VMAccountIDQueryParameter = vMAccountID
+}
+
+// WithVMDeploymentIDQueryParameter adds the vMDeploymentID to the nodes get params
+func (o *NodesGetParams) WithVMDeploymentIDQueryParameter(vMDeploymentID *string) *NodesGetParams {
+	o.SetVMDeploymentIDQueryParameter(vMDeploymentID)
+	return o
+}
+
+// SetVMDeploymentIDQueryParameter adds the vmDeploymentId to the nodes get params
+func (o *NodesGetParams) SetVMDeploymentIDQueryParameter(vMDeploymentID *string) {
+	o.VMDeploymentIDQueryParameter = vMDeploymentID
+}
+
+// WithVMFaultDomainQueryParameter adds the vMFaultDomain to the nodes get params
+func (o *NodesGetParams) WithVMFaultDomainQueryParameter(vMFaultDomain *string) *NodesGetParams {
+	o.SetVMFaultDomainQueryParameter(vMFaultDomain)
+	return o
+}
+
+// SetVMFaultDomainQueryParameter adds the vmFaultDomain to the nodes get params
+func (o *NodesGetParams) SetVMFaultDomainQueryParameter(vMFaultDomain *string) {
+	o.VMFaultDomainQueryParameter = vMFaultDomain
+}
+
+// WithVMInstanceIDQueryParameter adds the vMInstanceID to the nodes get params
+func (o *NodesGetParams) WithVMInstanceIDQueryParameter(vMInstanceID *string) *NodesGetParams {
+	o.SetVMInstanceIDQueryParameter(vMInstanceID)
+	return o
+}
+
+// SetVMInstanceIDQueryParameter adds the vmInstanceId to the nodes get params
+func (o *NodesGetParams) SetVMInstanceIDQueryParameter(vMInstanceID *string) {
+	o.VMInstanceIDQueryParameter = vMInstanceID
+}
+
+// WithVMPrimaryIPQueryParameter adds the vMPrimaryIP to the nodes get params
+func (o *NodesGetParams) WithVMPrimaryIPQueryParameter(vMPrimaryIP *string) *NodesGetParams {
+	o.SetVMPrimaryIPQueryParameter(vMPrimaryIP)
+	return o
+}
+
+// SetVMPrimaryIPQueryParameter adds the vmPrimaryIp to the nodes get params
+func (o *NodesGetParams) SetVMPrimaryIPQueryParameter(vMPrimaryIP *string) {
+	o.VMPrimaryIPQueryParameter = vMPrimaryIP
+}
+
 // WithVMProviderTypeQueryParameter adds the vMProviderType to the nodes get params
 func (o *NodesGetParams) WithVMProviderTypeQueryParameter(vMProviderType *string) *NodesGetParams {
 	o.SetVMProviderTypeQueryParameter(vMProviderType)
@@ -1965,6 +2464,17 @@ func (o *NodesGetParams) WithVMProviderTypeQueryParameter(vMProviderType *string
 // SetVMProviderTypeQueryParameter adds the vmProviderType to the nodes get params
 func (o *NodesGetParams) SetVMProviderTypeQueryParameter(vMProviderType *string) {
 	o.VMProviderTypeQueryParameter = vMProviderType
+}
+
+// WithVMUpdateDomainQueryParameter adds the vMUpdateDomain to the nodes get params
+func (o *NodesGetParams) WithVMUpdateDomainQueryParameter(vMUpdateDomain *string) *NodesGetParams {
+	o.SetVMUpdateDomainQueryParameter(vMUpdateDomain)
+	return o
+}
+
+// SetVMUpdateDomainQueryParameter adds the vmUpdateDomain to the nodes get params
+func (o *NodesGetParams) SetVMUpdateDomainQueryParameter(vMUpdateDomain *string) {
+	o.VMUpdateDomainQueryParameter = vMUpdateDomain
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -2632,6 +3142,125 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.HaGivebackStatusAggregateNameQueryParameter != nil {
+
+		// query param ha.giveback.status.aggregate.name
+		var qrHaGivebackStatusAggregateName string
+
+		if o.HaGivebackStatusAggregateNameQueryParameter != nil {
+			qrHaGivebackStatusAggregateName = *o.HaGivebackStatusAggregateNameQueryParameter
+		}
+		qHaGivebackStatusAggregateName := qrHaGivebackStatusAggregateName
+		if qHaGivebackStatusAggregateName != "" {
+
+			if err := r.SetQueryParam("ha.giveback.status.aggregate.name", qHaGivebackStatusAggregateName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaGivebackStatusAggregateUUIDQueryParameter != nil {
+
+		// query param ha.giveback.status.aggregate.uuid
+		var qrHaGivebackStatusAggregateUUID string
+
+		if o.HaGivebackStatusAggregateUUIDQueryParameter != nil {
+			qrHaGivebackStatusAggregateUUID = *o.HaGivebackStatusAggregateUUIDQueryParameter
+		}
+		qHaGivebackStatusAggregateUUID := qrHaGivebackStatusAggregateUUID
+		if qHaGivebackStatusAggregateUUID != "" {
+
+			if err := r.SetQueryParam("ha.giveback.status.aggregate.uuid", qHaGivebackStatusAggregateUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaGivebackStatusErrorCodeQueryParameter != nil {
+
+		// query param ha.giveback.status.error.code
+		var qrHaGivebackStatusErrorCode string
+
+		if o.HaGivebackStatusErrorCodeQueryParameter != nil {
+			qrHaGivebackStatusErrorCode = *o.HaGivebackStatusErrorCodeQueryParameter
+		}
+		qHaGivebackStatusErrorCode := qrHaGivebackStatusErrorCode
+		if qHaGivebackStatusErrorCode != "" {
+
+			if err := r.SetQueryParam("ha.giveback.status.error.code", qHaGivebackStatusErrorCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaGivebackStatusErrorMessageQueryParameter != nil {
+
+		// query param ha.giveback.status.error.message
+		var qrHaGivebackStatusErrorMessage string
+
+		if o.HaGivebackStatusErrorMessageQueryParameter != nil {
+			qrHaGivebackStatusErrorMessage = *o.HaGivebackStatusErrorMessageQueryParameter
+		}
+		qHaGivebackStatusErrorMessage := qrHaGivebackStatusErrorMessage
+		if qHaGivebackStatusErrorMessage != "" {
+
+			if err := r.SetQueryParam("ha.giveback.status.error.message", qHaGivebackStatusErrorMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaGivebackStatusStateQueryParameter != nil {
+
+		// query param ha.giveback.status.state
+		var qrHaGivebackStatusState string
+
+		if o.HaGivebackStatusStateQueryParameter != nil {
+			qrHaGivebackStatusState = *o.HaGivebackStatusStateQueryParameter
+		}
+		qHaGivebackStatusState := qrHaGivebackStatusState
+		if qHaGivebackStatusState != "" {
+
+			if err := r.SetQueryParam("ha.giveback.status.state", qHaGivebackStatusState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaInterconnectAdapterQueryParameter != nil {
+
+		// query param ha.interconnect.adapter
+		var qrHaInterconnectAdapter string
+
+		if o.HaInterconnectAdapterQueryParameter != nil {
+			qrHaInterconnectAdapter = *o.HaInterconnectAdapterQueryParameter
+		}
+		qHaInterconnectAdapter := qrHaInterconnectAdapter
+		if qHaInterconnectAdapter != "" {
+
+			if err := r.SetQueryParam("ha.interconnect.adapter", qHaInterconnectAdapter); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaInterconnectStateQueryParameter != nil {
+
+		// query param ha.interconnect.state
+		var qrHaInterconnectState string
+
+		if o.HaInterconnectStateQueryParameter != nil {
+			qrHaInterconnectState = *o.HaInterconnectStateQueryParameter
+		}
+		qHaInterconnectState := qrHaInterconnectState
+		if qHaInterconnectState != "" {
+
+			if err := r.SetQueryParam("ha.interconnect.state", qHaInterconnectState); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.HaPartnersNameQueryParameter != nil {
 
 		// query param ha.partners.name
@@ -2746,6 +3375,193 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qHaTakeoverState != "" {
 
 			if err := r.SetQueryParam("ha.takeover.state", qHaTakeoverState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HwAssistStatusEnabledQueryParameter != nil {
+
+		// query param hw_assist.status.enabled
+		var qrHwAssistStatusEnabled bool
+
+		if o.HwAssistStatusEnabledQueryParameter != nil {
+			qrHwAssistStatusEnabled = *o.HwAssistStatusEnabledQueryParameter
+		}
+		qHwAssistStatusEnabled := swag.FormatBool(qrHwAssistStatusEnabled)
+		if qHwAssistStatusEnabled != "" {
+
+			if err := r.SetQueryParam("hw_assist.status.enabled", qHwAssistStatusEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HwAssistStatusLocalIPQueryParameter != nil {
+
+		// query param hw_assist.status.local.ip
+		var qrHwAssistStatusLocalIP string
+
+		if o.HwAssistStatusLocalIPQueryParameter != nil {
+			qrHwAssistStatusLocalIP = *o.HwAssistStatusLocalIPQueryParameter
+		}
+		qHwAssistStatusLocalIP := qrHwAssistStatusLocalIP
+		if qHwAssistStatusLocalIP != "" {
+
+			if err := r.SetQueryParam("hw_assist.status.local.ip", qHwAssistStatusLocalIP); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HwAssistStatusLocalPortQueryParameter != nil {
+
+		// query param hw_assist.status.local.port
+		var qrHwAssistStatusLocalPort int64
+
+		if o.HwAssistStatusLocalPortQueryParameter != nil {
+			qrHwAssistStatusLocalPort = *o.HwAssistStatusLocalPortQueryParameter
+		}
+		qHwAssistStatusLocalPort := swag.FormatInt64(qrHwAssistStatusLocalPort)
+		if qHwAssistStatusLocalPort != "" {
+
+			if err := r.SetQueryParam("hw_assist.status.local.port", qHwAssistStatusLocalPort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HwAssistStatusLocalStateQueryParameter != nil {
+
+		// query param hw_assist.status.local.state
+		var qrHwAssistStatusLocalState string
+
+		if o.HwAssistStatusLocalStateQueryParameter != nil {
+			qrHwAssistStatusLocalState = *o.HwAssistStatusLocalStateQueryParameter
+		}
+		qHwAssistStatusLocalState := qrHwAssistStatusLocalState
+		if qHwAssistStatusLocalState != "" {
+
+			if err := r.SetQueryParam("hw_assist.status.local.state", qHwAssistStatusLocalState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HwAssistStatusPartnerIPQueryParameter != nil {
+
+		// query param hw_assist.status.partner.ip
+		var qrHwAssistStatusPartnerIP string
+
+		if o.HwAssistStatusPartnerIPQueryParameter != nil {
+			qrHwAssistStatusPartnerIP = *o.HwAssistStatusPartnerIPQueryParameter
+		}
+		qHwAssistStatusPartnerIP := qrHwAssistStatusPartnerIP
+		if qHwAssistStatusPartnerIP != "" {
+
+			if err := r.SetQueryParam("hw_assist.status.partner.ip", qHwAssistStatusPartnerIP); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HwAssistStatusPartnerPortQueryParameter != nil {
+
+		// query param hw_assist.status.partner.port
+		var qrHwAssistStatusPartnerPort int64
+
+		if o.HwAssistStatusPartnerPortQueryParameter != nil {
+			qrHwAssistStatusPartnerPort = *o.HwAssistStatusPartnerPortQueryParameter
+		}
+		qHwAssistStatusPartnerPort := swag.FormatInt64(qrHwAssistStatusPartnerPort)
+		if qHwAssistStatusPartnerPort != "" {
+
+			if err := r.SetQueryParam("hw_assist.status.partner.port", qHwAssistStatusPartnerPort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HwAssistStatusPartnerStateQueryParameter != nil {
+
+		// query param hw_assist.status.partner.state
+		var qrHwAssistStatusPartnerState string
+
+		if o.HwAssistStatusPartnerStateQueryParameter != nil {
+			qrHwAssistStatusPartnerState = *o.HwAssistStatusPartnerStateQueryParameter
+		}
+		qHwAssistStatusPartnerState := qrHwAssistStatusPartnerState
+		if qHwAssistStatusPartnerState != "" {
+
+			if err := r.SetQueryParam("hw_assist.status.partner.state", qHwAssistStatusPartnerState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsAllFlashOptimizedQueryParameter != nil {
+
+		// query param is_all_flash_optimized
+		var qrIsAllFlashOptimized bool
+
+		if o.IsAllFlashOptimizedQueryParameter != nil {
+			qrIsAllFlashOptimized = *o.IsAllFlashOptimizedQueryParameter
+		}
+		qIsAllFlashOptimized := swag.FormatBool(qrIsAllFlashOptimized)
+		if qIsAllFlashOptimized != "" {
+
+			if err := r.SetQueryParam("is_all_flash_optimized", qIsAllFlashOptimized); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsAllFlashSelectOptimizedQueryParameter != nil {
+
+		// query param is_all_flash_select_optimized
+		var qrIsAllFlashSelectOptimized bool
+
+		if o.IsAllFlashSelectOptimizedQueryParameter != nil {
+			qrIsAllFlashSelectOptimized = *o.IsAllFlashSelectOptimizedQueryParameter
+		}
+		qIsAllFlashSelectOptimized := swag.FormatBool(qrIsAllFlashSelectOptimized)
+		if qIsAllFlashSelectOptimized != "" {
+
+			if err := r.SetQueryParam("is_all_flash_select_optimized", qIsAllFlashSelectOptimized); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsCapacityOptimizedQueryParameter != nil {
+
+		// query param is_capacity_optimized
+		var qrIsCapacityOptimized bool
+
+		if o.IsCapacityOptimizedQueryParameter != nil {
+			qrIsCapacityOptimized = *o.IsCapacityOptimizedQueryParameter
+		}
+		qIsCapacityOptimized := swag.FormatBool(qrIsCapacityOptimized)
+		if qIsCapacityOptimized != "" {
+
+			if err := r.SetQueryParam("is_capacity_optimized", qIsCapacityOptimized); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsPerformanceOptimizedQueryParameter != nil {
+
+		// query param is_performance_optimized
+		var qrIsPerformanceOptimized bool
+
+		if o.IsPerformanceOptimizedQueryParameter != nil {
+			qrIsPerformanceOptimized = *o.IsPerformanceOptimizedQueryParameter
+		}
+		qIsPerformanceOptimized := swag.FormatBool(qrIsPerformanceOptimized)
+		if qIsPerformanceOptimized != "" {
+
+			if err := r.SetQueryParam("is_performance_optimized", qIsPerformanceOptimized); err != nil {
 				return err
 			}
 		}
@@ -3148,6 +3964,91 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qSerialNumber != "" {
 
 			if err := r.SetQueryParam("serial_number", qSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorAPIServiceEnabledQueryParameter != nil {
+
+		// query param service_processor.api_service.enabled
+		var qrServiceProcessorAPIServiceEnabled bool
+
+		if o.ServiceProcessorAPIServiceEnabledQueryParameter != nil {
+			qrServiceProcessorAPIServiceEnabled = *o.ServiceProcessorAPIServiceEnabledQueryParameter
+		}
+		qServiceProcessorAPIServiceEnabled := swag.FormatBool(qrServiceProcessorAPIServiceEnabled)
+		if qServiceProcessorAPIServiceEnabled != "" {
+
+			if err := r.SetQueryParam("service_processor.api_service.enabled", qServiceProcessorAPIServiceEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorAPIServiceLimitAccessQueryParameter != nil {
+
+		// query param service_processor.api_service.limit_access
+		var qrServiceProcessorAPIServiceLimitAccess bool
+
+		if o.ServiceProcessorAPIServiceLimitAccessQueryParameter != nil {
+			qrServiceProcessorAPIServiceLimitAccess = *o.ServiceProcessorAPIServiceLimitAccessQueryParameter
+		}
+		qServiceProcessorAPIServiceLimitAccess := swag.FormatBool(qrServiceProcessorAPIServiceLimitAccess)
+		if qServiceProcessorAPIServiceLimitAccess != "" {
+
+			if err := r.SetQueryParam("service_processor.api_service.limit_access", qServiceProcessorAPIServiceLimitAccess); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorAPIServicePortQueryParameter != nil {
+
+		// query param service_processor.api_service.port
+		var qrServiceProcessorAPIServicePort int64
+
+		if o.ServiceProcessorAPIServicePortQueryParameter != nil {
+			qrServiceProcessorAPIServicePort = *o.ServiceProcessorAPIServicePortQueryParameter
+		}
+		qServiceProcessorAPIServicePort := swag.FormatInt64(qrServiceProcessorAPIServicePort)
+		if qServiceProcessorAPIServicePort != "" {
+
+			if err := r.SetQueryParam("service_processor.api_service.port", qServiceProcessorAPIServicePort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorAutoConfigIPV4SubnetQueryParameter != nil {
+
+		// query param service_processor.auto_config.ipv4_subnet
+		var qrServiceProcessorAutoConfigIPV4Subnet string
+
+		if o.ServiceProcessorAutoConfigIPV4SubnetQueryParameter != nil {
+			qrServiceProcessorAutoConfigIPV4Subnet = *o.ServiceProcessorAutoConfigIPV4SubnetQueryParameter
+		}
+		qServiceProcessorAutoConfigIPV4Subnet := qrServiceProcessorAutoConfigIPV4Subnet
+		if qServiceProcessorAutoConfigIPV4Subnet != "" {
+
+			if err := r.SetQueryParam("service_processor.auto_config.ipv4_subnet", qServiceProcessorAutoConfigIPV4Subnet); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorAutoConfigIPV6SubnetQueryParameter != nil {
+
+		// query param service_processor.auto_config.ipv6_subnet
+		var qrServiceProcessorAutoConfigIPV6Subnet string
+
+		if o.ServiceProcessorAutoConfigIPV6SubnetQueryParameter != nil {
+			qrServiceProcessorAutoConfigIPV6Subnet = *o.ServiceProcessorAutoConfigIPV6SubnetQueryParameter
+		}
+		qServiceProcessorAutoConfigIPV6Subnet := qrServiceProcessorAutoConfigIPV6Subnet
+		if qServiceProcessorAutoConfigIPV6Subnet != "" {
+
+			if err := r.SetQueryParam("service_processor.auto_config.ipv6_subnet", qServiceProcessorAutoConfigIPV6Subnet); err != nil {
 				return err
 			}
 		}
@@ -3782,6 +4683,108 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.VersionPatchQueryParameter != nil {
+
+		// query param version.patch
+		var qrVersionPatch string
+
+		if o.VersionPatchQueryParameter != nil {
+			qrVersionPatch = *o.VersionPatchQueryParameter
+		}
+		qVersionPatch := qrVersionPatch
+		if qVersionPatch != "" {
+
+			if err := r.SetQueryParam("version.patch", qVersionPatch); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VMAccountIDQueryParameter != nil {
+
+		// query param vm.account_id
+		var qrVMAccountID string
+
+		if o.VMAccountIDQueryParameter != nil {
+			qrVMAccountID = *o.VMAccountIDQueryParameter
+		}
+		qVMAccountID := qrVMAccountID
+		if qVMAccountID != "" {
+
+			if err := r.SetQueryParam("vm.account_id", qVMAccountID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VMDeploymentIDQueryParameter != nil {
+
+		// query param vm.deployment_id
+		var qrVMDeploymentID string
+
+		if o.VMDeploymentIDQueryParameter != nil {
+			qrVMDeploymentID = *o.VMDeploymentIDQueryParameter
+		}
+		qVMDeploymentID := qrVMDeploymentID
+		if qVMDeploymentID != "" {
+
+			if err := r.SetQueryParam("vm.deployment_id", qVMDeploymentID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VMFaultDomainQueryParameter != nil {
+
+		// query param vm.fault_domain
+		var qrVMFaultDomain string
+
+		if o.VMFaultDomainQueryParameter != nil {
+			qrVMFaultDomain = *o.VMFaultDomainQueryParameter
+		}
+		qVMFaultDomain := qrVMFaultDomain
+		if qVMFaultDomain != "" {
+
+			if err := r.SetQueryParam("vm.fault_domain", qVMFaultDomain); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VMInstanceIDQueryParameter != nil {
+
+		// query param vm.instance_id
+		var qrVMInstanceID string
+
+		if o.VMInstanceIDQueryParameter != nil {
+			qrVMInstanceID = *o.VMInstanceIDQueryParameter
+		}
+		qVMInstanceID := qrVMInstanceID
+		if qVMInstanceID != "" {
+
+			if err := r.SetQueryParam("vm.instance_id", qVMInstanceID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VMPrimaryIPQueryParameter != nil {
+
+		// query param vm.primary_ip
+		var qrVMPrimaryIP string
+
+		if o.VMPrimaryIPQueryParameter != nil {
+			qrVMPrimaryIP = *o.VMPrimaryIPQueryParameter
+		}
+		qVMPrimaryIP := qrVMPrimaryIP
+		if qVMPrimaryIP != "" {
+
+			if err := r.SetQueryParam("vm.primary_ip", qVMPrimaryIP); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.VMProviderTypeQueryParameter != nil {
 
 		// query param vm.provider_type
@@ -3794,6 +4797,23 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qVMProviderType != "" {
 
 			if err := r.SetQueryParam("vm.provider_type", qVMProviderType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VMUpdateDomainQueryParameter != nil {
+
+		// query param vm.update_domain
+		var qrVMUpdateDomain string
+
+		if o.VMUpdateDomainQueryParameter != nil {
+			qrVMUpdateDomain = *o.VMUpdateDomainQueryParameter
+		}
+		qVMUpdateDomain := qrVMUpdateDomain
+		if qVMUpdateDomain != "" {
+
+			if err := r.SetQueryParam("vm.update_domain", qVMUpdateDomain); err != nil {
 				return err
 			}
 		}

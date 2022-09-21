@@ -142,6 +142,12 @@ type FpolicyPolicyCollectionGetParams struct {
 	*/
 	ReturnTimeoutQueryParameter *int64
 
+	/* ScopeCheckExtensionsOnDirectories.
+
+	   Filter by scope.check_extensions_on_directories
+	*/
+	ScopeCheckExtensionsOnDirectoriesQueryParameter *bool
+
 	/* ScopeExcludeExportPolicies.
 
 	   Filter by scope.exclude_export_policies
@@ -189,6 +195,12 @@ type FpolicyPolicyCollectionGetParams struct {
 	   Filter by scope.include_volumes
 	*/
 	ScopeIncludeVolumesQueryParameter *string
+
+	/* ScopeObjectMonitoringWithNoExtension.
+
+	   Filter by scope.object_monitoring_with_no_extension
+	*/
+	ScopeObjectMonitoringWithNoExtensionQueryParameter *bool
 
 	/* SvmUUID.
 
@@ -406,6 +418,17 @@ func (o *FpolicyPolicyCollectionGetParams) SetReturnTimeoutQueryParameter(return
 	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
+// WithScopeCheckExtensionsOnDirectoriesQueryParameter adds the scopeCheckExtensionsOnDirectories to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeCheckExtensionsOnDirectoriesQueryParameter(scopeCheckExtensionsOnDirectories *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeCheckExtensionsOnDirectoriesQueryParameter(scopeCheckExtensionsOnDirectories)
+	return o
+}
+
+// SetScopeCheckExtensionsOnDirectoriesQueryParameter adds the scopeCheckExtensionsOnDirectories to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeCheckExtensionsOnDirectoriesQueryParameter(scopeCheckExtensionsOnDirectories *bool) {
+	o.ScopeCheckExtensionsOnDirectoriesQueryParameter = scopeCheckExtensionsOnDirectories
+}
+
 // WithScopeExcludeExportPoliciesQueryParameter adds the scopeExcludeExportPolicies to the fpolicy policy collection get params
 func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeExportPoliciesQueryParameter(scopeExcludeExportPolicies *string) *FpolicyPolicyCollectionGetParams {
 	o.SetScopeExcludeExportPoliciesQueryParameter(scopeExcludeExportPolicies)
@@ -492,6 +515,17 @@ func (o *FpolicyPolicyCollectionGetParams) WithScopeIncludeVolumesQueryParameter
 // SetScopeIncludeVolumesQueryParameter adds the scopeIncludeVolumes to the fpolicy policy collection get params
 func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeVolumesQueryParameter(scopeIncludeVolumes *string) {
 	o.ScopeIncludeVolumesQueryParameter = scopeIncludeVolumes
+}
+
+// WithScopeObjectMonitoringWithNoExtensionQueryParameter adds the scopeObjectMonitoringWithNoExtension to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeObjectMonitoringWithNoExtensionQueryParameter(scopeObjectMonitoringWithNoExtension *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeObjectMonitoringWithNoExtensionQueryParameter(scopeObjectMonitoringWithNoExtension)
+	return o
+}
+
+// SetScopeObjectMonitoringWithNoExtensionQueryParameter adds the scopeObjectMonitoringWithNoExtension to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeObjectMonitoringWithNoExtensionQueryParameter(scopeObjectMonitoringWithNoExtension *bool) {
+	o.ScopeObjectMonitoringWithNoExtensionQueryParameter = scopeObjectMonitoringWithNoExtension
 }
 
 // WithSVMUUIDPathParameter adds the svmUUID to the fpolicy policy collection get params
@@ -722,6 +756,23 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.ScopeCheckExtensionsOnDirectoriesQueryParameter != nil {
+
+		// query param scope.check_extensions_on_directories
+		var qrScopeCheckExtensionsOnDirectories bool
+
+		if o.ScopeCheckExtensionsOnDirectoriesQueryParameter != nil {
+			qrScopeCheckExtensionsOnDirectories = *o.ScopeCheckExtensionsOnDirectoriesQueryParameter
+		}
+		qScopeCheckExtensionsOnDirectories := swag.FormatBool(qrScopeCheckExtensionsOnDirectories)
+		if qScopeCheckExtensionsOnDirectories != "" {
+
+			if err := r.SetQueryParam("scope.check_extensions_on_directories", qScopeCheckExtensionsOnDirectories); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ScopeExcludeExportPoliciesQueryParameter != nil {
 
 		// query param scope.exclude_export_policies
@@ -853,6 +904,23 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qScopeIncludeVolumes != "" {
 
 			if err := r.SetQueryParam("scope.include_volumes", qScopeIncludeVolumes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ScopeObjectMonitoringWithNoExtensionQueryParameter != nil {
+
+		// query param scope.object_monitoring_with_no_extension
+		var qrScopeObjectMonitoringWithNoExtension bool
+
+		if o.ScopeObjectMonitoringWithNoExtensionQueryParameter != nil {
+			qrScopeObjectMonitoringWithNoExtension = *o.ScopeObjectMonitoringWithNoExtensionQueryParameter
+		}
+		qScopeObjectMonitoringWithNoExtension := swag.FormatBool(qrScopeObjectMonitoringWithNoExtension)
+		if qScopeObjectMonitoringWithNoExtension != "" {
+
+			if err := r.SetQueryParam("scope.object_monitoring_with_no_extension", qScopeObjectMonitoringWithNoExtension); err != nil {
 				return err
 			}
 		}

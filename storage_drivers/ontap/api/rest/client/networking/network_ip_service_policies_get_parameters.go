@@ -78,6 +78,12 @@ type NetworkIPServicePoliciesGetParams struct {
 	*/
 	IpspaceUUIDQueryParameter *string
 
+	/* IsBuiltIn.
+
+	   Filter by is_built_in
+	*/
+	IsBuiltInQueryParameter *bool
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -242,6 +248,17 @@ func (o *NetworkIPServicePoliciesGetParams) SetIpspaceUUIDQueryParameter(ipspace
 	o.IpspaceUUIDQueryParameter = ipspaceUUID
 }
 
+// WithIsBuiltInQueryParameter adds the isBuiltIn to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) WithIsBuiltInQueryParameter(isBuiltIn *bool) *NetworkIPServicePoliciesGetParams {
+	o.SetIsBuiltInQueryParameter(isBuiltIn)
+	return o
+}
+
+// SetIsBuiltInQueryParameter adds the isBuiltIn to the network ip service policies get params
+func (o *NetworkIPServicePoliciesGetParams) SetIsBuiltInQueryParameter(isBuiltIn *bool) {
+	o.IsBuiltInQueryParameter = isBuiltIn
+}
+
 // WithMaxRecordsQueryParameter adds the maxRecords to the network ip service policies get params
 func (o *NetworkIPServicePoliciesGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetworkIPServicePoliciesGetParams {
 	o.SetMaxRecordsQueryParameter(maxRecords)
@@ -400,6 +417,23 @@ func (o *NetworkIPServicePoliciesGetParams) WriteToRequest(r runtime.ClientReque
 		if qIpspaceUUID != "" {
 
 			if err := r.SetQueryParam("ipspace.uuid", qIpspaceUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsBuiltInQueryParameter != nil {
+
+		// query param is_built_in
+		var qrIsBuiltIn bool
+
+		if o.IsBuiltInQueryParameter != nil {
+			qrIsBuiltIn = *o.IsBuiltInQueryParameter
+		}
+		qIsBuiltIn := swag.FormatBool(qrIsBuiltIn)
+		if qIsBuiltIn != "" {
+
+			if err := r.SetQueryParam("is_built_in", qIsBuiltIn); err != nil {
 				return err
 			}
 		}

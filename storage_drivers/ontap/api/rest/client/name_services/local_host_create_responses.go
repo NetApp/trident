@@ -71,7 +71,13 @@ func NewLocalHostCreateDefault(code int) *LocalHostCreateDefault {
 
 /* LocalHostCreateDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 1966253 | IPv6 is not enabled in the cluster. Enable IPv6 using command "network options ipv6 modify -enabled true" and try again. |
+| 8912896 | Only admin or data Vservers allowed. |
+| 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
+
 */
 type LocalHostCreateDefault struct {
 	_statusCode int

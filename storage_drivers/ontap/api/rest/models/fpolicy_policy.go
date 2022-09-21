@@ -295,6 +295,13 @@ func (m *FpolicyPolicy) UnmarshalBinary(b []byte) error {
 // swagger:model FpolicyPolicyScope
 type FpolicyPolicyScope struct {
 
+	// Specifies whether the file name extension checks also apply to directory objects. If this parameter is set to true,
+	// the directory objects are subjected to the same extension checks as regular files. If this parameter is set to false,
+	// the directory names are not matched for extensions and notifications are sent for directories even if their name
+	// extensions do not match. Default is false.
+	//
+	CheckExtensionsOnDirectories *bool `json:"check_extensions_on_directories,omitempty"`
+
 	// exclude export policies
 	ExcludeExportPolicies []string `json:"exclude_export_policies,omitempty"`
 
@@ -321,6 +328,11 @@ type FpolicyPolicyScope struct {
 	// include volumes
 	// Example: ["vol1","vol_svm1"]
 	IncludeVolumes []string `json:"include_volumes,omitempty"`
+
+	// Specifies whether the extension checks also apply to objects with no extension. If this parameter is set to true,
+	// all objects with or without extensions are monitored. Default is false.
+	//
+	ObjectMonitoringWithNoExtension *bool `json:"object_monitoring_with_no_extension,omitempty"`
 }
 
 // Validate validates this fpolicy policy scope

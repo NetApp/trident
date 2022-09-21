@@ -27,11 +27,8 @@ type KeyServerNoRecords struct {
 	// Format: password
 	Password strfmt.Password `json:"password,omitempty"`
 
-	// A list of the secondary key servers associated with the primary key server.
-	SecondaryKeyServers []string `json:"secondary_key_servers,omitempty"`
-
 	// External key server for key management. If no port is provided, a default port of 5696 is used. Not valid in POST if `records` is provided.
-	// Example: keyserver1.com:5698
+	// Example: bulkkeyserver.com:5698
 	Server string `json:"server,omitempty"`
 
 	// I/O timeout in seconds for communicating with the key server.

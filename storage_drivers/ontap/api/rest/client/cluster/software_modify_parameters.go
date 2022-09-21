@@ -108,6 +108,13 @@ type SoftwareModifyParams struct {
 	*/
 	ReturnTimeoutQueryParameter *int64
 
+	/* ShowValidationDetails.
+
+	   If the value is set to true, then all validation details will be shown in the output.
+
+	*/
+	ShowValidationDetailsQueryParameter *bool
+
 	/* SkipWarnings.
 
 	   Ignore warnings and proceed with the install.
@@ -267,6 +274,17 @@ func (o *SoftwareModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int
 	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
+// WithShowValidationDetailsQueryParameter adds the showValidationDetails to the software modify params
+func (o *SoftwareModifyParams) WithShowValidationDetailsQueryParameter(showValidationDetails *bool) *SoftwareModifyParams {
+	o.SetShowValidationDetailsQueryParameter(showValidationDetails)
+	return o
+}
+
+// SetShowValidationDetailsQueryParameter adds the showValidationDetails to the software modify params
+func (o *SoftwareModifyParams) SetShowValidationDetailsQueryParameter(showValidationDetails *bool) {
+	o.ShowValidationDetailsQueryParameter = showValidationDetails
+}
+
 // WithSkIPWarningsQueryParameter adds the skipWarnings to the software modify params
 func (o *SoftwareModifyParams) WithSkIPWarningsQueryParameter(skipWarnings *bool) *SoftwareModifyParams {
 	o.SetSkIPWarningsQueryParameter(skipWarnings)
@@ -410,6 +428,23 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ShowValidationDetailsQueryParameter != nil {
+
+		// query param show_validation_details
+		var qrShowValidationDetails bool
+
+		if o.ShowValidationDetailsQueryParameter != nil {
+			qrShowValidationDetails = *o.ShowValidationDetailsQueryParameter
+		}
+		qShowValidationDetails := swag.FormatBool(qrShowValidationDetails)
+		if qShowValidationDetails != "" {
+
+			if err := r.SetQueryParam("show_validation_details", qShowValidationDetails); err != nil {
 				return err
 			}
 		}

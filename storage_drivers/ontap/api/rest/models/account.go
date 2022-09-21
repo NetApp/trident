@@ -30,6 +30,9 @@ type Account struct {
 	// Optional comment for the user account.
 	Comment string `json:"comment,omitempty"`
 
+	// Optional property that specifies the mode of authentication is LDAP Fastbind.
+	LdapFastbind *bool `json:"ldap_fastbind,omitempty"`
+
 	// Locked status of the account.
 	Locked *bool `json:"locked,omitempty"`
 
@@ -47,6 +50,11 @@ type Account struct {
 	// Min Length: 8
 	// Format: password
 	Password strfmt.Password `json:"password,omitempty"`
+
+	// Optional property that specifies the password hash algorithm used to generate a hash of the user's password for password matching.
+	// Example: sha512
+	// Enum: [sha512 sha256 md5]
+	PasswordHashAlgorithm *string `json:"password_hash_algorithm,omitempty"`
 
 	// role
 	Role *AccountRole `json:"role,omitempty"`
@@ -78,6 +86,10 @@ func (m *Account) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePassword(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePasswordHashAlgorithm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -183,6 +195,72 @@ func (m *Account) validatePassword(formats strfmt.Registry) error {
 	}
 
 	if err := validate.FormatOf("password", "body", "password", m.Password.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var accountTypePasswordHashAlgorithmPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["sha512","sha256","md5"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		accountTypePasswordHashAlgorithmPropEnum = append(accountTypePasswordHashAlgorithmPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// account
+	// Account
+	// password_hash_algorithm
+	// PasswordHashAlgorithm
+	// sha512
+	// END DEBUGGING
+	// AccountPasswordHashAlgorithmSha512 captures enum value "sha512"
+	AccountPasswordHashAlgorithmSha512 string = "sha512"
+
+	// BEGIN DEBUGGING
+	// account
+	// Account
+	// password_hash_algorithm
+	// PasswordHashAlgorithm
+	// sha256
+	// END DEBUGGING
+	// AccountPasswordHashAlgorithmSha256 captures enum value "sha256"
+	AccountPasswordHashAlgorithmSha256 string = "sha256"
+
+	// BEGIN DEBUGGING
+	// account
+	// Account
+	// password_hash_algorithm
+	// PasswordHashAlgorithm
+	// md5
+	// END DEBUGGING
+	// AccountPasswordHashAlgorithmMd5 captures enum value "md5"
+	AccountPasswordHashAlgorithmMd5 string = "md5"
+)
+
+// prop value enum
+func (m *Account) validatePasswordHashAlgorithmEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, accountTypePasswordHashAlgorithmPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Account) validatePasswordHashAlgorithm(formats strfmt.Registry) error {
+	if swag.IsZero(m.PasswordHashAlgorithm) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePasswordHashAlgorithmEnum("password_hash_algorithm", "body", *m.PasswordHashAlgorithm); err != nil {
 		return err
 	}
 

@@ -20,6 +20,15 @@ import (
 // swagger:model license_state
 type LicenseState string
 
+func NewLicenseState(value LicenseState) *LicenseState {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated LicenseState.
+func (m LicenseState) Pointer() *LicenseState {
+	return &m
+}
+
 const (
 
 	// LicenseStateCompliant captures enum value "compliant"

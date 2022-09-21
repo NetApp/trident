@@ -8,24 +8,22 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	storageattribute "github.com/netapp/trident/storage_attribute"
-	storagedrivers "github.com/netapp/trident/storage_drivers"
+	sa "github.com/netapp/trident/storage_attribute"
+	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
 
 type StorageDriver interface {
-	GetConfig() *storagedrivers.OntapStorageDriverConfig
-	GetAPI() *api.Client
+	GetConfig() *drivers.OntapStorageDriverConfig
+	GetAPI() api.OntapAPI
 	GetTelemetry() *Telemetry
 	Name() string
 }
 
 type NASDriver interface {
-	GetVolumeOpts(context.Context, *storage.VolumeConfig, map[string]storageattribute.Request) (
-		map[string]string, error,
-	)
-	GetAPI() *api.Client
-	GetConfig() *storagedrivers.OntapStorageDriverConfig
+	GetVolumeOpts(context.Context, *storage.VolumeConfig, map[string]sa.Request) (map[string]string, error)
+	GetAPI() api.OntapAPI
+	GetConfig() *drivers.OntapStorageDriverConfig
 }
 
 type Telemetry struct {

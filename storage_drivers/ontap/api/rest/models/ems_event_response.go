@@ -311,6 +311,7 @@ type EmsEventResponseRecordsItems0 struct {
 	Node *EmsEventResponseRecordsItems0Node `json:"node,omitempty"`
 
 	// A list of parameters provided with the EMS event.
+	// Read Only: true
 	Parameters []*EmsEventResponseRecordsItems0ParametersItems0 `json:"parameters,omitempty"`
 
 	// Source
@@ -543,6 +544,10 @@ func (m *EmsEventResponseRecordsItems0) contextValidateNode(ctx context.Context,
 }
 
 func (m *EmsEventResponseRecordsItems0) contextValidateParameters(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "parameters", "body", []*EmsEventResponseRecordsItems0ParametersItems0(m.Parameters)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.Parameters); i++ {
 

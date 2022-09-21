@@ -115,16 +115,21 @@ It takes the following values:
 - `full` - indicates that the source SVM configuration is replicated to the destination SVM endpoint.
 - `exclude_network_config` - indicates that the source SVM configuration other than network configuration is replicated to the destination SVM endpoint.
 - `exclude_network_and_protocol_config` - indicates that the source SVM configuration is not replicated to the destination SVM endpoint.<br/>
-### Important note
+### Important notes
 - The property "identity_preservation" is applicable to only SnapMirror relationships with SVM endpoints and it indicates which configuration of the source SVM is replicated to the destination SVM.
 - The properties "identity_preservation" and "transfer_schedule" are not applicable for "sync" type policies.
-- The property "copy_all_source_snapshots" is not applicable for "sync" type policies.
-- No "retention" properties can be specified if "copy_all_source_snapshots" is specified.
+- The properties "copy_all_source_snapshots", "copy_latest_source_snapshot", and "create_snapshot_on_source" are mutually exclusive.
+- The properties "copy_all_source_snapshots", "copy_latest_source_snapshot", and "create_snapshot_on_source" are not applicable for "sync" type policies.
+- No "retention" properties can be specified if "copy_all_source_snapshots" or 'copy_latest_source_snapshot' is specified.
 - The properties "retention.creation_schedule" and "retention.prefix" are not applicable for "sync" type policies.
+- The property "retention.creation_schedule" is not applicable for "async" policies with "create_snapshot_on_source" set to "false".
 - The property "sync_common_snapshot_schedule" is not applicable for an "async" type policy.
 - The property "retention.count" specifies the maximum number of Snapshot copies that are retained on the SnapMirror destination volume.
 - When the property "retention.label" is specified, the Snapshot copies that have a SnapMirror label matching this property is transferred to the SnapMirror destination.
 - When the property "retention.creation_schedule" is specified, Snapshot copies are directly created on the SnapMirror destination. The Snapshot copies created have the same content as the latest Snapshot copy already present on the SnapMirror destination.
+- The property "transfer_schedule" cannot be set to null (no-quotes) during SnapMirror policy POST.
+- The properties "retention.label" and "retention.count" must be specified for "async" policies with "create_snapshot_on_source" set to "false".
+
 ### Required properties
 * `name` - Name of the new SnapMirror policy.
 ### Recommended optional properties
@@ -133,10 +138,10 @@ It takes the following values:
 If not specified in POST, the following default property values are assigned:
 * `type` - _async_
 * `sync_type` - _sync_ (when `type` is _sync_)
-* `copy_all_source_snapshots` - _false_ {when 'type' is _async_)
 * `network_compression_enabled` - _false_
 * `throttle` - _0_
 * `identity_preservation` - `_exclude_network_and_protocol_config_`
+
 ### Related ONTAP commands
 * `snapmirror policy create`
 ### Examples
@@ -162,12 +167,25 @@ If not specified in POST, the following default property values are assigned:
    POST "/api/snapmirror/policies" '{"name": "newPolicy", "svm":{"name" : "vs1"}, "type": "async", "copy_all_source_snapshots": "true"}'
    ```
    <br/>
+  Creating a SnapMirror policy of type "async" which replicates latest Snapshot copy
+   ```
+   POST "/api/snapmirror/policies" '{"name": "newPolicy2", "svm":{"name" : "vs1"}, "type": "async", "copy_latest_source_snapshot": "true"}'
+   ```
+   <br/>
+  Creating a SnapMirror policy of type "async" which does not create Snapshot copies on source
+   ```
+   POST "/api/snapmirror/policies" '{"name": "newPolicy", "svm":{"name" : "vs1"}, "type": "async", "create_snapshot_on_source": "false", "retention": [{"label": "daily", "count": 7}]}'
+   ```
+   <br/>
   Creating a SnapMirror policy of type "sync" with sync_type as "automated_failover"
    <br/>
    ```
    POST "/api/snapmirror/policies/" '{"name": "policy1", "svm.name": "VS0", "type": "sync", "sync_type": "automated_failover" }'
    ```
    <br/>
+
+
+
 ### Learn more
 * [`DOC /snapmirror/policies`](#docs-snapmirror-snapmirror_policies)
 
@@ -306,12 +324,15 @@ func (a *Client) SnapmirrorPolicyGet(params *SnapmirrorPolicyGetParams, authInfo
 /*
   SnapmirrorPolicyModify Updates the SnapMirror policy.
 ### Important notes
-* The properties "transfer_schedule" and "throttle" can be modified only if all the SnapMirror relationships associated with the specified SnapMirror policy have the same values.
 * The properties "retention.label" and "retention.count" are mandatory if "retention" is provided in the input. The provided "retention.label" is the final list and it replaces the existing values.
 * The value of the "identity_preservation" property cannot be changed if the SnapMirror relationships associated with the policy have different identity_preservation configurations.
-* If the SnapMirror policy "identity_preservation" value matches the "identity_preservation" value of the associated SnapMirror relationships, then the "identity_preservation" value can be changed from a higher "identity_preservation" threshold value to a lower "identity_preservation" threshold value but not vice-versa. For example, the threshold value of the "identity_preservation" property can be changed from "full" to "exclude_network_config" to "exclude_network_and_protocol_config", but could not be increased from "exclude_network_and_protocol_config" to "exclude_network_config" to "full".<br/>
-* No "retention" properties can be modified if the "copy_all_source_snapshots" property is present in the policy.
-* The "copy_all_source_snapshots" property of a policy cannot be modified.
+* If the SnapMirror policy "identity_preservation" value matches the "identity_preservation" value of the associated SnapMirror relationships, then the "identity_preservation" value can be changed from a higher "identity_preservation" threshold value to a lower "identity_preservation" threshold value but not vice-versa. For example, the threshold value of the "identity_preservation" property can be changed from "full" to "exclude_network_config", but cannot be increased from "exclude_network_and_protocol_config" to "exclude_network_config" to "full". The threshold value of the "identity_preservation" cannot be changed to "exclude_network_and_protocol_config" for IDP SVMDR.<br/>
+* The policy properties "copy_all_source_snapshots", "copy_latest_source_snapshot", and "create_snapshot_on_source" cannot be modified.
+* No "retention" properties can be modified if the "copy_all_source_snapshots" or "copy_latest_source_snapshot" property is present in the policy.
+* Replacing or deleting all retention rules of a policy that has the "create_snapshot_on_source" property set to false in a single API call is not supported.
+* Modifying the property "retention.label" for all retention rules of a policy that has the "create_snapshot_on_source" property set to false in a single API call is not supported.
+* To remove a transfer_schedule on a SnapMirror policy set the "transfer_schedule" to null (no-quotes) during SnapMirror policy PATCH.
+
 ### Related ONTAP commands
 * `snapmirror policy modify`
 ### Example
@@ -339,6 +360,13 @@ func (a *Client) SnapmirrorPolicyGet(params *SnapmirrorPolicyGetParams, authInfo
    PATCH "/api/snapmirror/policies/8aef950b-3bef-11e9-80ac-0050568ea591" '{"transfer_schedule.name" : "weekly", "throttle" : "100", "identity_preservation":"exclude_network_and_protocol_config"}'
    ```
    <br/>
+   Removing the SnapMirror transfer_schedule for a SnapMirror policy. Transfer_schedule can be specified as UUID or name or both with the value set to null (no-quotes).
+   <br/>
+   ```
+   PATCH "/api/snapmirror/policies/98bb2608-fc60-11e8-aa13-005056a707ff/" '{"transfer_schedule":{"uuid":null, "name":null}}'
+   ```
+   <br/>
+
 ### Learn more
 * [`DOC /snapmirror/policies`](#docs-snapmirror-snapmirror_policies)
 
@@ -380,6 +408,7 @@ func (a *Client) SnapmirrorPolicyModify(params *SnapmirrorPolicyModifyParams, au
 
 /*
   SnapmirrorRelationshipCreate Creates a SnapMirror relationship. This API can optionally provision the destination endpoint when it does not exist. This API must be executed on the cluster containing the destination endpoint unless the destination endpoint is being provisioned. When the destination endpoint is being provisioned, this API can also be executed from the cluster containing the source endpoint. Provisioning of the destination endpoint from the source cluster is supported for the FlexVol volume, FlexGroup volume and Consistency Group endpoints. For SVM endpoint, provisioning of the destination SVM endpoint is not supported from the source cluster.<br>When the destination endpoint exists the source SVM and the destination SVM must be in an SVM peer relationship. When provisioning the destination endpoint, the SVM peer relationship between the source SVM and the destination SVM is established as part of the destination, provision provided the source SVM has SVM peering permission for the destination cluster.
+
 ### Required properties
 * `source.path` - Path to the source endpoint of the SnapMirror relationship.
 * `destination.path` - Path to the destination endpoint of the SnapMirror relationship.
@@ -389,6 +418,7 @@ func (a *Client) SnapmirrorPolicyModify(params *SnapmirrorPolicyModifyParams, au
 * `policy.name` or `policy.uuid` - Policy governing the SnapMirror relationship.
 * `state` - Set the state to "snapmirrored" to automatically initialize the relationship.
 * `create_destination.enabled` - Enable this property to provision the destination endpoint.
+
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `policy.name` - _Asynchronous_
@@ -398,9 +428,17 @@ If not specified in POST, the following default property values are assigned:
 * `create_destination.storage_service.enforce_performance` - `_false_`
 * `source.ipspace` - `_Default_`
 * `destination.ipspace` - `_Default_`
+* `throttle` - _0_
 ### Related ONTAP commands
 * `snapmirror create`
 * `snapmirror protect`
+### Important notes
+* The property "transfer_schedule" if set on a SnapMirror relationship overrides the "transfer_schedule" set on the policy being used with the SnapMirror relationship.
+* The property "throttle" if set on a SnapMirror relationship overrides the "throttle" set on the policy being used with the SnapMirror relationship.
+* The properties "transfer_schedule" and "throttle" are not supported when "restore" is set to "true".
+* The property "transfer_schedule" cannot be set to null (no-quotes) during SnapMirror relationship POST.
+* The property "throttle" is not supported when "create_destination.enabled" is set to "true".
+* The property "identity_preservation" is applicable to only SnapMirror relationships with SVM endpoints and it indicates which configuration of the source SVM is replicated to the destination SVM.
 ### Examples
 The following examples show how to create FlexVol, FlexGroup, SVM and Consistency Group SnapMirror relationships. Note that the source SVM name should be the local name of the peer SVM.</br>
    Creating a FlexVol SnapMirror relationship of type XDP.
@@ -430,22 +468,22 @@ The following examples show how to create FlexVol, FlexGroup, SVM and Consistenc
    Provision the destination FlexVol volume endpoint and create a SnapMirror relationship of type XDP.
    <br/>
    ```
-   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:src_vol"}, "destination": { "path": "dst_svm:dst_vol"}, "create_destination": { "enable": "true" }}'
+   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:src_vol"}, "destination": { "path": "dst_svm:dst_vol"}, "create_destination": { "enabled": "true" }}'
    ```
    Provision the destination FlexVol volume endpoint on a Fabricpool with a tiering policy and create a SnapMirror relationship of type XDP.
    <br/>
    ```
-   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:src_vol"}, "destination": { "path": "dst_svm:dst_vol"}, "create_destination": { "enable": "true", "tiering": { "supported": "true", "policy": "auto" } } }'
+   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:src_vol"}, "destination": { "path": "dst_svm:dst_vol"}, "create_destination": { "enabled": "true", "tiering": { "supported": "true", "policy": "auto" } } }'
    ```
    Provision the destination FlexVol volume endpoint using storage service and create a SnapMirror relationship of type XDP.
    <br/>
    ```
-   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:src_vol"}, "destination": { "path": "dst_svm:dst_vol"}, "create_destination": { "enable": "true", "storage_service": { "enabled": "true", "name": "extreme", "enforce_performance": "true" } } }'
+   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:src_vol"}, "destination": { "path": "dst_svm:dst_vol"}, "create_destination": { "enabled": "true", "storage_service": { "enabled": "true", "name": "extreme", "enforce_performance": "true" } } }'
    ```
    Provision the destination SVM endpoint and create a SnapMirror relationship of type XDP.
    <br/>
    ```
-   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:", "cluster": { "name": "cluster_src" }}, "destination": { "path": "dst_svm:"}, "create_destination": { "enable": "true" }}'
+   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:", "cluster": { "name": "cluster_src" }}, "destination": { "path": "dst_svm:"}, "create_destination": { "enabled: "true" }}'
    ```
    Create a SnapMirror relationship with Consistency Group endpoint.
    <br/>
@@ -455,14 +493,21 @@ The following examples show how to create FlexVol, FlexGroup, SVM and Consistenc
    Provision the destination Consistency Group endpoint on a Fabricpool with a tiering policy, create a SnapMirror relationship with a SnapMirror policy of type "sync" and sync_type of "automated_failover", and initialize the SnapMirror relationship with state as "in_sync".
    <br/>
    ```
-   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:/cg/cg_src_vol", "consistency_group_volumes": "src_vol_1, src_vol_2"}, "destination": { "path": "dst_svm:/cg/cg_dst_vol", "consistency_group_volumes": "dst_vol_1, dst_vol_2"}, "create_destination": { "enable": "true", "tiering": { "supported": "true" } }, "policy": "AutomatedFailOver", "state": "in_sync" }'
+   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:/cg/cg_src_vol", "consistency_group_volumes": "src_vol_1, src_vol_2"}, "destination": { "path": "dst_svm:/cg/cg_dst_vol", "consistency_group_volumes": "dst_vol_1, dst_vol_2"}, "create_destination": { "enabled": "true", "tiering": { "supported": "true" } }, "policy": "AutomatedFailOver", "state": "in_sync" }'
    ```
    Provision the destination Consistency Group endpoint with storage service, create a SnapMirror relationship with a SnapMirror policy of type "sync" and sync_type of "automated_failover", and initialize the SnapMirror relationship with state as "in_sync".
    <br/>
    ```
-   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:/cg/cg_src_vol", "consistency_group_volumes": "src_vol_1, src_vol_2"}, "destination": { "path": "dst_svm:/cg/cg_dst_vol", "consistency_group_volumes": "dst_vol_1, dst_vol_2"}, "create_destination": { "enable": "true", "storage_service": { "enabled": "true", "name": "extreme", "enforce_performance": "true" } }, "policy": "AutomatedFailOver", "state": "in_sync" }'
+   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:/cg/cg_src_vol", "consistency_group_volumes": "src_vol_1, src_vol_2"}, "destination": { "path": "dst_svm:/cg/cg_dst_vol", "consistency_group_volumes": "dst_vol_1, dst_vol_2"}, "create_destination": { "enabled": "true", "storage_service": { "enabled": "true", "name": "extreme", "enforce_performance": "true" } }, "policy": "AutomatedFailOver", "state": "in_sync" }'
    ```
    <br/>
+   Creating a FlexVol volume SnapMirror relationship of type XDP with transfer_schedule and throttle.
+   <br/>
+   ```
+   POST "/api/snapmirror/relationships/" '{"source": {"path": "src_svm:src_vol"}, "destination": { "path": "dst_svm:dst_vol"}, "transfer_schedule":{"uuid":"817500fa-092d-44c5-9c10-7b54f7b2f20a", "name":"5min"}, "throttle":100}'
+   ```
+   <br/>
+
 ### Learn more
 * [`DOC /snapmirror/relationships`](#docs-snapmirror-snapmirror_relationships)
 
@@ -584,6 +629,10 @@ func (a *Client) SnapmirrorRelationshipDelete(params *SnapmirrorRelationshipDele
 ### Related ONTAP commands
 * `snapmirror show`
 * `snapmirror list-destinations`
+### Expensive properties
+
+* `source.consistency_group_volumes.name`
+* `destination.consistency_group_volumes.name`
 ### Example
 <br/>
 ```
@@ -637,8 +686,12 @@ func (a *Client) SnapmirrorRelationshipGet(params *SnapmirrorRelationshipGetPara
 <br>To failback the failed over relationship and start serving data from the source endpoint, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or "in_sync" for relationships with a policy of type "sync" and set the query flag "failback" as "true". SnapMirror relationships with the policy type as "sync" and sync_type as "automated_failover" can be in "broken_off" state due to a failed attempt of automated SnapMirror failover operation.
 <br>To pause the relationship, suspending further transfers, PATCH the state to "paused" for relationships with a policy of type "async" or "sync". SnapMirror relationships with the policy type as "sync" and sync_type as "automated_failover" cannot be "paused".
 <br>To resume transfers for a paused relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or "in_sync" for relationships with a policy of type "sync".
-<br>To reverse the direction of the relationship, PATCH the "source.path" with the destination endpoint and the "destination.path" with the source endpoint and the relationship state to "snapmirrored" for relationships with a policy of type "async" or "in_sync" for relationships with a policy of type "sync".
+<br>To reverse the direction of the relationship, PATCH the "source.path" with the destination endpoint and the "destination.path" with the source endpoint and the relationship state to "snapmirrored" for relationships with a policy of type "async" or "in_sync" for relationships with a policy of type "sync". For relationships with a policy of type "async" and relationship state as "snapmirrored", stop IO on the source endpoint and perform a SnapMirror transfer POST operation before reversing the direction of the relationship to prevent any loss of data.
 <br>The values "in_sync", "out_of_sync", and "synchronizing" are only applicable to relationships with a policy of type "sync".
+<br>When "transfer_schedule" is specified along with "state" during PATCH, first the schedule is modified on the relationship and then the respective SnapMirror operation is initiated. The "transfer_schedule" specified is used to update asynchronous relationships.
+<br>When "throttle" is specified along with "state" during PATCH, first the throttle is modified on the relationship, which will be used by any upcoming transfers and then the respective SnapMirror operation is initiated. If the SnapMirror operation initiated a transfer then it will also use the new throttle. If "throttle" needs to be applied for a specific transfer use SnapMirror Transfer REST API.
+
+### Examples
 ### Related ONTAP commands
 * `snapmirror modify`
 * `snapmirror initialize`
@@ -646,6 +699,16 @@ func (a *Client) SnapmirrorRelationshipGet(params *SnapmirrorRelationshipGetPara
 * `snapmirror break`
 * `snapmirror quiesce`
 * `snapmirror resume`
+### Important notes
+* The property "transfer_schedule" if set on a SnapMirror relationship overrides the "transfer_schedule" set on the policy being used with the SnapMirror relationship.
+* The property "throttle" if set on a SnapMirror relationship overrides the "throttle" set on the policy being used with the SnapMirror relationship.
+* The properties "transfer_schedule" and "throttle" are not supported when "failback" is set to "true".
+* The properties "transfer_schedule" and "throttle" are not supported when "failover" is set to "true".
+* The properties "transfer_schedule" and "throttle" are not supported when "force_failover" is set to "true".
+* The properties "transfer_schedule" and "throttle" are not supported when the direction of the relationship is being reversed.
+* To remove a transfer_schedule on a SnapMirror relationship set the "transfer_schedule" to null (no-quotes) during SnapMirror relationship PATCH.
+* The property "identity_preservation" value can be changed from a higher "identity_preservation" threshold value to a lower "identity_preservation" threshold value but not vice-versa. For example, the threshold value of the "identity_preservation" property can be changed from "full" to "exclude_network_config", but cannot be increased from "exclude_network_and_protocol_config" to "exclude_network_config" to "full". The threshold value of the "identity_preservation" cannot be changed to "exclude_network_and_protocol_config" for IDP SVMDR.
+
 ### Examples
 The following examples show how to perform the SnapMirror "resync", "initialize", "resume", "quiesce", and "break" operations. In addition, a relationship can be failed over to the destination endpoint and start serving data from the destination endpoint. A failed over relationship can be failed back to the source endpoint and serve data from the source endpoint. Also a relationship can be reversed by making the source endpoint as the new destination endpoint and the destination endpoint as the new source endpoint.
 <br/>
@@ -715,6 +778,40 @@ The following examples show how to perform the SnapMirror "resync", "initialize"
    PATCH "/api/snapmirror/relationships/98bb2608-fc60-11e8-aa13-005056a707ff/" '{"source": {"path": "dst_svm:dst_vol"}, "destination": {"path": "src_svm:src_vol"}, "state": "in_sync"}'
    ```
    <br/>
+   Updating SnapMirror transfer_schedule and throttle for an asynchronous SnapMirror relationship. Transfer_schedule can be specified as UUID or name or both.
+   <br/>
+   ```
+   PATCH "/api/snapmirror/relationships/98bb2608-fc60-11e8-aa13-005056a707ff/" '{"transfer_schedule":{"uuid":"817500fa-092d-44c5-9c10-7b54f7b2f20a", "name":"5min"}, "throttle":100}'
+   ```
+   <br/>
+   Removing the SnapMirror transfer_schedule for an asynchronous SnapMirror relationship.
+   <br/>
+   ```
+   PATCH "/api/snapmirror/relationships/98bb2608-fc60-11e8-aa13-005056a707ff/" '{"transfer_schedule":{"uuid":null, "name":null}}'
+   ```
+   <br/>
+   Removing the SnapMirror throttle for an asynchronous SnapMirror relationship.
+   <br/>
+   ```
+   PATCH "/api/snapmirror/relationships/98bb2608-fc60-11e8-aa13-005056a707ff/" '{"throttle":0}'
+   ```
+   <br/>
+   To perform SnapMirror "resync" and update the SnapMirror transfer_schedule for an asynchronous SnapMirror relationship. First the transfer_schedule is modified and then the resync transfer is initiated.
+   <br/>
+   ```
+   PATCH "/api/snapmirror/relationships/98bb2608-fc60-11e8-aa13-005056a707ff/" '{"state":"snapmirrored", transfer_schedule":{"uuid":"817500fa-092d-44c5-9c10-7b54f7b2f20a", "name":"5min"}}'
+   ```
+   <br/>
+   To perform SnapMirror "initialize" and update the SnapMirror throttle for an asynchronous SnapMirror relationship. First the throttle is modified and then the initialize transfer is initiated. The initialize transfer will use this new throttle.
+   <br/>
+   ```
+   PATCH "/api/snapmirror/relationships/98bb2608-fc60-11e8-aa13-005056a707ff/" '{"state":"snapmirrored", "throttle":100}'
+   ```
+   <br/>
+   To perform SnapMirror "resync" and update the SnapMirror throttle for an asynchronous SnapMirror relationship. First the throttle is modified and then the resync transfer is initiated. The resync transfer will use this new throttle.
+   <br/>
+   ```
+   PATCH "/api/snapmirror/relationships/98bb2608-fc60-11e8-aa13-005056a707ff/" '{"state":"snapmirrored", "throttle":100}'
 ### Learn more
 * [`DOC /snapmirror/relationships`](#docs-snapmirror-snapmirror_relationships)
 
@@ -762,6 +859,7 @@ func (a *Client) SnapmirrorRelationshipModify(params *SnapmirrorRelationshipModi
 * `snapmirror update`
 * `snapmirror initialize`
 * `snapmirror restore`
+
 ### Examples
 The following examples show how to perform SnapMirror "initialize", "update", and "restore" operations.
 <br/>
@@ -783,6 +881,13 @@ The following examples show how to perform SnapMirror "initialize", "update", an
    POST "/api/snapmirror/relationships/c8c62a90-0fef-11e9-b09e-0050568e7067/transfers" '{"source_snapshot": "src", "files":[{"source_path": "/a1.txt.0", "destination_path": "/a1-renamed.txt.0"}]}'
    ```
    <br/>
+   Performing a SnapMirror initialize or update using a particular Snapshot copy.
+   <br/>
+   ```
+   POST "/api/snapmirror/relationships/e4e7e130-0279-11e9-b566-0050568e9909/transfers" '{"source_snapshot":"snap1"}'
+   ```
+   <br/>
+
 ### Learn more
 * [`DOC /snapmirror/relationships/{relationship.uuid}/transfers`](#docs-snapmirror-snapmirror_relationships_{relationship.uuid}_transfers)
 
@@ -974,6 +1079,10 @@ func (a *Client) SnapmirrorRelationshipTransfersGet(params *SnapmirrorRelationsh
 ### Related ONTAP commands
 * `snapmirror show`
 * `snapmirror list-destinations`
+### Expensive properties
+
+* `source.consistency_group_volumes.name`
+* `destination.consistency_group_volumes.name`
 ### Examples
 The following examples show how to retrieve the list of SnapMirror relationships and the list of SnapMirror destinations.
    1. Retrieving the list of SnapMirror relationships. This API must be run on the cluster containing the destination endpoint.
@@ -988,6 +1097,19 @@ The following examples show how to retrieve the list of SnapMirror relationships
    GET "/api/snapmirror/relationships/?list_destinations_only=true"
    ```
    <br/>
+  3.  Retrieving the relationship UUID of SnapMirror relationships with lag time greater than 2 days. This API must be run on the cluster containing the destination endpoint.
+   <br/>
+   ```
+   GET "/api/snapmirror/relationships/?fields=uuid&lag_time=>P2DT"
+   ```
+   <br/>
+  4.  Retrieving the list of SnapMirror relationships with lag time less than 10 hours. This API must be run on the cluster containing the destination endpoint.
+   <br/>
+   ```
+   GET "/api/snapmirror/relationships/?lag_time=<PT10H"
+   ```
+   <br/>
+
 ### Learn more
 * [`DOC /snapmirror/relationships`](#docs-snapmirror-snapmirror_relationships)
 

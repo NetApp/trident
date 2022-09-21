@@ -14,10 +14,19 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// FailoverScope Defines where an interface may failover.
+// FailoverScope Policy that defines where an interface is permitted to move on failover. The policy named “default” implements the recommended best practice for NAS LIFs on the current platform and cluster, and was known as “system_defined” in the CLI.
 //
 // swagger:model failover_scope
 type FailoverScope string
+
+func NewFailoverScope(value FailoverScope) *FailoverScope {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated FailoverScope.
+func (m FailoverScope) Pointer() *FailoverScope {
+	return &m
+}
 
 const (
 

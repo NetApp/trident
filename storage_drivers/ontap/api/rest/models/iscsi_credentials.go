@@ -24,7 +24,8 @@ type IscsiCredentials struct {
 	// links
 	Links *IscsiCredentialsLinks `json:"_links,omitempty"`
 
-	// The iSCSI authentication type. Required in POST and optional in PATCH.
+	// The iSCSI authentication type. Required in POST; optional in PATCH.
+	//
 	// Enum: [chap none deny]
 	AuthenticationType string `json:"authentication_type,omitempty"`
 
@@ -309,6 +310,7 @@ func (m *IscsiCredentials) UnmarshalBinary(b []byte) error {
 
 // IscsiCredentialsChap Challenge-Handshake Authentication Protocol (CHAP) credentials.
 //
+//
 // swagger:model IscsiCredentialsChap
 type IscsiCredentialsChap struct {
 
@@ -437,14 +439,17 @@ func (m *IscsiCredentialsChap) UnmarshalBinary(b []byte) error {
 
 // IscsiCredentialsChapInbound Inbound CHAP credentials.
 //
+//
 // swagger:model IscsiCredentialsChapInbound
 type IscsiCredentialsChapInbound struct {
 
 	// The inbound CHAP password. Write-only; optional in POST and PATCH.
+	//
 	// Min Length: 1
 	Password string `json:"password,omitempty"`
 
 	// The inbound CHAP user name. Optional in POST and PATCH.
+	//
 	// Max Length: 128
 	// Min Length: 1
 	User string `json:"user,omitempty"`
@@ -519,16 +524,21 @@ func (m *IscsiCredentialsChapInbound) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiCredentialsChapOutbound Output CHAP credentials.
+// IscsiCredentialsChapOutbound Output CHAP credentials.</br>
+// To clear previously set outbound CHAP credentials, set property `chap.outbound.user` to an empty string in PATCH.
+//
 //
 // swagger:model IscsiCredentialsChapOutbound
 type IscsiCredentialsChapOutbound struct {
 
 	// The outbound CHAP password. Write-only; optional in POST and PATCH.
+	//
 	// Min Length: 1
 	Password string `json:"password,omitempty"`
 
-	// The outbound CHAP user name. Optional in POST and PATCH.
+	// The outbound CHAP user name. Optional in POST and PATCH.</br>
+	// To clear previously set outbound CHAP credentials, set this property to an empty string in PATCH.
+	//
 	// Max Length: 128
 	// Min Length: 1
 	User string `json:"user,omitempty"`
@@ -604,6 +614,7 @@ func (m *IscsiCredentialsChapOutbound) UnmarshalBinary(b []byte) error {
 }
 
 // IscsiCredentialsInitiatorAddress Initiator address ranges.
+//
 //
 // swagger:model IscsiCredentialsInitiatorAddress
 type IscsiCredentialsInitiatorAddress struct {

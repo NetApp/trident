@@ -286,7 +286,7 @@ func (m *PerformanceNamespaceMetricResponseLinks) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// PerformanceNamespaceMetricResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput.
+// PerformanceNamespaceMetricResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput, for SVM protocols.
 //
 // swagger:model PerformanceNamespaceMetricResponseRecordsItems0
 type PerformanceNamespaceMetricResponseRecordsItems0 struct {
@@ -307,7 +307,7 @@ type PerformanceNamespaceMetricResponseRecordsItems0 struct {
 	// latency
 	Latency *PerformanceNamespaceMetricResponseRecordsItems0Latency `json:"latency,omitempty"`
 
-	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
@@ -321,6 +321,12 @@ type PerformanceNamespaceMetricResponseRecordsItems0 struct {
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+
+	// The unique identifier of the NVMe namespace.
+	//
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
 }
 
 // Validate validates this performance namespace metric response records items0
@@ -715,6 +721,10 @@ func (m *PerformanceNamespaceMetricResponseRecordsItems0) ContextValidate(ctx co
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -798,6 +808,15 @@ func (m *PerformanceNamespaceMetricResponseRecordsItems0) contextValidateThrough
 func (m *PerformanceNamespaceMetricResponseRecordsItems0) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceNamespaceMetricResponseRecordsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
 		return err
 	}
 
@@ -1020,9 +1039,6 @@ func (m *PerformanceNamespaceMetricResponseRecordsItems0Links) UnmarshalBinary(b
 //
 // swagger:model PerformanceNamespaceMetricResponseRecordsItems0Throughput
 type PerformanceNamespaceMetricResponseRecordsItems0Throughput struct {
-
-	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200

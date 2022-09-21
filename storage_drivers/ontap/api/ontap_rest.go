@@ -3,7 +3,6 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -35,6 +34,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
 	san "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/support"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
@@ -263,7 +263,7 @@ func NewRestClientFromOntapConfig(
 	return apiREST, nil
 }
 
-var MinimumONTAPVersion = utils.MustParseSemantic("9.9.0")
+var MinimumONTAPVersion = utils.MustParseSemantic("9.11.1")
 
 // SupportsFeature returns true if the Ontap version supports the supplied feature
 func (c RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
@@ -275,6 +275,10 @@ func (c RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
 	ontapSemVer, err := utils.ParseSemantic(ontapVersion)
 	if err != nil {
 		return false
+	}
+
+	if feature == LunGeometrySkip {
+		return !ontapSemVer.AtLeast(utils.MustParseSemantic("9.11.0"))
 	}
 
 	if minVersion, ok := featuresByVersion[feature]; ok {
@@ -1020,7 +1024,6 @@ func (c RestClient) restoreSnapshotByNameAndStyle(
 	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
 }
 
-// TODO: change name
 func (c RestClient) createCloneNAS(
 	ctx context.Context,
 	cloneName, sourceVolumeName, snapshotName string,
@@ -1126,6 +1129,7 @@ func (c RestClient) createVolumeByStyle(
 			},
 		}
 	}
+
 	volumeInfo.Svm = &models.VolumeSvm{Name: c.svmName}
 
 	// For encrypt == nil - we don't explicitely set the encrypt argument.
@@ -1192,29 +1196,104 @@ func (c RestClient) VolumeList(ctx context.Context, pattern string) (*storage.Vo
 	return c.getAllVolumesByPatternStyleAndState(ctx, pattern, models.VolumeStyleFlexvol, models.VolumeStateOnline)
 }
 
+// VolumeListByAttrs is used to find bucket volumes for nas-eco and san-eco
 func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error) {
-	// TODO (akerr): remove CLI passthrough once REST supports snapshot dir access
-	results, err := c.CliPassthroughVolumeGet(ctx, volumeAttrs)
+	params := storage.NewVolumeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = &c.svmName
+
+	style := models.VolumeStyleFlexvol // or models.VolumeStyleFlexgroup ??
+	state := models.VolumeStateOnline
+
+	wildcard := ToStringPointer("*")
+
+	if volumeAttrs.Name != "" {
+		params.SetNameQueryParameter(ToStringPointer(volumeAttrs.Name))
+	} else {
+		params.SetNameQueryParameter(wildcard)
+	}
+
+	if len(volumeAttrs.Aggregates) > 0 {
+		aggrs := strings.Join(volumeAttrs.Aggregates, "|")
+		params.SetAggregatesNameQueryParameter(ToStringPointer(aggrs))
+	} else {
+		params.SetAggregatesNameQueryParameter(wildcard)
+	}
+
+	if volumeAttrs.TieringPolicy != "" {
+		params.SetTieringPolicyQueryParameter(ToStringPointer(volumeAttrs.TieringPolicy))
+	} else {
+		params.SetTieringPolicyQueryParameter(wildcard)
+	}
+
+	if volumeAttrs.SnapshotPolicy != "" {
+		params.SetSnapshotPolicyNameQueryParameter(ToStringPointer(volumeAttrs.SnapshotPolicy))
+	} else {
+		params.SetSnapshotPolicyNameQueryParameter(wildcard)
+	}
+
+	if volumeAttrs.SpaceReserve != "" {
+		params.SetGuaranteeTypeQueryParameter(ToStringPointer(volumeAttrs.SpaceReserve))
+	} else {
+		params.SetGuaranteeTypeQueryParameter(wildcard)
+	}
+
+	params.SetSpaceSnapshotReservePercentQueryParameter(ToInt64Pointer(volumeAttrs.SnapshotReserve))
+	params.SetSnapshotDirectoryAccessEnabledQueryParameter(ToBoolPointer(volumeAttrs.SnapshotDir))
+	params.SetEncryptionEnabledQueryParameter(volumeAttrs.Encrypt)
+
+	if state != "" {
+		params.SetStateQueryParameter(ToStringPointer(state))
+	}
+	params.SetStyleQueryParameter(ToStringPointer(style))
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := c.api.Storage.VolumeCollectionGet(params, c.authInfo)
 	if err != nil {
 		return nil, err
 	}
+	if result == nil {
+		return nil, nil
+	}
+
+	result.Payload, err = c.getAllVolumePayloadRecords(result.Payload, params)
+	if err != nil {
+		return nil, err
+	}
+
 	volumes := Volumes{}
-	for _, volume := range results.Records {
-		cliVolume := &CLIVolume{}
-		if err = json.Unmarshal(volume, cliVolume); err != nil {
-			return nil, fmt.Errorf("error parsing volume data; %v", err)
+	for _, volume := range result.Payload.Records {
+
+		aggregates := []string{}
+		for _, aggr := range volume.Aggregates {
+			aggregates = append(aggregates, aggr.Name)
+		}
+
+		snapshotDirAccessEnabled := false
+		if volume.SnapshotDirectoryAccessEnabled != nil {
+			snapshotDirAccessEnabled = *volume.SnapshotDirectoryAccessEnabled
+		}
+
+		tieringPolicy := models.VolumeTieringPolicyNone
+		if volume.Movement != nil {
+			tieringPolicy = volume.Movement.TieringPolicy
 		}
 
 		volumes = append(volumes, &Volume{
-			Name:           cliVolume.Name,
-			Aggregates:     []string{cliVolume.Aggregate},
-			Encrypt:        &cliVolume.Encrypt,
-			TieringPolicy:  cliVolume.TieringPolicy,
-			SnapshotDir:    cliVolume.SnapdirAccess,
-			SpaceReserve:   cliVolume.SpaceGuarantee,
-			SnapshotPolicy: cliVolume.SnapshotPolicy,
+			Name:           volume.Name,
+			Aggregates:     aggregates,
+			Encrypt:        ToBoolPointer(volume.Encryption.Enabled),
+			TieringPolicy:  tieringPolicy,
+			SnapshotDir:    snapshotDirAccessEnabled,
+			SpaceReserve:   volume.Guarantee.Type,
+			SnapshotPolicy: volume.SnapshotPolicy.Name,
 		})
 	}
+
 	return volumes, nil
 }
 
@@ -1363,7 +1442,6 @@ func (c RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*stora
 	params.SetFieldsQueryParameter([]string{"name", "create_time"})
 
 	result, err := c.api.Storage.SnapshotCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -1430,7 +1508,6 @@ func (c RestClient) SnapshotGet(ctx context.Context, volumeUUID, snapshotUUID st
 
 // SnapshotGetByName finds the snapshot by name
 func (c RestClient) SnapshotGetByName(ctx context.Context, volumeUUID, snapshotName string) (*models.Snapshot, error) {
-	// TODO improve this
 	result, err := c.SnapshotListByName(ctx, volumeUUID, snapshotName)
 	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
 		return result.Payload.Records[0], nil
@@ -1466,17 +1543,34 @@ func (c RestClient) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, 
 // VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
 // Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 func (c RestClient) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
-	result, err := c.CliPassthroughVolumePatch(ctx, volumeName, `{
-		"snapdir-access": "false"
-}`)
+	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 	if err != nil {
 		return err
 	}
-
-	if result.Error != nil && result.Error.Message != "" {
-		return fmt.Errorf("error while disabling .snapshot directory access: %v", result.Error.Message)
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
 	}
-	return nil
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUIDPathParameter = uuid
+
+	volumeInfo := &models.Volume{}
+	volumeInfo.SnapshotDirectoryAccessEnabled = ToBoolPointer(false)
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
 }
 
 // VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
@@ -1526,9 +1620,8 @@ func (c RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.Iscs
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
 	params.SVMNameQueryParameter = ToStringPointer(c.svmName)
-	params.InitiatorQueryParameter = ToStringPointer("default") // TODO use a constant?
+	params.InitiatorQueryParameter = ToStringPointer("default")
 
-	// TODO Limit the returned data to only the disk limit
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.San.IscsiCredentialsCollectionGet(params, c.authInfo)
@@ -1552,11 +1645,9 @@ func (c RestClient) IscsiInterfaceGet(ctx context.Context, svm string) (*san.Isc
 	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
 	params.SVMNameQueryParameter = &svm
 
-	// TODO Limit the returned data to only the disk limit
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.San.IscsiServiceCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -1568,8 +1659,9 @@ func (c RestClient) IscsiInterfaceGet(ctx context.Context, svm string) (*san.Isc
 }
 
 // IscsiInitiatorSetDefaultAuth sets the authorization details for the default initiator
-// equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
-//                           -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
+//
+//	equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
+//	                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
 func (c RestClient) IscsiInitiatorSetDefaultAuth(
 	ctx context.Context, authType, userName, passphrase,
 	outbountUserName, outboundPassphrase string,
@@ -1632,11 +1724,9 @@ func (c RestClient) IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetO
 	params.HTTPClient = c.httpClient
 	params.SVMUUIDPathParameter = svm.UUID
 
-	// TODO Limit the returned data to only the disk limit
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.San.IscsiServiceGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -1756,7 +1846,7 @@ func (c RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string
 		return err
 	}
 	if igroup == nil {
-		return NotFoundError("igroup not found")
+		return fmt.Errorf("unexpected response from igroup lookup, igroup was nil")
 	}
 	igroupUUID := igroup.UUID
 
@@ -1791,7 +1881,6 @@ func (c RestClient) IgroupList(ctx context.Context, pattern string) (*san.Igroup
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.San.IgroupCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -1839,7 +1928,6 @@ func (c RestClient) IgroupGet(ctx context.Context, uuid string) (*san.IgroupGetO
 
 // IgroupGetByName gets the igroup with the specified name
 func (c RestClient) IgroupGetByName(ctx context.Context, initiatorGroupName string) (*models.Igroup, error) {
-	// TODO improve this
 	result, err := c.IgroupList(ctx, initiatorGroupName)
 	if err != nil {
 		return nil, err
@@ -1855,6 +1943,74 @@ func (c RestClient) IgroupGetByName(ctx context.Context, initiatorGroupName stri
 // //////////////////////////////////////////////////////////////////////////
 // LUN operations
 // ////////////////////////////////////////////////////////////////////////////
+
+type LunOptionsResult struct {
+	RecordSchema struct {
+		Space struct {
+			Size struct {
+				OpenAPIType string `json:"open_api_type"`
+				Range       struct {
+					Min int   `json:"min"`
+					Max int64 `json:"max"`
+				} `json:"range"`
+			} `json:"size,omitempty"`
+		} `json:"space,omitempty"`
+	} `json:"record_schema"`
+}
+
+// LunOptions gets the LUN options
+func (d RestClient) LunOptions(
+	ctx context.Context,
+) (*LunOptionsResult, error) {
+	url := fmt.Sprintf(
+		`https://%v/api/v1/storage/luns?return_schema=POST&fields=space.size`,
+		d.config.ManagementLIF,
+	)
+
+	Logc(ctx).WithFields(log.Fields{
+		"url": url,
+	}).Debug("LunOptions request")
+
+	req, _ := http.NewRequestWithContext(ctx, "OPTIONS", url, nil)
+	req.Header.Set("Content-Type", "application/json")
+	if d.config.Username != "" && d.config.Password != "" {
+		req.SetBasicAuth(d.config.Username, d.config.Password)
+	}
+
+	// certs will have been parsed and configured already, if needed, as part of the RestClient init
+	tr := d.tr
+
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
+	}
+
+	response, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	} else if response.StatusCode == 401 {
+		return nil, errors.New("response code 401 (Unauthorized): incorrect or missing credentials")
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"body": string(body),
+	}).Debug("LunOptions")
+
+	result := &LunOptionsResult{}
+	unmarshalErr := json.Unmarshal(body, result)
+	if unmarshalErr != nil {
+		log.WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
+		return nil, unmarshalErr
+	}
+
+	return result, nil
+}
 
 // pollLunCreate polls for the created LUN to appear, with backoff retry logic
 func (c RestClient) pollLunCreate(ctx context.Context, lunPath string) error {
@@ -1887,9 +2043,68 @@ func (c RestClient) pollLunCreate(ctx context.Context, lunPath string) error {
 	return nil
 }
 
+// LunCloneCreate creates a LUN clone
+func (c RestClient) LunCloneCreate(
+	ctx context.Context, lunPath, sourcePath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup,
+) error {
+	if c.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":         "LunCloneCreate",
+			"Type":           "ontap_rest",
+			"lunPath":        lunPath,
+			"sourcePath":     sourcePath,
+			"sizeInBytes":    sizeInBytes,
+			"osType":         osType,
+			"qosPolicyGroup": qosPolicyGroup,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> LunCloneCreate")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCloneCreate")
+	}
+
+	if strings.Contains(lunPath, failureLUNCreate) {
+		return errors.New("injected error")
+	}
+
+	params := san.NewLunCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
+
+	lunInfo := &models.Lun{
+		Clone: &models.LunClone{
+			Source: &models.LunCloneSource{
+				Name: sourcePath,
+			},
+		},
+		Name:   lunPath, // example:  /vol/myVolume/myLun1
+		OsType: osType,
+		Space: &models.LunSpace{
+			Size: sizeInBytes,
+		},
+		QosPolicy: &models.LunQosPolicy{
+			Name: qosPolicyGroup.Name,
+		},
+	}
+	lunInfo.Svm = &models.LunSvm{Name: c.SVMName()}
+
+	params.SetInfo(lunInfo)
+
+	lunCreateAccepted, err := c.api.San.LunCreate(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if lunCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from lun create")
+	}
+
+	// verify the created LUN can be found
+	return c.pollLunCreate(ctx, lunPath)
+}
+
 // LunCreate creates a LUN
 func (c RestClient) LunCreate(
 	ctx context.Context, lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup,
+	spaceReserved, spaceAllocated bool,
 ) error {
 	if strings.Contains(lunPath, failureLUNCreate) {
 		return errors.New("injected error")
@@ -1905,6 +2120,10 @@ func (c RestClient) LunCreate(
 		OsType: osType,
 		Space: &models.LunSpace{
 			Size: sizeInBytes,
+			Guarantee: &models.LunSpaceGuarantee{
+				Requested: ToBoolPointer(spaceReserved),
+			},
+			ScsiThinProvisioningSupportEnabled: ToBoolPointer(spaceAllocated),
 		},
 		QosPolicy: &models.LunQosPolicy{
 			Name: qosPolicyGroup.Name,
@@ -1938,7 +2157,6 @@ func (c RestClient) LunGet(ctx context.Context, uuid string) (*san.LunGetOK, err
 
 // LunGetByName gets the LUN with the specified name
 func (c RestClient) LunGetByName(ctx context.Context, name string) (*models.Lun, error) {
-	// TODO improve this
 	result, err := c.LunList(ctx, name)
 	if err != nil || result.Payload == nil {
 		return nil, err
@@ -1949,7 +2167,7 @@ func (c RestClient) LunGetByName(ctx context.Context, name string) (*models.Lun,
 	return nil, err
 }
 
-// LunList finds LUNs with the specificed pattern
+// LunList finds LUNs with the specified pattern
 func (c RestClient) LunList(ctx context.Context, pattern string) (*san.LunCollectionGetOK, error) {
 	params := san.NewLunCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
@@ -1960,7 +2178,6 @@ func (c RestClient) LunList(ctx context.Context, pattern string) (*san.LunCollec
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.San.LunCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -2017,9 +2234,7 @@ func (c RestClient) LunDelete(
 	return nil
 }
 
-// TODO: Change this for LUN Attributes when available
 // LunGetComment gets the comment for a given LUN.
-// This is in place of the fstype and context attributes from ZAPI
 func (c RestClient) LunGetComment(
 	ctx context.Context,
 	lunPath string,
@@ -2039,7 +2254,6 @@ func (c RestClient) LunGetComment(
 }
 
 // LunSetComment sets the comment for a given LUN.
-// This is in place of the fstype and context attributes from ZAPI
 func (c RestClient) LunSetComment(
 	ctx context.Context,
 	lunPath, comment string,
@@ -2092,9 +2306,7 @@ func (c RestClient) LunGetAttribute(
 		return "", fmt.Errorf("LUN did not have any attributes")
 	}
 	for _, attr := range lun.Attributes {
-		fmt.Printf("Checking attr name=%v value=%v\n", attr.Name, attr.Value)
 		if attributeName == attr.Name {
-			fmt.Printf("returning %v\n", attr.Value)
 			return attr.Value, nil
 		}
 	}
@@ -2103,7 +2315,7 @@ func (c RestClient) LunGetAttribute(
 	return "", nil
 }
 
-// LunSetAttributes sets the attribute to the provided value for a given LUN.
+// LunSetAttribute sets the attribute to the provided value for a given LUN.
 func (c RestClient) LunSetAttribute(
 	ctx context.Context,
 	lunPath, attributeName, attributeValue string,
@@ -2118,27 +2330,59 @@ func (c RestClient) LunSetAttribute(
 
 	uuid := lun.UUID
 
-	params := san.NewLunAttributeModifyParamsWithTimeout(c.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = c.httpClient
-	params.LunUUIDPathParameter = uuid
-	params.NamePathParameter = attributeName
-
-	attrInfo := &models.LunAttribute{
-		// the attribute name is specified in the path as params.NamePathParameter
-		Value: attributeValue,
-	}
-	params.Info = attrInfo
-
-	lunModifyOK, err := c.api.San.LunAttributeModify(params, c.authInfo)
-	if err != nil {
-		return err
-	}
-	if lunModifyOK == nil {
-		return fmt.Errorf("unexpected response from LUN attribute modify")
+	attributeExists := false
+	for _, attrs := range lun.Attributes {
+		if attributeName == attrs.Name {
+			attributeExists = true
+		}
 	}
 
-	return nil
+	if !attributeExists {
+
+		params := san.NewLunAttributeCreateParamsWithTimeout(c.httpClient.Timeout)
+		params.Context = ctx
+		params.HTTPClient = c.httpClient
+		params.LunUUIDPathParameter = uuid
+
+		attrInfo := &models.LunAttribute{
+			// in a create, the attribute name is specified here
+			Name:  attributeName,
+			Value: attributeValue,
+		}
+		params.Info = attrInfo
+
+		lunAttrCreateOK, err := c.api.San.LunAttributeCreate(params, c.authInfo)
+		if err != nil {
+			return err
+		}
+		if lunAttrCreateOK == nil {
+			return fmt.Errorf("unexpected response from LUN attribute create")
+		}
+		return nil
+
+	} else {
+
+		params := san.NewLunAttributeModifyParamsWithTimeout(c.httpClient.Timeout)
+		params.Context = ctx
+		params.HTTPClient = c.httpClient
+		params.LunUUIDPathParameter = uuid
+		params.NamePathParameter = attributeName
+
+		attrInfo := &models.LunAttribute{
+			// in a modify, the attribute name is specified in the path as params.NamePathParameter
+			Value: attributeValue,
+		}
+		params.Info = attrInfo
+
+		lunAttrModifyOK, err := c.api.San.LunAttributeModify(params, c.authInfo)
+		if err != nil {
+			return err
+		}
+		if lunAttrModifyOK == nil {
+			return fmt.Errorf("unexpected response from LUN attribute modify")
+		}
+		return nil
+	}
 }
 
 // LunSetComment sets the comment for a given LUN.
@@ -2320,92 +2564,79 @@ func (c RestClient) LunMap(
 	return result, nil
 }
 
-func (c RestClient) CliPassthroughLunMappingGet(
+// LunMapList equivalent to the following
+// filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
+// filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup *
+// filer::> lun mapping show -vserver iscsi_vs -path *           -igroup trident
+func (c RestClient) LunMapList(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
-) (*CliPassthroughResult, error) {
-	// See also:
-	//   https://docs.netapp.com/us-en/ontap-automation/accessing_the_ontap_cli_through_the_rest_api.html
-	//   https://library.netapp.com/ecmdocs/ECMLP2858435/html/resources/cli.html
+) (*san.LunMapCollectionGetOK, error) {
+	params := san.NewLunMapCollectionGetParams()
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
 
-	url := fmt.Sprintf(
-		`https://%v/api/private/cli/lun/mapping?vserver=%v&igroup=%v&path=%v&fields=%v`,
-		c.config.ManagementLIF,
-		c.svmName,
-		initiatorGroupName,
-		url.QueryEscape(lunPath), // lunPath
-		"vserver,path,volume,qtree,lun,igroup,reporting-nodes",
-	)
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
-	fmt.Printf("GET %v\n", url)
+	params.SetIgroupNameQueryParameter(ToStringPointer(initiatorGroupName))
+	params.SetLunNameQueryParameter(ToStringPointer(lunPath))
 
-	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
-	req.Header.Set("Content-Type", "application/json")
-	if c.config.Username != "" && c.config.Password != "" {
-		req.SetBasicAuth(c.config.Username, c.config.Password)
-	}
-
-	// certs will have been parsed and configured already, if needed, as part of the RestClient init
-	tr := c.tr
-
-	client := &http.Client{
-		Transport: tr,
-		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
-	}
-
-	response, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	} else if response.StatusCode == 401 {
-		return nil, errors.New("response code 401 (Unauthorized): incorrect or missing credentials")
-	}
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"body": string(body),
-	}).Debug("CliPassthroughResult")
-
-	result := &CliPassthroughResult{}
-	unmarshalErr := json.Unmarshal(body, result)
-	if unmarshalErr != nil {
-		log.WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
-		return nil, unmarshalErr
-	}
-
-	return result, nil
+	return c.api.San.LunMapCollectionGet(params, c.authInfo)
 }
 
-type LunMappingGetCliPassthroughResult struct {
-	Igroup         string   `json:"igroup"`
-	Lun            string   `json:"lun"`
-	Path           string   `json:"path"`
-	Qtree          string   `json:"qtree"`
-	ReportingNodes []string `json:"reporting_nodes"`
-	Volume         string   `json:"volume"`
-	Vserver        string   `json:"vserver"`
-}
+// LunMapGetReportingNodes
+// equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
+func (c RestClient) LunMapGetReportingNodes(
+	ctx context.Context,
+	initiatorGroupName, lunPath string,
+) ([]string, error) {
+	lun, lunGetErr := c.LunGetByName(ctx, lunPath)
+	if lunGetErr != nil {
+		return nil, lunGetErr
+	}
+	if lun == nil {
+		return nil, fmt.Errorf("could not find lun with name %v", lunPath)
+	}
+	lunUUID := lun.UUID
 
-type LunGeometryCliPassthroughResult struct {
-	// http://json2struct.mervine.net
-	BytesPerSector     int64  `json:"bytes_per_sector"`
-	CylSize            int64  `json:"cyl_size"`
-	Cylinders          int64  `json:"cylinders"`
-	DevSize            int64  `json:"dev_size"`
-	Lun                string `json:"lun"`
-	MaxResizeSize      int    `json:"max_resize_size"`
-	Path               string `json:"path"`
-	Qtree              string `json:"qtree"`
-	Sectors            int64  `json:"sectors"`
-	SectorsPerCylinder int64  `json:"sectors_per_cylinder"`
-	SectorsPerTrack    int64  `json:"sectors_per_track"`
-	Size               int64  `json:"size"`
-	Volume             string `json:"volume"`
-	Vserver            string `json:"vserver"`
+	igroup, igroupGetErr := c.IgroupGetByName(ctx, initiatorGroupName)
+	if igroupGetErr != nil {
+		return nil, igroupGetErr
+	}
+	if igroup == nil {
+		return nil, fmt.Errorf("could not find igroup with name %v", initiatorGroupName)
+	}
+	igroupUUID := igroup.UUID
+
+	params := san.NewLunMapReportingNodeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SetLunUUIDPathParameter(lunUUID)
+	params.SetIgroupUUIDPathParameter(igroupUUID)
+
+	result, err := c.api.San.LunMapReportingNodeCollectionGet(params, c.authInfo)
+	if err != nil {
+		// use reflection to access any underlying REST error response and check the code
+		errorResponse, extractErr := ExtractErrorResponse(ctx, err)
+		if extractErr != nil {
+			return nil, err
+		}
+		if errorResponse != nil && errorResponse.Error != nil {
+			errorCode := errorResponse.Error.Code
+			if errorCode == "5374922" {
+				// the specified LUN map does not exist
+				return []string{}, nil
+			}
+		}
+		return nil, err
+	}
+
+	names := []string{}
+	for _, records := range result.Payload.Records {
+		names = append(names, records.Name)
+	}
+	return names, nil
 }
 
 // LunSize gets the size for a given LUN.
@@ -2481,7 +2712,6 @@ func (c RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.Ne
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Networking.NetworkIPInterfacesGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -2682,8 +2912,6 @@ func (c RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkRe
 	case models.JobStateSuccess:
 		return nil
 	case models.JobStateFailure:
-		// TODO return a new error object that contains the message and code etc
-		// return fmt.Errorf("%v", jobResult.Payload.Message)
 		return NewRestErrorFromPayload(jobResult.Payload)
 	default:
 		return fmt.Errorf("unexpected job state %v", jobState)
@@ -2705,7 +2933,6 @@ func (c RestClient) AggregateList(ctx context.Context, pattern string) (*storage
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.AggregateCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -2767,7 +2994,6 @@ func (c RestClient) SvmList(ctx context.Context, pattern string) (*svm.SvmCollec
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Svm.SvmCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -2840,6 +3066,43 @@ func ValidatePayloadExists(ctx context.Context, restResult interface{}) (errorOu
 	}
 
 	return fmt.Errorf("no payload field exists for type '%v'", getType(restResult))
+}
+
+// ExtractErrorResponse returns any underlying *models.ErrorResponse from the supplied restError
+func ExtractErrorResponse(ctx context.Context, restError interface{}) (errorResponse *models.ErrorResponse, errorOut error) {
+	// for an example, see s_a_n.LunMapReportingNodeCollectionGetDefault
+	defer func() {
+		if r := recover(); r != nil {
+			Logc(ctx).Errorf("Panic in ontap_rest#ExtractErrorResponse. %v\nStack Trace: %v",
+				restError, string(debug.Stack()))
+			errorOut = fmt.Errorf("recovered from panic")
+		}
+	}()
+
+	if restError == nil {
+		return nil, fmt.Errorf("rest error was nil")
+	}
+
+	val := reflect.ValueOf(restError)
+	if reflect.TypeOf(restError).Kind() == reflect.Ptr {
+		// handle being passed a pointer
+		val = reflect.Indirect(val)
+		if !val.IsValid() {
+			return nil, fmt.Errorf("rest error was nil")
+		}
+	}
+
+	// safely check to see if we have restResult.Payload
+	if testPayload := val.FieldByName("Payload"); testPayload.IsValid() {
+		restError = testPayload.Interface()
+		val = reflect.ValueOf(restError)
+
+		if apiError, ok := val.Interface().(*models.ErrorResponse); ok {
+			return apiError, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no error payload field exists for type '%v'", getType(restError))
 }
 
 func getType(i interface{}) string {
@@ -2923,7 +3186,6 @@ func (c RestClient) SystemGetOntapVersion(
 
 	version := clusterInfoResult.Payload.Version
 	// version.Full // "NetApp Release 9.8X29: Sun Sep 27 12:15:48 UTC 2020"
-	// d.OntapVersion = fmt.Sprintf("%d.%d", version.Generation, version.Major) // 9.8
 	c.OntapVersion = fmt.Sprintf("%d.%d.%d", version.Generation, version.Major, version.Minor) // 9.8.0
 	return c.OntapVersion, nil
 }
@@ -2939,7 +3201,6 @@ func (c RestClient) NodeList(ctx context.Context, pattern string) (*cluster.Node
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Cluster.NodesGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -3010,201 +3271,6 @@ func (c RestClient) NodeListSerialNumbers(ctx context.Context) ([]string, error)
 	return serialNumbers, nil
 }
 
-type CliPassthroughResult struct {
-	CliOutput *string `json:"cli_output,omitempty"`
-	Error     *struct {
-		Code    string `json:"code,omitempty"`
-		Message string `json:"message,omitempty"`
-	} `json:"error,omitempty"`
-	Jobs []struct {
-		Links struct {
-			Self struct {
-				Href string `json:"href,omitempty"`
-			} `json:"self,omitempty"`
-		} `json:"_links,omitempty"`
-		UUID string `json:"uuid,omitempty"`
-	} `json:"jobs,omitempty"`
-	Links struct {
-		Self struct {
-			Href string `json:"href,omitempty"`
-		} `json:"self,omitempty"`
-		Next struct {
-			Href string `json:"href,omitempty"`
-		} `json:"next,omitempty"`
-	} `json:"_links,omitempty"`
-	Records    []json.RawMessage `json:"records,omitempty"`
-	NumRecords *int64            `json:"num_records,omitempty"`
-	models.Volume
-}
-
-func (c RestClient) CliPassthroughVolumePatch(
-	ctx context.Context, volumeName, jsonString string,
-) (*CliPassthroughResult, error) {
-	// See also:
-	//   https://docs.netapp.com/us-en/ontap-automation/accessing_the_ontap_cli_through_the_rest_api.html
-	//   https://library.netapp.com/ecmdocs/ECMLP2858435/html/resources/cli.html
-
-	cmdRef := fmt.Sprintf(`https://%v/api/private/cli/volume?pretty=false&vserver=%v&volume=%v`,
-		c.config.ManagementLIF, c.svmName, volumeName)
-
-	jsonBytes := []byte(jsonString)
-	req, _ := http.NewRequest("PATCH", cmdRef, bytes.NewBuffer(jsonBytes))
-	req.Header.Set("Content-Type", "application/json")
-	if c.config.Username != "" && c.config.Password != "" {
-		req.SetBasicAuth(c.config.Username, c.config.Password)
-	}
-
-	// certs will have been parsed and configured already, if needed, as part of the RestClient init
-	tr := c.tr
-
-	httpClient := &http.Client{
-		Transport: tr,
-		Timeout:   tridentconfig.StorageAPITimeoutSeconds * time.Second,
-	}
-
-	response, err := httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	} else if response.StatusCode == 401 {
-		return nil, errors.New("response code 401 (Unauthorized): incorrect or missing credentials")
-	}
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"body": string(body),
-	}).Debug("CliPassthroughResult")
-
-	result := &CliPassthroughResult{}
-	unmarshalErr := json.Unmarshal(body, result)
-	if unmarshalErr != nil {
-		log.WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
-		return nil, unmarshalErr
-	}
-
-	return result, nil
-}
-
-type EMSEvent struct {
-	MessageName string        `json:"message_name"`
-	Values      []interface{} `json:"values"`
-}
-
-func (c RestClient) CliPassthroughEventGeneratePost(
-	ctx context.Context,
-	appVersion string,
-	autoSupport bool,
-	category string,
-	computerName string,
-	eventDescription string,
-	eventID int,
-	eventSource string,
-	logLevel int,
-) (*CliPassthroughResult, error) {
-	// See also:
-	//   https://docs.netapp.com/us-en/ontap-automation/accessing_the_ontap_cli_through_the_rest_api.html
-	//   https://library.netapp.com/ecmdocs/ECMLP2858435/html/resources/cli.html
-
-	// 	jsonString := fmt.Sprintf(`{
-	// 	"message_name": "app.log.notice",
-	// 	"values": [
-	// 		"trident-csi-767d8c9-8422p",
-	// 		"trident",
-	// 		"1",
-	// 		1,
-	// 		"heartbeat",
-	// 		"{\"version\":\"21.04.0\",\"platform\":\"kubernetes\",\"platformVersion\":\"v1.17.8\",\"plugin\":\"ontap-san\",\"svm\":\"CXE\",\"storagePrefix\":\"trident_\"}"
-	// 	]
-	// }`)
-
-	// computerName argument (type STRING) missing at position 1 (Client Computer connected to the Filer.)
-	// eventSource argument (type STRING) missing at position 2 (Client application that generated this event.)
-	// appVersion argument (type STRING) missing at position 3 (Client application version.)
-	// eventID argument (type INT) missing at position 4 (Application eventID.)
-	// category argument (type STRING) missing at position 5 (Event category.)
-	// subject argument (type STRING) missing at position 6 (Event description.)
-
-	// 	jsonString := fmt.Sprintf(`{
-	// 	"message_name": "app.log.notice",
-	// 	"values": [
-	// 		"%v",
-	// 		"%v",
-	// 		"%v",
-	// 		%v,
-	// 		"%v",
-	// 		"%v"
-	// 	]
-	// }`, computerName, eventSource, appVersion, eventID, category, eventDescription)
-	// 	Logc(ctx).Debugf("jsonString: %v", jsonString)
-	// 	jsonBytes := []byte(jsonString)
-	// 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonBytes))
-
-	emsEvent := EMSEvent{
-		MessageName: "app.log.notice",
-		Values: []interface{}{
-			computerName,
-			eventSource,
-			appVersion,
-			eventID,
-			category,
-			eventDescription,
-		},
-	}
-
-	payloadBuf := new(bytes.Buffer)
-	if err := json.NewEncoder(payloadBuf).Encode(emsEvent); err != nil {
-		return nil, err
-	}
-
-	Logc(ctx).Debugf("payloadBuf: %v", payloadBuf)
-
-	cmdRef := fmt.Sprintf(`https://%v/api/private/cli/event/generate`, c.config.ManagementLIF)
-	req, _ := http.NewRequest("POST", cmdRef, payloadBuf)
-
-	req.Header.Set("Content-Type", "application/json")
-	if c.config.Username != "" && c.config.Password != "" {
-		req.SetBasicAuth(c.config.Username, c.config.Password)
-	}
-
-	// certs will have been parsed and configured already, if needed, as part of the RestClient init
-	tr := c.tr
-
-	httpClient := &http.Client{
-		Transport: tr,
-		Timeout:   tridentconfig.StorageAPITimeoutSeconds * time.Second,
-	}
-
-	response, err := httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	} else if response.StatusCode == 401 {
-		return nil, errors.New("response code 401 (Unauthorized): incorrect or missing credentials")
-	}
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"body": string(body),
-	}).Debug("CliPassthroughResult")
-
-	result := &CliPassthroughResult{}
-	unmarshalErr := json.Unmarshal(body, result)
-	if unmarshalErr != nil {
-		log.WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
-		return nil, unmarshalErr
-	}
-
-	return result, nil
-}
-
 // EmsAutosupportLog generates an auto support message with the supplied parameters
 func (c RestClient) EmsAutosupportLog(
 	ctx context.Context,
@@ -3217,153 +3283,39 @@ func (c RestClient) EmsAutosupportLog(
 	eventSource string,
 	logLevel int,
 ) error {
-	// TODO handle non-cluster-admin user error when trying to generate an EMS message
-	_, err := c.CliPassthroughEventGeneratePost(
-		ctx,
-		appVersion,
-		autoSupport,
-		category,
-		computerName,
-		eventDescription,
-		eventID,
-		eventSource,
-		logLevel,
-	)
+	params := support.NewEmsApplicationLogsCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
 
-	return err
-}
+	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
 
-func (c RestClient) CliPassthroughVolumeGet(ctx context.Context, volume *Volume) (*CliPassthroughResult, error) {
-	// See also:
-	//   https://docs.netapp.com/us-en/ontap-automation/accessing_the_ontap_cli_through_the_rest_api.html
-	//   https://library.netapp.com/ecmdocs/ECMLP2858435/html/resources/cli.html
-
-	// Create the base URL that will return all online flexvols
-	baseURL := fmt.Sprintf("https://%s", c.config.ManagementLIF)
-	cmdRef := fmt.Sprintf("/api/private/cli/volume?vserver=%s&state=online&volume-style-extended=flexvol", c.svmName)
-	if volume.Name != "" {
-		cmdRef += fmt.Sprintf("&volume=%s", volume.Name)
-	} else {
-		cmdRef += "&volume=**"
+	emsApplicationLog := &models.EmsApplicationLog{
+		AppVersion:          appVersion,
+		AutosupportRequired: autoSupport,
+		Category:            category,
+		ComputerName:        computerName,
+		EventDescription:    eventDescription,
+		EventID:             int64(eventID),
+		EventSource:         eventSource,
+		Severity:            models.EmsApplicationLogSeverityNotice,
 	}
-	if len(volume.Aggregates) > 0 {
-		aggrs := strings.Join(volume.Aggregates, "|")
-		cmdRef += fmt.Sprintf("&aggregate=%s", aggrs)
-	} else {
-		cmdRef += "&aggregate=**"
-	}
-	if volume.TieringPolicy != "" {
-		cmdRef += fmt.Sprintf("&tiering-policy=%s", volume.TieringPolicy)
-	} else {
-		cmdRef += "&tiering-policy=**"
-	}
-	if volume.SnapshotPolicy != "" {
-		cmdRef += fmt.Sprintf("&snapshot-policy=%s", volume.SnapshotPolicy)
-	} else {
-		cmdRef += "&snapshot-policy=**"
-	}
-	if volume.SpaceReserve != "" {
-		cmdRef += fmt.Sprintf("&space-guarantee=%s", volume.SpaceReserve)
-	} else {
-		cmdRef += "&space-guarantee=**"
-	}
-	cmdRef += fmt.Sprintf("&percent-snapshot-space=%v", volume.SnapshotReserve)
-	cmdRef += fmt.Sprintf("&snapdir-access=%v", volume.SnapshotDir)
-	if volume.Encrypt != nil {
-		cmdRef += fmt.Sprintf("&encrypt=%v", *volume.Encrypt)
-	}
+	params.SetInfo(emsApplicationLog)
 
-	req := c.generateGETRequest(baseURL + cmdRef)
-
-	// certs will have been parsed and configured already, if needed, as part of the RestClient init
-	tr := c.tr
-
-	httpClient := &http.Client{
-		Transport: tr,
-		Timeout:   tridentconfig.StorageAPITimeoutSeconds * time.Second,
-	}
-
-	result, err := c.executeCLIRequest(ctx, httpClient, req)
-	if err != nil || result == nil {
-		return nil, err
-	}
-
-	if HasNextLink(result) {
-		nextLink := result.Links.Next
-		done := false
-	NextLoop:
-		for !done {
-			req = c.generateGETRequest(baseURL + nextLink.Href)
-			resultNext, errNext := c.executeCLIRequest(ctx, httpClient, req)
-			if errNext != nil {
-				return nil, errNext
-			}
-			if resultNext == nil {
-				done = true
-				continue NextLoop
-			}
-
-			*result.NumRecords += *resultNext.NumRecords
-			result.Records = append(result.Records, resultNext.Records...)
-
-			if !HasNextLink(resultNext) {
-				done = true
-				continue NextLoop
-			} else {
-				nextLink = resultNext.Links.Next
+	_, err := c.api.Support.EmsApplicationLogsCreate(params, c.authInfo)
+	if err != nil {
+		if apiError, ok := err.(*runtime.APIError); ok {
+			if apiError.Code == 200 {
+				return nil // Skipping non-error caused by a result of just "{}""
 			}
 		}
 	}
-	return result, nil
-}
-
-func (c RestClient) generateGETRequest(url string) *http.Request {
-	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Set("Content-Type", "application/json")
-	if c.config.Username != "" && c.config.Password != "" {
-		req.SetBasicAuth(c.config.Username, c.config.Password)
-	}
-	return req
-}
-
-func (c RestClient) executeCLIRequest(
-	ctx context.Context, client *http.Client, req *http.Request,
-) (*CliPassthroughResult, error) {
-	Logc(ctx).WithFields(log.Fields{
-		"URL": req.URL,
-	}).Debug("CliPassthroughRequest")
-	response, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	} else if response.StatusCode == 401 {
-		return nil, errors.New("response code 401 (Unauthorized): incorrect or missing credentials")
-	}
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	Logc(ctx).WithFields(
-		log.Fields{
-			"body": string(body),
-		},
-	).Debug("CliPassthroughResult")
-
-	result := &CliPassthroughResult{}
-	unmarshalErr := json.Unmarshal(body, result)
-	if unmarshalErr != nil {
-		log.WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
-		return nil, unmarshalErr
-	}
-	return result, nil
+	return err
 }
 
 func (c RestClient) TieringPolicyValue(
 	ctx context.Context,
 ) string {
-	// The REST API is > ONTAP 9.5, just default to "none"
+	// Becase the REST API is always > ONTAP 9.5, just default to "none"
 	tieringPolicy := "none"
 	return tieringPolicy
 }
@@ -3412,7 +3364,6 @@ func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Nas.ExportPolicyCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -3450,7 +3401,6 @@ func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.
 
 // ExportPolicyGetByName gets the volume with the specified name
 func (c RestClient) ExportPolicyGetByName(ctx context.Context, exportPolicyName string) (*models.ExportPolicy, error) {
-	// TODO validate/improve this logic?
 	result, err := c.ExportPolicyList(ctx, exportPolicyName)
 	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
 		return result.Payload.Records[0], nil
@@ -3495,7 +3445,6 @@ func (c RestClient) ExportRuleList(ctx context.Context, policy string) (*nas.Exp
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Nas.ExportRuleCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -3808,7 +3757,6 @@ func (c RestClient) QtreeRename(ctx context.Context, path, newPath string) error
 		return fmt.Errorf("could not find qtree with path %v", path)
 	}
 
-	// TODO add sanity checks around qtree.ID and qtree.Volume?
 	params := storage.NewQtreeModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -3835,8 +3783,7 @@ func (c RestClient) QtreeRename(ctx context.Context, path, newPath string) error
 // QtreeDestroyAsync destroys a qtree in the background
 // equivalent to filer::> volume qtree delete -foreground false
 func (c RestClient) QtreeDestroyAsync(ctx context.Context, path string, force bool) error {
-	// TODO force isn't used
-
+	// note, force isn't used
 	qtree, err := c.QtreeGetByPath(ctx, path)
 	if err != nil {
 		return err
@@ -3891,7 +3838,6 @@ func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string) 
 	params.SetFieldsQueryParameter([]string{"**"})                     // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -3941,7 +3887,6 @@ func (c RestClient) QtreeGetByPath(ctx context.Context, path string) (*models.Qt
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -3977,7 +3922,6 @@ func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string)
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -4012,7 +3956,6 @@ func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, err
 	params.SetFieldsQueryParameter([]string{"**"})                  // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return 0, err
 	}
@@ -4075,7 +4018,6 @@ func (c RestClient) QtreeExists(ctx context.Context, name, volumePrefix string) 
 	params.SetFieldsQueryParameter([]string{"**"})                     // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return false, "", err
 	}
@@ -4150,7 +4092,6 @@ func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*m
 	params.SetFieldsQueryParameter([]string{"**"})               // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -4191,7 +4132,6 @@ func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*stor
 	params.SetFieldsQueryParameter([]string{"**"})               // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -4237,7 +4177,6 @@ func (c RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeNam
 		return fmt.Errorf("could not find qtree %v", name)
 	}
 
-	// TODO add sanity checks around qtree.ID and qtree.Volume?
 	params := storage.NewQtreeModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -4313,28 +4252,6 @@ func (c RestClient) quotaModify(ctx context.Context, volumeName string, quotaEna
 
 	return c.PollJobStatus(ctx, modifyAccepted.Payload)
 }
-
-// QuotaResize resizes quotas on a Flexvol
-// equivalent to filer::> volume quota resize
-// func (d RestClient) QuotaResize(
-// 	ctx context.Context,
-// 	volume string) (*azgo.QuotaResizeResponse, error) {
-// 	response, err := azgo.NewQuotaResizeRequest().
-// 		SetVolume(volume).
-// 		ExecuteUsing(d.zr)
-// 	return response, err
-// }
-
-// QuotaStatus returns the quota status for a Flexvol
-// equivalent to filer::> volume quota show
-// func (d RestClient) QuotaStatus(
-// 	ctx context.Context,
-// 	volume string) (*azgo.QuotaStatusResponse, error) {
-// 	response, err := azgo.NewQuotaStatusRequest().
-// 		SetVolume(volume).
-// 		ExecuteUsing(d.zr)
-// 	return response, err
-// }
 
 // QuotaSetEntry updates (or creates) a quota rule with an optional hard disk limit
 // equivalent to filer::> volume quota policy rule modify
@@ -4418,7 +4335,6 @@ func (c RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, qu
 			HardLimit: hardLimit,
 		}
 	}
-	// TODO handle quotaTarget
 
 	params.SetInfo(quotaRuleInfo)
 
@@ -4452,7 +4368,6 @@ func (c RestClient) QuotaGetEntry(
 	params.SetFieldsQueryParameter([]string{"uuid", "space.hard_limit"})
 
 	result, err := c.api.Storage.QuotaRuleCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -4519,7 +4434,6 @@ func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*sto
 	params.SetFieldsQueryParameter([]string{"space.hard_limit", "uuid", "qtree.name", "volume.name"})
 
 	result, err := c.api.Storage.QuotaRuleCollectionGet(params, c.authInfo)
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}

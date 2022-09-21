@@ -397,7 +397,7 @@ func (m *Flexcache) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheAggregatesItems0 Aggregate
+// FlexcacheAggregatesItems0 flexcache aggregates items0
 //
 // swagger:model FlexcacheAggregatesItems0
 type FlexcacheAggregatesItems0 struct {

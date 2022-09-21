@@ -74,6 +74,14 @@ type ClientService interface {
 
 	ClusterPeerModify(params *ClusterPeerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerModifyOK, error)
 
+	CounterRowCollectionGet(params *CounterRowCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterRowCollectionGetOK, error)
+
+	CounterRowGet(params *CounterRowGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterRowGetOK, error)
+
+	CounterTableCollectionGet(params *CounterTableCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterTableCollectionGetOK, error)
+
+	CounterTableGet(params *CounterTableGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterTableGetOK, error)
+
 	FirmwareHistoryCollectionGet(params *FirmwareHistoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FirmwareHistoryCollectionGetOK, error)
 
 	JobCollectionGet(params *JobCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobCollectionGetOK, error)
@@ -136,6 +144,10 @@ type ClientService interface {
 
 	MetroclusterOperationGet(params *MetroclusterOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterOperationGetOK, error)
 
+	MetroclusterSvmCollectionGet(params *MetroclusterSvmCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterSvmCollectionGetOK, error)
+
+	MetroclusterSvmGet(params *MetroclusterSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterSvmGetOK, error)
+
 	NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeDeleteAccepted, error)
 
 	NodeGet(params *NodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeGetOK, error)
@@ -157,6 +169,10 @@ type ClientService interface {
 	ScheduleGet(params *ScheduleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleGetOK, error)
 
 	ScheduleModify(params *ScheduleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleModifyOK, error)
+
+	SensorsCollectionGet(params *SensorsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SensorsCollectionGetOK, error)
+
+	SensorsGet(params *SensorsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SensorsGetOK, error)
 
 	SoftwareDownloadGet(params *SoftwareDownloadGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareDownloadGetOK, error)
 
@@ -492,7 +508,14 @@ func (a *Client) ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAut
 
 /*
   ClusterModify Updates the cluster configuration after the cluster is created.
-### Related ONTAP commands * `cluster identity modify` * `system node modify` * `vserver services dns modify` * `vserver services name-service dns modify` * `timezone` * `security ssl modify`
+### Related ONTAP commands
+* `cluster identity modify`
+* `system node modify`
+* `vserver services dns modify`
+* `vserver services name-service dns modify`
+* `timezone`
+* `security ssl modify`
+
 */
 func (a *Client) ClusterModify(params *ClusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1202,6 +1225,160 @@ func (a *Client) ClusterPeerModify(params *ClusterPeerModifyParams, authInfo run
 }
 
 /*
+  CounterRowCollectionGet Returns a collection of counter rows.
+*/
+func (a *Client) CounterRowCollectionGet(params *CounterRowCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterRowCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCounterRowCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "counter_row_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/counter/tables/{counter_table.name}/rows",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CounterRowCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CounterRowCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CounterRowCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CounterRowGet Returns a single counter row.
+*/
+func (a *Client) CounterRowGet(params *CounterRowGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterRowGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCounterRowGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "counter_row_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/counter/tables/{counter_table.name}/rows/{id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CounterRowGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CounterRowGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CounterRowGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CounterTableCollectionGet Returns a collection of counter tables and their schema definitions.
+
+*/
+func (a *Client) CounterTableCollectionGet(params *CounterTableCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterTableCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCounterTableCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "counter_table_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/counter/tables",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CounterTableCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CounterTableCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CounterTableCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CounterTableGet Returns the information about a single counter table.
+
+*/
+func (a *Client) CounterTableGet(params *CounterTableGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterTableGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCounterTableGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "counter_table_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/counter/tables/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CounterTableGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CounterTableGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CounterTableGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   FirmwareHistoryCollectionGet Retrieves the history details for firmware update requests.
 ### Learn more
 * [`DOC /cluster/firmware/history`](#docs-cluster-cluster_firmware_history)
@@ -1617,6 +1794,7 @@ func (a *Client) LicenseManagerModify(params *LicenseManagerModifyParams, authIn
   LicensesGet Retrieves a collection of license packages.
 ####
 **Note:** By default, the GET method only returns licensed packages. You must provide the following query "state=unlicensed" to retrieve unlicensed packages.
+**Note:** Starting with ONTAP 9.11.1, the GET method no longer returns the Base license record.
 ### Related ONTAP commands
 * `system license show-status`
 * `system license show`
@@ -1816,6 +1994,7 @@ func (a *Client) MediatorGet(params *MediatorGetParams, authInfo runtime.ClientA
 * `dr_pairs`
 ### Recommended optional properties
 * `mediator.*`
+* `mccip_ports`
 ### Learn more
 * [`DOC /cluster/metrocluster`](#docs-cluster-cluster_metrocluster)
 ### Related ONTAP commands
@@ -1986,7 +2165,7 @@ func (a *Client) MetroclusterDrGroupCollectionGet(params *MetroclusterDrGroupCol
 * `partner_cluster.name`
 * `dr_pairs`
 ### Recommended optional properties
-* `vlans`
+* `mccip_ports`
 ### Learn more
 * [`DOC /cluster/metrocluster/dr-groups`](#docs-cluster-cluster_metrocluster_dr-groups)
 ### Related ONTAP commands
@@ -2476,6 +2655,82 @@ func (a *Client) MetroclusterOperationGet(params *MetroclusterOperationGetParams
 }
 
 /*
+  MetroclusterSvmCollectionGet Retrieves configuration information for all pairs of SVMs in MetroCluster. REST /api/cluster/metrocluster/svms/?
+*/
+func (a *Client) MetroclusterSvmCollectionGet(params *MetroclusterSvmCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterSvmCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterSvmCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_svm_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/svms",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterSvmCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterSvmCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterSvmCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterSvmGet Retrieves configuration information for an SVM in a MetroCluster relationship.
+*/
+func (a *Client) MetroclusterSvmGet(params *MetroclusterSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterSvmGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterSvmGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_svm_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/svms/{cluster.uuid}/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterSvmGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterSvmGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterSvmGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   NodeDelete Deletes a node from the cluster.
 Note that before deleting a node from the cluster, you must shut down all of the node's shared resources, such as virtual interfaces to clients. If any of the node's shared resources are still active, the command fails.
 ### Optional parameters:
@@ -2538,6 +2793,8 @@ func (a *Client) NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAut
 * `system service-processor ssh show`
 * `system service-processor image show`
 * `version`
+* `system service-processor api-service show`
+* `system service-processor network auto-configuration show`
 
 */
 func (a *Client) NodeGet(params *NodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeGetOK, error) {
@@ -2625,6 +2882,8 @@ func (a *Client) NodeMetricsCollectionGet(params *NodeMetricsCollectionGetParams
 * `system service-processor network modify`
 * `system service-processor reboot-sp`
 * `system service-processor image modify`
+* `system service-processor network auto-configuration enable`
+* `system service-processor network auto-configuration disable`
 
 */
 func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyAccepted, error) {
@@ -2949,6 +3208,82 @@ func (a *Client) ScheduleModify(params *ScheduleModifyParams, authInfo runtime.C
 }
 
 /*
+  SensorsCollectionGet Retrieve Environment Sensors
+*/
+func (a *Client) SensorsCollectionGet(params *SensorsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SensorsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSensorsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "sensors_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/sensors",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SensorsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SensorsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SensorsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SensorsGet Retrieve Environment Sensors
+*/
+func (a *Client) SensorsGet(params *SensorsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SensorsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSensorsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "sensors_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/sensors/{node.uuid}/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SensorsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SensorsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SensorsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   SoftwareDownloadGet Retrieves the software or firmware download status.
 ### Related ONTAP commands
 * `cluster image package check-download-progress`
@@ -3093,6 +3428,7 @@ Important note:
 * `stabilize_minutes` - Specifies a custom value between 1 to 60 minutes that allows each node a specified amount of time to stabilize after a reboot; the default is 8 minutes.
 * `estimate_only` - Estimates the time duration; does not perform any update.
 * `nodes_to_update` - Specifies a subset of the cluster's nodes for update.
+* `show_validation_details` - If the value is set to true, then all validation details will be shown in the output.
 ### Related ONTAP commands
 * `cluster image validate`
 * `cluster image update`

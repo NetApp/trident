@@ -595,7 +595,7 @@ var securityConfigTlsProtocolVersionsItemsEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["SSLv3","TLSv1","TLSv1.1","TLSv1.2"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["SSLv3","TLSv1","TLSv1.1","TLSv1.2","TLSv1.3"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

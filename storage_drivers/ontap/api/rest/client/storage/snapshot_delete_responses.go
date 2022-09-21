@@ -82,7 +82,16 @@ func NewSnapshotDeleteDefault(code int) *SnapshotDeleteDefault {
 
 /* SnapshotDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Code
+| Error Code | Description |
+| ---------- | ----------- |
+| 2          | An invalid value was entered for one of the fields. |
+| 1638521    | Snapshot copies can only be deleted on read/write (RW) volumes. |
+| 1638538    | Cannot determine the status of the Snapshot copy delete operation for the specified volume. |
+| 1638543    | Failed to delete Snapshot copy because it has an owner. |
+| 1638555    | The specified Snapshot copy has not expired or is locked. |
+| 1638600    | The Snapshot copy does not exist. |
+
 */
 type SnapshotDeleteDefault struct {
 	_statusCode int

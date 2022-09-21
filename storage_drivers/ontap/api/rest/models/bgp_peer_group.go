@@ -766,7 +766,9 @@ type BgpPeerGroupLocalInterface struct {
 	// ip
 	IP *BgpPeerGroupLocalInterfaceIP `json:"ip,omitempty"`
 
-	// The name of the interface.
+	// The name of the interface. If only the name is provided, the SVM scope
+	// must be provided by the object this object is embedded in.
+	//
 	// Example: lif1
 	Name string `json:"name,omitempty"`
 

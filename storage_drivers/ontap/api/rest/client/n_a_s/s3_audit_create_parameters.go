@@ -68,17 +68,17 @@ type S3AuditCreateParams struct {
 	*/
 	Info *models.S3Audit
 
-	/* ReturnRecords.
-
-	   The default is false.  If set to true, the records are returned.
-	*/
-	ReturnRecordsQueryParameter *bool
-
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
 	ReturnTimeoutQueryParameter *int64
+
+	/* SvmUUID.
+
+	   UUID of the SVM to which this object belongs.
+	*/
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,13 +98,10 @@ func (o *S3AuditCreateParams) WithDefaults() *S3AuditCreateParams {
 // All values with no default are reset to their zero value.
 func (o *S3AuditCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
-
 		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := S3AuditCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
@@ -158,17 +155,6 @@ func (o *S3AuditCreateParams) SetInfo(info *models.S3Audit) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the s3 audit create params
-func (o *S3AuditCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *S3AuditCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the s3 audit create params
-func (o *S3AuditCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
-}
-
 // WithReturnTimeoutQueryParameter adds the returnTimeout to the s3 audit create params
 func (o *S3AuditCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *S3AuditCreateParams {
 	o.SetReturnTimeoutQueryParameter(returnTimeout)
@@ -178,6 +164,17 @@ func (o *S3AuditCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int
 // SetReturnTimeoutQueryParameter adds the returnTimeout to the s3 audit create params
 func (o *S3AuditCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
 	o.ReturnTimeoutQueryParameter = returnTimeout
+}
+
+// WithSVMUUIDPathParameter adds the svmUUID to the s3 audit create params
+func (o *S3AuditCreateParams) WithSVMUUIDPathParameter(svmUUID string) *S3AuditCreateParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
+	return o
+}
+
+// SetSVMUUIDPathParameter adds the svmUuid to the s3 audit create params
+func (o *S3AuditCreateParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -190,23 +187,6 @@ func (o *S3AuditCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
-		}
-	}
-
-	if o.ReturnRecordsQueryParameter != nil {
-
-		// query param return_records
-		var qrReturnRecords bool
-
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
-		}
-		qReturnRecords := swag.FormatBool(qrReturnRecords)
-		if qReturnRecords != "" {
-
-			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
-				return err
-			}
 		}
 	}
 
@@ -225,6 +205,11 @@ func (o *S3AuditCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 				return err
 			}
 		}
+	}
+
+	// path param svm.uuid
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+		return err
 	}
 
 	if len(res) > 0 {

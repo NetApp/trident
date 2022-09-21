@@ -92,6 +92,11 @@ func NewNvmeNamespaceCreateDefault(code int) *NvmeNamespaceCreateDefault {
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
 | 5242927 | The specified qtree was not found. |
 | 5242950 | The specified `location.qtree.id` and `location.qtree.name` do not refer to the same qtree. |
+| 5374140 | LUN has a non-zero prefix and/or suffix size. |
+| 5374141 | LUN is part of a SnapMirror Business Continuity (SMBC) relationship. |
+| 5374156 | A protocol endpoint LUN cannot be converted to an NVMe namespace. |
+| 5374157 | LUN in an SVM with MetroCluster configured cannot be converted to an NVMe namespace. |
+| 5374158 | LUN contains an operating system type that is not supported for NVMe namespace. |
 | 5374352 | An invalid name was provided for the NVMe namespace. |
 | 5374858 | The volume specified by `name` is not the same as that specified by `location.volume`. |
 | 5374860 | The qtree specified by `name` is not the same as that specified by `location.qtree`. |
@@ -116,6 +121,8 @@ func NewNvmeNamespaceCreateDefault(code int) *NvmeNamespaceCreateDefault {
 | 72090014 | No volume was specified for the NVMe namespace. |
 | 72090015 | An error occurred after successfully creating the NVMe namespace preventing the retrieval of its properties. |
 | 72090033 | The `clone.source.uuid` property is not supported when specifying a source NVMe namespace from a Snapshot copy. |
+| 72090039 | The property cannot be specified at the same time when creating an NVMe namespace as a clone. The `target` property of the error object identifies the other property given with clone. |
+| 72090040 | The property cannot be specified when converting a LUN into an NVMe namespace. The `target` property of the error object identifies the property. |
 
 */
 type NvmeNamespaceCreateDefault struct {

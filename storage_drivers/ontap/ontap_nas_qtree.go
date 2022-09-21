@@ -43,7 +43,7 @@ type NASQtreeStorageDriver struct {
 	initialized                      bool
 	Config                           drivers.OntapStorageDriverConfig
 	API                              api.OntapAPI
-	telemetry                        *TelemetryAbstraction
+	telemetry                        *Telemetry
 	quotaResizeMap                   map[string]bool
 	flexvolNamePrefix                string
 	flexvolExportPolicy              string
@@ -66,7 +66,7 @@ func (d *NASQtreeStorageDriver) GetAPI() api.OntapAPI {
 	return d.API
 }
 
-func (d *NASQtreeStorageDriver) GetTelemetry() *TelemetryAbstraction {
+func (d *NASQtreeStorageDriver) GetTelemetry() *Telemetry {
 	return d.telemetry
 }
 
@@ -110,7 +110,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriverAbstraction(ctx, config)
+	d.API, err = InitializeOntapDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
@@ -161,7 +161,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 		"SharedLockID":        d.sharedLockID,
 	}).Debugf("Qtree driver settings.")
 
-	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommonAbstraction(ctx, d,
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(), d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)
@@ -187,7 +187,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	}
 
 	// Set up the autosupport heartbeat
-	d.telemetry = NewOntapTelemetryAbstraction(ctx, d)
+	d.telemetry = NewOntapTelemetry(ctx, d)
 	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	d.telemetry.TridentBackendUUID = backendUUID
 	d.telemetry.Start(ctx)
@@ -215,7 +215,7 @@ func (d *NASQtreeStorageDriver) Terminate(ctx context.Context, backendUUID strin
 
 	if d.Config.AutoExportPolicy {
 		policyName := getExportPolicyName(backendUUID)
-		if err := deleteExportPolicyAbstraction(ctx, policyName, d.API); err != nil {
+		if err := deleteExportPolicy(ctx, policyName, d.API); err != nil {
 			Logc(ctx).Warn(err)
 		}
 	}
@@ -240,7 +240,7 @@ func (d *NASQtreeStorageDriver) validate(ctx context.Context) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
 	}
 
-	if err := ValidateNASDriverAbstraction(ctx, d.API, &d.Config); err != nil {
+	if err := ValidateNASDriver(ctx, d.API, &d.Config); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
@@ -248,7 +248,7 @@ func (d *NASQtreeStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePoolsAbstraction(ctx, d.physicalPools, d.virtualPools, d, 0); err != nil {
+	if err := ValidateStoragePools(ctx, d.physicalPools, d.virtualPools, d, 0); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -371,7 +371,7 @@ func (d *NASQtreeStorageDriver) Create(
 		aggregate := physicalPool.Name()
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
-		if aggrLimitsErr := checkAggregateLimitsAbstraction(
+		if aggrLimitsErr := checkAggregateLimits(
 			ctx, aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI(),
 		); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; error: %v", storagePool.Name(), aggregate,
@@ -582,7 +582,7 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 		return nil
 	}
 
-	if err := ensureNodeAccessAbstraction(ctx, publishInfo, d.API, &d.Config); err != nil {
+	if err := ensureNodeAccess(ctx, publishInfo, d.API, &d.Config); err != nil {
 		return err
 	}
 
@@ -600,7 +600,7 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 	}
 
 	// Ensure the qtree's volume has the correct export policy applied
-	return publishShareAbstraction(ctx, d.API, &d.Config, publishInfo, flexvol, d.API.VolumeModifyExportPolicy)
+	return publishShare(ctx, d.API, &d.Config, publishInfo, flexvol, d.API.VolumeModifyExportPolicy)
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
@@ -940,7 +940,7 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 		return 0, err
 	}
 
-	return calculateOptimalSizeForFlexvolAbstraction(ctx, flexvol, volAttrs, newQtreeSizeBytes,
+	return calculateFlexvolEconomySizeBytes(ctx, flexvol, volAttrs, newQtreeSizeBytes,
 		totalDiskLimitBytes), nil
 }
 
@@ -1712,7 +1712,7 @@ func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 	}
 	deltaQuotaSize := int64(sizeBytes) - quotaSize
 
-	if aggrLimitsErr := checkAggregateLimitsForFlexvolAbstraction(
+	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, flexvol, sizeBytes, d.Config, d.GetAPI(),
 	); aggrLimitsErr != nil {
 		return aggrLimitsErr
@@ -1783,7 +1783,7 @@ func (d *NASQtreeStorageDriver) ReconcileNodeAccess(
 
 	policyName := getExportPolicyName(backendUUID)
 
-	return reconcileNASNodeAccessAbstraction(ctx, nodes, &d.Config, d.API, policyName)
+	return reconcileNASNodeAccess(ctx, nodes, &d.Config, d.API, policyName)
 }
 
 // String makes NASQtreeStorageDriver satisfy the Stringer interface.

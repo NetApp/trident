@@ -513,7 +513,9 @@ type PortsetInterfaceIP struct {
 	// ip
 	IP *PortsetInterfaceIPIP `json:"ip,omitempty"`
 
-	// The name of the interface.
+	// The name of the interface. If only the name is provided, the SVM scope
+	// must be provided by the object this object is embedded in.
+	//
 	// Example: lif1
 	Name string `json:"name,omitempty"`
 
@@ -1477,7 +1479,7 @@ func (m *PortsetInterfaceRecordsItems0FcLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfaceRecordsItems0IP A network interface. Either UUID or name may be supplied on input.
+// PortsetInterfaceRecordsItems0IP portset interface records items0 IP
 //
 // swagger:model PortsetInterfaceRecordsItems0IP
 type PortsetInterfaceRecordsItems0IP struct {
@@ -1488,7 +1490,9 @@ type PortsetInterfaceRecordsItems0IP struct {
 	// ip
 	IP *PortsetInterfaceRecordsItems0IPIP `json:"ip,omitempty"`
 
-	// The name of the interface.
+	// The name of the interface. If only the name is provided, the SVM scope
+	// must be provided by the object this object is embedded in.
+	//
 	// Example: lif1
 	Name string `json:"name,omitempty"`
 

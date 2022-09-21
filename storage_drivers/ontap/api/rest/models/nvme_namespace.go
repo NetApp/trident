@@ -43,6 +43,9 @@ type NvmeNamespace struct {
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
 
+	// convert
+	Convert *NvmeNamespaceConvert `json:"convert,omitempty"`
+
 	// The time the NVMe namespace was created.
 	// Example: 2018-06-04T19:00:00Z
 	// Read Only: true
@@ -107,6 +110,10 @@ func (m *NvmeNamespace) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConvert(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -197,6 +204,23 @@ func (m *NvmeNamespace) validateComment(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("comment", "body", *m.Comment, 254); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespace) validateConvert(formats strfmt.Registry) error {
+	if swag.IsZero(m.Convert) { // not required
+		return nil
+	}
+
+	if m.Convert != nil {
+		if err := m.Convert.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("convert")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -421,6 +445,10 @@ func (m *NvmeNamespace) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateConvert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCreateTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -487,6 +515,20 @@ func (m *NvmeNamespace) contextValidateClone(ctx context.Context, formats strfmt
 		if err := m.Clone.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("clone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespace) contextValidateConvert(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Convert != nil {
+		if err := m.Convert.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("convert")
 			}
 			return err
 		}
@@ -766,6 +808,139 @@ func (m *NvmeNamespaceCloneSource) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NvmeNamespaceCloneSource) UnmarshalBinary(b []byte) error {
 	var res NvmeNamespaceCloneSource
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceConvert This sub-object is used in POST to convert a valid in-place LUN to an NVMe namespace. Setting a property in this sub-object indicates that a conversion from the specified LUN to NVMe namespace is desired.<br/>
+//
+//
+// swagger:model NvmeNamespaceConvert
+type NvmeNamespaceConvert struct {
+
+	// lun
+	Lun *NvmeNamespaceConvertLun `json:"lun,omitempty"`
+}
+
+// Validate validates this nvme namespace convert
+func (m *NvmeNamespaceConvert) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLun(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceConvert) validateLun(formats strfmt.Registry) error {
+	if swag.IsZero(m.Lun) { // not required
+		return nil
+	}
+
+	if m.Lun != nil {
+		if err := m.Lun.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("convert" + "." + "lun")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme namespace convert based on the context it is used
+func (m *NvmeNamespaceConvert) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLun(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceConvert) contextValidateLun(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Lun != nil {
+		if err := m.Lun.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("convert" + "." + "lun")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceConvert) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceConvert) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceConvert
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceConvertLun The source LUN for convert operation. This can be specified using property `convert.lun.uuid` or `convert.lun.name`. If both properties are supplied, they must refer to the same LUN.<br/>
+// Valid in POST. A convert request from LUN to NVMe namespace cannot be combined with setting any other namespace properties. All other properties of the converted NVMe namespace comes from the source LUN.<br/>
+//
+//
+// swagger:model NvmeNamespaceConvertLun
+type NvmeNamespaceConvertLun struct {
+
+	// The fully qualified path name of the source LUN composed of a "/vol" prefix, the volume name, the (optional) qtree name and base name of the LUN. Valid in POST.
+	//
+	// Example: /vol/volume1/lun1
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the source LUN. Valid in POST.
+	//
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this nvme namespace convert lun
+func (m *NvmeNamespaceConvertLun) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nvme namespace convert lun based on context it is used
+func (m *NvmeNamespaceConvertLun) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceConvertLun) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceConvertLun) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceConvertLun
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

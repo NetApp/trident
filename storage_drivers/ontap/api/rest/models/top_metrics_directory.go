@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// TopMetricsDirectory Information about a directory's IO activity.
+// TopMetricsDirectory Information about a directory's IO metrics.
 // Example: {"_links":{"directory":{"href":"/api/storage/volumes/02178914-5f67-11eb-b987-005056ac5da5/files/dir_1%2fdir_2"},"metadata":{"href":"/api/storage/volumes/02178914-5f67-11eb-b987-005056ac5da5/files/dir_1%2fdir_2?return_metadata=true"}},"iops":{"error":{"lower_bound":"2","upper_bound":"5"},"read":"2","write":"3"},"path":"/dir1_/dir_2","svm":{"name":"vserver_2","uuid":"42ee3002-67dd-11ea-8508-005056a7b8ac"},"throughput":{"error":{"lower_bound":"3","upper_bound":"6"},"read":"3","write":"5"},"volume":{"name":"vol_8","uuid":"c05eb66a-685f-11ea-8508-005056a7b8ac"}}
 //
 // swagger:model top_metrics_directory

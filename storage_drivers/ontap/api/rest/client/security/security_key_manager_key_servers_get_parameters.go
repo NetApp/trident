@@ -68,7 +68,7 @@ type SecurityKeyManagerKeyServersGetParams struct {
 
 	/* Server.
 
-	   Key server configured in the key manager.
+	   Primary Key server configured in the key manager.
 	*/
 	ServerPathParameter string
 

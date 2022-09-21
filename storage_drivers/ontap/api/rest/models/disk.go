@@ -41,11 +41,21 @@ type Disk struct {
 	// Enum: [unknown capacity performance archive solid_state array virtual]
 	Class string `json:"class,omitempty"`
 
+	// Security standard that the device is certified to.
+	// Example: FIPS 140-2
+	// Read Only: true
+	ComplianceStandard string `json:"compliance_standard,omitempty"`
+
 	// Type of overlying disk container
 	// Example: spare
 	// Read Only: true
 	// Enum: [aggregate broken foreign labelmaint maintenance shared spare unassigned unknown unsupported remote mediator]
 	ContainerType string `json:"container_type,omitempty"`
+
+	// Standard that the device supports for encryption control.
+	// Example: TCG Enterprise
+	// Read Only: true
+	ControlStandard string `json:"control_standard,omitempty"`
 
 	// dr node
 	DrNode *DiskDrNode `json:"dr_node,omitempty"`
@@ -56,7 +66,7 @@ type Disk struct {
 	// Effective Disk type
 	// Example: vmdisk
 	// Read Only: true
-	// Enum: [ata fcal lun msata sas bsas ssd ssd_nvm ssd_cap fsas vmdisk unknown]
+	// Enum: [ata fcal lun msata sas bsas ssd ssd_nvm ssd_zns ssd_cap fsas vmdisk unknown]
 	EffectiveType string `json:"effective_type,omitempty"`
 
 	// This field should only be set as a query parameter in a PATCH operation. It is input only and won't be returned by a subsequent GET.
@@ -105,13 +115,22 @@ type Disk struct {
 	// outage
 	Outage *DiskOutage `json:"outage,omitempty"`
 
+	// Overall Security rating, for FIPS-certified devices.
+	// Example: Level 2
+	// Read Only: true
+	OverallSecurity string `json:"overall_security,omitempty"`
+
 	// List of paths to a disk
 	// Read Only: true
 	Paths []*DiskPathInfo `json:"paths,omitempty"`
 
+	// Physical size, in units of bytes
+	// Example: 228930
+	// Read Only: true
+	PhysicalSize int64 `json:"physical_size,omitempty"`
+
 	// Pool to which disk is assigned
 	// Example: pool0
-	// Read Only: true
 	// Enum: [pool0 pool1 failed none]
 	Pool string `json:"pool,omitempty"`
 
@@ -122,6 +141,7 @@ type Disk struct {
 	// - _full_ - Full data and FIPS compliance protection
 	// - _miss_ - Protection mode information is not available
 	//
+	// Example: data
 	// Read Only: true
 	// Enum: [open data part full miss]
 	ProtectionMode string `json:"protection_mode,omitempty"`
@@ -130,6 +150,11 @@ type Disk struct {
 	// Example: 10
 	// Read Only: true
 	RatedLifeUsedPercent int64 `json:"rated_life_used_percent,omitempty"`
+
+	// Number of usable disk sectors that remain after subtracting the right-size adjustment for this disk.
+	// Example: 1172123568
+	// Read Only: true
+	RightSizeSectorCount int64 `json:"right_size_sector_count,omitempty"`
 
 	// Revolutions per minute
 	// Example: 15000
@@ -155,12 +180,14 @@ type Disk struct {
 
 	// State
 	// Example: present
-	// Read Only: true
 	// Enum: [broken copy maintenance partner pending present reconstructing removed spare unfail zeroing]
 	State string `json:"state,omitempty"`
 
 	// stats
 	Stats *DiskStats `json:"stats,omitempty"`
+
+	// storage pool
+	StoragePool *DiskStoragePool `json:"storage_pool,omitempty"`
 
 	// Disk interface type
 	// Example: ssd
@@ -182,6 +209,9 @@ type Disk struct {
 	// Example: NETAPP
 	// Read Only: true
 	Vendor string `json:"vendor,omitempty"`
+
+	// virtual
+	Virtual *DiskVirtual `json:"virtual,omitempty"`
 }
 
 // Validate validates this disk
@@ -256,7 +286,15 @@ func (m *Disk) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateStoragePool(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVirtual(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -590,7 +628,7 @@ var diskTypeEffectiveTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ata","fcal","lun","msata","sas","bsas","ssd","ssd_nvm","ssd_cap","fsas","vmdisk","unknown"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ata","fcal","lun","msata","sas","bsas","ssd","ssd_nvm","ssd_zns","ssd_cap","fsas","vmdisk","unknown"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -679,6 +717,16 @@ const (
 	// END DEBUGGING
 	// DiskEffectiveTypeSsdNvm captures enum value "ssd_nvm"
 	DiskEffectiveTypeSsdNvm string = "ssd_nvm"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// ssd_zns
+	// END DEBUGGING
+	// DiskEffectiveTypeSsdZns captures enum value "ssd_zns"
+	DiskEffectiveTypeSsdZns string = "ssd_zns"
 
 	// BEGIN DEBUGGING
 	// disk
@@ -1200,6 +1248,23 @@ func (m *Disk) validateStats(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Disk) validateStoragePool(formats strfmt.Registry) error {
+	if swag.IsZero(m.StoragePool) { // not required
+		return nil
+	}
+
+	if m.StoragePool != nil {
+		if err := m.StoragePool.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_pool")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var diskTypeTypePropEnum []interface{}
 
 func init() {
@@ -1366,6 +1431,23 @@ func (m *Disk) validateType(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Disk) validateVirtual(formats strfmt.Registry) error {
+	if swag.IsZero(m.Virtual) { // not required
+		return nil
+	}
+
+	if m.Virtual != nil {
+		if err := m.Virtual.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("virtual")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this disk based on the context it is used
 func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -1386,7 +1468,15 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateComplianceStandard(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateContainerType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateControlStandard(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1442,11 +1532,15 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateOverallSecurity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidatePaths(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePool(ctx, formats); err != nil {
+	if err := m.contextValidatePhysicalSize(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1455,6 +1549,10 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 	}
 
 	if err := m.contextValidateRatedLifeUsedPercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRightSizeSectorCount(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1478,11 +1576,11 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateState(ctx, formats); err != nil {
+	if err := m.contextValidateStats(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateStats(ctx, formats); err != nil {
+	if err := m.contextValidateStoragePool(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1499,6 +1597,10 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 	}
 
 	if err := m.contextValidateVendor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVirtual(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1557,9 +1659,27 @@ func (m *Disk) contextValidateClass(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
+func (m *Disk) contextValidateComplianceStandard(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "compliance_standard", "body", string(m.ComplianceStandard)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Disk) contextValidateContainerType(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "container_type", "body", string(m.ContainerType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateControlStandard(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "control_standard", "body", string(m.ControlStandard)); err != nil {
 		return err
 	}
 
@@ -1726,6 +1846,15 @@ func (m *Disk) contextValidateOutage(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
+func (m *Disk) contextValidateOverallSecurity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "overall_security", "body", string(m.OverallSecurity)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Disk) contextValidatePaths(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "paths", "body", []*DiskPathInfo(m.Paths)); err != nil {
@@ -1748,9 +1877,9 @@ func (m *Disk) contextValidatePaths(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *Disk) contextValidatePool(ctx context.Context, formats strfmt.Registry) error {
+func (m *Disk) contextValidatePhysicalSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "pool", "body", string(m.Pool)); err != nil {
+	if err := validate.ReadOnly(ctx, "physical_size", "body", int64(m.PhysicalSize)); err != nil {
 		return err
 	}
 
@@ -1769,6 +1898,15 @@ func (m *Disk) contextValidateProtectionMode(ctx context.Context, formats strfmt
 func (m *Disk) contextValidateRatedLifeUsedPercent(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "rated_life_used_percent", "body", int64(m.RatedLifeUsedPercent)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateRightSizeSectorCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "right_size_sector_count", "body", int64(m.RightSizeSectorCount)); err != nil {
 		return err
 	}
 
@@ -1825,21 +1963,26 @@ func (m *Disk) contextValidateShelf(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *Disk) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *Disk) contextValidateStats(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Stats != nil {
 		if err := m.Stats.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("stats")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateStoragePool(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.StoragePool != nil {
+		if err := m.StoragePool.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_pool")
 			}
 			return err
 		}
@@ -1884,6 +2027,20 @@ func (m *Disk) contextValidateVendor(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
+func (m *Disk) contextValidateVirtual(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Virtual != nil {
+		if err := m.Virtual.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("virtual")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *Disk) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -1902,7 +2059,7 @@ func (m *Disk) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskAggregatesItems0 Aggregate
+// DiskAggregatesItems0 disk aggregates items0
 //
 // swagger:model DiskAggregatesItems0
 type DiskAggregatesItems0 struct {
@@ -2975,6 +3132,279 @@ func (m *DiskStats) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *DiskStats) UnmarshalBinary(b []byte) error {
 	var res DiskStats
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// DiskStoragePool Shared Storage Pool
+//
+// swagger:model DiskStoragePool
+type DiskStoragePool struct {
+
+	// links
+	Links *DiskStoragePoolLinks `json:"_links,omitempty"`
+
+	// name
+	// Example: storage_pool_1
+	Name string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this disk storage pool
+func (m *DiskStoragePool) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskStoragePool) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_pool" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this disk storage pool based on the context it is used
+func (m *DiskStoragePool) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskStoragePool) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_pool" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DiskStoragePool) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DiskStoragePool) UnmarshalBinary(b []byte) error {
+	var res DiskStoragePool
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// DiskStoragePoolLinks disk storage pool links
+//
+// swagger:model DiskStoragePoolLinks
+type DiskStoragePoolLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this disk storage pool links
+func (m *DiskStoragePoolLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskStoragePoolLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_pool" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this disk storage pool links based on the context it is used
+func (m *DiskStoragePoolLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskStoragePoolLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_pool" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DiskStoragePoolLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DiskStoragePoolLinks) UnmarshalBinary(b []byte) error {
+	var res DiskStoragePoolLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// DiskVirtual Information about backing storage for disks on cloud platforms.
+//
+// swagger:model DiskVirtual
+type DiskVirtual struct {
+
+	// Container name of the virtual disk.
+	// Example: nviet12122018113936-rg
+	// Read Only: true
+	Container string `json:"container,omitempty"`
+
+	// Object name of the virtual disk.
+	// Example: f1fu63se
+	// Read Only: true
+	Object string `json:"object,omitempty"`
+
+	// Storage account name of the virtual disk.
+	// Example: nviet12122018113936ps
+	// Read Only: true
+	StorageAccount string `json:"storage_account,omitempty"`
+}
+
+// Validate validates this disk virtual
+func (m *DiskVirtual) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this disk virtual based on the context it is used
+func (m *DiskVirtual) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateContainer(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateObject(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorageAccount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskVirtual) contextValidateContainer(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "virtual"+"."+"container", "body", string(m.Container)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DiskVirtual) contextValidateObject(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "virtual"+"."+"object", "body", string(m.Object)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DiskVirtual) contextValidateStorageAccount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "virtual"+"."+"storage_account", "body", string(m.StorageAccount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DiskVirtual) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DiskVirtual) UnmarshalBinary(b []byte) error {
+	var res DiskVirtual
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

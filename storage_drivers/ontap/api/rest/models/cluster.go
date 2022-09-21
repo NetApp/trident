@@ -1313,7 +1313,9 @@ type ClusterManagementInterfacesItems0 struct {
 	// ip
 	IP *ClusterManagementInterfacesItems0IP `json:"ip,omitempty"`
 
-	// The name of the interface.
+	// The name of the interface. If only the name is provided, the SVM scope
+	// must be provided by the object this object is embedded in.
+	//
 	// Example: lif1
 	Name string `json:"name,omitempty"`
 
@@ -1606,7 +1608,7 @@ func (m *ClusterManagementInterfacesItems0Links) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// ClusterMetric Performance numbers, such as IOPS latency and throughput.
+// ClusterMetric cluster metric
 //
 // swagger:model ClusterMetric
 type ClusterMetric struct {
@@ -2422,6 +2424,9 @@ type ClusterNodesItems0 struct {
 	// ha
 	Ha *ClusterNodesItems0Ha `json:"ha,omitempty"`
 
+	// hw assist
+	HwAssist *ClusterNodesItems0HwAssist `json:"hw_assist,omitempty"`
+
 	// Specifies whether or not the node is in spares low condition.
 	// Read Only: true
 	IsSparesLow *bool `json:"is_spares_low,omitempty"`
@@ -2569,6 +2574,10 @@ func (m *ClusterNodesItems0) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateHa(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateHwAssist(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2743,6 +2752,23 @@ func (m *ClusterNodesItems0) validateHa(formats strfmt.Registry) error {
 		if err := m.Ha.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("ha")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) validateHwAssist(formats strfmt.Registry) error {
+	if swag.IsZero(m.HwAssist) { // not required
+		return nil
+	}
+
+	if m.HwAssist != nil {
+		if err := m.HwAssist.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("hw_assist")
 			}
 			return err
 		}
@@ -3253,6 +3279,10 @@ func (m *ClusterNodesItems0) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateHwAssist(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIsSparesLow(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -3432,6 +3462,20 @@ func (m *ClusterNodesItems0) contextValidateHa(ctx context.Context, formats strf
 		if err := m.Ha.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("ha")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) contextValidateHwAssist(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.HwAssist != nil {
+		if err := m.HwAssist.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("hw_assist")
 			}
 			return err
 		}
@@ -3788,7 +3832,9 @@ type ClusterNodesItems0ClusterInterfacesItems0 struct {
 	// ip
 	IP *ClusterNodesItems0ClusterInterfacesItems0IP `json:"ip,omitempty"`
 
-	// The name of the interface.
+	// The name of the interface. If only the name is provided, the SVM scope
+	// must be provided by the object this object is embedded in.
+	//
 	// Example: lif1
 	Name string `json:"name,omitempty"`
 
@@ -5571,6 +5617,9 @@ type ClusterNodesItems0Ha struct {
 	// giveback
 	Giveback *ClusterNodesItems0HaGiveback `json:"giveback,omitempty"`
 
+	// interconnect
+	Interconnect *ClusterNodesItems0HaInterconnect `json:"interconnect,omitempty"`
+
 	// Nodes in this node's High Availability (HA) group.
 	// Read Only: true
 	Partners []*ClusterNodesItems0HaPartnersItems0 `json:"partners,omitempty"`
@@ -5588,6 +5637,10 @@ func (m *ClusterNodesItems0Ha) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateGiveback(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateInterconnect(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5618,6 +5671,23 @@ func (m *ClusterNodesItems0Ha) validateGiveback(formats strfmt.Registry) error {
 		if err := m.Giveback.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("ha" + "." + "giveback")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Ha) validateInterconnect(formats strfmt.Registry) error {
+	if swag.IsZero(m.Interconnect) { // not required
+		return nil
+	}
+
+	if m.Interconnect != nil {
+		if err := m.Interconnect.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ha" + "." + "interconnect")
 			}
 			return err
 		}
@@ -5707,6 +5777,10 @@ func (m *ClusterNodesItems0Ha) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateInterconnect(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidatePartners(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -5749,6 +5823,20 @@ func (m *ClusterNodesItems0Ha) contextValidateGiveback(ctx context.Context, form
 		if err := m.Giveback.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("ha" + "." + "giveback")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Ha) contextValidateInterconnect(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Interconnect != nil {
+		if err := m.Interconnect.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ha" + "." + "interconnect")
 			}
 			return err
 		}
@@ -5845,6 +5933,10 @@ type ClusterNodesItems0HaGiveback struct {
 	// Example: failed
 	// Enum: [nothing_to_giveback not_attempted in_progress failed]
 	State string `json:"state,omitempty"`
+
+	// Giveback status of each aggregate.
+	// Read Only: true
+	Status []*ClusterNodesItems0HaGivebackStatusItems0 `json:"status,omitempty"`
 }
 
 // Validate validates this cluster nodes items0 ha giveback
@@ -5856,6 +5948,10 @@ func (m *ClusterNodesItems0HaGiveback) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5958,11 +6054,39 @@ func (m *ClusterNodesItems0HaGiveback) validateState(formats strfmt.Registry) er
 	return nil
 }
 
+func (m *ClusterNodesItems0HaGiveback) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Status); i++ {
+		if swag.IsZero(m.Status[i]) { // not required
+			continue
+		}
+
+		if m.Status[i] != nil {
+			if err := m.Status[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ha" + "." + "giveback" + "." + "status" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this cluster nodes items0 ha giveback based on the context it is used
 func (m *ClusterNodesItems0HaGiveback) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateFailure(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5981,6 +6105,28 @@ func (m *ClusterNodesItems0HaGiveback) contextValidateFailure(ctx context.Contex
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGiveback) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ha"+"."+"giveback"+"."+"status", "body", []*ClusterNodesItems0HaGivebackStatusItems0(m.Status)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Status); i++ {
+
+		if m.Status[i] != nil {
+			if err := m.Status[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ha" + "." + "giveback" + "." + "status" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -6044,6 +6190,831 @@ func (m *ClusterNodesItems0HaGivebackFailure) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ClusterNodesItems0HaGivebackFailure) UnmarshalBinary(b []byte) error {
 	var res ClusterNodesItems0HaGivebackFailure
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0HaGivebackStatusItems0 cluster nodes items0 ha giveback status items0
+//
+// swagger:model ClusterNodesItems0HaGivebackStatusItems0
+type ClusterNodesItems0HaGivebackStatusItems0 struct {
+
+	// aggregate
+	Aggregate *ClusterNodesItems0HaGivebackStatusItems0Aggregate `json:"aggregate,omitempty"`
+
+	// error
+	Error *ClusterNodesItems0HaGivebackStatusItems0Error `json:"error,omitempty"`
+
+	// Giveback state of the aggregate. <br/>
+	// Possible values include no aggregates to giveback(nothing_to_giveback), failed to disable background disk firmware update(BDFU) on source node(failed_bdfu_source), <br/>
+	// giveback delayed as disk firmware update is in progress on source node(delayed_bdfu_source), performing veto checks(running_checks). <br/>
+	//
+	// Enum: [done failed in_progress not_started nothing_to_giveback failed_bdfu_source failed_bdfu_dest delayed_bdfu_source delayed_bdfu_dest running_checks]
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 ha giveback status items0
+func (m *ClusterNodesItems0HaGivebackStatusItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAggregate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0) validateAggregate(formats strfmt.Registry) error {
+	if swag.IsZero(m.Aggregate) { // not required
+		return nil
+	}
+
+	if m.Aggregate != nil {
+		if err := m.Aggregate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0) validateError(formats strfmt.Registry) error {
+	if swag.IsZero(m.Error) { // not required
+		return nil
+	}
+
+	if m.Error != nil {
+		if err := m.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var clusterNodesItems0HaGivebackStatusItems0TypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["done","failed","in_progress","not_started","nothing_to_giveback","failed_bdfu_source","failed_bdfu_dest","delayed_bdfu_source","delayed_bdfu_dest","running_checks"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0HaGivebackStatusItems0TypeStatePropEnum = append(clusterNodesItems0HaGivebackStatusItems0TypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// state
+	// State
+	// done
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0StateDone captures enum value "done"
+	ClusterNodesItems0HaGivebackStatusItems0StateDone string = "done"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// state
+	// State
+	// failed
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0StateFailed captures enum value "failed"
+	ClusterNodesItems0HaGivebackStatusItems0StateFailed string = "failed"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// state
+	// State
+	// in_progress
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0StateInProgress captures enum value "in_progress"
+	ClusterNodesItems0HaGivebackStatusItems0StateInProgress string = "in_progress"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// state
+	// State
+	// not_started
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0StateNotStarted captures enum value "not_started"
+	ClusterNodesItems0HaGivebackStatusItems0StateNotStarted string = "not_started"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// state
+	// State
+	// nothing_to_giveback
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0StateNothingToGiveback captures enum value "nothing_to_giveback"
+	ClusterNodesItems0HaGivebackStatusItems0StateNothingToGiveback string = "nothing_to_giveback"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// state
+	// State
+	// failed_bdfu_source
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0StateFailedBdfuSource captures enum value "failed_bdfu_source"
+	ClusterNodesItems0HaGivebackStatusItems0StateFailedBdfuSource string = "failed_bdfu_source"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// state
+	// State
+	// failed_bdfu_dest
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0StateFailedBdfuDest captures enum value "failed_bdfu_dest"
+	ClusterNodesItems0HaGivebackStatusItems0StateFailedBdfuDest string = "failed_bdfu_dest"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// state
+	// State
+	// delayed_bdfu_source
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0StateDelayedBdfuSource captures enum value "delayed_bdfu_source"
+	ClusterNodesItems0HaGivebackStatusItems0StateDelayedBdfuSource string = "delayed_bdfu_source"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// state
+	// State
+	// delayed_bdfu_dest
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0StateDelayedBdfuDest captures enum value "delayed_bdfu_dest"
+	ClusterNodesItems0HaGivebackStatusItems0StateDelayedBdfuDest string = "delayed_bdfu_dest"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// ClusterNodesItems0HaGivebackStatusItems0
+	// state
+	// State
+	// running_checks
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0StateRunningChecks captures enum value "running_checks"
+	ClusterNodesItems0HaGivebackStatusItems0StateRunningChecks string = "running_checks"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0HaGivebackStatusItems0) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0HaGivebackStatusItems0TypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 ha giveback status items0 based on the context it is used
+func (m *ClusterNodesItems0HaGivebackStatusItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAggregate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateError(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0) contextValidateAggregate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Aggregate != nil {
+		if err := m.Aggregate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Error != nil {
+		if err := m.Error.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0HaGivebackStatusItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0HaGivebackStatusItems0) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0HaGivebackStatusItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0HaGivebackStatusItems0Aggregate Aggregate name and UUID.
+//
+// swagger:model ClusterNodesItems0HaGivebackStatusItems0Aggregate
+type ClusterNodesItems0HaGivebackStatusItems0Aggregate struct {
+
+	// links
+	Links *ClusterNodesItems0HaGivebackStatusItems0AggregateLinks `json:"_links,omitempty"`
+
+	// name
+	// Example: aggr1
+	Name string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 ha giveback status items0 aggregate
+func (m *ClusterNodesItems0HaGivebackStatusItems0Aggregate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0Aggregate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 ha giveback status items0 aggregate based on the context it is used
+func (m *ClusterNodesItems0HaGivebackStatusItems0Aggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0Aggregate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0HaGivebackStatusItems0Aggregate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0HaGivebackStatusItems0Aggregate) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0HaGivebackStatusItems0Aggregate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0HaGivebackStatusItems0AggregateLinks cluster nodes items0 ha giveback status items0 aggregate links
+//
+// swagger:model ClusterNodesItems0HaGivebackStatusItems0AggregateLinks
+type ClusterNodesItems0HaGivebackStatusItems0AggregateLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 ha giveback status items0 aggregate links
+func (m *ClusterNodesItems0HaGivebackStatusItems0AggregateLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0AggregateLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 ha giveback status items0 aggregate links based on the context it is used
+func (m *ClusterNodesItems0HaGivebackStatusItems0AggregateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0AggregateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0HaGivebackStatusItems0AggregateLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0HaGivebackStatusItems0AggregateLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0HaGivebackStatusItems0AggregateLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0HaGivebackStatusItems0Error Indicates the failed aggregate giveback code and message.
+//
+// swagger:model ClusterNodesItems0HaGivebackStatusItems0Error
+type ClusterNodesItems0HaGivebackStatusItems0Error struct {
+
+	// Message code.
+	// Example: 852126
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// Detailed message based on the state.
+	// Read Only: true
+	// Enum: [shutdown not_homes_partner not_sfo failed_limbo offline_failed migrating veto communication_err online_timeout online_failed hdd_to_aff_dest]
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 ha giveback status items0 error
+func (m *ClusterNodesItems0HaGivebackStatusItems0Error) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMessage(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterNodesItems0HaGivebackStatusItems0ErrorTypeMessagePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["shutdown","not_homes_partner","not_sfo","failed_limbo","offline_failed","migrating","veto","communication_err","online_timeout","online_failed","hdd_to_aff_dest"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0HaGivebackStatusItems0ErrorTypeMessagePropEnum = append(clusterNodesItems0HaGivebackStatusItems0ErrorTypeMessagePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// shutdown
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageShutdown captures enum value "shutdown"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageShutdown string = "shutdown"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// not_homes_partner
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageNotHomesPartner captures enum value "not_homes_partner"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageNotHomesPartner string = "not_homes_partner"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// not_sfo
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageNotSfo captures enum value "not_sfo"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageNotSfo string = "not_sfo"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// failed_limbo
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageFailedLimbo captures enum value "failed_limbo"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageFailedLimbo string = "failed_limbo"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// offline_failed
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageOfflineFailed captures enum value "offline_failed"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageOfflineFailed string = "offline_failed"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// migrating
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageMigrating captures enum value "migrating"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageMigrating string = "migrating"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// veto
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageVeto captures enum value "veto"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageVeto string = "veto"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// communication_err
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageCommunicationErr captures enum value "communication_err"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageCommunicationErr string = "communication_err"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// online_timeout
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageOnlineTimeout captures enum value "online_timeout"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageOnlineTimeout string = "online_timeout"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// online_failed
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageOnlineFailed captures enum value "online_failed"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageOnlineFailed string = "online_failed"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// ClusterNodesItems0HaGivebackStatusItems0Error
+	// message
+	// Message
+	// hdd_to_aff_dest
+	// END DEBUGGING
+	// ClusterNodesItems0HaGivebackStatusItems0ErrorMessageHddToAffDest captures enum value "hdd_to_aff_dest"
+	ClusterNodesItems0HaGivebackStatusItems0ErrorMessageHddToAffDest string = "hdd_to_aff_dest"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0HaGivebackStatusItems0Error) validateMessageEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0HaGivebackStatusItems0ErrorTypeMessagePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0Error) validateMessage(formats strfmt.Registry) error {
+	if swag.IsZero(m.Message) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateMessageEnum("error"+"."+"message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 ha giveback status items0 error based on the context it is used
+func (m *ClusterNodesItems0HaGivebackStatusItems0Error) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0Error) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0HaGivebackStatusItems0Error) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0HaGivebackStatusItems0Error) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0HaGivebackStatusItems0Error) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0HaGivebackStatusItems0Error
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0HaInterconnect cluster nodes items0 ha interconnect
+//
+// swagger:model ClusterNodesItems0HaInterconnect
+type ClusterNodesItems0HaInterconnect struct {
+
+	// HA interconnect device name.
+	// Example: MVIA-RDMA
+	// Read Only: true
+	Adapter string `json:"adapter,omitempty"`
+
+	// Indicates the HA interconnect status.
+	// Read Only: true
+	// Enum: [down up]
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 ha interconnect
+func (m *ClusterNodesItems0HaInterconnect) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterNodesItems0HaInterconnectTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["down","up"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0HaInterconnectTypeStatePropEnum = append(clusterNodesItems0HaInterconnectTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaInterconnect
+	// ClusterNodesItems0HaInterconnect
+	// state
+	// State
+	// down
+	// END DEBUGGING
+	// ClusterNodesItems0HaInterconnectStateDown captures enum value "down"
+	ClusterNodesItems0HaInterconnectStateDown string = "down"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HaInterconnect
+	// ClusterNodesItems0HaInterconnect
+	// state
+	// State
+	// up
+	// END DEBUGGING
+	// ClusterNodesItems0HaInterconnectStateUp captures enum value "up"
+	ClusterNodesItems0HaInterconnectStateUp string = "up"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0HaInterconnect) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0HaInterconnectTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaInterconnect) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("ha"+"."+"interconnect"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 ha interconnect based on the context it is used
+func (m *ClusterNodesItems0HaInterconnect) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAdapter(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HaInterconnect) contextValidateAdapter(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ha"+"."+"interconnect"+"."+"adapter", "body", string(m.Adapter)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0HaInterconnect) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ha"+"."+"interconnect"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0HaInterconnect) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0HaInterconnect) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0HaInterconnect
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -6636,6 +7607,441 @@ func (m *ClusterNodesItems0HaTakeoverFailure) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// ClusterNodesItems0HwAssist The hardware assist information.
+//
+// swagger:model ClusterNodesItems0HwAssist
+type ClusterNodesItems0HwAssist struct {
+
+	// status
+	Status *ClusterNodesItems0HwAssistStatus `json:"status,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 hw assist
+func (m *ClusterNodesItems0HwAssist) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HwAssist) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	if m.Status != nil {
+		if err := m.Status.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("hw_assist" + "." + "status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 hw assist based on the context it is used
+func (m *ClusterNodesItems0HwAssist) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HwAssist) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Status != nil {
+		if err := m.Status.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("hw_assist" + "." + "status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0HwAssist) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0HwAssist) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0HwAssist
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0HwAssistStatus cluster nodes items0 hw assist status
+//
+// swagger:model ClusterNodesItems0HwAssistStatus
+type ClusterNodesItems0HwAssistStatus struct {
+
+	// Indicates whether hardware assist is enabled on the node.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// local
+	Local *ClusterNodesItems0HwAssistStatusLocal `json:"local,omitempty"`
+
+	// partner
+	Partner *ClusterNodesItems0HwAssistStatusPartner `json:"partner,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 hw assist status
+func (m *ClusterNodesItems0HwAssistStatus) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLocal(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePartner(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HwAssistStatus) validateLocal(formats strfmt.Registry) error {
+	if swag.IsZero(m.Local) { // not required
+		return nil
+	}
+
+	if m.Local != nil {
+		if err := m.Local.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("hw_assist" + "." + "status" + "." + "local")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0HwAssistStatus) validatePartner(formats strfmt.Registry) error {
+	if swag.IsZero(m.Partner) { // not required
+		return nil
+	}
+
+	if m.Partner != nil {
+		if err := m.Partner.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("hw_assist" + "." + "status" + "." + "partner")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 hw assist status based on the context it is used
+func (m *ClusterNodesItems0HwAssistStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePartner(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HwAssistStatus) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Local != nil {
+		if err := m.Local.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("hw_assist" + "." + "status" + "." + "local")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0HwAssistStatus) contextValidatePartner(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Partner != nil {
+		if err := m.Partner.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("hw_assist" + "." + "status" + "." + "partner")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0HwAssistStatus) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0HwAssistStatus) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0HwAssistStatus
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0HwAssistStatusLocal cluster nodes items0 hw assist status local
+//
+// swagger:model ClusterNodesItems0HwAssistStatusLocal
+type ClusterNodesItems0HwAssistStatusLocal struct {
+
+	// The hardware assist IP address.
+	IP string `json:"ip,omitempty"`
+
+	// The hardware assist port.
+	Port int64 `json:"port,omitempty"`
+
+	// The hardware assist monitor status.
+	// Enum: [active inactive]
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 hw assist status local
+func (m *ClusterNodesItems0HwAssistStatusLocal) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterNodesItems0HwAssistStatusLocalTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["active","inactive"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0HwAssistStatusLocalTypeStatePropEnum = append(clusterNodesItems0HwAssistStatusLocalTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HwAssistStatusLocal
+	// ClusterNodesItems0HwAssistStatusLocal
+	// state
+	// State
+	// active
+	// END DEBUGGING
+	// ClusterNodesItems0HwAssistStatusLocalStateActive captures enum value "active"
+	ClusterNodesItems0HwAssistStatusLocalStateActive string = "active"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HwAssistStatusLocal
+	// ClusterNodesItems0HwAssistStatusLocal
+	// state
+	// State
+	// inactive
+	// END DEBUGGING
+	// ClusterNodesItems0HwAssistStatusLocalStateInactive captures enum value "inactive"
+	ClusterNodesItems0HwAssistStatusLocalStateInactive string = "inactive"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0HwAssistStatusLocal) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0HwAssistStatusLocalTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HwAssistStatusLocal) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("hw_assist"+"."+"status"+"."+"local"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this cluster nodes items0 hw assist status local based on context it is used
+func (m *ClusterNodesItems0HwAssistStatusLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0HwAssistStatusLocal) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0HwAssistStatusLocal) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0HwAssistStatusLocal
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0HwAssistStatusPartner cluster nodes items0 hw assist status partner
+//
+// swagger:model ClusterNodesItems0HwAssistStatusPartner
+type ClusterNodesItems0HwAssistStatusPartner struct {
+
+	// The hardware assist IP address.
+	IP string `json:"ip,omitempty"`
+
+	// The hardware assist port.
+	Port int64 `json:"port,omitempty"`
+
+	// The hardware assist monitor status.
+	// Enum: [active inactive]
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 hw assist status partner
+func (m *ClusterNodesItems0HwAssistStatusPartner) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterNodesItems0HwAssistStatusPartnerTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["active","inactive"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0HwAssistStatusPartnerTypeStatePropEnum = append(clusterNodesItems0HwAssistStatusPartnerTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HwAssistStatusPartner
+	// ClusterNodesItems0HwAssistStatusPartner
+	// state
+	// State
+	// active
+	// END DEBUGGING
+	// ClusterNodesItems0HwAssistStatusPartnerStateActive captures enum value "active"
+	ClusterNodesItems0HwAssistStatusPartnerStateActive string = "active"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0HwAssistStatusPartner
+	// ClusterNodesItems0HwAssistStatusPartner
+	// state
+	// State
+	// inactive
+	// END DEBUGGING
+	// ClusterNodesItems0HwAssistStatusPartnerStateInactive captures enum value "inactive"
+	ClusterNodesItems0HwAssistStatusPartnerStateInactive string = "inactive"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0HwAssistStatusPartner) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0HwAssistStatusPartnerTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0HwAssistStatusPartner) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("hw_assist"+"."+"status"+"."+"partner"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this cluster nodes items0 hw assist status partner based on context it is used
+func (m *ClusterNodesItems0HwAssistStatusPartner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0HwAssistStatusPartner) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0HwAssistStatusPartner) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0HwAssistStatusPartner
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ClusterNodesItems0Links cluster nodes items0 links
 //
 // swagger:model ClusterNodesItems0Links
@@ -6819,7 +8225,9 @@ type ClusterNodesItems0ManagementInterfacesItems0 struct {
 	// ip
 	IP *ClusterNodesItems0ManagementInterfacesItems0IP `json:"ip,omitempty"`
 
-	// The name of the interface.
+	// The name of the interface. If only the name is provided, the SVM scope
+	// must be provided by the object this object is embedded in.
+	//
 	// Example: lif1
 	Name string `json:"name,omitempty"`
 
@@ -8023,6 +9431,12 @@ func (m *ClusterNodesItems0Nvram) UnmarshalBinary(b []byte) error {
 // swagger:model ClusterNodesItems0ServiceProcessor
 type ClusterNodesItems0ServiceProcessor struct {
 
+	// api service
+	APIService *ClusterNodesItems0ServiceProcessorAPIService `json:"api_service,omitempty"`
+
+	// auto config
+	AutoConfig *ClusterNodesItems0ServiceProcessorAutoConfig `json:"auto_config,omitempty"`
+
 	// Indicates whether the service processor can be automatically updated from ONTAP.
 	AutoupdateEnabled bool `json:"autoupdate_enabled,omitempty"`
 
@@ -8081,6 +9495,14 @@ type ClusterNodesItems0ServiceProcessor struct {
 func (m *ClusterNodesItems0ServiceProcessor) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAPIService(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAutoConfig(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateBackup(formats); err != nil {
 		res = append(res, err)
 	}
@@ -8120,6 +9542,40 @@ func (m *ClusterNodesItems0ServiceProcessor) Validate(formats strfmt.Registry) e
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) validateAPIService(formats strfmt.Registry) error {
+	if swag.IsZero(m.APIService) { // not required
+		return nil
+	}
+
+	if m.APIService != nil {
+		if err := m.APIService.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "api_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) validateAutoConfig(formats strfmt.Registry) error {
+	if swag.IsZero(m.AutoConfig) { // not required
+		return nil
+	}
+
+	if m.AutoConfig != nil {
+		if err := m.AutoConfig.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "auto_config")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -8526,6 +9982,14 @@ func (m *ClusterNodesItems0ServiceProcessor) validateType(formats strfmt.Registr
 func (m *ClusterNodesItems0ServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateAPIService(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAutoConfig(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateBackup(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -8577,6 +10041,34 @@ func (m *ClusterNodesItems0ServiceProcessor) ContextValidate(ctx context.Context
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) contextValidateAPIService(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.APIService != nil {
+		if err := m.APIService.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "api_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) contextValidateAutoConfig(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AutoConfig != nil {
+		if err := m.AutoConfig.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "auto_config")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -8724,6 +10216,143 @@ func (m *ClusterNodesItems0ServiceProcessor) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ClusterNodesItems0ServiceProcessor) UnmarshalBinary(b []byte) error {
 	var res ClusterNodesItems0ServiceProcessor
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0ServiceProcessorAPIService Provides the properties of the service processor API service.
+//
+// swagger:model ClusterNodesItems0ServiceProcessorAPIService
+type ClusterNodesItems0ServiceProcessorAPIService struct {
+
+	// Indicates whether the service processor API service is enabled.
+	// Read Only: true
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Indicates whether the service processor API service limit access is enabled.
+	// Read Only: true
+	LimitAccess *bool `json:"limit_access,omitempty"`
+
+	// Indicates the port number of service processor API service.
+	// Read Only: true
+	Port int64 `json:"port,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 service processor API service
+func (m *ClusterNodesItems0ServiceProcessorAPIService) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 service processor API service based on the context it is used
+func (m *ClusterNodesItems0ServiceProcessorAPIService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateEnabled(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLimitAccess(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePort(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorAPIService) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"api_service"+"."+"enabled", "body", m.Enabled); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorAPIService) contextValidateLimitAccess(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"api_service"+"."+"limit_access", "body", m.LimitAccess); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorAPIService) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"api_service"+"."+"port", "body", int64(m.Port)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ServiceProcessorAPIService) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ServiceProcessorAPIService) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ServiceProcessorAPIService
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0ServiceProcessorAutoConfig Provides the properties of the service processor auto configuration.
+//
+// swagger:model ClusterNodesItems0ServiceProcessorAutoConfig
+type ClusterNodesItems0ServiceProcessorAutoConfig struct {
+
+	// Indicates the service processor auto configuration IPv4 subnet name. To enable IPv4 auto-config give the subnet name, give the value as null or an empty string "" to disable auto-config.
+	// Example: ipv4_mgmt
+	IPV4Subnet string `json:"ipv4_subnet,omitempty"`
+
+	// Indicates the service processor auto configuration IPv6 subnet name. To enable IPv6 auto-config give the subnet name, give the value as null or an empty string "" to disable auto-config.
+	// Example: ipv6_mgmt
+	IPV6Subnet string `json:"ipv6_subnet,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 service processor auto config
+func (m *ClusterNodesItems0ServiceProcessorAutoConfig) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 service processor auto config based on the context it is used
+func (m *ClusterNodesItems0ServiceProcessorAutoConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ServiceProcessorAutoConfig) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ServiceProcessorAutoConfig) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ServiceProcessorAutoConfig
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -9904,7 +11533,7 @@ func (m *ClusterPeeringPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterStatistics These are raw performance numbers, such as IOPS latency and throughput. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
+// ClusterStatistics cluster statistics
 //
 // swagger:model ClusterStatistics
 type ClusterStatistics struct {

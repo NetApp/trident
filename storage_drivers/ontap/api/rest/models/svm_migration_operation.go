@@ -19,6 +19,15 @@ import (
 // swagger:model svm_migration_operation
 type SvmMigrationOperation string
 
+func NewSvmMigrationOperation(value SvmMigrationOperation) *SvmMigrationOperation {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated SvmMigrationOperation.
+func (m SvmMigrationOperation) Pointer() *SvmMigrationOperation {
+	return &m
+}
+
 const (
 
 	// SvmMigrationOperationNone captures enum value "none"

@@ -62,6 +62,20 @@ func NewConsistencyGroupSnapshotCreateParamsWithHTTPClient(client *http.Client) 
 */
 type ConsistencyGroupSnapshotCreateParams struct {
 
+	/* Action.
+
+	   Initiates the Snapshot copy create operation. The start of the Snapshot copy operation can optionally use a timeout value specified by "action_timeout". The Snapshot copy is commited by calling PATCH on the Snapshot copy href link with action specified as "commit".
+
+	*/
+	ActionQueryParameter *string
+
+	/* ActionTimeout.
+
+	   Duration to complete the 2-phase Snapshot copy operation. This also specifies the maximum duration that the write-fence remains in effect on the volumes associated with this consistency group. Default is 7 seconds with a valid range of 1 to 90 seconds.
+
+	*/
+	ActionTimeoutQueryParameter *int64
+
 	/* ConsistencyGroupUUID.
 
 	   The unique identifier of the consistency group to retrieve.
@@ -155,6 +169,28 @@ func (o *ConsistencyGroupSnapshotCreateParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
+// WithActionQueryParameter adds the action to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) WithActionQueryParameter(action *string) *ConsistencyGroupSnapshotCreateParams {
+	o.SetActionQueryParameter(action)
+	return o
+}
+
+// SetActionQueryParameter adds the action to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) SetActionQueryParameter(action *string) {
+	o.ActionQueryParameter = action
+}
+
+// WithActionTimeoutQueryParameter adds the actionTimeout to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) WithActionTimeoutQueryParameter(actionTimeout *int64) *ConsistencyGroupSnapshotCreateParams {
+	o.SetActionTimeoutQueryParameter(actionTimeout)
+	return o
+}
+
+// SetActionTimeoutQueryParameter adds the actionTimeout to the consistency group snapshot create params
+func (o *ConsistencyGroupSnapshotCreateParams) SetActionTimeoutQueryParameter(actionTimeout *int64) {
+	o.ActionTimeoutQueryParameter = actionTimeout
+}
+
 // WithConsistencyGroupUUIDPathParameter adds the consistencyGroupUUID to the consistency group snapshot create params
 func (o *ConsistencyGroupSnapshotCreateParams) WithConsistencyGroupUUIDPathParameter(consistencyGroupUUID string) *ConsistencyGroupSnapshotCreateParams {
 	o.SetConsistencyGroupUUIDPathParameter(consistencyGroupUUID)
@@ -206,6 +242,40 @@ func (o *ConsistencyGroupSnapshotCreateParams) WriteToRequest(r runtime.ClientRe
 		return err
 	}
 	var res []error
+
+	if o.ActionQueryParameter != nil {
+
+		// query param action
+		var qrAction string
+
+		if o.ActionQueryParameter != nil {
+			qrAction = *o.ActionQueryParameter
+		}
+		qAction := qrAction
+		if qAction != "" {
+
+			if err := r.SetQueryParam("action", qAction); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ActionTimeoutQueryParameter != nil {
+
+		// query param action_timeout
+		var qrActionTimeout int64
+
+		if o.ActionTimeoutQueryParameter != nil {
+			qrActionTimeout = *o.ActionTimeoutQueryParameter
+		}
+		qActionTimeout := swag.FormatInt64(qrActionTimeout)
+		if qActionTimeout != "" {
+
+			if err := r.SetQueryParam("action_timeout", qActionTimeout); err != nil {
+				return err
+			}
+		}
+	}
 
 	// path param consistency_group.uuid
 	if err := r.SetPathParam("consistency_group.uuid", o.ConsistencyGroupUUIDPathParameter); err != nil {

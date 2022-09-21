@@ -19,6 +19,15 @@ import (
 // swagger:model security_style
 type SecurityStyle string
 
+func NewSecurityStyle(value SecurityStyle) *SecurityStyle {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated SecurityStyle.
+func (m SecurityStyle) Pointer() *SecurityStyle {
+	return &m
+}
+
 const (
 
 	// SecurityStyleUnix captures enum value "unix"

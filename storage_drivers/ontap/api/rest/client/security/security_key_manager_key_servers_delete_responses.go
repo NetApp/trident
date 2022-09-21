@@ -74,6 +74,7 @@ func NewSecurityKeyManagerKeyServersDeleteDefault(code int) *SecurityKeyManagerK
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
+| 65536600 | Cannot remove a key server while a node is out quorum. |
 | 65536700 | The key server contains keys that are currently in use and not available from any other configured key server in the SVM. |
 | 65536822 | Multitenant key management is not supported in the current cluster version. |
 | 65536824 | Multitenant key management is not supported in MetroCluster configurations. |

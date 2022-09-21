@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -23,8 +24,13 @@ type FirmwareUpdateProgress struct {
 	// job
 	Job *JobLink `json:"job,omitempty"`
 
-	// update states
-	UpdateStates []*FirmwareUpdateProgressState `json:"update_states,omitempty"`
+	// update state
+	UpdateState []*FirmwareUpdateProgressState `json:"update_state,omitempty"`
+
+	// Specifies the type of update.
+	// Read Only: true
+	// Enum: [manual_update automatic_update]
+	UpdateType string `json:"update_type,omitempty"`
 
 	// zip file name
 	// Example: disk_firmware.zip
@@ -40,7 +46,11 @@ func (m *FirmwareUpdateProgress) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateUpdateStates(formats); err != nil {
+	if err := m.validateUpdateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUpdateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -67,25 +77,81 @@ func (m *FirmwareUpdateProgress) validateJob(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FirmwareUpdateProgress) validateUpdateStates(formats strfmt.Registry) error {
-	if swag.IsZero(m.UpdateStates) { // not required
+func (m *FirmwareUpdateProgress) validateUpdateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.UpdateState) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.UpdateStates); i++ {
-		if swag.IsZero(m.UpdateStates[i]) { // not required
+	for i := 0; i < len(m.UpdateState); i++ {
+		if swag.IsZero(m.UpdateState[i]) { // not required
 			continue
 		}
 
-		if m.UpdateStates[i] != nil {
-			if err := m.UpdateStates[i].Validate(formats); err != nil {
+		if m.UpdateState[i] != nil {
+			if err := m.UpdateState[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("update_states" + "." + strconv.Itoa(i))
+					return ve.ValidateName("update_state" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
 		}
 
+	}
+
+	return nil
+}
+
+var firmwareUpdateProgressTypeUpdateTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["manual_update","automatic_update"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		firmwareUpdateProgressTypeUpdateTypePropEnum = append(firmwareUpdateProgressTypeUpdateTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// firmware_update_progress
+	// FirmwareUpdateProgress
+	// update_type
+	// UpdateType
+	// manual_update
+	// END DEBUGGING
+	// FirmwareUpdateProgressUpdateTypeManualUpdate captures enum value "manual_update"
+	FirmwareUpdateProgressUpdateTypeManualUpdate string = "manual_update"
+
+	// BEGIN DEBUGGING
+	// firmware_update_progress
+	// FirmwareUpdateProgress
+	// update_type
+	// UpdateType
+	// automatic_update
+	// END DEBUGGING
+	// FirmwareUpdateProgressUpdateTypeAutomaticUpdate captures enum value "automatic_update"
+	FirmwareUpdateProgressUpdateTypeAutomaticUpdate string = "automatic_update"
+)
+
+// prop value enum
+func (m *FirmwareUpdateProgress) validateUpdateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, firmwareUpdateProgressTypeUpdateTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *FirmwareUpdateProgress) validateUpdateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.UpdateType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateUpdateTypeEnum("update_type", "body", m.UpdateType); err != nil {
+		return err
 	}
 
 	return nil
@@ -99,7 +165,11 @@ func (m *FirmwareUpdateProgress) ContextValidate(ctx context.Context, formats st
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateUpdateStates(ctx, formats); err != nil {
+	if err := m.contextValidateUpdateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUpdateType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -127,19 +197,28 @@ func (m *FirmwareUpdateProgress) contextValidateJob(ctx context.Context, formats
 	return nil
 }
 
-func (m *FirmwareUpdateProgress) contextValidateUpdateStates(ctx context.Context, formats strfmt.Registry) error {
+func (m *FirmwareUpdateProgress) contextValidateUpdateState(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.UpdateStates); i++ {
+	for i := 0; i < len(m.UpdateState); i++ {
 
-		if m.UpdateStates[i] != nil {
-			if err := m.UpdateStates[i].ContextValidate(ctx, formats); err != nil {
+		if m.UpdateState[i] != nil {
+			if err := m.UpdateState[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("update_states" + "." + strconv.Itoa(i))
+					return ve.ValidateName("update_state" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *FirmwareUpdateProgress) contextValidateUpdateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "update_type", "body", string(m.UpdateType)); err != nil {
+		return err
 	}
 
 	return nil

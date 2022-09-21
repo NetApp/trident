@@ -286,7 +286,7 @@ func (m *VolumeMetricsResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeMetricsResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput.
+// VolumeMetricsResponseRecordsItems0 volume metrics response records items0
 //
 // swagger:model VolumeMetricsResponseRecordsItems0
 type VolumeMetricsResponseRecordsItems0 struct {

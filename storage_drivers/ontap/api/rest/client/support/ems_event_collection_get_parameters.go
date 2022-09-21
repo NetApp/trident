@@ -60,6 +60,42 @@ func NewEmsEventCollectionGetParamsWithHTTPClient(client *http.Client) *EmsEvent
 */
 type EmsEventCollectionGetParams struct {
 
+	/* ActionPossibleActionsAction.
+
+	   Filter by action.possible_actions.action
+	*/
+	ActionPossibleActionsActionQueryParameter *string
+
+	/* ActionPossibleActionsInvokeVerb.
+
+	   Filter by action.possible_actions.invoke.verb
+	*/
+	ActionPossibleActionsInvokeVerbQueryParameter *string
+
+	/* ActionPossibleActionsParametersFormat.
+
+	   Filter by action.possible_actions.parameters.format
+	*/
+	ActionPossibleActionsParametersFormatQueryParameter *string
+
+	/* ActionPossibleActionsParametersName.
+
+	   Filter by action.possible_actions.parameters.name
+	*/
+	ActionPossibleActionsParametersNameQueryParameter *string
+
+	/* ActionPossibleActionsParametersType.
+
+	   Filter by action.possible_actions.parameters.type
+	*/
+	ActionPossibleActionsParametersTypeQueryParameter *string
+
+	/* CreationTime.
+
+	   Filter by creation_time
+	*/
+	CreationTimeQueryParameter *string
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -77,6 +113,12 @@ type EmsEventCollectionGetParams struct {
 	   Filter by index
 	*/
 	IndexQueryParameter *int64
+
+	/* LastUpdateTime.
+
+	   Filter by last_update_time
+	*/
+	LastUpdateTimeQueryParameter *string
 
 	/* LogMessage.
 
@@ -154,11 +196,29 @@ type EmsEventCollectionGetParams struct {
 	*/
 	SourceQueryParameter *string
 
+	/* State.
+
+	   Filter by state
+	*/
+	StateQueryParameter *string
+
+	/* Stateful.
+
+	   Filter by stateful
+	*/
+	StatefulQueryParameter *bool
+
 	/* Time.
 
 	   Filter by time
 	*/
 	TimeQueryParameter *string
+
+	/* UUID.
+
+	   Filter by uuid
+	*/
+	UUIDQueryParameter *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -227,6 +287,72 @@ func (o *EmsEventCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithActionPossibleActionsActionQueryParameter adds the actionPossibleActionsAction to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithActionPossibleActionsActionQueryParameter(actionPossibleActionsAction *string) *EmsEventCollectionGetParams {
+	o.SetActionPossibleActionsActionQueryParameter(actionPossibleActionsAction)
+	return o
+}
+
+// SetActionPossibleActionsActionQueryParameter adds the actionPossibleActionsAction to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetActionPossibleActionsActionQueryParameter(actionPossibleActionsAction *string) {
+	o.ActionPossibleActionsActionQueryParameter = actionPossibleActionsAction
+}
+
+// WithActionPossibleActionsInvokeVerbQueryParameter adds the actionPossibleActionsInvokeVerb to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithActionPossibleActionsInvokeVerbQueryParameter(actionPossibleActionsInvokeVerb *string) *EmsEventCollectionGetParams {
+	o.SetActionPossibleActionsInvokeVerbQueryParameter(actionPossibleActionsInvokeVerb)
+	return o
+}
+
+// SetActionPossibleActionsInvokeVerbQueryParameter adds the actionPossibleActionsInvokeVerb to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetActionPossibleActionsInvokeVerbQueryParameter(actionPossibleActionsInvokeVerb *string) {
+	o.ActionPossibleActionsInvokeVerbQueryParameter = actionPossibleActionsInvokeVerb
+}
+
+// WithActionPossibleActionsParametersFormatQueryParameter adds the actionPossibleActionsParametersFormat to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithActionPossibleActionsParametersFormatQueryParameter(actionPossibleActionsParametersFormat *string) *EmsEventCollectionGetParams {
+	o.SetActionPossibleActionsParametersFormatQueryParameter(actionPossibleActionsParametersFormat)
+	return o
+}
+
+// SetActionPossibleActionsParametersFormatQueryParameter adds the actionPossibleActionsParametersFormat to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetActionPossibleActionsParametersFormatQueryParameter(actionPossibleActionsParametersFormat *string) {
+	o.ActionPossibleActionsParametersFormatQueryParameter = actionPossibleActionsParametersFormat
+}
+
+// WithActionPossibleActionsParametersNameQueryParameter adds the actionPossibleActionsParametersName to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithActionPossibleActionsParametersNameQueryParameter(actionPossibleActionsParametersName *string) *EmsEventCollectionGetParams {
+	o.SetActionPossibleActionsParametersNameQueryParameter(actionPossibleActionsParametersName)
+	return o
+}
+
+// SetActionPossibleActionsParametersNameQueryParameter adds the actionPossibleActionsParametersName to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetActionPossibleActionsParametersNameQueryParameter(actionPossibleActionsParametersName *string) {
+	o.ActionPossibleActionsParametersNameQueryParameter = actionPossibleActionsParametersName
+}
+
+// WithActionPossibleActionsParametersTypeQueryParameter adds the actionPossibleActionsParametersType to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithActionPossibleActionsParametersTypeQueryParameter(actionPossibleActionsParametersType *string) *EmsEventCollectionGetParams {
+	o.SetActionPossibleActionsParametersTypeQueryParameter(actionPossibleActionsParametersType)
+	return o
+}
+
+// SetActionPossibleActionsParametersTypeQueryParameter adds the actionPossibleActionsParametersType to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetActionPossibleActionsParametersTypeQueryParameter(actionPossibleActionsParametersType *string) {
+	o.ActionPossibleActionsParametersTypeQueryParameter = actionPossibleActionsParametersType
+}
+
+// WithCreationTimeQueryParameter adds the creationTime to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithCreationTimeQueryParameter(creationTime *string) *EmsEventCollectionGetParams {
+	o.SetCreationTimeQueryParameter(creationTime)
+	return o
+}
+
+// SetCreationTimeQueryParameter adds the creationTime to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetCreationTimeQueryParameter(creationTime *string) {
+	o.CreationTimeQueryParameter = creationTime
+}
+
 // WithFieldsQueryParameter adds the fields to the ems event collection get params
 func (o *EmsEventCollectionGetParams) WithFieldsQueryParameter(fields []string) *EmsEventCollectionGetParams {
 	o.SetFieldsQueryParameter(fields)
@@ -258,6 +384,17 @@ func (o *EmsEventCollectionGetParams) WithIndexQueryParameter(index *int64) *Ems
 // SetIndexQueryParameter adds the index to the ems event collection get params
 func (o *EmsEventCollectionGetParams) SetIndexQueryParameter(index *int64) {
 	o.IndexQueryParameter = index
+}
+
+// WithLastUpdateTimeQueryParameter adds the lastUpdateTime to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithLastUpdateTimeQueryParameter(lastUpdateTime *string) *EmsEventCollectionGetParams {
+	o.SetLastUpdateTimeQueryParameter(lastUpdateTime)
+	return o
+}
+
+// SetLastUpdateTimeQueryParameter adds the lastUpdateTime to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetLastUpdateTimeQueryParameter(lastUpdateTime *string) {
+	o.LastUpdateTimeQueryParameter = lastUpdateTime
 }
 
 // WithLogMessageQueryParameter adds the logMessage to the ems event collection get params
@@ -392,6 +529,28 @@ func (o *EmsEventCollectionGetParams) SetSourceQueryParameter(source *string) {
 	o.SourceQueryParameter = source
 }
 
+// WithStateQueryParameter adds the state to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithStateQueryParameter(state *string) *EmsEventCollectionGetParams {
+	o.SetStateQueryParameter(state)
+	return o
+}
+
+// SetStateQueryParameter adds the state to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetStateQueryParameter(state *string) {
+	o.StateQueryParameter = state
+}
+
+// WithStatefulQueryParameter adds the stateful to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithStatefulQueryParameter(stateful *bool) *EmsEventCollectionGetParams {
+	o.SetStatefulQueryParameter(stateful)
+	return o
+}
+
+// SetStatefulQueryParameter adds the stateful to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetStatefulQueryParameter(stateful *bool) {
+	o.StatefulQueryParameter = stateful
+}
+
 // WithTimeQueryParameter adds the time to the ems event collection get params
 func (o *EmsEventCollectionGetParams) WithTimeQueryParameter(time *string) *EmsEventCollectionGetParams {
 	o.SetTimeQueryParameter(time)
@@ -403,6 +562,17 @@ func (o *EmsEventCollectionGetParams) SetTimeQueryParameter(time *string) {
 	o.TimeQueryParameter = time
 }
 
+// WithUUIDQueryParameter adds the uuid to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithUUIDQueryParameter(uuid *string) *EmsEventCollectionGetParams {
+	o.SetUUIDQueryParameter(uuid)
+	return o
+}
+
+// SetUUIDQueryParameter adds the uuid to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
+	o.UUIDQueryParameter = uuid
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -410,6 +580,108 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		return err
 	}
 	var res []error
+
+	if o.ActionPossibleActionsActionQueryParameter != nil {
+
+		// query param action.possible_actions.action
+		var qrActionPossibleActionsAction string
+
+		if o.ActionPossibleActionsActionQueryParameter != nil {
+			qrActionPossibleActionsAction = *o.ActionPossibleActionsActionQueryParameter
+		}
+		qActionPossibleActionsAction := qrActionPossibleActionsAction
+		if qActionPossibleActionsAction != "" {
+
+			if err := r.SetQueryParam("action.possible_actions.action", qActionPossibleActionsAction); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ActionPossibleActionsInvokeVerbQueryParameter != nil {
+
+		// query param action.possible_actions.invoke.verb
+		var qrActionPossibleActionsInvokeVerb string
+
+		if o.ActionPossibleActionsInvokeVerbQueryParameter != nil {
+			qrActionPossibleActionsInvokeVerb = *o.ActionPossibleActionsInvokeVerbQueryParameter
+		}
+		qActionPossibleActionsInvokeVerb := qrActionPossibleActionsInvokeVerb
+		if qActionPossibleActionsInvokeVerb != "" {
+
+			if err := r.SetQueryParam("action.possible_actions.invoke.verb", qActionPossibleActionsInvokeVerb); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ActionPossibleActionsParametersFormatQueryParameter != nil {
+
+		// query param action.possible_actions.parameters.format
+		var qrActionPossibleActionsParametersFormat string
+
+		if o.ActionPossibleActionsParametersFormatQueryParameter != nil {
+			qrActionPossibleActionsParametersFormat = *o.ActionPossibleActionsParametersFormatQueryParameter
+		}
+		qActionPossibleActionsParametersFormat := qrActionPossibleActionsParametersFormat
+		if qActionPossibleActionsParametersFormat != "" {
+
+			if err := r.SetQueryParam("action.possible_actions.parameters.format", qActionPossibleActionsParametersFormat); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ActionPossibleActionsParametersNameQueryParameter != nil {
+
+		// query param action.possible_actions.parameters.name
+		var qrActionPossibleActionsParametersName string
+
+		if o.ActionPossibleActionsParametersNameQueryParameter != nil {
+			qrActionPossibleActionsParametersName = *o.ActionPossibleActionsParametersNameQueryParameter
+		}
+		qActionPossibleActionsParametersName := qrActionPossibleActionsParametersName
+		if qActionPossibleActionsParametersName != "" {
+
+			if err := r.SetQueryParam("action.possible_actions.parameters.name", qActionPossibleActionsParametersName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ActionPossibleActionsParametersTypeQueryParameter != nil {
+
+		// query param action.possible_actions.parameters.type
+		var qrActionPossibleActionsParametersType string
+
+		if o.ActionPossibleActionsParametersTypeQueryParameter != nil {
+			qrActionPossibleActionsParametersType = *o.ActionPossibleActionsParametersTypeQueryParameter
+		}
+		qActionPossibleActionsParametersType := qrActionPossibleActionsParametersType
+		if qActionPossibleActionsParametersType != "" {
+
+			if err := r.SetQueryParam("action.possible_actions.parameters.type", qActionPossibleActionsParametersType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CreationTimeQueryParameter != nil {
+
+		// query param creation_time
+		var qrCreationTime string
+
+		if o.CreationTimeQueryParameter != nil {
+			qrCreationTime = *o.CreationTimeQueryParameter
+		}
+		qCreationTime := qrCreationTime
+		if qCreationTime != "" {
+
+			if err := r.SetQueryParam("creation_time", qCreationTime); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.FieldsQueryParameter != nil {
 
@@ -451,6 +723,23 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qIndex != "" {
 
 			if err := r.SetQueryParam("index", qIndex); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LastUpdateTimeQueryParameter != nil {
+
+		// query param last_update_time
+		var qrLastUpdateTime string
+
+		if o.LastUpdateTimeQueryParameter != nil {
+			qrLastUpdateTime = *o.LastUpdateTimeQueryParameter
+		}
+		qLastUpdateTime := qrLastUpdateTime
+		if qLastUpdateTime != "" {
+
+			if err := r.SetQueryParam("last_update_time", qLastUpdateTime); err != nil {
 				return err
 			}
 		}
@@ -654,6 +943,40 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
+	if o.StateQueryParameter != nil {
+
+		// query param state
+		var qrState string
+
+		if o.StateQueryParameter != nil {
+			qrState = *o.StateQueryParameter
+		}
+		qState := qrState
+		if qState != "" {
+
+			if err := r.SetQueryParam("state", qState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatefulQueryParameter != nil {
+
+		// query param stateful
+		var qrStateful bool
+
+		if o.StatefulQueryParameter != nil {
+			qrStateful = *o.StatefulQueryParameter
+		}
+		qStateful := swag.FormatBool(qrStateful)
+		if qStateful != "" {
+
+			if err := r.SetQueryParam("stateful", qStateful); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.TimeQueryParameter != nil {
 
 		// query param time
@@ -666,6 +989,23 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qTime != "" {
 
 			if err := r.SetQueryParam("time", qTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UUIDQueryParameter != nil {
+
+		// query param uuid
+		var qrUUID string
+
+		if o.UUIDQueryParameter != nil {
+			qrUUID = *o.UUIDQueryParameter
+		}
+		qUUID := qrUUID
+		if qUUID != "" {
+
+			if err := r.SetQueryParam("uuid", qUUID); err != nil {
 				return err
 			}
 		}

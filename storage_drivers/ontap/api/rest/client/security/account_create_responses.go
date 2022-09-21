@@ -86,6 +86,8 @@ func NewAccountCreateDefault(code int) *AccountCreateDefault {
 | 5636156 | The same value cannot be specified for the second-authentication-method and the authentication-method. |
 | 5636157 | If the authentication-method is domain, the second-authentication-method cannot be specified. |
 | 5636164 | If the value for either the authentication-method second-authentication-method is nsswitch or password, the other parameter must differ. |
+| 5636197 | LDAP fastbind combination for application and authentication method is not supported. |
+| 5636198 | LDAP fastbind authentication is supported only for nsswitch. |
 | 7077897 | Invalid character in username. |
 | 7077898 | The username must contain both letters and numbers. |
 | 7077899 | The username does not meet length requirements. |

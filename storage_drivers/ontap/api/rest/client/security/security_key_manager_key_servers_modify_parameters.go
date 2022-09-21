@@ -69,7 +69,7 @@ type SecurityKeyManagerKeyServersModifyParams struct {
 
 	/* Server.
 
-	   Key server configured in the external key manager.
+	   Primary key server configured in the external key manager.
 	*/
 	ServerPathParameter string
 

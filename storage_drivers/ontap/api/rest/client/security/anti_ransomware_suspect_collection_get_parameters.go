@@ -84,6 +84,12 @@ type AntiRansomwareSuspectCollectionGetParams struct {
 	*/
 	FilePathQueryParameter *string
 
+	/* FileReason.
+
+	   Filter by file.reason
+	*/
+	FileReasonQueryParameter *string
+
 	/* FileSuspectTime.
 
 	   Filter by file.suspect_time
@@ -247,6 +253,17 @@ func (o *AntiRansomwareSuspectCollectionGetParams) SetFilePathQueryParameter(fil
 	o.FilePathQueryParameter = filePath
 }
 
+// WithFileReasonQueryParameter adds the fileReason to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithFileReasonQueryParameter(fileReason *string) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetFileReasonQueryParameter(fileReason)
+	return o
+}
+
+// SetFileReasonQueryParameter adds the fileReason to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetFileReasonQueryParameter(fileReason *string) {
+	o.FileReasonQueryParameter = fileReason
+}
+
 // WithFileSuspectTimeQueryParameter adds the fileSuspectTime to the anti ransomware suspect collection get params
 func (o *AntiRansomwareSuspectCollectionGetParams) WithFileSuspectTimeQueryParameter(fileSuspectTime *string) *AntiRansomwareSuspectCollectionGetParams {
 	o.SetFileSuspectTimeQueryParameter(fileSuspectTime)
@@ -400,6 +417,23 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		if qFilePath != "" {
 
 			if err := r.SetQueryParam("file.path", qFilePath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FileReasonQueryParameter != nil {
+
+		// query param file.reason
+		var qrFileReason string
+
+		if o.FileReasonQueryParameter != nil {
+			qrFileReason = *o.FileReasonQueryParameter
+		}
+		qFileReason := qrFileReason
+		if qFileReason != "" {
+
+			if err := r.SetQueryParam("file.reason", qFileReason); err != nil {
 				return err
 			}
 		}

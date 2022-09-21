@@ -30,10 +30,15 @@ type S3PolicyStatement struct {
 	// * ListAllMyBuckets - lists all of the buckets in a server.
 	// * ListBucketMultipartUploads - lists the multipart uploads in progress for a bucket.
 	// * ListMultipartUploadParts - lists the parts in a multipart upload.
+	// * CreateBucket - creates a new bucket.
+	// * DeleteBucket - deletes an existing bucket.
 	// * GetObjectTagging - retrieves the tag set of an object.
 	// * PutObjecttagging - sets the tag set for an object.
 	// * DeleteObjectTagging - deletes the tag set of an object.
 	// * GetBucketLocation - retrieves the location of a bucket.
+	// * GetBucketVersioning - retrieves the versioning configuration of a bucket.
+	// * PutBucketVersioning - modifies the versioning configuration of a bucket.
+	// * ListBucketVersions - lists the object versions in a bucket.
 	// The wildcard character "*" can be used to form a regular expression for specifying actions.
 	//
 	// Example: ["*"]

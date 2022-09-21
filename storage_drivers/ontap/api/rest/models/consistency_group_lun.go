@@ -42,8 +42,7 @@ type ConsistencyGroupLun struct {
 
 	// The enabled state of the LUN. LUNs can be disabled to prevent access to the LUN. Certain error conditions also cause the LUN to become disabled. If the LUN is disabled, you can consult the `state` property to determine if the LUN is administratively disabled (_offline_) or has become disabled as a result of an error. A LUN in an error condition can be brought online by setting the `enabled` property to _true_ or brought administratively offline by setting the `enabled` property to _false_. Upon creation, a LUN is enabled by default. Valid in PATCH.
 	//
-	// Read Only: true
-	Enabled *bool `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled,omitempty"`
 
 	// An array of LUN maps.<br/>
 	// A LUN map is an association between a LUN and an initiator group. When a LUN is mapped to an initiator group, the initiator group's initiators are granted access to the LUN. The relationship between a LUN and an initiator group is many LUNs to many initiator groups.
@@ -444,10 +443,6 @@ func (m *ConsistencyGroupLun) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateEnabled(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateLunMaps(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -495,15 +490,6 @@ func (m *ConsistencyGroupLun) contextValidateClone(ctx context.Context, formats 
 func (m *ConsistencyGroupLun) contextValidateCreateTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "create_time", "body", m.CreateTime); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupLun) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "enabled", "body", m.Enabled); err != nil {
 		return err
 	}
 
@@ -840,6 +826,12 @@ func (m *ConsistencyGroupLunLunMapsItems0) UnmarshalBinary(b []byte) error {
 // swagger:model ConsistencyGroupLunLunMapsItems0Igroup
 type ConsistencyGroupLunLunMapsItems0Igroup struct {
 
+	// A comment available for use by the administrator. Valid in POST and PATCH.
+	//
+	// Max Length: 254
+	// Min Length: 0
+	Comment *string `json:"comment,omitempty"`
+
 	// Separate igroup definitions to include in this igroup.
 	//
 	Igroups []*ConsistencyGroupLunLunMapsItems0IgroupIgroupsItems0 `json:"igroups,omitempty"`
@@ -877,6 +869,10 @@ type ConsistencyGroupLunLunMapsItems0Igroup struct {
 func (m *ConsistencyGroupLunLunMapsItems0Igroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateIgroups(formats); err != nil {
 		res = append(res, err)
 	}
@@ -900,6 +896,22 @@ func (m *ConsistencyGroupLunLunMapsItems0Igroup) Validate(formats strfmt.Registr
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ConsistencyGroupLunLunMapsItems0Igroup) validateComment(formats strfmt.Registry) error {
+	if swag.IsZero(m.Comment) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("igroup"+"."+"comment", "body", *m.Comment, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("igroup"+"."+"comment", "body", *m.Comment, 254); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1636,32 +1648,26 @@ type ConsistencyGroupLunQosPolicy struct {
 
 	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 10000
-	// Read Only: true
 	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
 
 	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	// Read Only: true
 	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
-	// Read Only: true
 	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
 
 	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	// Read Only: true
 	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
-	// Read Only: true
 	Name string `json:"name,omitempty"`
 
 	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
 }
 
@@ -1704,30 +1710,6 @@ func (m *ConsistencyGroupLunQosPolicy) ContextValidate(ctx context.Context, form
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateMaxThroughputIops(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMaxThroughputMbps(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMinThroughputIops(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMinThroughputMbps(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateName(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -1743,60 +1725,6 @@ func (m *ConsistencyGroupLunQosPolicy) contextValidateLinks(ctx context.Context,
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupLunQosPolicy) contextValidateMaxThroughputIops(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "qos"+"."+"policy"+"."+"max_throughput_iops", "body", int64(m.MaxThroughputIops)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupLunQosPolicy) contextValidateMaxThroughputMbps(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "qos"+"."+"policy"+"."+"max_throughput_mbps", "body", int64(m.MaxThroughputMbps)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupLunQosPolicy) contextValidateMinThroughputIops(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "qos"+"."+"policy"+"."+"min_throughput_iops", "body", int64(m.MinThroughputIops)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupLunQosPolicy) contextValidateMinThroughputMbps(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "qos"+"."+"policy"+"."+"min_throughput_mbps", "body", int64(m.MinThroughputMbps)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupLunQosPolicy) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "qos"+"."+"policy"+"."+"name", "body", string(m.Name)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupLunQosPolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "qos"+"."+"policy"+"."+"uuid", "body", string(m.UUID)); err != nil {
-		return err
 	}
 
 	return nil
@@ -1826,6 +1754,9 @@ func (m *ConsistencyGroupLunQosPolicy) UnmarshalBinary(b []byte) error {
 // swagger:model ConsistencyGroupLunSpaceType
 type ConsistencyGroupLunSpaceType struct {
 
+	// guarantee
+	Guarantee *ConsistencyGroupLunSpaceTypeGuaranteeType `json:"guarantee,omitempty"`
+
 	// The total provisioned size of the LUN. The LUN size can be increased but not reduced using the REST interface.
 	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes, in bytes. The actual minimum and maxiumum sizes vary depending on the ONTAP version, ONTAP platform, and the available space in the containing volume and aggregate.
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
@@ -1839,13 +1770,16 @@ type ConsistencyGroupLunSpaceType struct {
 	// This value is the total space consumed in the volume by the LUN, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways SAN filesystems and applications utilize blocks within a LUN, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the LUN blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
-	// Read Only: true
 	Used int64 `json:"used,omitempty"`
 }
 
 // Validate validates this consistency group lun space type
 func (m *ConsistencyGroupLunSpaceType) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateGuarantee(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateSize(formats); err != nil {
 		res = append(res, err)
@@ -1854,6 +1788,23 @@ func (m *ConsistencyGroupLunSpaceType) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ConsistencyGroupLunSpaceType) validateGuarantee(formats strfmt.Registry) error {
+	if swag.IsZero(m.Guarantee) { // not required
+		return nil
+	}
+
+	if m.Guarantee != nil {
+		if err := m.Guarantee.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "guarantee")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1877,7 +1828,7 @@ func (m *ConsistencyGroupLunSpaceType) validateSize(formats strfmt.Registry) err
 func (m *ConsistencyGroupLunSpaceType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateUsed(ctx, formats); err != nil {
+	if err := m.contextValidateGuarantee(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1887,10 +1838,15 @@ func (m *ConsistencyGroupLunSpaceType) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *ConsistencyGroupLunSpaceType) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupLunSpaceType) contextValidateGuarantee(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", int64(m.Used)); err != nil {
-		return err
+	if m.Guarantee != nil {
+		if err := m.Guarantee.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "guarantee")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1907,6 +1863,50 @@ func (m *ConsistencyGroupLunSpaceType) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ConsistencyGroupLunSpaceType) UnmarshalBinary(b []byte) error {
 	var res ConsistencyGroupLunSpaceType
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupLunSpaceTypeGuaranteeType Properties that request and report the space guarantee for the LUN.
+//
+//
+// swagger:model ConsistencyGroupLunSpaceTypeGuaranteeType
+type ConsistencyGroupLunSpaceTypeGuaranteeType struct {
+
+	// The requested space reservation policy for the LUN. If _true_, a space reservation is requested for the LUN; if _false_, the LUN is thin provisioned. Guaranteeing a space reservation request for a LUN requires that the volume in which the LUN resides is also space reserved and that the fractional reserve for the volume is 100%. Valid in POST and PATCH.
+	//
+	Requested *bool `json:"requested,omitempty"`
+
+	// Reports if the LUN is space guaranteed.<br/>
+	// If _true_, a space guarantee is requested and the containing volume and aggregate support the request. If _false_, a space guarantee is not requested or a space guarantee is requested and either the containing volume or aggregate do not support the request.
+	//
+	Reserved bool `json:"reserved,omitempty"`
+}
+
+// Validate validates this consistency group lun space type guarantee type
+func (m *ConsistencyGroupLunSpaceTypeGuaranteeType) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this consistency group lun space type guarantee type based on context it is used
+func (m *ConsistencyGroupLunSpaceTypeGuaranteeType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupLunSpaceTypeGuaranteeType) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupLunSpaceTypeGuaranteeType) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupLunSpaceTypeGuaranteeType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -183,19 +183,16 @@ type ConsistencyGroupSnapshotResponseRecordsItems0 struct {
 	// Time the snapshot copy was created
 	//
 	// Example: 2020-10-25T11:20:00Z
-	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
 	// Indicates whether the Snapshot copy taken is partial or not.
 	//
 	// Example: false
-	// Read Only: true
-	IsPartial *bool `json:"is_partial,omitempty"`
+	IsPartial bool `json:"is_partial,omitempty"`
 
 	// List of volumes which are not in the Snapshot copy.
 	//
-	// Read Only: true
 	MissingVolumes []*VolumeReference `json:"missing_volumes,omitempty"`
 
 	// Name of the Snapshot copy.
@@ -215,7 +212,6 @@ type ConsistencyGroupSnapshotResponseRecordsItems0 struct {
 	// by ONTAP when the Snapshot copy is created.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
 }
 
@@ -408,23 +404,11 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) ContextValidate(ctx cont
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCreateTime(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateIsPartial(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateMissingVolumes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -462,29 +446,7 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateConsisten
 	return nil
 }
 
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateCreateTime(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "create_time", "body", m.CreateTime); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateIsPartial(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "is_partial", "body", m.IsPartial); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateMissingVolumes(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "missing_volumes", "body", []*VolumeReference(m.MissingVolumes)); err != nil {
-		return err
-	}
 
 	for i := 0; i < len(m.MissingVolumes); i++ {
 
@@ -511,15 +473,6 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateSvm(ctx c
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupSnapshotResponseRecordsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
-		return err
 	}
 
 	return nil

@@ -71,7 +71,11 @@ func NewLocalHostModifyDefault(code int) *LocalHostModifyDefault {
 
 /* LocalHostModifyDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
+
 */
 type LocalHostModifyDefault struct {
 	_statusCode int

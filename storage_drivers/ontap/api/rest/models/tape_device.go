@@ -24,16 +24,28 @@ type TapeDevice struct {
 	// alias
 	Alias *TapeDeviceAlias `json:"alias,omitempty"`
 
+	// aliases
+	Aliases []*TapeDeviceAliasesItems0 `json:"aliases,omitempty"`
+
 	// Block number.
 	// Example: 0
+	// Read Only: true
 	BlockNumber int64 `json:"block_number,omitempty"`
+
+	// Density.
+	// Example: low
+	// Read Only: true
+	// Enum: [low medium high extended]
+	Density string `json:"density,omitempty"`
 
 	// description
 	// Example: QUANTUM LTO-8 ULTRIUM
+	// Read Only: true
 	Description string `json:"description,omitempty"`
 
 	// device id
 	// Example: 1a.0
+	// Read Only: true
 	DeviceID string `json:"device_id,omitempty"`
 
 	// device names
@@ -41,11 +53,13 @@ type TapeDevice struct {
 
 	// Operational state of the device.
 	// Example: read_write_enabled
+	// Read Only: true
 	// Enum: [unknown available ready_write_enabled ready_write_protected offline in_use error reserved_by_another_host normal rewinding erasing]
 	DeviceState string `json:"device_state,omitempty"`
 
 	// File number.
 	// Example: 0
+	// Read Only: true
 	FileNumber int64 `json:"file_number,omitempty"`
 
 	// Tape cartridge format.
@@ -54,23 +68,33 @@ type TapeDevice struct {
 
 	// Device interface type.
 	// Example: sas
+	// Read Only: true
 	// Enum: [unknown fibre_channel sas pscsi]
 	Interface string `json:"interface,omitempty"`
 
 	// node
 	Node *TapeDeviceNode `json:"node,omitempty"`
 
+	// online
+	Online bool `json:"online,omitempty"`
+
+	// position
+	Position *TapeDevicePosition `json:"position,omitempty"`
+
 	// reservation type
 	// Example: off
+	// Read Only: true
 	// Enum: [off persistent scsi]
 	ReservationType string `json:"reservation_type,omitempty"`
 
 	// Residual count of the last I/O operation.
 	// Example: 0
+	// Read Only: true
 	ResidualCount int64 `json:"residual_count,omitempty"`
 
 	// serial number
 	// Example: 10WT00093
+	// Read Only: true
 	SerialNumber string `json:"serial_number,omitempty"`
 
 	// storage port
@@ -78,15 +102,18 @@ type TapeDevice struct {
 
 	// Device type.
 	// Example: tape
+	// Read Only: true
 	// Enum: [unknown tape media_changer]
 	Type string `json:"type,omitempty"`
 
 	// World Wide Node Name.
 	// Example: 500507631295741c
+	// Read Only: true
 	Wwnn string `json:"wwnn,omitempty"`
 
 	// World Wide Port Name.
 	// Example: 500507631295741c
+	// Read Only: true
 	Wwpn string `json:"wwpn,omitempty"`
 }
 
@@ -95,6 +122,14 @@ func (m *TapeDevice) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAlias(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAliases(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDensity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -111,6 +146,10 @@ func (m *TapeDevice) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePosition(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -144,6 +183,106 @@ func (m *TapeDevice) validateAlias(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) validateAliases(formats strfmt.Registry) error {
+	if swag.IsZero(m.Aliases) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Aliases); i++ {
+		if swag.IsZero(m.Aliases[i]) { // not required
+			continue
+		}
+
+		if m.Aliases[i] != nil {
+			if err := m.Aliases[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("aliases" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var tapeDeviceTypeDensityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["low","medium","high","extended"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		tapeDeviceTypeDensityPropEnum = append(tapeDeviceTypeDensityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// tape_device
+	// TapeDevice
+	// density
+	// Density
+	// low
+	// END DEBUGGING
+	// TapeDeviceDensityLow captures enum value "low"
+	TapeDeviceDensityLow string = "low"
+
+	// BEGIN DEBUGGING
+	// tape_device
+	// TapeDevice
+	// density
+	// Density
+	// medium
+	// END DEBUGGING
+	// TapeDeviceDensityMedium captures enum value "medium"
+	TapeDeviceDensityMedium string = "medium"
+
+	// BEGIN DEBUGGING
+	// tape_device
+	// TapeDevice
+	// density
+	// Density
+	// high
+	// END DEBUGGING
+	// TapeDeviceDensityHigh captures enum value "high"
+	TapeDeviceDensityHigh string = "high"
+
+	// BEGIN DEBUGGING
+	// tape_device
+	// TapeDevice
+	// density
+	// Density
+	// extended
+	// END DEBUGGING
+	// TapeDeviceDensityExtended captures enum value "extended"
+	TapeDeviceDensityExtended string = "extended"
+)
+
+// prop value enum
+func (m *TapeDevice) validateDensityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, tapeDeviceTypeDensityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *TapeDevice) validateDensity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Density) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDensityEnum("density", "body", m.Density); err != nil {
+		return err
 	}
 
 	return nil
@@ -412,6 +551,23 @@ func (m *TapeDevice) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *TapeDevice) validatePosition(formats strfmt.Registry) error {
+	if swag.IsZero(m.Position) { // not required
+		return nil
+	}
+
+	if m.Position != nil {
+		if err := m.Position.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("position")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var tapeDeviceTypeReservationTypePropEnum []interface{}
 
 func init() {
@@ -569,7 +725,39 @@ func (m *TapeDevice) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAliases(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBlockNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDensity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateDeviceNames(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFileNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInterface(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -577,7 +765,35 @@ func (m *TapeDevice) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePosition(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReservationType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateResidualCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStoragePort(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWwnn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWwpn(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -601,6 +817,60 @@ func (m *TapeDevice) contextValidateAlias(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
+func (m *TapeDevice) contextValidateAliases(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Aliases); i++ {
+
+		if m.Aliases[i] != nil {
+			if err := m.Aliases[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("aliases" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateBlockNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_number", "body", int64(m.BlockNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateDensity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "density", "body", string(m.Density)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateDeviceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "device_id", "body", string(m.DeviceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *TapeDevice) contextValidateDeviceNames(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.DeviceNames); i++ {
@@ -614,6 +884,33 @@ func (m *TapeDevice) contextValidateDeviceNames(ctx context.Context, formats str
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateDeviceState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "device_state", "body", string(m.DeviceState)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateFileNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "file_number", "body", int64(m.FileNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateInterface(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "interface", "body", string(m.Interface)); err != nil {
+		return err
 	}
 
 	return nil
@@ -633,6 +930,47 @@ func (m *TapeDevice) contextValidateNode(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
+func (m *TapeDevice) contextValidatePosition(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Position != nil {
+		if err := m.Position.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("position")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateReservationType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reservation_type", "body", string(m.ReservationType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateResidualCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "residual_count", "body", int64(m.ResidualCount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *TapeDevice) contextValidateStoragePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StoragePort != nil {
@@ -642,6 +980,33 @@ func (m *TapeDevice) contextValidateStoragePort(ctx context.Context, formats str
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateWwnn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "wwnn", "body", string(m.Wwnn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TapeDevice) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "wwpn", "body", string(m.Wwpn)); err != nil {
+		return err
 	}
 
 	return nil
@@ -670,11 +1035,11 @@ func (m *TapeDevice) UnmarshalBinary(b []byte) error {
 // swagger:model TapeDeviceAlias
 type TapeDeviceAlias struct {
 
-	// Alias mapping.
+	// This field will no longer be supported in a future release. Use aliases.mapping instead.
 	// Example: SN[10WT000933]
 	Mapping string `json:"mapping,omitempty"`
 
-	// Alias name.
+	// This field will no longer be supported in a future release. Use aliases.name instead.
 	// Example: st6
 	Name string `json:"name,omitempty"`
 }
@@ -684,13 +1049,8 @@ func (m *TapeDeviceAlias) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this tape device alias based on the context it is used
+// ContextValidate validates this tape device alias based on context it is used
 func (m *TapeDeviceAlias) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
@@ -705,6 +1065,67 @@ func (m *TapeDeviceAlias) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *TapeDeviceAlias) UnmarshalBinary(b []byte) error {
 	var res TapeDeviceAlias
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// TapeDeviceAliasesItems0 tape device aliases items0
+//
+// swagger:model TapeDeviceAliasesItems0
+type TapeDeviceAliasesItems0 struct {
+
+	// Alias mapping.
+	// Example: SN[10WT000933]
+	// Read Only: true
+	Mapping string `json:"mapping,omitempty"`
+
+	// Alias name.
+	// Example: st6
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this tape device aliases items0
+func (m *TapeDeviceAliasesItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this tape device aliases items0 based on the context it is used
+func (m *TapeDeviceAliasesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateMapping(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TapeDeviceAliasesItems0) contextValidateMapping(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "mapping", "body", string(m.Mapping)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *TapeDeviceAliasesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *TapeDeviceAliasesItems0) UnmarshalBinary(b []byte) error {
+	var res TapeDeviceAliasesItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -931,6 +1352,174 @@ func (m *TapeDeviceNodeLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *TapeDeviceNodeLinks) UnmarshalBinary(b []byte) error {
 	var res TapeDeviceNodeLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// TapeDevicePosition tape device position
+//
+// swagger:model TapeDevicePosition
+type TapeDevicePosition struct {
+
+	// Number of times to run position operation.
+	// Example: 5
+	Count int64 `json:"count,omitempty"`
+
+	// Position operation.
+	// Example: rewind
+	// Enum: [weof fsf bsf fsr bsr rewind erase eom]
+	Operation string `json:"operation,omitempty"`
+}
+
+// Validate validates this tape device position
+func (m *TapeDevicePosition) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateOperation(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var tapeDevicePositionTypeOperationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["weof","fsf","bsf","fsr","bsr","rewind","erase","eom"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		tapeDevicePositionTypeOperationPropEnum = append(tapeDevicePositionTypeOperationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// TapeDevicePosition
+	// TapeDevicePosition
+	// operation
+	// Operation
+	// weof
+	// END DEBUGGING
+	// TapeDevicePositionOperationWeof captures enum value "weof"
+	TapeDevicePositionOperationWeof string = "weof"
+
+	// BEGIN DEBUGGING
+	// TapeDevicePosition
+	// TapeDevicePosition
+	// operation
+	// Operation
+	// fsf
+	// END DEBUGGING
+	// TapeDevicePositionOperationFsf captures enum value "fsf"
+	TapeDevicePositionOperationFsf string = "fsf"
+
+	// BEGIN DEBUGGING
+	// TapeDevicePosition
+	// TapeDevicePosition
+	// operation
+	// Operation
+	// bsf
+	// END DEBUGGING
+	// TapeDevicePositionOperationBsf captures enum value "bsf"
+	TapeDevicePositionOperationBsf string = "bsf"
+
+	// BEGIN DEBUGGING
+	// TapeDevicePosition
+	// TapeDevicePosition
+	// operation
+	// Operation
+	// fsr
+	// END DEBUGGING
+	// TapeDevicePositionOperationFsr captures enum value "fsr"
+	TapeDevicePositionOperationFsr string = "fsr"
+
+	// BEGIN DEBUGGING
+	// TapeDevicePosition
+	// TapeDevicePosition
+	// operation
+	// Operation
+	// bsr
+	// END DEBUGGING
+	// TapeDevicePositionOperationBsr captures enum value "bsr"
+	TapeDevicePositionOperationBsr string = "bsr"
+
+	// BEGIN DEBUGGING
+	// TapeDevicePosition
+	// TapeDevicePosition
+	// operation
+	// Operation
+	// rewind
+	// END DEBUGGING
+	// TapeDevicePositionOperationRewind captures enum value "rewind"
+	TapeDevicePositionOperationRewind string = "rewind"
+
+	// BEGIN DEBUGGING
+	// TapeDevicePosition
+	// TapeDevicePosition
+	// operation
+	// Operation
+	// erase
+	// END DEBUGGING
+	// TapeDevicePositionOperationErase captures enum value "erase"
+	TapeDevicePositionOperationErase string = "erase"
+
+	// BEGIN DEBUGGING
+	// TapeDevicePosition
+	// TapeDevicePosition
+	// operation
+	// Operation
+	// eom
+	// END DEBUGGING
+	// TapeDevicePositionOperationEom captures enum value "eom"
+	TapeDevicePositionOperationEom string = "eom"
+)
+
+// prop value enum
+func (m *TapeDevicePosition) validateOperationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, tapeDevicePositionTypeOperationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *TapeDevicePosition) validateOperation(formats strfmt.Registry) error {
+	if swag.IsZero(m.Operation) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateOperationEnum("position"+"."+"operation", "body", m.Operation); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this tape device position based on context it is used
+func (m *TapeDevicePosition) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *TapeDevicePosition) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *TapeDevicePosition) UnmarshalBinary(b []byte) error {
+	var res TapeDevicePosition
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

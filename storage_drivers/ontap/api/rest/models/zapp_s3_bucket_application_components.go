@@ -57,6 +57,10 @@ type ZappS3BucketApplicationComponents struct {
 	// Object Store Server Bucket UUID Usage: &lt;UUID&gt;
 	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
+
+	// Bucket Versioning State.
+	// Enum: [disabled enabled suspended]
+	VersioningState *string `json:"versioning_state,omitempty"`
 }
 
 // Validate validates this zapp s3 bucket application components
@@ -92,6 +96,10 @@ func (m *ZappS3BucketApplicationComponents) Validate(formats strfmt.Registry) er
 	}
 
 	if err := m.validateStorageService(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVersioningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -268,6 +276,72 @@ func (m *ZappS3BucketApplicationComponents) validateStorageService(formats strfm
 	return nil
 }
 
+var zappS3BucketApplicationComponentsTypeVersioningStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["disabled","enabled","suspended"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		zappS3BucketApplicationComponentsTypeVersioningStatePropEnum = append(zappS3BucketApplicationComponentsTypeVersioningStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// zapp_s3_bucket_application_components
+	// ZappS3BucketApplicationComponents
+	// versioning_state
+	// VersioningState
+	// disabled
+	// END DEBUGGING
+	// ZappS3BucketApplicationComponentsVersioningStateDisabled captures enum value "disabled"
+	ZappS3BucketApplicationComponentsVersioningStateDisabled string = "disabled"
+
+	// BEGIN DEBUGGING
+	// zapp_s3_bucket_application_components
+	// ZappS3BucketApplicationComponents
+	// versioning_state
+	// VersioningState
+	// enabled
+	// END DEBUGGING
+	// ZappS3BucketApplicationComponentsVersioningStateEnabled captures enum value "enabled"
+	ZappS3BucketApplicationComponentsVersioningStateEnabled string = "enabled"
+
+	// BEGIN DEBUGGING
+	// zapp_s3_bucket_application_components
+	// ZappS3BucketApplicationComponents
+	// versioning_state
+	// VersioningState
+	// suspended
+	// END DEBUGGING
+	// ZappS3BucketApplicationComponentsVersioningStateSuspended captures enum value "suspended"
+	ZappS3BucketApplicationComponentsVersioningStateSuspended string = "suspended"
+)
+
+// prop value enum
+func (m *ZappS3BucketApplicationComponents) validateVersioningStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappS3BucketApplicationComponentsTypeVersioningStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ZappS3BucketApplicationComponents) validateVersioningState(formats strfmt.Registry) error {
+	if swag.IsZero(m.VersioningState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateVersioningStateEnum("versioning_state", "body", *m.VersioningState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this zapp s3 bucket application components based on the context it is used
 func (m *ZappS3BucketApplicationComponents) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -394,7 +468,7 @@ func (m *ZappS3BucketApplicationComponents) UnmarshalBinary(b []byte) error {
 // swagger:model ZappS3BucketApplicationComponentsExcludeAggregatesItems0
 type ZappS3BucketApplicationComponentsExcludeAggregatesItems0 struct {
 
-	// The name of the aggregate to exclude. Usage: &lt;aggr0_svctridentci_vsim3&gt;
+	// The name of the aggregate to exclude. Usage: &lt;aggr0_jrippy_vsim1&gt;
 	Name string `json:"name,omitempty"`
 
 	// The ID of the aggregate to exclude. Usage: &lt;UUID&gt;

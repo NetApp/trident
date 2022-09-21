@@ -19,6 +19,15 @@ import (
 // swagger:model metrocluster_diag_state
 type MetroclusterDiagState string
 
+func NewMetroclusterDiagState(value MetroclusterDiagState) *MetroclusterDiagState {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated MetroclusterDiagState.
+func (m MetroclusterDiagState) Pointer() *MetroclusterDiagState {
+	return &m
+}
+
 const (
 
 	// MetroclusterDiagStateOk captures enum value "ok"

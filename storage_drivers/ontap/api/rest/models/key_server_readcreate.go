@@ -22,8 +22,10 @@ type KeyServerReadcreate struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
-	// A list of the secondary key servers associated with the primary key server.
-	SecondaryKeyServers []string `json:"secondary_key_servers,omitempty"`
+	// A comma delimited string of the secondary key servers associated with the primary key server.
+	// Example: secondary1.com, 10.2.3.4
+	// Read Only: true
+	SecondaryKeyServers string `json:"secondary_key_servers,omitempty"`
 
 	// External key server for key management. If no port is provided, a default port of 5696 is used.
 	// Example: keyserver1.com:5698
@@ -101,6 +103,10 @@ func (m *KeyServerReadcreate) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSecondaryKeyServers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateTimeout(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -124,6 +130,15 @@ func (m *KeyServerReadcreate) contextValidateLinks(ctx context.Context, formats 
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *KeyServerReadcreate) contextValidateSecondaryKeyServers(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "secondary_key_servers", "body", string(m.SecondaryKeyServers)); err != nil {
+		return err
 	}
 
 	return nil

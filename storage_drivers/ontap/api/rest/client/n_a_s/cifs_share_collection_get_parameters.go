@@ -84,6 +84,12 @@ type CifsShareCollectionGetParams struct {
 	*/
 	AclsUserOrGroupQueryParameter *string
 
+	/* AllowUnencryptedAccess.
+
+	   Filter by allow_unencrypted_access
+	*/
+	AllowUnencryptedAccessQueryParameter *bool
+
 	/* ChangeNotify.
 
 	   Filter by change_notify
@@ -353,6 +359,17 @@ func (o *CifsShareCollectionGetParams) WithAclsUserOrGroupQueryParameter(aclsUse
 // SetAclsUserOrGroupQueryParameter adds the aclsUserOrGroup to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) SetAclsUserOrGroupQueryParameter(aclsUserOrGroup *string) {
 	o.AclsUserOrGroupQueryParameter = aclsUserOrGroup
+}
+
+// WithAllowUnencryptedAccessQueryParameter adds the allowUnencryptedAccess to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithAllowUnencryptedAccessQueryParameter(allowUnencryptedAccess *bool) *CifsShareCollectionGetParams {
+	o.SetAllowUnencryptedAccessQueryParameter(allowUnencryptedAccess)
+	return o
+}
+
+// SetAllowUnencryptedAccessQueryParameter adds the allowUnencryptedAccess to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetAllowUnencryptedAccessQueryParameter(allowUnencryptedAccess *bool) {
+	o.AllowUnencryptedAccessQueryParameter = allowUnencryptedAccess
 }
 
 // WithChangeNotifyQueryParameter adds the changeNotify to the cifs share collection get params
@@ -712,6 +729,23 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qAclsUserOrGroup != "" {
 
 			if err := r.SetQueryParam("acls.user_or_group", qAclsUserOrGroup); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AllowUnencryptedAccessQueryParameter != nil {
+
+		// query param allow_unencrypted_access
+		var qrAllowUnencryptedAccess bool
+
+		if o.AllowUnencryptedAccessQueryParameter != nil {
+			qrAllowUnencryptedAccess = *o.AllowUnencryptedAccessQueryParameter
+		}
+		qAllowUnencryptedAccess := swag.FormatBool(qrAllowUnencryptedAccess)
+		if qAllowUnencryptedAccess != "" {
+
+			if err := r.SetQueryParam("allow_unencrypted_access", qAllowUnencryptedAccess); err != nil {
 				return err
 			}
 		}

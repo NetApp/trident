@@ -13,29 +13,29 @@ import (
 	. "github.com/netapp/trident/logger"
 )
 
-////////////////////////////////////////////////////////////////////////////////////////////
-///             _____________________
-///            |   <<Interface>>    |
-///            |       ONTAPI       |
-///            |____________________|
-///                ^             ^
-///     Implements |             | Implements
-///   ____________________    ____________________
-///  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
-///  |___________________|   |___________________|
-///  | +API: RestClient  |   | +API: *Client     |
-///  |___________________|   |___________________|
-///
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
+// /             _____________________
+// /            |   <<Interface>>    |
+// /            |       ONTAPI       |
+// /            |____________________|
+// /                ^             ^
+// /     Implements |             | Implements
+// /   ____________________    ____________________
+// /  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
+// /  |___________________|   |___________________|
+// /  | +API: RestClient  |   | +API: *Client     |
+// /  |___________________|   |___________________|
+// /
+// //////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 // Drivers that offer dual support are to call ONTAP REST or ZAPI's
 // via abstraction layer (ONTAPI interface)
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////////
 // Abstraction layer
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const (
 	failureLUNCreate  = "failure_65dc2f4b_adbe_4ed3_8b73_6c61d5eac054"
@@ -82,7 +82,9 @@ type OntapAPI interface {
 
 	LunList(ctx context.Context, pattern string) (Luns, error)
 	LunCreate(ctx context.Context, lun Lun) error
+	LunCloneCreate(ctx context.Context, flexvol, source, lunName string, qosPolicyGroup QosPolicyGroup) error
 	LunDestroy(ctx context.Context, lunPath string) error
+	LunGetGeometry(ctx context.Context, lunPath string) (uint64, error)
 	LunGetComment(ctx context.Context, lunPath string) (string, bool, error)
 	LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error
 	ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error)
@@ -276,11 +278,11 @@ func (o APIResponse) Errno() string {
 	return o.errno
 }
 
-// GetErrorAbstraction inspects the supplied *APIResponse and error parameters to determine if an error occurred
-func GetErrorAbstraction(ctx context.Context, response *APIResponse, errorIn error) (errorOut error) {
+// GetError inspects the supplied *APIResponse and error parameters to determine if an error occurred
+func GetError(ctx context.Context, response *APIResponse, errorIn error) (errorOut error) {
 	defer func() {
 		if r := recover(); r != nil {
-			Logc(ctx).Errorf("Panic in ontap#GetErrorAbstraction. %v\nStack Trace: %v", response, string(debug.Stack()))
+			Logc(ctx).Errorf("Panic in ontap#GetError. %v\nStack Trace: %v", response, string(debug.Stack()))
 			errorOut = azgo.ZapiError{}
 		}
 	}()

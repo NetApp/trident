@@ -36,7 +36,7 @@ type ClientService interface {
 
 	AggregateGet(params *AggregateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateGetOK, error)
 
-	AggregateModify(params *AggregateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateModifyAccepted, error)
+	AggregateModify(params *AggregateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateModifyOK, *AggregateModifyAccepted, error)
 
 	AggregatePerformanceMetricsCollectionGet(params *AggregatePerformanceMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregatePerformanceMetricsCollectionGetOK, error)
 
@@ -68,6 +68,10 @@ type ClientService interface {
 
 	FileInfoModify(params *FileInfoModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileInfoModifyOK, error)
 
+	FileMoveCollectionGet(params *FileMoveCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveCollectionGetOK, error)
+
+	FileMoveCreate(params *FileMoveCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveCreateCreated, error)
+
 	FlexcacheCollectionGet(params *FlexcacheCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheCollectionGetOK, error)
 
 	FlexcacheCreate(params *FlexcacheCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheCreateAccepted, error)
@@ -83,14 +87,6 @@ type ClientService interface {
 	FlexcacheOriginGet(params *FlexcacheOriginGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheOriginGetOK, error)
 
 	FlexcacheOriginModify(params *FlexcacheOriginModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheOriginModifyOK, error)
-
-	MonitoredFileCollectionGet(params *MonitoredFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MonitoredFileCollectionGetOK, error)
-
-	MonitoredFileCreate(params *MonitoredFileCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MonitoredFileCreateCreated, error)
-
-	MonitoredFileDelete(params *MonitoredFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MonitoredFileDeleteOK, error)
-
-	PerformanceMonitoredFilesMetricCollectionGet(params *PerformanceMonitoredFilesMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceMonitoredFilesMetricCollectionGetOK, error)
 
 	PlexCollectionGet(params *PlexCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PlexCollectionGetOK, error)
 
@@ -190,6 +186,18 @@ type ClientService interface {
 
 	StorageClusterGet(params *StorageClusterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageClusterGetOK, error)
 
+	StoragePoolCollectionGet(params *StoragePoolCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolCollectionGetOK, error)
+
+	StoragePoolCreate(params *StoragePoolCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolCreateCreated, *StoragePoolCreateAccepted, error)
+
+	StoragePoolDelete(params *StoragePoolDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolDeleteAccepted, error)
+
+	StoragePoolGet(params *StoragePoolGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolGetOK, error)
+
+	StoragePoolModify(params *StoragePoolModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolModifyOK, *StoragePoolModifyAccepted, error)
+
+	StoragePortModify(params *StoragePortModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePortModifyOK, error)
+
 	StorageSwitchCollectionGet(params *StorageSwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageSwitchCollectionGetOK, error)
 
 	StorageSwitchGet(params *StorageSwitchGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageSwitchGetOK, error)
@@ -197,6 +205,8 @@ type ClientService interface {
 	TapeDeviceCollectionGet(params *TapeDeviceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TapeDeviceCollectionGetOK, error)
 
 	TapeDeviceGet(params *TapeDeviceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TapeDeviceGetOK, error)
+
+	TapeDeviceModify(params *TapeDeviceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TapeDeviceModifyOK, *TapeDeviceModifyAccepted, error)
 
 	TokenCollectionGet(params *TokenCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenCollectionGetOK, error)
 
@@ -249,6 +259,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `space.block_storage.inactive_user_data`
 * `space.block_storage.inactive_user_data_percent`
 * `space.footprint`
+* `is_spare_low`
 * `statistics.*`
 ### Related ONTAP commands
 * `storage aggregate show`
@@ -394,6 +405,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `space.block_storage.inactive_user_data`
 * `space.block_storage.inactive_user_data_percent`
 * `space.footprint`
+* `is_spare_low`
 * `statistics.*`
 ### Related ONTAP commands
 * `storage aggregate show`
@@ -444,7 +456,7 @@ func (a *Client) AggregateGet(params *AggregateGetParams, authInfo runtime.Clien
 * `storage aggregate rename`
 
 */
-func (a *Client) AggregateModify(params *AggregateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateModifyAccepted, error) {
+func (a *Client) AggregateModify(params *AggregateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateModifyOK, *AggregateModifyAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewAggregateModifyParams()
@@ -468,15 +480,17 @@ func (a *Client) AggregateModify(params *AggregateModifyParams, authInfo runtime
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*AggregateModifyAccepted)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *AggregateModifyOK:
+		return value, nil, nil
+	case *AggregateModifyAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AggregateModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -823,9 +837,11 @@ func (a *Client) DiskGet(params *DiskGetParams, authInfo runtime.ClientAuthInfoW
   DiskModify Updates disk ownership, changes authentication keys, or sanitizes disks.
 ### Related ONTAP commands
 * `storage disk assign`
+* `storage disk removeowner`
 * `storage encryption disk modify -data-key-id`
 * `storage encryption disk sanitize`
 * `security key-manager key query -key-type NSE-AK`
+* `storage disk unfail`
 ### Learn more
 * [`DOC /storage/disks`](#docs-storage-storage_disks)
 
@@ -1161,6 +1177,99 @@ func (a *Client) FileInfoModify(params *FileInfoModifyParams, authInfo runtime.C
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FileInfoModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileMoveCollectionGet Retrieves all ongoing file move operations in the cluster.
+### Related ONTAP commands
+* `volume file move show`
+* `volume rebalance file-move show`
+
+*/
+func (a *Client) FileMoveCollectionGet(params *FileMoveCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileMoveCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_move_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/file/moves",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileMoveCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileMoveCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileMoveCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileMoveCreate Starts a file move operation. This API can be used to move files from one FlexVol volume to another FlexVol volume or within a FlexGroup volume for capacity rebalancing.
+For a FlexGroup volume file move operation, only one source file can be specified in files_to_move. The source volume is the FlexGroup volume. The destination volume is the destination FlexGroup volume constituent to move the file to. When ``automatic`` is true, destination volume is not required. The source path is the path to the file to be moved within the FlexGroup volume. If the destination path is specified, it must be the same as the source path.
+## Required properties for file move operation
+* `files_to_move` - List of files with the destination they are to be moved to.
+## Optional properties for file move operation
+* `reference` - The source reference file for moving multiple files.
+## Default property values
+* `max_throughput` - _0_
+* `max_cutover_time` - _10_
+* `reference.max_cutover_time` - _10_
+## Related ONTAP commands
+* `volume file move start`
+* `volume rebalance file-move start`
+
+*/
+func (a *Client) FileMoveCreate(params *FileMoveCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileMoveCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_move_create",
+		Method:             "POST",
+		PathPattern:        "/storage/file/moves",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileMoveCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileMoveCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileMoveCreateDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1566,179 +1675,6 @@ func (a *Client) FlexcacheOriginModify(params *FlexcacheOriginModifyParams, auth
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FlexcacheOriginModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  MonitoredFileCollectionGet Retrieves all monitored files.
-### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-* `statistics.*`
-* `metric.*`
-### Learn more
-* [`DOC /storage/monitored-files`](#docs-storage-storage_monitored-files)
-
-*/
-func (a *Client) MonitoredFileCollectionGet(params *MonitoredFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MonitoredFileCollectionGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewMonitoredFileCollectionGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "monitored_file_collection_get",
-		Method:             "GET",
-		PathPattern:        "/storage/monitored-files",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &MonitoredFileCollectionGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*MonitoredFileCollectionGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*MonitoredFileCollectionGetDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  MonitoredFileCreate Creates a monitored file.
-### Required properties
-The required properties take the following options:
-  - path and volume.uuid or
-  - path and (svm.name or svm.uuid) and volume.name
-* `path` - Path to the file to be monitored.
-* `volume.uuid` - Volume where the file to be monitored exists
-* `svm.name` or `svm.uuid` - SVM where the file to be monitored exists
-* `volume.name` - Volume where the file to be monitored exists.
-### Learn more
-* [`DOC /storage/monitored-files`](#docs-storage-storage_monitored-files)
-
-*/
-func (a *Client) MonitoredFileCreate(params *MonitoredFileCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MonitoredFileCreateCreated, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewMonitoredFileCreateParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "monitored_file_create",
-		Method:             "POST",
-		PathPattern:        "/storage/monitored-files",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &MonitoredFileCreateReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*MonitoredFileCreateCreated)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*MonitoredFileCreateDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  MonitoredFileDelete Removes the file from the list of monitored files.
-### Learn more
-* [`DOC /storage/monitored-files`](#docs-storage-storage_monitored-files)
-
-*/
-func (a *Client) MonitoredFileDelete(params *MonitoredFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MonitoredFileDeleteOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewMonitoredFileDeleteParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "monitored_file_delete",
-		Method:             "DELETE",
-		PathPattern:        "/storage/monitored-files/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &MonitoredFileDeleteReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*MonitoredFileDeleteOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*MonitoredFileDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  PerformanceMonitoredFilesMetricCollectionGet Retrieves historical performance metrics for the monitored file.
-*/
-func (a *Client) PerformanceMonitoredFilesMetricCollectionGet(params *PerformanceMonitoredFilesMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceMonitoredFilesMetricCollectionGetOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPerformanceMonitoredFilesMetricCollectionGetParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "performance_monitored_files_metric_collection_get",
-		Method:             "GET",
-		PathPattern:        "/storage/monitored-files/{monitored_file.uuid}/metrics",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &PerformanceMonitoredFilesMetricCollectionGetReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PerformanceMonitoredFilesMetricCollectionGetOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*PerformanceMonitoredFilesMetricCollectionGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -2738,6 +2674,7 @@ func (a *Client) QuotaRuleModify(params *QuotaRuleModifyParams, authInfo runtime
 * `storage shelf show`
 * `storage shelf port show`
 * `storage shelf drawer show`
+* `storage shelf drawer show-slot`
 * `storage shelf acp show`
 ### Learn more
 * [`DOC /storage/shelves`](#docs-storage-storage_shelves)
@@ -2784,6 +2721,7 @@ func (a *Client) ShelfCollectionGet(params *ShelfCollectionGetParams, authInfo r
 * `storage shelf show`
 * `storage shelf port show`
 * `storage shelf drawer show`
+* `storage shelf drawer show-slot`
 * `storage shelf acp show`
 ### Learn more
 * [`DOC /storage/shelves`](#docs-storage-storage_shelves)
@@ -4038,6 +3976,271 @@ func (a *Client) StorageClusterGet(params *StorageClusterGetParams, authInfo run
 }
 
 /*
+  StoragePoolCollectionGet Retrieves the collection of storage pools for the entire cluster.
+### Related ONTAP commands
+* `storage pool show`
+
+*/
+func (a *Client) StoragePoolCollectionGet(params *StoragePoolCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStoragePoolCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_pool_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/pools",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StoragePoolCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StoragePoolCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StoragePoolCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  StoragePoolCreate Creates a new storage pool using available solid state capacity attached to the nodes specified.
+### Required properties
+The following properties are required in the POST body:
+* `name` - Name of the new storage pool.
+* `nodes[].name` or `nodes[].uuid` - Nodes that can use cache capacity from the new storage pool. Only nodes in the same HA pair can be specified for a given storage pool. Spare cache capacity will be distributed evenly among the specified nodes.
+* `capacity.disk_count` - Number of SSDs to be used to create the storage pool.
+### Related ONTAP commands
+* `storage pool create`
+### Example:
+```
+POST /api/storage/pools {"nodes": [{"name": "node1"}, {"name": "node2"}], "name": "storage_pool_1", "capacity": {"disk_count": "4"}}
+```
+
+*/
+func (a *Client) StoragePoolCreate(params *StoragePoolCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolCreateCreated, *StoragePoolCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStoragePoolCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_pool_create",
+		Method:             "POST",
+		PathPattern:        "/storage/pools",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StoragePoolCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StoragePoolCreateCreated:
+		return value, nil, nil
+	case *StoragePoolCreateAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StoragePoolCreateDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  StoragePoolDelete Deletes the storage pool specified by the UUID. This request starts a job and returns a link to that job.
+### Related ONTAP commands
+* `storage pool delete`
+
+*/
+func (a *Client) StoragePoolDelete(params *StoragePoolDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStoragePoolDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_pool_delete",
+		Method:             "DELETE",
+		PathPattern:        "/storage/pools/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StoragePoolDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StoragePoolDeleteAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StoragePoolDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  StoragePoolGet Retrieves the storage pool specified by the UUID.
+### Related ONTAP commands
+* `storage pool show -storage-pool-uuid`
+
+*/
+func (a *Client) StoragePoolGet(params *StoragePoolGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStoragePoolGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_pool_get",
+		Method:             "GET",
+		PathPattern:        "/storage/pools/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StoragePoolGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StoragePoolGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StoragePoolGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  StoragePoolModify Updates the storage pool specified by the UUID with the properties in the body. This request starts a job and returns a link to that job.
+### Related ONTAP commands
+* `storage pool rename`
+* `storage pool reassign`
+* `storage pool add`
+
+*/
+func (a *Client) StoragePoolModify(params *StoragePoolModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolModifyOK, *StoragePoolModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStoragePoolModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_pool_modify",
+		Method:             "PATCH",
+		PathPattern:        "/storage/pools/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StoragePoolModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StoragePoolModifyOK:
+		return value, nil, nil
+	case *StoragePoolModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StoragePoolModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  StoragePortModify Updates a storage port.
+### Related ONTAP commands
+* `storage port modify`
+* `storage port enable`
+* `storage port disable`
+### Learn more
+* [`DOC /storage/ports`](#docs-storage-storage_ports)
+
+*/
+func (a *Client) StoragePortModify(params *StoragePortModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePortModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStoragePortModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_port_modify",
+		Method:             "PATCH",
+		PathPattern:        "/storage/ports/{node.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StoragePortModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StoragePortModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StoragePortModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   StorageSwitchCollectionGet Retrieves a collection of storage switches.
 ### Related ONTAP commands
 * `storage switch show`
@@ -4167,7 +4370,7 @@ func (a *Client) TapeDeviceCollectionGet(params *TapeDeviceCollectionGetParams, 
 }
 
 /*
-  TapeDeviceGet Retrieves a specific tape.
+  TapeDeviceGet Retrieves a specific tape device.
 ### Related ONTAP commands
 * `storage tape show`
 ### Learn more
@@ -4207,6 +4410,55 @@ func (a *Client) TapeDeviceGet(params *TapeDeviceGetParams, authInfo runtime.Cli
 	// unexpected success response
 	unexpectedSuccess := result.(*TapeDeviceGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TapeDeviceModify Updates a specific tape device.
+### Related ONTAP commands
+* `storage tape alias-set`
+* `storage tape alias-clear`
+* `storage tape online`
+* `storage tape offline`
+* `storage tape position`
+### Learn more
+* [`DOC /storage/tape-devices`](#docs-storage-storage_tape-devices)
+
+*/
+func (a *Client) TapeDeviceModify(params *TapeDeviceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TapeDeviceModifyOK, *TapeDeviceModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTapeDeviceModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "tape_device_modify",
+		Method:             "PATCH",
+		PathPattern:        "/storage/tape-devices/{node.uuid}/{device_id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TapeDeviceModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *TapeDeviceModifyOK:
+		return value, nil, nil
+	case *TapeDeviceModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TapeDeviceModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -4578,7 +4830,7 @@ func (a *Client) TopMetricsClientCollectionGet(params *TopMetricsClientCollectio
 }
 
 /*
-  TopMetricsDirectoryCollectionGet Retrieves a list of directories with the most IO activity.
+  TopMetricsDirectoryCollectionGet Retrieves a list of directories with the greatest value performance metric or capacity metric.
 */
 func (a *Client) TopMetricsDirectoryCollectionGet(params *TopMetricsDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsDirectoryCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4799,6 +5051,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `constituents.movement.percent_complete`
 * `constituents.movement.cutover_window`
 * `constituents.movement.tiering_policy`
+* `asynchronous_directory_delete.*`
 ### Related ONTAP commands
 * `volume show`
 * `volume clone show`
@@ -4812,6 +5065,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `volume snaplock show`
 * `security anti-ransomware volume show`
 * `security anti-ransomware volume space show`
+* `volume file async-delete client show`
 
 */
 func (a *Client) VolumeCollectionGet(params *VolumeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeCollectionGetOK, error) {
@@ -5230,6 +5484,8 @@ There is an added cost to retrieving values for these properties. They are not i
 * `space.volume_guarantee_footprint`
 * `space.cross_volume_dedupe_metafiles_footprint`
 * `space.cross_volume_dedupe_metafiles_temporary_footprint`
+* `space.auto_adaptive_compression_footprint_data_reduction`
+* `space.effective_total_footprint`
 * `space.snapshot_reserve_unusable`
 * `space.snapshot_spill`
 * `space.user_data`
@@ -5255,6 +5511,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `autosize.*`
 * `movement.*`
 * `statistics.*`
+* `asynchronous_directory_delete.*`
 ### Related ONTAP commands
 * `volume show`
 * `volume clone show`
@@ -5269,6 +5526,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `security anti-ransomware volume show`
 * `security anti-ransomware volume attack generate-report`
 * `security anti-ransomware volume space show`
+* `volume file async-delete client show`
 
 */
 func (a *Client) VolumeGet(params *VolumeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeGetOK, error) {
@@ -5345,7 +5603,7 @@ func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetPa
 }
 
 /*
-  VolumeModify Updates the attributes of a volume. For movement, use the "validate_only" field on the request to validate but not perform the operation. The PATCH API can be used to enable or disable quotas for a FlexVol or a FlexGroup volume. An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline removes its junction path.
+  VolumeModify Updates the attributes of a volume. For movement, use the "validate_only" field on the request to validate but not perform the operation. The PATCH API can be used to enable or disable quotas for a FlexVol or a FlexGroup volume.  An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline removes its junction path.
 <br>A PATCH request for volume encryption performs conversion/rekey operations asynchronously. You can retrieve the conversion/rekey progress details by calling a GET request on the corresponding volume endpoint.
 ### Optional properties
 * `queue_for_encryption` - Queue volumes for encryption when `encryption.enabled=true`.  If this option is not provided or is false, conversion of volumes starts immediately. When there are volumes in the queue and less than four encryptions are running, volumes are encrypted in the order in which they are queued.
@@ -5368,6 +5626,8 @@ func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetPa
 * `security anti-ransomware volume dry-run`
 * `security anti-ransomware volume pause`
 * `security anti-ransomware volume resume`
+* `volume file async-delete client disable`
+* `volume file async-delete client enable`
 
 */
 func (a *Client) VolumeModify(params *VolumeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeModifyAccepted, error) {

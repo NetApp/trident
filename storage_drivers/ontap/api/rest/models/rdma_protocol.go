@@ -20,6 +20,15 @@ import (
 // swagger:model rdma_protocol
 type RdmaProtocol string
 
+func NewRdmaProtocol(value RdmaProtocol) *RdmaProtocol {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated RdmaProtocol.
+func (m RdmaProtocol) Pointer() *RdmaProtocol {
+	return &m
+}
+
 const (
 
 	// RdmaProtocolRoce captures enum value "roce"

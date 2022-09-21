@@ -60,6 +60,8 @@ type ClientService interface {
 
 	AzureKeyVaultModify(params *AzureKeyVaultModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultModifyOK, *AzureKeyVaultModifyAccepted, error)
 
+	AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyExternalAccepted, error)
+
 	AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyInternalAccepted, error)
 
 	AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRestoreAccepted, error)
@@ -100,6 +102,8 @@ type ClientService interface {
 
 	GcpKmsModify(params *GcpKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsModifyOK, *GcpKmsModifyAccepted, error)
 
+	GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyExternalAccepted, error)
+
 	GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyInternalAccepted, error)
 
 	GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRestoreAccepted, error)
@@ -130,11 +134,49 @@ type ClientService interface {
 
 	KeyManagerConfigModify(params *KeyManagerConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerConfigModifyOK, error)
 
+	KeyManagerKeysCollectionGet(params *KeyManagerKeysCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerKeysCollectionGetOK, error)
+
+	KeyManagerKeysGet(params *KeyManagerKeysGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerKeysGetOK, error)
+
 	LoginMessagesCollectionGet(params *LoginMessagesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LoginMessagesCollectionGetOK, error)
 
 	LoginMessagesGet(params *LoginMessagesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LoginMessagesGetOK, error)
 
 	LoginMessagesModify(params *LoginMessagesModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LoginMessagesModifyOK, error)
+
+	MultiAdminVerifyApprovalGroupCollectionGet(params *MultiAdminVerifyApprovalGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupCollectionGetOK, error)
+
+	MultiAdminVerifyApprovalGroupCreate(params *MultiAdminVerifyApprovalGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupCreateCreated, error)
+
+	MultiAdminVerifyApprovalGroupDelete(params *MultiAdminVerifyApprovalGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupDeleteOK, error)
+
+	MultiAdminVerifyApprovalGroupGet(params *MultiAdminVerifyApprovalGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupGetOK, error)
+
+	MultiAdminVerifyApprovalGroupModify(params *MultiAdminVerifyApprovalGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupModifyOK, error)
+
+	MultiAdminVerifyConfigGet(params *MultiAdminVerifyConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyConfigGetOK, error)
+
+	MultiAdminVerifyConfigModify(params *MultiAdminVerifyConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyConfigModifyOK, error)
+
+	MultiAdminVerifyRequestCollectionGet(params *MultiAdminVerifyRequestCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestCollectionGetOK, error)
+
+	MultiAdminVerifyRequestCreate(params *MultiAdminVerifyRequestCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestCreateCreated, error)
+
+	MultiAdminVerifyRequestDelete(params *MultiAdminVerifyRequestDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestDeleteOK, error)
+
+	MultiAdminVerifyRequestGet(params *MultiAdminVerifyRequestGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestGetOK, error)
+
+	MultiAdminVerifyRequestModify(params *MultiAdminVerifyRequestModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestModifyOK, error)
+
+	MultiAdminVerifyRuleCollectionGet(params *MultiAdminVerifyRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleCollectionGetOK, error)
+
+	MultiAdminVerifyRuleCreate(params *MultiAdminVerifyRuleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleCreateCreated, error)
+
+	MultiAdminVerifyRuleDelete(params *MultiAdminVerifyRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleDeleteOK, error)
+
+	MultiAdminVerifyRuleGet(params *MultiAdminVerifyRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleGetOK, error)
+
+	MultiAdminVerifyRuleModify(params *MultiAdminVerifyRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleModifyOK, error)
 
 	PublickeyCollectionGet(params *PublickeyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PublickeyCollectionGetOK, error)
 
@@ -294,6 +336,7 @@ func (a *Client) AccountCollectionGet(params *AccountCollectionGetParams, authIn
 * `second_authentication_method` - Needed for MFA and only supported for ssh application. Defaults to `none` if not supplied.
 * `comment` - Comment for the user account (e.g purpose of this account).
 * `locked` - Locks the account after creation. Defaults to `false` if not supplied.
+* `ldap_fastbind` - Needed for LDAP Fastbind Authentication and only supported for applications SSH, ONTAPI, and HTTP with authentication method "nsswitch" only. Defaults to false if not supplied.
 ### Related ONTAP commands
 * `security login create`
 ### Learn more
@@ -438,6 +481,7 @@ func (a *Client) AccountGet(params *AccountGetParams, authInfo runtime.ClientAut
 * `second_authentication_method` - Needed for MFA and only supported for ssh application. Defaults to `none` if not supplied.
 * `comment` - Comment for the user account (e.g purpose of this account).
 * `locked` - Set to true/false to lock/unlock the account.
+* `ldap_fastbind` - Set to true/false to enable LDAP Fastbind Authentication.
 ### Related ONTAP commands
 * `security login create`
 * `security login modify`
@@ -491,6 +535,7 @@ func (a *Client) AccountModify(params *AccountModifyParams, authInfo runtime.Cli
 * `password` - New password for the user account.
 ### Optional parameters
 * `owner.name` or `owner.uuid` - Name or UUID of the SVM for an SVM-scoped user account.
+* `password_hash_algorithm` - Optional property that specifies the password hash algorithm used to generate a hash of the user's password for password matching. Default value is "sha512".
 ### Related ONTAP commands
 * `security login password`
 ### Learn more
@@ -884,7 +929,6 @@ func (a *Client) AzureKeyVaultGet(params *AzureKeyVaultGetParams, authInfo runti
 ### Optional properties
 * `client_secret` - New secret used to prove the application's identity to the AKV.
 * `client_certificate` - New PKCS12 certificate used to prove the application's identity to the AKV.
-* `key_id`- Key Identifier of the new AKV key encryption key.
 * `proxy_type` - Type of proxy (http, https etc.) if proxy configuration is used.
 * `proxy_host` - Proxy hostname if proxy configuration is used.
 * `proxy_port` - Proxy port number if proxy configuration is used.
@@ -895,7 +939,6 @@ func (a *Client) AzureKeyVaultGet(params *AzureKeyVaultGetParams, authInfo runti
 ### Related ONTAP commands
 * `security key-manager external azure update-client-secret`
 * `security key-manager external azure update-credentials`
-* `security key-manager external azure rekey-external`
 * `security key-manager external azure update-config`
 
 */
@@ -934,6 +977,49 @@ func (a *Client) AzureKeyVaultModify(params *AzureKeyVaultModifyParams, authInfo
 	// unexpected success response
 	unexpectedSuccess := result.(*AzureKeyVaultModifyDefault)
 	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  AzureKeyVaultRekeyExternal Rekeys the external key in the key hierarchy for an SVM with an AKV configuration.
+### Required properties
+* `key_id`- Key identifier of the new AKV key encryption key.
+### Related ONTAP commands
+* `security key-manager external azure rekey-external`
+
+*/
+func (a *Client) AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyExternalAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAzureKeyVaultRekeyExternalParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "azure_key_vault_rekey_external",
+		Method:             "POST",
+		PathPattern:        "/security/azure-key-vaults/{azure_key_vault.uuid}/rekey-external",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AzureKeyVaultRekeyExternalReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AzureKeyVaultRekeyExternalAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AzureKeyVaultRekeyExternalDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1812,7 +1898,6 @@ func (a *Client) GcpKmsGet(params *GcpKmsGetParams, authInfo runtime.ClientAuthI
 * `key_ring_location` - Google Cloud KMS key ring location.
 ### Related ONTAP commands
 * `security key-manager external gcp update-credentials`
-* `security key-manager external gcp rekey-external`
 
 */
 func (a *Client) GcpKmsModify(params *GcpKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsModifyOK, *GcpKmsModifyAccepted, error) {
@@ -1850,6 +1935,47 @@ func (a *Client) GcpKmsModify(params *GcpKmsModifyParams, authInfo runtime.Clien
 	// unexpected success response
 	unexpectedSuccess := result.(*GcpKmsModifyDefault)
 	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  GcpKmsRekeyExternal Rekeys the external key in the key hierarchy for an SVM with a Google Cloud KMS configuration.
+### Related ONTAP commands
+* `security key-manager external gcp rekey-external`
+
+*/
+func (a *Client) GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyExternalAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGcpKmsRekeyExternalParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "gcp_kms_rekey_external",
+		Method:             "POST",
+		PathPattern:        "/security/gcp-kms/{gcp_kms.uuid}/rekey-external",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GcpKmsRekeyExternalReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GcpKmsRekeyExternalAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GcpKmsRekeyExternalDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2470,6 +2596,91 @@ func (a *Client) KeyManagerConfigModify(params *KeyManagerConfigModifyParams, au
 }
 
 /*
+  KeyManagerKeysCollectionGet Retrieves key manager configurations.
+### Required properties
+* `security_key_manager.uuid` - Key manager UUID.
+* `node.uuid` - Node UUID.
+### Related ONTAP commands
+* `security key-manager key query`
+
+*/
+func (a *Client) KeyManagerKeysCollectionGet(params *KeyManagerKeysCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerKeysCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKeyManagerKeysCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "key_manager_keys_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KeyManagerKeysCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KeyManagerKeysCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KeyManagerKeysCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  KeyManagerKeysGet Retrieves the key management keys information for the specified key_id.
+### Related ONTAP commands
+* `security key-manager key query -key-id <key_id>`
+
+*/
+func (a *Client) KeyManagerKeysGet(params *KeyManagerKeysGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerKeysGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKeyManagerKeysGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "key_manager_keys_get",
+		Method:             "GET",
+		PathPattern:        "/security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KeyManagerKeysGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KeyManagerKeysGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KeyManagerKeysGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   LoginMessagesCollectionGet Retrieves the login banner and messages of the day (MOTD) configured in the cluster
 and in specific SVMs.
 
@@ -2584,6 +2795,669 @@ func (a *Client) LoginMessagesModify(params *LoginMessagesModifyParams, authInfo
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LoginMessagesModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyApprovalGroupCollectionGet Retrieves multi-admin-verify approval groups.
+
+*/
+func (a *Client) MultiAdminVerifyApprovalGroupCollectionGet(params *MultiAdminVerifyApprovalGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyApprovalGroupCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_approval_group_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/multi-admin-verify/approval-groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyApprovalGroupCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyApprovalGroupCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyApprovalGroupCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyApprovalGroupCreate Creates a multi-admin-verify approval group.
+
+*/
+func (a *Client) MultiAdminVerifyApprovalGroupCreate(params *MultiAdminVerifyApprovalGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyApprovalGroupCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_approval_group_create",
+		Method:             "POST",
+		PathPattern:        "/security/multi-admin-verify/approval-groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyApprovalGroupCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyApprovalGroupCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyApprovalGroupCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyApprovalGroupDelete Deletes a multi-admin-verify approval group.
+
+*/
+func (a *Client) MultiAdminVerifyApprovalGroupDelete(params *MultiAdminVerifyApprovalGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyApprovalGroupDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_approval_group_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/multi-admin-verify/approval-groups/{owner.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyApprovalGroupDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyApprovalGroupDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyApprovalGroupDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyApprovalGroupGet Retrieves a multi-admin-verify approval group.
+
+*/
+func (a *Client) MultiAdminVerifyApprovalGroupGet(params *MultiAdminVerifyApprovalGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyApprovalGroupGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_approval_group_get",
+		Method:             "GET",
+		PathPattern:        "/security/multi-admin-verify/approval-groups/{owner.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyApprovalGroupGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyApprovalGroupGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyApprovalGroupGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyApprovalGroupModify Updates a multi-admin-verify approval group.
+
+*/
+func (a *Client) MultiAdminVerifyApprovalGroupModify(params *MultiAdminVerifyApprovalGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyApprovalGroupModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_approval_group_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/multi-admin-verify/approval-groups/{owner.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyApprovalGroupModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyApprovalGroupModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyApprovalGroupModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyConfigGet Retrieves the multi-admin-verify configuration.
+
+*/
+func (a *Client) MultiAdminVerifyConfigGet(params *MultiAdminVerifyConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyConfigGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyConfigGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_config_get",
+		Method:             "GET",
+		PathPattern:        "/security/multi-admin-verify",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyConfigGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyConfigGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyConfigGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyConfigModify Modifies the multi-admin-verify configuration.
+
+*/
+func (a *Client) MultiAdminVerifyConfigModify(params *MultiAdminVerifyConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyConfigModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyConfigModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_config_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/multi-admin-verify",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyConfigModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyConfigModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyConfigModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyRequestCollectionGet Retrieves multi-admin-verify requests.
+
+*/
+func (a *Client) MultiAdminVerifyRequestCollectionGet(params *MultiAdminVerifyRequestCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRequestCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_request_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/multi-admin-verify/requests",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRequestCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRequestCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRequestCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyRequestCreate Creates a multi-admin-verify request.
+
+*/
+func (a *Client) MultiAdminVerifyRequestCreate(params *MultiAdminVerifyRequestCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRequestCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_request_create",
+		Method:             "POST",
+		PathPattern:        "/security/multi-admin-verify/requests",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRequestCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRequestCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRequestCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyRequestDelete Deletes a multi-admin-verify request.
+
+*/
+func (a *Client) MultiAdminVerifyRequestDelete(params *MultiAdminVerifyRequestDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRequestDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_request_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/multi-admin-verify/requests/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRequestDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRequestDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRequestDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyRequestGet Retrieves a multi-admin-verify request.
+
+*/
+func (a *Client) MultiAdminVerifyRequestGet(params *MultiAdminVerifyRequestGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRequestGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_request_get",
+		Method:             "GET",
+		PathPattern:        "/security/multi-admin-verify/requests/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRequestGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRequestGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRequestGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyRequestModify Updates a multi-admin-verify request.
+
+*/
+func (a *Client) MultiAdminVerifyRequestModify(params *MultiAdminVerifyRequestModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRequestModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_request_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/multi-admin-verify/requests/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRequestModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRequestModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRequestModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyRuleCollectionGet Retrieves multi-admin-verify rules.
+
+*/
+func (a *Client) MultiAdminVerifyRuleCollectionGet(params *MultiAdminVerifyRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRuleCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_rule_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/multi-admin-verify/rules",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRuleCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRuleCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRuleCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyRuleCreate Creates a multi-admin-verify rule.
+
+*/
+func (a *Client) MultiAdminVerifyRuleCreate(params *MultiAdminVerifyRuleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRuleCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_rule_create",
+		Method:             "POST",
+		PathPattern:        "/security/multi-admin-verify/rules",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRuleCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRuleCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRuleCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyRuleDelete Deletes a multi-admin-verify rule.
+
+*/
+func (a *Client) MultiAdminVerifyRuleDelete(params *MultiAdminVerifyRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRuleDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_rule_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/multi-admin-verify/rules/{owner.uuid}/{operation}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRuleDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRuleDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRuleDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyRuleGet Retrieves a multi-admin-verify rule.
+
+*/
+func (a *Client) MultiAdminVerifyRuleGet(params *MultiAdminVerifyRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRuleGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_rule_get",
+		Method:             "GET",
+		PathPattern:        "/security/multi-admin-verify/rules/{owner.uuid}/{operation}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRuleGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRuleGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRuleGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MultiAdminVerifyRuleModify Updates a multi-admin-verify rule.
+
+*/
+func (a *Client) MultiAdminVerifyRuleModify(params *MultiAdminVerifyRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMultiAdminVerifyRuleModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "multi_admin_verify_rule_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/multi-admin-verify/rules/{owner.uuid}/{operation}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MultiAdminVerifyRuleModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MultiAdminVerifyRuleModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MultiAdminVerifyRuleModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -2772,6 +3646,7 @@ func (a *Client) PublickeyModify(params *PublickeyModifyParams, authInfo runtime
   RoleCollectionGet Retrieves a list of roles configured in the cluster.
 ### Related ONTAP commands
 * `security login rest-role show`
+* `security login role show`
 ### Learn more
 * [`DOC /security/roles`](#docs-security-security_roles)
 
@@ -2815,11 +3690,12 @@ func (a *Client) RoleCollectionGet(params *RoleCollectionGetParams, authInfo run
   RoleCreate Creates a new cluster-scoped role or an SVM-scoped role. For an SVM-scoped role, specify either the SVM name as the owner.name or SVM UUID as the owner.uuid in the request body along with other parameters for the role. The owner.uuid or owner.name are not required to be specified for a cluster-scoped role.
 ### Required parameters
 * `name` - Name of the role to be created.
-* `privileges` - Array of privilege tuples. Each tuple consists of a REST API path and its desired access level.
+* `privileges` - Array of privilege tuples. Each tuple consists of a REST API or command/command directory path and its desired access level. If the tuple refers to a command/command directory path, it could optionally contain a query.
 ### Optional parameters
 * `owner.name` or `owner.uuid`  - Name or UUID of the SVM for an SVM-scoped role.
 ### Related ONTAP commands
 * `security login rest-role create`
+* `security login role create`
 ### Learn more
 * [`DOC /security/roles`](#docs-security-security_roles)
 
@@ -2866,6 +3742,7 @@ func (a *Client) RoleCreate(params *RoleCreateParams, authInfo runtime.ClientAut
 * `owner.uuid` - UUID of the SVM housing the role.
 ### Related ONTAP commands
 * `security login rest-role delete`
+* `security login role delete`
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}`](#docs-security-security_roles_{owner.uuid}_{name})
 * [`DOC /security/roles`](#docs-security-security_roles)
@@ -2910,6 +3787,7 @@ func (a *Client) RoleDelete(params *RoleDeleteParams, authInfo runtime.ClientAut
   RoleGet Retrieves the details of the specified role.
 ### Related ONTAP commands
 * `security login rest-role show`
+* `security login role show`
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}`](#docs-security-security_roles_{owner.uuid}_{name})
 * [`DOC /security/roles`](#docs-security-security_roles)
@@ -2954,6 +3832,7 @@ func (a *Client) RoleGet(params *RoleGetParams, authInfo runtime.ClientAuthInfoW
   RolePrivilegeCollectionGet Retrieves privilege details of the specified role.
 ### Related ONTAP commands
 * `security login rest-role show`
+* `security login role show`
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}/privileges`](#docs-security-security_roles_{owner.uuid}_{name}_privileges)
 * [`DOC /security/roles`](#docs-security-security_roles)
@@ -2995,14 +3874,15 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 }
 
 /*
-  RolePrivilegeCreate Adds a privilege tuple (of REST URI and its access level) to an existing role.
+  RolePrivilegeCreate Adds a privilege tuple (of REST URI or command/command directory path, its access level and an optional query, if the "path" refers to a command/command directory path) to an existing role.
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
-* `path` - REST URI path (example: <i>/api/storage/volumes</i>). Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
-* `access` - Desired access level for the REST URI path (one of "all", "readonly" or "none").
+* `path` - REST URI path (example: <i>/api/storage/volumes</i>) or command/command directory path (example: <i>snaplock compliance-clock</i>). Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+* `access` - Desired access level for the REST URI path or command/command directory.
 ### Related ONTAP commands
 * `security login rest-role create`
+* `security login role create`
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}/privileges`](#docs-security-security_roles_{owner.uuid}_{name}_privileges)
 * [`DOC /security/roles`](#docs-security-security_roles)
@@ -3044,13 +3924,14 @@ func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo
 }
 
 /*
-  RolePrivilegeDelete Deletes a privilege tuple (of REST URI and its access level) from the role. The REST URI can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+  RolePrivilegeDelete Deletes a privilege tuple (of REST URI or command/command directory path, its access level and an optional query) from the role. The REST URI can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 ### Required parameters
 * `owner.uuid` - UUID of the SVM which houses this role.
 * `name` - Name of the role to be updated.
-* `path` - Constituent REST API path to be deleted from this role. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+* `path` - Constituent REST API path or command/command directory path to be deleted from this role. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 ### Related ONTAP commands
 * `security login rest-role delete`
+* `security login role delete`
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}/privileges/{path}`](#docs-security-security_roles_{owner.uuid}_{name}_privileges_{path})
 * [`DOC /security/roles`](#docs-security-security_roles)
@@ -3092,9 +3973,10 @@ func (a *Client) RolePrivilegeDelete(params *RolePrivilegeDeleteParams, authInfo
 }
 
 /*
-  RolePrivilegeGet Retrieves the privilege level for a REST API path for the specified role. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+  RolePrivilegeGet Retrieves the access level for a REST API path or command/command directory path for the specified role. Optionally retrieves the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 ### Related ONTAP commands
 * `security login rest-role show`
+* `security login role show`
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}/privileges/{path}`](#docs-security-security_roles_{owner.uuid}_{name}_privileges_{path})
 * [`DOC /security/roles`](#docs-security-security_roles)
@@ -3136,14 +4018,17 @@ func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runti
 }
 
 /*
-  RolePrivilegeModify Updates the privilege level for a REST API path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+  RolePrivilegeModify Updates the access level for a REST API path or command/command directory path. Optionally updates the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
-* `path` - Constituent REST API path whose access level is to be updated. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
-* `access` - Access level for the path (one of "all", "readonly", or "none")
+* `path` - Constituent REST API path or command/command directory path, whose access level and/or query are/is to be updated. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+* `access` - Access level for the path.
+### Optional parameters
+* `query` - Optional query, if the path refers to a command/command directory path.
 ### Related ONTAP commands
 * `security login rest-role modify`
+* `security login role modify`
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}/privileges/{path}`](#docs-security-security_roles_{owner.uuid}_{name}_privileges_{path})
 * [`DOC /security/roles`](#docs-security-security_roles)
@@ -3748,7 +4633,7 @@ func (a *Client) SecurityKeyManagerCollectionGet(params *SecurityKeyManagerColle
 * `svm.uuid` or `svm.name` - Existing SVM in which to create a key manager.
 * `external.client_certificate` - Client certificate. Required only when creating an external key manager.
 * `external.server_ca_certificates` - Server CA certificates. Required only when creating an external key manager.
-* `external.servers.server` - Key servers. Required only when creating an external key manager.
+* `external.servers.server` - Primary Key servers. Required only when creating an external key manager.
 * `onboard.passphrase` - Cluster-wide passphrase. Required only when creating an Onboard Key Manager.
 * `synchronize` - Synchronizes missing onboard keys on any node in the cluster. Required only when creating an Onboard Key Manager at the partner site of a MetroCluster configuration.
 ### Related ONTAP commands
@@ -3925,10 +4810,10 @@ func (a *Client) SecurityKeyManagerKeyServersCollectionGet(params *SecurityKeyMa
 }
 
 /*
-  SecurityKeyManagerKeyServersCreate Adds key servers to a configured external key manager.
+  SecurityKeyManagerKeyServersCreate Adds primary key servers to a configured external key manager.
 ### Required properties
 * `uuid` - UUID of the external key manager.
-* `server` - Key server name.
+* `server` - Primary Key server name.
 ### Related ONTAP commands
 * `security key-manager external add-servers`
 
@@ -3969,7 +4854,9 @@ func (a *Client) SecurityKeyManagerKeyServersCreate(params *SecurityKeyManagerKe
 }
 
 /*
-  SecurityKeyManagerKeyServersDelete Deletes a key server.
+  SecurityKeyManagerKeyServersDelete Deletes a primary key server.
+### Optional parameters:
+* `force` - Bypass Out of Quorum checks wehn deleting a primary key server. This flag is set to "false" by default.
 ### Related ONTAP commands
 * `security key-manager external remove-servers`
 
@@ -4052,7 +4939,7 @@ func (a *Client) SecurityKeyManagerKeyServersGet(params *SecurityKeyManagerKeySe
 }
 
 /*
-  SecurityKeyManagerKeyServersModify Updates a key server.
+  SecurityKeyManagerKeyServersModify Updates a primary key server.
 ### Related ONTAP commands
 * `security key-manager external modify-server`
 

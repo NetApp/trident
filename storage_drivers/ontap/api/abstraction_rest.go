@@ -265,6 +265,7 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 	var responseSize string
 	var responseMapped bool
 	var responseVolName string
+	var responseCreateTime string
 
 	if lunGetResponse == nil {
 		return nil, fmt.Errorf("lun response is nil")
@@ -304,8 +305,13 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 		}
 	}
 
+	if lunGetResponse.CreateTime != nil {
+		responseCreateTime = lunGetResponse.CreateTime.String()
+	}
+
 	lunInfo := &Lun{
 		Comment:      responseComment,
+		CreateTime:   responseCreateTime,
 		Enabled:      lunGetResponse.Enabled,
 		LunMaps:      responseLunMaps,
 		Name:         lunGetResponse.Name,
@@ -802,6 +808,7 @@ func (d OntapAPIREST) VolumeListByPrefix(ctx context.Context, prefix string) (Vo
 	return volumes, nil
 }
 
+// VolumeListByAttrs is used to find bucket volumes for nas-eco and san-eco
 func (d OntapAPIREST) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error) {
 	return d.api.VolumeListByAttrs(ctx, volumeAttrs)
 }
@@ -1394,7 +1401,8 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
-	creationErr := d.api.LunCreate(ctx, lun.Name, int64(sizeBytes), lun.OsType, lun.Qos)
+	creationErr := d.api.LunCreate(ctx, lun.Name, int64(sizeBytes), lun.OsType, lun.Qos, *lun.SpaceReserved,
+		*lun.SpaceAllocated)
 	if creationErr != nil {
 		return fmt.Errorf("error creating LUN %v: %v", lun.Name, creationErr)
 	}
@@ -1426,19 +1434,101 @@ func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
 	return nil
 }
 
-// TODO: Change this for LUN Attributes when available
+func (d OntapAPIREST) LunGetGeometry(ctx context.Context, lunPath string) (uint64, error) {
+	lunOptionsResult, err := d.api.LunOptions(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error get lun options for LUN: %v, err: %d", lunPath, err)
+	}
+	if lunOptionsResult == nil {
+		return 0, fmt.Errorf("lun options for LUN: %v are nil", lunPath)
+	}
+
+	return uint64(lunOptionsResult.RecordSchema.Space.Size.Range.Max), nil
+}
+
 func (d OntapAPIREST) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error {
 	if strings.Contains(lunPath, failureLUNSetAttr) {
 		return errors.New("injected error")
 	}
-	return d.LunSetComments(ctx, lunPath, fstype, context, luks)
+
+	if err := d.api.LunSetAttribute(ctx, lunPath, attribute, fstype); err != nil {
+		Logc(ctx).WithField("LUN", lunPath).Error("Failed to save the fstype attribute for new LUN.")
+		return err
+	}
+
+	if context != "" {
+		if err := d.api.LunSetAttribute(ctx, lunPath, "context", context); err != nil {
+			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the driver context attribute for new LUN.")
+		}
+	}
+
+	if luks != "" {
+		if err := d.api.LunSetAttribute(ctx, lunPath, "LUKS", luks); err != nil {
+			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the LUKS attribute for new LUN.")
+		}
+	}
+
+	return nil
 }
 
 // TODO: Change this for LUN Attributes when available
 func (d OntapAPIREST) LunGetComment(ctx context.Context, lunPath string) (string, bool, error) {
-	parse := true
-	comment, err := d.api.LunGetComment(ctx, lunPath)
-	return comment, parse, err
+	// parse := true
+	// comment, err := d.api.LunGetComment(ctx, lunPath)
+	// return comment, parse, err
+	// TODO: refactor, this is specifically for getting the fstype
+	var fstype string
+	parse := false
+	LUNAttributeFSType := "com.netapp.ndvp.fstype"
+	fstype, err := d.api.LunGetAttribute(ctx, lunPath, LUNAttributeFSType)
+	if err != nil {
+		return "", parse, err
+	} else {
+		Logc(ctx).WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+	}
+	return fstype, parse, nil
+}
+
+func (d OntapAPIREST) LunCloneCreate(ctx context.Context, flexvol, source, lunPath string,
+	qosPolicyGroup QosPolicyGroup,
+) error {
+	fullSourceLunPath := source
+	if !strings.HasPrefix(source, "/vol/") {
+		fullSourceLunPath = fmt.Sprintf("/vol/%s/%s", flexvol, source)
+	}
+
+	fullCloneLunPath := lunPath
+	if !strings.HasPrefix(lunPath, "/vol/") {
+		fullCloneLunPath = fmt.Sprintf("/vol/%s/%s", flexvol, lunPath)
+	}
+
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":            "LunCloneCreate",
+			"Type":              "OntapAPIREST",
+			"flexvol":           flexvol,
+			"source":            source,
+			"lunPath":           lunPath,
+			"fullSourceLunPath": fullSourceLunPath,
+			"fullCloneLunPath":  fullCloneLunPath,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> LunCloneCreate")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCloneCreate")
+	}
+
+	lunResponse, err := d.api.LunGetByName(ctx, fullSourceLunPath)
+	if err != nil {
+		return err
+	}
+	lun, err := lunInfoFromRestAttrsHelper(lunResponse)
+	if err != nil {
+		return err
+	}
+
+	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
+	sizeBytes, _ := strconv.ParseInt(sizeBytesStr, 10, 64)
+
+	return d.api.LunCloneCreate(ctx, fullCloneLunPath, fullSourceLunPath, sizeBytes, lun.OsType, qosPolicyGroup)
 }
 
 // TODO: Change this for LUN Attributes when available
@@ -1668,48 +1758,42 @@ func (d OntapAPIREST) LunUnmap(ctx context.Context, initiatorGroupName, lunPath 
 
 // LunListIgroupsMapped returns a list of igroups the LUN is currently mapped to.
 func (d OntapAPIREST) LunListIgroupsMapped(ctx context.Context, lunPath string) ([]string, error) {
-	var results []string
-	cliPassthroughResult, err := d.api.CliPassthroughLunMappingGet(ctx, "*", lunPath)
-	if err != nil {
-		return results, err
-	}
-	if cliPassthroughResult != nil {
-		for _, rawJson := range cliPassthroughResult.Records {
+	var names []string
 
-			result := &LunMappingGetCliPassthroughResult{}
-			unmarshalErr := json.Unmarshal(rawJson, result)
-			if unmarshalErr != nil {
-				log.WithField("body", string(rawJson)).Warnf("Error unmarshaling response body. %v",
-					unmarshalErr.Error())
-				return nil, unmarshalErr
-			}
-			results = append(results, result.Igroup)
+	results, err := d.api.LunMapList(ctx, "*", lunPath)
+	if err != nil {
+		return names, err
+	}
+	if results == nil || results.Payload == nil {
+		return names, fmt.Errorf("LUN map response is empty")
+	}
+
+	for _, records := range results.Payload.Records {
+		if records.Igroup != nil {
+			names = append(names, records.Igroup.Name)
 		}
 	}
-	return results, err
+	return names, err
 }
 
-// IgroupListLUNsMapped returns a list of igroups the LUN is currently mapped to.
+// IgroupListLUNsMapped returns a list LUNs mapped to the igroup
 func (d OntapAPIREST) IgroupListLUNsMapped(ctx context.Context, initiatorGroupName string) ([]string, error) {
-	var results []string
-	cliPassthroughResult, err := d.api.CliPassthroughLunMappingGet(ctx, initiatorGroupName, "*")
-	if err != nil {
-		return results, err
-	}
-	if cliPassthroughResult != nil {
-		for _, rawJson := range cliPassthroughResult.Records {
+	var names []string
 
-			result := &LunMappingGetCliPassthroughResult{}
-			unmarshalErr := json.Unmarshal(rawJson, result)
-			if unmarshalErr != nil {
-				log.WithField("body", string(rawJson)).Warnf("Error unmarshaling response body. %v",
-					unmarshalErr.Error())
-				return nil, unmarshalErr
-			}
-			results = append(results, result.Igroup)
+	results, err := d.api.LunMapList(ctx, initiatorGroupName, "*")
+	if err != nil {
+		return names, err
+	}
+	if results == nil || results.Payload == nil {
+		return names, fmt.Errorf("LUN map response is empty")
+	}
+
+	for _, records := range results.Payload.Records {
+		if records.Lun != nil {
+			names = append(names, records.Lun.Name)
 		}
 	}
-	return results, err
+	return names, err
 }
 
 // LunMapGetReportingNodes returns a list of LUN map details
@@ -1717,21 +1801,7 @@ func (d OntapAPIREST) IgroupListLUNsMapped(ctx context.Context, initiatorGroupNa
 func (d OntapAPIREST) LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) (
 	[]string, error,
 ) {
-	cliPassthroughResult, err := d.api.CliPassthroughLunMappingGet(ctx, initiatorGroupName, lunPath)
-
-	var results []string
-	for _, rawJson := range cliPassthroughResult.Records {
-
-		result := &LunMappingGetCliPassthroughResult{}
-		unmarshalErr := json.Unmarshal(rawJson, result)
-		if unmarshalErr != nil {
-			log.WithField("body", string(rawJson)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
-			return nil, unmarshalErr
-		}
-
-		results = append(results, result.ReportingNodes...)
-	}
-	return results, err
+	return d.api.LunMapGetReportingNodes(ctx, initiatorGroupName, lunPath)
 }
 
 func (d OntapAPIREST) LunSize(ctx context.Context, flexvolName string) (int, error) {

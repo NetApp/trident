@@ -46,6 +46,10 @@ type QosPolicy struct {
 	// Enum: [undefined preset user_defined system_defined autovolume load_control]
 	PolicyClass string `json:"policy_class,omitempty"`
 
+	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
+	// Enum: [cluster svm]
+	Scope string `json:"scope,omitempty"`
+
 	// svm
 	Svm *QosPolicySvm `json:"svm,omitempty"`
 
@@ -72,6 +76,10 @@ func (m *QosPolicy) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePolicyClass(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScope(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -226,6 +234,62 @@ func (m *QosPolicy) validatePolicyClass(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validatePolicyClassEnum("policy_class", "body", m.PolicyClass); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var qosPolicyTypeScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cluster","svm"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		qosPolicyTypeScopePropEnum = append(qosPolicyTypeScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// qos_policy
+	// QosPolicy
+	// scope
+	// Scope
+	// cluster
+	// END DEBUGGING
+	// QosPolicyScopeCluster captures enum value "cluster"
+	QosPolicyScopeCluster string = "cluster"
+
+	// BEGIN DEBUGGING
+	// qos_policy
+	// QosPolicy
+	// scope
+	// Scope
+	// svm
+	// END DEBUGGING
+	// QosPolicyScopeSvm captures enum value "svm"
+	QosPolicyScopeSvm string = "svm"
+)
+
+// prop value enum
+func (m *QosPolicy) validateScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, qosPolicyTypeScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *QosPolicy) validateScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.Scope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
 		return err
 	}
 

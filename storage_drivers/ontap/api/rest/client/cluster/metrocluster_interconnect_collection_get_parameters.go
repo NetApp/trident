@@ -96,6 +96,24 @@ type MetroclusterInterconnectCollectionGetParams struct {
 	*/
 	MaxRecordsQueryParameter *int64
 
+	/* MirrorEnabled.
+
+	   Filter by mirror.enabled
+	*/
+	MirrorEnabledQueryParameter *bool
+
+	/* MirrorState.
+
+	   Filter by mirror.state
+	*/
+	MirrorStateQueryParameter *string
+
+	/* MultipathPolicy.
+
+	   Filter by multipath_policy
+	*/
+	MultipathPolicyQueryParameter *string
+
 	/* NodeName.
 
 	   Filter by node.name
@@ -285,6 +303,39 @@ func (o *MetroclusterInterconnectCollectionGetParams) WithMaxRecordsQueryParamet
 // SetMaxRecordsQueryParameter adds the maxRecords to the metrocluster interconnect collection get params
 func (o *MetroclusterInterconnectCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
 	o.MaxRecordsQueryParameter = maxRecords
+}
+
+// WithMirrorEnabledQueryParameter adds the mirrorEnabled to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithMirrorEnabledQueryParameter(mirrorEnabled *bool) *MetroclusterInterconnectCollectionGetParams {
+	o.SetMirrorEnabledQueryParameter(mirrorEnabled)
+	return o
+}
+
+// SetMirrorEnabledQueryParameter adds the mirrorEnabled to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetMirrorEnabledQueryParameter(mirrorEnabled *bool) {
+	o.MirrorEnabledQueryParameter = mirrorEnabled
+}
+
+// WithMirrorStateQueryParameter adds the mirrorState to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithMirrorStateQueryParameter(mirrorState *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetMirrorStateQueryParameter(mirrorState)
+	return o
+}
+
+// SetMirrorStateQueryParameter adds the mirrorState to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetMirrorStateQueryParameter(mirrorState *string) {
+	o.MirrorStateQueryParameter = mirrorState
+}
+
+// WithMultipathPolicyQueryParameter adds the multipathPolicy to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithMultipathPolicyQueryParameter(multipathPolicy *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetMultipathPolicyQueryParameter(multipathPolicy)
+	return o
+}
+
+// SetMultipathPolicyQueryParameter adds the multipathPolicy to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetMultipathPolicyQueryParameter(multipathPolicy *string) {
+	o.MultipathPolicyQueryParameter = multipathPolicy
 }
 
 // WithNodeNameQueryParameter adds the nodeName to the metrocluster interconnect collection get params
@@ -485,6 +536,57 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MirrorEnabledQueryParameter != nil {
+
+		// query param mirror.enabled
+		var qrMirrorEnabled bool
+
+		if o.MirrorEnabledQueryParameter != nil {
+			qrMirrorEnabled = *o.MirrorEnabledQueryParameter
+		}
+		qMirrorEnabled := swag.FormatBool(qrMirrorEnabled)
+		if qMirrorEnabled != "" {
+
+			if err := r.SetQueryParam("mirror.enabled", qMirrorEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MirrorStateQueryParameter != nil {
+
+		// query param mirror.state
+		var qrMirrorState string
+
+		if o.MirrorStateQueryParameter != nil {
+			qrMirrorState = *o.MirrorStateQueryParameter
+		}
+		qMirrorState := qrMirrorState
+		if qMirrorState != "" {
+
+			if err := r.SetQueryParam("mirror.state", qMirrorState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MultipathPolicyQueryParameter != nil {
+
+		// query param multipath_policy
+		var qrMultipathPolicy string
+
+		if o.MultipathPolicyQueryParameter != nil {
+			qrMultipathPolicy = *o.MultipathPolicyQueryParameter
+		}
+		qMultipathPolicy := qrMultipathPolicy
+		if qMultipathPolicy != "" {
+
+			if err := r.SetQueryParam("multipath_policy", qMultipathPolicy); err != nil {
 				return err
 			}
 		}

@@ -125,8 +125,8 @@ func NewConsistencyGroupModifyDefault(code int) *ConsistencyGroupModifyDefault {
 | 53411861 | Volume specified does not exist in provided volume array. |
 | 53411862 | Modifying existing igroups is not supported using this API. |
 | 53411864 | Request content insufficient to add an existing volume to an application. |
-| 53411865 | Volumes contained in one consistency group can not be added to a different consistency group. |
-| 53411866 | LUNs are not supported on FlexGroups volumes. |
+| 53411865 | Volumes contained in one consistency group cannot be added to a different consistency group. |
+| 53411866 | LUNs are not supported on FlexGroup volumes. |
 | 53411867 | LUN name is too long after appending a unique suffix. |
 | 53411869 | Volume name is too long after appending a unique suffix. |
 | 53411870 | When using the \"round_robin\" layout, the volume count must not be greater than the LUN count. |

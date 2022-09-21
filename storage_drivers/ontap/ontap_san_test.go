@@ -109,7 +109,7 @@ func newTestOntapSANDriver(
 	}
 
 	sanDriver.API = ontapAPI
-	sanDriver.telemetry = &TelemetryAbstraction{
+	sanDriver.telemetry = &Telemetry{
 		Plugin:        sanDriver.Name(),
 		SVM:           ontapAPI.SVMName(),
 		StoragePrefix: *sanDriver.GetConfig().StoragePrefix,
@@ -436,7 +436,7 @@ func TestGetChapInfo(t *testing.T) {
 		Config        drivers.OntapStorageDriverConfig
 		ips           []string
 		API           api.OntapAPI
-		telemetry     *TelemetryAbstraction
+		telemetry     *Telemetry
 		physicalPools map[string]storage.Pool
 		virtualPools  map[string]storage.Pool
 	}

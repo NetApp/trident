@@ -6,6 +6,8 @@ import humps
 #import yaml
 import ruamel.yaml
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString as dq
+from ruamel.yaml.comments import CommentedMap
+from ruamel.yaml.comments import CommentedSeq
 
 def pascalize(s):
     print("pascalize ", s)
@@ -28,6 +30,7 @@ def pascalize(s):
     s = s.replace("_ttl", "_TTL")
     s = s.replace("_cpu", "_CPU")
     s = s.replace("_ssh", "_SSH")
+    s = s.replace("_api", "_API")
     #s = s.replace("_kdc", "_KDC")
 
     s = s.replace("url_", "URL_")
@@ -48,6 +51,7 @@ def pascalize(s):
     s = s.replace("ttl_", "TTL_")
     s = s.replace("cpu_", "CPU_")
     s = s.replace("ssh_", "SSH_")
+    s = s.replace("api_", "API_")
     #s = s.replace("kdc_", "KDC_")
 
     # fix sas_ports.phy_1.state etc..
@@ -194,6 +198,14 @@ def fix_incorrect_body_and_form_data(d):
        d['paths']['/storage/volumes/{volume.uuid}/files/{path}']['post']['parameters'][5]['name'] == "info":
         d['paths']['/storage/volumes/{volume.uuid}/files/{path}']['post']['parameters'].pop(5)
 
+def fix_incorrect_body_and_form_data2(d):
+    # - operation "lun_modify" has both formData and body parameters. Only one such In: type may be used for a given operatio
+
+    # fix PATCH by removing the ability to write data to a LUN offset via formData
+    if d["paths"]["/storage/luns/{uuid}"]["patch"]["parameters"][2]["in"] == "formData":
+        d["paths"]["/storage/luns/{uuid}"]["patch"]["parameters"].pop(2)
+
+
 def fix_incorrect_string_value_for_number(d):
 
     ### fc ports
@@ -247,6 +259,9 @@ def fix_qtree_name_empty(d):
     # Qtree name must be sent, even if ""
     d["definitions"]["quota_rule"]["properties"]["qtree"]["properties"]["name"]["x-omitempty"] = False
 
+def fix_ems_autosupport_required_empty(d):
+    # autosupport_required value must be sent, even if ""
+    d["definitions"]["ems_application_log"]["properties"]["autosupport_required"]["x-omitempty"] = False
 
 def add_unique_types_for_properties(d):
     d["definitions"]["application"]["properties"]["template"]["x-go-name"] = "ApplicationTemplateType"
@@ -348,6 +363,43 @@ def add_unique_types_for_properties(d):
     d["definitions"]["volume"]["properties"]["anti_ransomware"]["x-go-name"] = "VolumeAntiRansomwareType"
 
 
+    # 9.11 changes (need a way to verify we are on 9.11 or higher)
+    d["definitions"]["rfc2307"]["properties"]["attribute"]["x-go-name"] = "Rfc2307AttributeType"
+
+    d["definitions"]["hw_assist"]["properties"]["status"]["x-go-name"] = "HwAssistStatusType"
+
+    d["definitions"]["ems_event"]["properties"]["message"]["x-go-name"] = "EmsEventMessageType"
+    d["definitions"]["ems_event"]["properties"]["message"]["properties"]["_links"]["x-go-name"] = "EmsEventMessageTypeLinksType"
+
+    d["definitions"]["consistency_group"]["properties"]["provisioning_options"]["x-go-name"] = "ConsistencyGroupProvisioningOptionsType"
+    d["definitions"]["consistency_group"]["properties"]["provisioning_options"]["properties"]["storage_service"]["x-go-name"] = "ConsistencyGroupProvisioningOptionsTypeStorageServiceType"
+
+    d["definitions"]["consistency_group_volume"]["properties"]["provisioning_options"]["x-go-name"] = "ConsistencyGroupVolumeProvisioningOptionsType"
+    d["definitions"]["consistency_group_volume"]["properties"]["provisioning_options"]["properties"]["storage_service"]["x-go-name"] = "ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType"
+
+    d["definitions"]["consistency_group_lun"]["properties"]["space"]["properties"]["guarantee"]["x-go-name"] = "ConsistencyGroupLunSpaceTypeGuaranteeType"
+
+    d["definitions"]["consistency_group_lun_space"]["properties"]["guarantee"]["x-go-name"] = "ConsistencyGroupLunSpaceGuaranteeType"
+
+
+def add_missing_properties(d):
+    d["definitions"]["volume"]["properties"]["snapshot_directory_access_enabled"] = CommentedMap([
+        ('description', 'This field, if true, enables the visible ".snapshot" directory from the client. The ".snapshot" directory will be available in every directory on the volume.'),
+        ('readOnly', False),
+        ('type', 'boolean'),
+        ('x-ntap-introduced', '9.10'),
+        ('x-omitempty', True),
+        ('x-nullable', True),
+    ])
+
+def add_missing_parameters(d):
+    d["paths"]["/storage/volumes"]["get"]["parameters"].append(CommentedMap([
+        ('description', 'Filters by the client visiblity of the ".snapshot" directory.'),
+        ('in', 'query'),
+        ('name', 'snapshot_directory_access_enabled'),
+        ('type', 'boolean'),
+        ('x-ntap-introduced', '9.10'),
+    ]))
 
 
 # def add_go_package_names(d):
@@ -661,11 +713,16 @@ with open('swagger_full.yaml') as input_file:
     fix_incorrect_min_max_for_name_mapping(dataMap)
     fix_duplicate_parameter_in_metrocluster_modify(dataMap)
     fix_incorrect_body_and_form_data(dataMap)
+    fix_incorrect_body_and_form_data2(dataMap)
     fix_incorrect_string_value_for_number(dataMap)
     remove_extra_fields_for_snmp_user_definition(dataMap)
     add_unique_types_for_properties(dataMap)
     make_volume_nas_path_nillable(dataMap)
     fix_qtree_name_empty(dataMap)
+    fix_ems_autosupport_required_empty(dataMap)
+    add_missing_properties(dataMap)
+    add_missing_parameters(dataMap)
+
 
     walk(dataMap)
 

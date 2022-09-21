@@ -24,6 +24,14 @@ type DiskPathInfo struct {
 	// Example: 3a
 	Initiator string `json:"initiator,omitempty"`
 
+	// Controller with the initiator port for this path.
+	// Example: vsim4
+	NodeName string `json:"node.name,omitempty"`
+
+	// Controller UUID, to identify node for this path.
+	// Example: cf7fe057-526d-11ec-af4e-0050568e9df0
+	NodeUUID string `json:"node.uuid,omitempty"`
+
 	// Name of the disk port.
 	// Example: A
 	PortName string `json:"port_name,omitempty"`
@@ -32,6 +40,10 @@ type DiskPathInfo struct {
 	// Example: sas
 	// Enum: [sas fc nvme]
 	PortType string `json:"port_type,omitempty"`
+
+	// Virtual disk hypervisor file name.
+	// Example: xvds vol0a0567ae156ca59f6
+	VmdiskHypervisorFileName string `json:"vmdisk_hypervisor_file_name,omitempty"`
 
 	// Target device's World Wide Node Name.
 	// Example: 5000c2971c1b2b8c

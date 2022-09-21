@@ -111,7 +111,7 @@ func NewSnapmirrorRelationshipModifyDefault(code int) *SnapmirrorRelationshipMod
 | 13303809    | Transition to paused state failed |
 | 13303810    | Transition to snapmirrored state failed |
 | 13303811    | Transition from paused state failed |
-| 13303820    | SnapMirror policy was successfully updated, state transition failed |
+| 13303820    | SnapMirror policy, transfer_schedule, and throttle, if specified were successfully updated, state transition failed |
 | 13303856    | SVM is not configured with any data protocol |
 | 13303857    | SVM is not configured with any network interface |
 | 13303858    | Internal error. Failed to check LIF and protocols details for SVM |
@@ -124,6 +124,13 @@ func NewSnapmirrorRelationshipModifyDefault(code int) *SnapmirrorRelationshipMod
 | 13304062    | Cannot reverse the direction of a SnapMirror DP relationship when the source cluster version is earlier than the destination cluster version. |
 | 13304070    | Remote peer cluster requires the dp_rest_support capability to support reversing the direction of a DP relationship. |
 | 13304071    | Failed to access capabilities on remote cluster. |
+| 13304080    | Specified uuid and name do not match. |
+| 13304081    | Modifying a property during the opertaion is not supported. |
+| 13304082    | The specified properties are mutually exclusive. |
+| 13304083    | The specified property is not supported because all nodes in the cluster are not capable of supporting the property. |
+| 13304086    | Reversing the direction of a SnapMirror relationship associated with a policy containing the property create_snapshot_on_source set to false is not supported. |
+| 6619715     | Modification of relationship is in progress. Retry the command after a few minutes. |
+
 
 */
 type SnapmirrorRelationshipModifyDefault struct {

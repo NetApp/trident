@@ -60,6 +60,48 @@ func NewFpolicyCollectionGetParamsWithHTTPClient(client *http.Client) *FpolicyCo
 */
 type FpolicyCollectionGetParams struct {
 
+	/* EnginesBufferSizeRecvBuffer.
+
+	   Filter by engines.buffer_size.recv_buffer
+	*/
+	EnginesBufferSizeRecvBufferQueryParameter *int64
+
+	/* EnginesBufferSizeSendBuffer.
+
+	   Filter by engines.buffer_size.send_buffer
+	*/
+	EnginesBufferSizeSendBufferQueryParameter *int64
+
+	/* EnginesCertificateCa.
+
+	   Filter by engines.certificate.ca
+	*/
+	EnginesCertificateCaQueryParameter *string
+
+	/* EnginesCertificateName.
+
+	   Filter by engines.certificate.name
+	*/
+	EnginesCertificateNameQueryParameter *string
+
+	/* EnginesCertificateSerialNumber.
+
+	   Filter by engines.certificate.serial_number
+	*/
+	EnginesCertificateSerialNumberQueryParameter *string
+
+	/* EnginesFormat.
+
+	   Filter by engines.format
+	*/
+	EnginesFormatQueryParameter *string
+
+	/* EnginesMaxServerRequests.
+
+	   Filter by engines.max_server_requests
+	*/
+	EnginesMaxServerRequestsQueryParameter *int64
+
 	/* EnginesName.
 
 	   Filter by engines.name
@@ -78,11 +120,59 @@ type FpolicyCollectionGetParams struct {
 	*/
 	EnginesPrimaryServersQueryParameter *string
 
+	/* EnginesRequestAbortTimeout.
+
+	   Filter by engines.request_abort_timeout
+	*/
+	EnginesRequestAbortTimeoutQueryParameter *string
+
+	/* EnginesRequestCancelTimeout.
+
+	   Filter by engines.request_cancel_timeout
+	*/
+	EnginesRequestCancelTimeoutQueryParameter *string
+
+	/* EnginesResiliencyDirectoryPath.
+
+	   Filter by engines.resiliency.directory_path
+	*/
+	EnginesResiliencyDirectoryPathQueryParameter *string
+
+	/* EnginesResiliencyEnabled.
+
+	   Filter by engines.resiliency.enabled
+	*/
+	EnginesResiliencyEnabledQueryParameter *bool
+
+	/* EnginesResiliencyRetentionDuration.
+
+	   Filter by engines.resiliency.retention_duration
+	*/
+	EnginesResiliencyRetentionDurationQueryParameter *string
+
 	/* EnginesSecondaryServers.
 
 	   Filter by engines.secondary_servers
 	*/
 	EnginesSecondaryServersQueryParameter *string
+
+	/* EnginesServerProgressTimeout.
+
+	   Filter by engines.server_progress_timeout
+	*/
+	EnginesServerProgressTimeoutQueryParameter *string
+
+	/* EnginesSslOption.
+
+	   Filter by engines.ssl_option
+	*/
+	EnginesSslOptionQueryParameter *string
+
+	/* EnginesStatusRequestInterval.
+
+	   Filter by engines.status_request_interval
+	*/
+	EnginesStatusRequestIntervalQueryParameter *string
 
 	/* EnginesType.
 
@@ -372,11 +462,29 @@ type FpolicyCollectionGetParams struct {
 	*/
 	PoliciesNameQueryParameter *string
 
+	/* PoliciesPassthroughRead.
+
+	   Filter by policies.passthrough_read
+	*/
+	PoliciesPassthroughReadQueryParameter *bool
+
 	/* PoliciesPriority.
 
 	   Filter by policies.priority
 	*/
 	PoliciesPriorityQueryParameter *int64
+
+	/* PoliciesPrivilegedUser.
+
+	   Filter by policies.privileged_user
+	*/
+	PoliciesPrivilegedUserQueryParameter *string
+
+	/* PoliciesScopeCheckExtensionsOnDirectories.
+
+	   Filter by policies.scope.check_extensions_on_directories
+	*/
+	PoliciesScopeCheckExtensionsOnDirectoriesQueryParameter *bool
 
 	/* PoliciesScopeExcludeExportPolicies.
 
@@ -425,6 +533,12 @@ type FpolicyCollectionGetParams struct {
 	   Filter by policies.scope.include_volumes
 	*/
 	PoliciesScopeIncludeVolumesQueryParameter *string
+
+	/* PoliciesScopeObjectMonitoringWithNoExtension.
+
+	   Filter by policies.scope.object_monitoring_with_no_extension
+	*/
+	PoliciesScopeObjectMonitoringWithNoExtensionQueryParameter *bool
 
 	/* ReturnRecords.
 
@@ -521,6 +635,83 @@ func (o *FpolicyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithEnginesBufferSizeRecvBufferQueryParameter adds the enginesBufferSizeRecvBuffer to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesBufferSizeRecvBufferQueryParameter(enginesBufferSizeRecvBuffer *int64) *FpolicyCollectionGetParams {
+	o.SetEnginesBufferSizeRecvBufferQueryParameter(enginesBufferSizeRecvBuffer)
+	return o
+}
+
+// SetEnginesBufferSizeRecvBufferQueryParameter adds the enginesBufferSizeRecvBuffer to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesBufferSizeRecvBufferQueryParameter(enginesBufferSizeRecvBuffer *int64) {
+	o.EnginesBufferSizeRecvBufferQueryParameter = enginesBufferSizeRecvBuffer
+}
+
+// WithEnginesBufferSizeSendBufferQueryParameter adds the enginesBufferSizeSendBuffer to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesBufferSizeSendBufferQueryParameter(enginesBufferSizeSendBuffer *int64) *FpolicyCollectionGetParams {
+	o.SetEnginesBufferSizeSendBufferQueryParameter(enginesBufferSizeSendBuffer)
+	return o
+}
+
+// SetEnginesBufferSizeSendBufferQueryParameter adds the enginesBufferSizeSendBuffer to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesBufferSizeSendBufferQueryParameter(enginesBufferSizeSendBuffer *int64) {
+	o.EnginesBufferSizeSendBufferQueryParameter = enginesBufferSizeSendBuffer
+}
+
+// WithEnginesCertificateCaQueryParameter adds the enginesCertificateCa to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesCertificateCaQueryParameter(enginesCertificateCa *string) *FpolicyCollectionGetParams {
+	o.SetEnginesCertificateCaQueryParameter(enginesCertificateCa)
+	return o
+}
+
+// SetEnginesCertificateCaQueryParameter adds the enginesCertificateCa to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesCertificateCaQueryParameter(enginesCertificateCa *string) {
+	o.EnginesCertificateCaQueryParameter = enginesCertificateCa
+}
+
+// WithEnginesCertificateNameQueryParameter adds the enginesCertificateName to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesCertificateNameQueryParameter(enginesCertificateName *string) *FpolicyCollectionGetParams {
+	o.SetEnginesCertificateNameQueryParameter(enginesCertificateName)
+	return o
+}
+
+// SetEnginesCertificateNameQueryParameter adds the enginesCertificateName to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesCertificateNameQueryParameter(enginesCertificateName *string) {
+	o.EnginesCertificateNameQueryParameter = enginesCertificateName
+}
+
+// WithEnginesCertificateSerialNumberQueryParameter adds the enginesCertificateSerialNumber to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesCertificateSerialNumberQueryParameter(enginesCertificateSerialNumber *string) *FpolicyCollectionGetParams {
+	o.SetEnginesCertificateSerialNumberQueryParameter(enginesCertificateSerialNumber)
+	return o
+}
+
+// SetEnginesCertificateSerialNumberQueryParameter adds the enginesCertificateSerialNumber to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesCertificateSerialNumberQueryParameter(enginesCertificateSerialNumber *string) {
+	o.EnginesCertificateSerialNumberQueryParameter = enginesCertificateSerialNumber
+}
+
+// WithEnginesFormatQueryParameter adds the enginesFormat to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesFormatQueryParameter(enginesFormat *string) *FpolicyCollectionGetParams {
+	o.SetEnginesFormatQueryParameter(enginesFormat)
+	return o
+}
+
+// SetEnginesFormatQueryParameter adds the enginesFormat to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesFormatQueryParameter(enginesFormat *string) {
+	o.EnginesFormatQueryParameter = enginesFormat
+}
+
+// WithEnginesMaxServerRequestsQueryParameter adds the enginesMaxServerRequests to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesMaxServerRequestsQueryParameter(enginesMaxServerRequests *int64) *FpolicyCollectionGetParams {
+	o.SetEnginesMaxServerRequestsQueryParameter(enginesMaxServerRequests)
+	return o
+}
+
+// SetEnginesMaxServerRequestsQueryParameter adds the enginesMaxServerRequests to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesMaxServerRequestsQueryParameter(enginesMaxServerRequests *int64) {
+	o.EnginesMaxServerRequestsQueryParameter = enginesMaxServerRequests
+}
+
 // WithEnginesNameQueryParameter adds the enginesName to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithEnginesNameQueryParameter(enginesName *string) *FpolicyCollectionGetParams {
 	o.SetEnginesNameQueryParameter(enginesName)
@@ -554,6 +745,61 @@ func (o *FpolicyCollectionGetParams) SetEnginesPrimaryServersQueryParameter(engi
 	o.EnginesPrimaryServersQueryParameter = enginesPrimaryServers
 }
 
+// WithEnginesRequestAbortTimeoutQueryParameter adds the enginesRequestAbortTimeout to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesRequestAbortTimeoutQueryParameter(enginesRequestAbortTimeout *string) *FpolicyCollectionGetParams {
+	o.SetEnginesRequestAbortTimeoutQueryParameter(enginesRequestAbortTimeout)
+	return o
+}
+
+// SetEnginesRequestAbortTimeoutQueryParameter adds the enginesRequestAbortTimeout to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesRequestAbortTimeoutQueryParameter(enginesRequestAbortTimeout *string) {
+	o.EnginesRequestAbortTimeoutQueryParameter = enginesRequestAbortTimeout
+}
+
+// WithEnginesRequestCancelTimeoutQueryParameter adds the enginesRequestCancelTimeout to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesRequestCancelTimeoutQueryParameter(enginesRequestCancelTimeout *string) *FpolicyCollectionGetParams {
+	o.SetEnginesRequestCancelTimeoutQueryParameter(enginesRequestCancelTimeout)
+	return o
+}
+
+// SetEnginesRequestCancelTimeoutQueryParameter adds the enginesRequestCancelTimeout to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesRequestCancelTimeoutQueryParameter(enginesRequestCancelTimeout *string) {
+	o.EnginesRequestCancelTimeoutQueryParameter = enginesRequestCancelTimeout
+}
+
+// WithEnginesResiliencyDirectoryPathQueryParameter adds the enginesResiliencyDirectoryPath to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesResiliencyDirectoryPathQueryParameter(enginesResiliencyDirectoryPath *string) *FpolicyCollectionGetParams {
+	o.SetEnginesResiliencyDirectoryPathQueryParameter(enginesResiliencyDirectoryPath)
+	return o
+}
+
+// SetEnginesResiliencyDirectoryPathQueryParameter adds the enginesResiliencyDirectoryPath to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesResiliencyDirectoryPathQueryParameter(enginesResiliencyDirectoryPath *string) {
+	o.EnginesResiliencyDirectoryPathQueryParameter = enginesResiliencyDirectoryPath
+}
+
+// WithEnginesResiliencyEnabledQueryParameter adds the enginesResiliencyEnabled to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesResiliencyEnabledQueryParameter(enginesResiliencyEnabled *bool) *FpolicyCollectionGetParams {
+	o.SetEnginesResiliencyEnabledQueryParameter(enginesResiliencyEnabled)
+	return o
+}
+
+// SetEnginesResiliencyEnabledQueryParameter adds the enginesResiliencyEnabled to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesResiliencyEnabledQueryParameter(enginesResiliencyEnabled *bool) {
+	o.EnginesResiliencyEnabledQueryParameter = enginesResiliencyEnabled
+}
+
+// WithEnginesResiliencyRetentionDurationQueryParameter adds the enginesResiliencyRetentionDuration to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesResiliencyRetentionDurationQueryParameter(enginesResiliencyRetentionDuration *string) *FpolicyCollectionGetParams {
+	o.SetEnginesResiliencyRetentionDurationQueryParameter(enginesResiliencyRetentionDuration)
+	return o
+}
+
+// SetEnginesResiliencyRetentionDurationQueryParameter adds the enginesResiliencyRetentionDuration to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesResiliencyRetentionDurationQueryParameter(enginesResiliencyRetentionDuration *string) {
+	o.EnginesResiliencyRetentionDurationQueryParameter = enginesResiliencyRetentionDuration
+}
+
 // WithEnginesSecondaryServersQueryParameter adds the enginesSecondaryServers to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithEnginesSecondaryServersQueryParameter(enginesSecondaryServers *string) *FpolicyCollectionGetParams {
 	o.SetEnginesSecondaryServersQueryParameter(enginesSecondaryServers)
@@ -563,6 +809,39 @@ func (o *FpolicyCollectionGetParams) WithEnginesSecondaryServersQueryParameter(e
 // SetEnginesSecondaryServersQueryParameter adds the enginesSecondaryServers to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) SetEnginesSecondaryServersQueryParameter(enginesSecondaryServers *string) {
 	o.EnginesSecondaryServersQueryParameter = enginesSecondaryServers
+}
+
+// WithEnginesServerProgressTimeoutQueryParameter adds the enginesServerProgressTimeout to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesServerProgressTimeoutQueryParameter(enginesServerProgressTimeout *string) *FpolicyCollectionGetParams {
+	o.SetEnginesServerProgressTimeoutQueryParameter(enginesServerProgressTimeout)
+	return o
+}
+
+// SetEnginesServerProgressTimeoutQueryParameter adds the enginesServerProgressTimeout to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesServerProgressTimeoutQueryParameter(enginesServerProgressTimeout *string) {
+	o.EnginesServerProgressTimeoutQueryParameter = enginesServerProgressTimeout
+}
+
+// WithEnginesSslOptionQueryParameter adds the enginesSslOption to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesSslOptionQueryParameter(enginesSslOption *string) *FpolicyCollectionGetParams {
+	o.SetEnginesSslOptionQueryParameter(enginesSslOption)
+	return o
+}
+
+// SetEnginesSslOptionQueryParameter adds the enginesSslOption to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesSslOptionQueryParameter(enginesSslOption *string) {
+	o.EnginesSslOptionQueryParameter = enginesSslOption
+}
+
+// WithEnginesStatusRequestIntervalQueryParameter adds the enginesStatusRequestInterval to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesStatusRequestIntervalQueryParameter(enginesStatusRequestInterval *string) *FpolicyCollectionGetParams {
+	o.SetEnginesStatusRequestIntervalQueryParameter(enginesStatusRequestInterval)
+	return o
+}
+
+// SetEnginesStatusRequestIntervalQueryParameter adds the enginesStatusRequestInterval to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesStatusRequestIntervalQueryParameter(enginesStatusRequestInterval *string) {
+	o.EnginesStatusRequestIntervalQueryParameter = enginesStatusRequestInterval
 }
 
 // WithEnginesTypeQueryParameter adds the enginesType to the fpolicy collection get params
@@ -1093,6 +1372,17 @@ func (o *FpolicyCollectionGetParams) SetPoliciesNameQueryParameter(policiesName 
 	o.PoliciesNameQueryParameter = policiesName
 }
 
+// WithPoliciesPassthroughReadQueryParameter adds the policiesPassthroughRead to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPoliciesPassthroughReadQueryParameter(policiesPassthroughRead *bool) *FpolicyCollectionGetParams {
+	o.SetPoliciesPassthroughReadQueryParameter(policiesPassthroughRead)
+	return o
+}
+
+// SetPoliciesPassthroughReadQueryParameter adds the policiesPassthroughRead to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPoliciesPassthroughReadQueryParameter(policiesPassthroughRead *bool) {
+	o.PoliciesPassthroughReadQueryParameter = policiesPassthroughRead
+}
+
 // WithPoliciesPriorityQueryParameter adds the policiesPriority to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithPoliciesPriorityQueryParameter(policiesPriority *int64) *FpolicyCollectionGetParams {
 	o.SetPoliciesPriorityQueryParameter(policiesPriority)
@@ -1102,6 +1392,28 @@ func (o *FpolicyCollectionGetParams) WithPoliciesPriorityQueryParameter(policies
 // SetPoliciesPriorityQueryParameter adds the policiesPriority to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) SetPoliciesPriorityQueryParameter(policiesPriority *int64) {
 	o.PoliciesPriorityQueryParameter = policiesPriority
+}
+
+// WithPoliciesPrivilegedUserQueryParameter adds the policiesPrivilegedUser to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPoliciesPrivilegedUserQueryParameter(policiesPrivilegedUser *string) *FpolicyCollectionGetParams {
+	o.SetPoliciesPrivilegedUserQueryParameter(policiesPrivilegedUser)
+	return o
+}
+
+// SetPoliciesPrivilegedUserQueryParameter adds the policiesPrivilegedUser to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPoliciesPrivilegedUserQueryParameter(policiesPrivilegedUser *string) {
+	o.PoliciesPrivilegedUserQueryParameter = policiesPrivilegedUser
+}
+
+// WithPoliciesScopeCheckExtensionsOnDirectoriesQueryParameter adds the policiesScopeCheckExtensionsOnDirectories to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPoliciesScopeCheckExtensionsOnDirectoriesQueryParameter(policiesScopeCheckExtensionsOnDirectories *bool) *FpolicyCollectionGetParams {
+	o.SetPoliciesScopeCheckExtensionsOnDirectoriesQueryParameter(policiesScopeCheckExtensionsOnDirectories)
+	return o
+}
+
+// SetPoliciesScopeCheckExtensionsOnDirectoriesQueryParameter adds the policiesScopeCheckExtensionsOnDirectories to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPoliciesScopeCheckExtensionsOnDirectoriesQueryParameter(policiesScopeCheckExtensionsOnDirectories *bool) {
+	o.PoliciesScopeCheckExtensionsOnDirectoriesQueryParameter = policiesScopeCheckExtensionsOnDirectories
 }
 
 // WithPoliciesScopeExcludeExportPoliciesQueryParameter adds the policiesScopeExcludeExportPolicies to the fpolicy collection get params
@@ -1192,6 +1504,17 @@ func (o *FpolicyCollectionGetParams) SetPoliciesScopeIncludeVolumesQueryParamete
 	o.PoliciesScopeIncludeVolumesQueryParameter = policiesScopeIncludeVolumes
 }
 
+// WithPoliciesScopeObjectMonitoringWithNoExtensionQueryParameter adds the policiesScopeObjectMonitoringWithNoExtension to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPoliciesScopeObjectMonitoringWithNoExtensionQueryParameter(policiesScopeObjectMonitoringWithNoExtension *bool) *FpolicyCollectionGetParams {
+	o.SetPoliciesScopeObjectMonitoringWithNoExtensionQueryParameter(policiesScopeObjectMonitoringWithNoExtension)
+	return o
+}
+
+// SetPoliciesScopeObjectMonitoringWithNoExtensionQueryParameter adds the policiesScopeObjectMonitoringWithNoExtension to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPoliciesScopeObjectMonitoringWithNoExtensionQueryParameter(policiesScopeObjectMonitoringWithNoExtension *bool) {
+	o.PoliciesScopeObjectMonitoringWithNoExtensionQueryParameter = policiesScopeObjectMonitoringWithNoExtension
+}
+
 // WithReturnRecordsQueryParameter adds the returnRecords to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FpolicyCollectionGetParams {
 	o.SetReturnRecordsQueryParameter(returnRecords)
@@ -1244,6 +1567,125 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
+	if o.EnginesBufferSizeRecvBufferQueryParameter != nil {
+
+		// query param engines.buffer_size.recv_buffer
+		var qrEnginesBufferSizeRecvBuffer int64
+
+		if o.EnginesBufferSizeRecvBufferQueryParameter != nil {
+			qrEnginesBufferSizeRecvBuffer = *o.EnginesBufferSizeRecvBufferQueryParameter
+		}
+		qEnginesBufferSizeRecvBuffer := swag.FormatInt64(qrEnginesBufferSizeRecvBuffer)
+		if qEnginesBufferSizeRecvBuffer != "" {
+
+			if err := r.SetQueryParam("engines.buffer_size.recv_buffer", qEnginesBufferSizeRecvBuffer); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesBufferSizeSendBufferQueryParameter != nil {
+
+		// query param engines.buffer_size.send_buffer
+		var qrEnginesBufferSizeSendBuffer int64
+
+		if o.EnginesBufferSizeSendBufferQueryParameter != nil {
+			qrEnginesBufferSizeSendBuffer = *o.EnginesBufferSizeSendBufferQueryParameter
+		}
+		qEnginesBufferSizeSendBuffer := swag.FormatInt64(qrEnginesBufferSizeSendBuffer)
+		if qEnginesBufferSizeSendBuffer != "" {
+
+			if err := r.SetQueryParam("engines.buffer_size.send_buffer", qEnginesBufferSizeSendBuffer); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesCertificateCaQueryParameter != nil {
+
+		// query param engines.certificate.ca
+		var qrEnginesCertificateCa string
+
+		if o.EnginesCertificateCaQueryParameter != nil {
+			qrEnginesCertificateCa = *o.EnginesCertificateCaQueryParameter
+		}
+		qEnginesCertificateCa := qrEnginesCertificateCa
+		if qEnginesCertificateCa != "" {
+
+			if err := r.SetQueryParam("engines.certificate.ca", qEnginesCertificateCa); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesCertificateNameQueryParameter != nil {
+
+		// query param engines.certificate.name
+		var qrEnginesCertificateName string
+
+		if o.EnginesCertificateNameQueryParameter != nil {
+			qrEnginesCertificateName = *o.EnginesCertificateNameQueryParameter
+		}
+		qEnginesCertificateName := qrEnginesCertificateName
+		if qEnginesCertificateName != "" {
+
+			if err := r.SetQueryParam("engines.certificate.name", qEnginesCertificateName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesCertificateSerialNumberQueryParameter != nil {
+
+		// query param engines.certificate.serial_number
+		var qrEnginesCertificateSerialNumber string
+
+		if o.EnginesCertificateSerialNumberQueryParameter != nil {
+			qrEnginesCertificateSerialNumber = *o.EnginesCertificateSerialNumberQueryParameter
+		}
+		qEnginesCertificateSerialNumber := qrEnginesCertificateSerialNumber
+		if qEnginesCertificateSerialNumber != "" {
+
+			if err := r.SetQueryParam("engines.certificate.serial_number", qEnginesCertificateSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesFormatQueryParameter != nil {
+
+		// query param engines.format
+		var qrEnginesFormat string
+
+		if o.EnginesFormatQueryParameter != nil {
+			qrEnginesFormat = *o.EnginesFormatQueryParameter
+		}
+		qEnginesFormat := qrEnginesFormat
+		if qEnginesFormat != "" {
+
+			if err := r.SetQueryParam("engines.format", qEnginesFormat); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesMaxServerRequestsQueryParameter != nil {
+
+		// query param engines.max_server_requests
+		var qrEnginesMaxServerRequests int64
+
+		if o.EnginesMaxServerRequestsQueryParameter != nil {
+			qrEnginesMaxServerRequests = *o.EnginesMaxServerRequestsQueryParameter
+		}
+		qEnginesMaxServerRequests := swag.FormatInt64(qrEnginesMaxServerRequests)
+		if qEnginesMaxServerRequests != "" {
+
+			if err := r.SetQueryParam("engines.max_server_requests", qEnginesMaxServerRequests); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EnginesNameQueryParameter != nil {
 
 		// query param engines.name
@@ -1295,6 +1737,91 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.EnginesRequestAbortTimeoutQueryParameter != nil {
+
+		// query param engines.request_abort_timeout
+		var qrEnginesRequestAbortTimeout string
+
+		if o.EnginesRequestAbortTimeoutQueryParameter != nil {
+			qrEnginesRequestAbortTimeout = *o.EnginesRequestAbortTimeoutQueryParameter
+		}
+		qEnginesRequestAbortTimeout := qrEnginesRequestAbortTimeout
+		if qEnginesRequestAbortTimeout != "" {
+
+			if err := r.SetQueryParam("engines.request_abort_timeout", qEnginesRequestAbortTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesRequestCancelTimeoutQueryParameter != nil {
+
+		// query param engines.request_cancel_timeout
+		var qrEnginesRequestCancelTimeout string
+
+		if o.EnginesRequestCancelTimeoutQueryParameter != nil {
+			qrEnginesRequestCancelTimeout = *o.EnginesRequestCancelTimeoutQueryParameter
+		}
+		qEnginesRequestCancelTimeout := qrEnginesRequestCancelTimeout
+		if qEnginesRequestCancelTimeout != "" {
+
+			if err := r.SetQueryParam("engines.request_cancel_timeout", qEnginesRequestCancelTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesResiliencyDirectoryPathQueryParameter != nil {
+
+		// query param engines.resiliency.directory_path
+		var qrEnginesResiliencyDirectoryPath string
+
+		if o.EnginesResiliencyDirectoryPathQueryParameter != nil {
+			qrEnginesResiliencyDirectoryPath = *o.EnginesResiliencyDirectoryPathQueryParameter
+		}
+		qEnginesResiliencyDirectoryPath := qrEnginesResiliencyDirectoryPath
+		if qEnginesResiliencyDirectoryPath != "" {
+
+			if err := r.SetQueryParam("engines.resiliency.directory_path", qEnginesResiliencyDirectoryPath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesResiliencyEnabledQueryParameter != nil {
+
+		// query param engines.resiliency.enabled
+		var qrEnginesResiliencyEnabled bool
+
+		if o.EnginesResiliencyEnabledQueryParameter != nil {
+			qrEnginesResiliencyEnabled = *o.EnginesResiliencyEnabledQueryParameter
+		}
+		qEnginesResiliencyEnabled := swag.FormatBool(qrEnginesResiliencyEnabled)
+		if qEnginesResiliencyEnabled != "" {
+
+			if err := r.SetQueryParam("engines.resiliency.enabled", qEnginesResiliencyEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesResiliencyRetentionDurationQueryParameter != nil {
+
+		// query param engines.resiliency.retention_duration
+		var qrEnginesResiliencyRetentionDuration string
+
+		if o.EnginesResiliencyRetentionDurationQueryParameter != nil {
+			qrEnginesResiliencyRetentionDuration = *o.EnginesResiliencyRetentionDurationQueryParameter
+		}
+		qEnginesResiliencyRetentionDuration := qrEnginesResiliencyRetentionDuration
+		if qEnginesResiliencyRetentionDuration != "" {
+
+			if err := r.SetQueryParam("engines.resiliency.retention_duration", qEnginesResiliencyRetentionDuration); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EnginesSecondaryServersQueryParameter != nil {
 
 		// query param engines.secondary_servers
@@ -1307,6 +1834,57 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qEnginesSecondaryServers != "" {
 
 			if err := r.SetQueryParam("engines.secondary_servers", qEnginesSecondaryServers); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesServerProgressTimeoutQueryParameter != nil {
+
+		// query param engines.server_progress_timeout
+		var qrEnginesServerProgressTimeout string
+
+		if o.EnginesServerProgressTimeoutQueryParameter != nil {
+			qrEnginesServerProgressTimeout = *o.EnginesServerProgressTimeoutQueryParameter
+		}
+		qEnginesServerProgressTimeout := qrEnginesServerProgressTimeout
+		if qEnginesServerProgressTimeout != "" {
+
+			if err := r.SetQueryParam("engines.server_progress_timeout", qEnginesServerProgressTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesSslOptionQueryParameter != nil {
+
+		// query param engines.ssl_option
+		var qrEnginesSslOption string
+
+		if o.EnginesSslOptionQueryParameter != nil {
+			qrEnginesSslOption = *o.EnginesSslOptionQueryParameter
+		}
+		qEnginesSslOption := qrEnginesSslOption
+		if qEnginesSslOption != "" {
+
+			if err := r.SetQueryParam("engines.ssl_option", qEnginesSslOption); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesStatusRequestIntervalQueryParameter != nil {
+
+		// query param engines.status_request_interval
+		var qrEnginesStatusRequestInterval string
+
+		if o.EnginesStatusRequestIntervalQueryParameter != nil {
+			qrEnginesStatusRequestInterval = *o.EnginesStatusRequestIntervalQueryParameter
+		}
+		qEnginesStatusRequestInterval := qrEnginesStatusRequestInterval
+		if qEnginesStatusRequestInterval != "" {
+
+			if err := r.SetQueryParam("engines.status_request_interval", qEnginesStatusRequestInterval); err != nil {
 				return err
 			}
 		}
@@ -2116,6 +2694,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.PoliciesPassthroughReadQueryParameter != nil {
+
+		// query param policies.passthrough_read
+		var qrPoliciesPassthroughRead bool
+
+		if o.PoliciesPassthroughReadQueryParameter != nil {
+			qrPoliciesPassthroughRead = *o.PoliciesPassthroughReadQueryParameter
+		}
+		qPoliciesPassthroughRead := swag.FormatBool(qrPoliciesPassthroughRead)
+		if qPoliciesPassthroughRead != "" {
+
+			if err := r.SetQueryParam("policies.passthrough_read", qPoliciesPassthroughRead); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.PoliciesPriorityQueryParameter != nil {
 
 		// query param policies.priority
@@ -2128,6 +2723,40 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qPoliciesPriority != "" {
 
 			if err := r.SetQueryParam("policies.priority", qPoliciesPriority); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PoliciesPrivilegedUserQueryParameter != nil {
+
+		// query param policies.privileged_user
+		var qrPoliciesPrivilegedUser string
+
+		if o.PoliciesPrivilegedUserQueryParameter != nil {
+			qrPoliciesPrivilegedUser = *o.PoliciesPrivilegedUserQueryParameter
+		}
+		qPoliciesPrivilegedUser := qrPoliciesPrivilegedUser
+		if qPoliciesPrivilegedUser != "" {
+
+			if err := r.SetQueryParam("policies.privileged_user", qPoliciesPrivilegedUser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PoliciesScopeCheckExtensionsOnDirectoriesQueryParameter != nil {
+
+		// query param policies.scope.check_extensions_on_directories
+		var qrPoliciesScopeCheckExtensionsOnDirectories bool
+
+		if o.PoliciesScopeCheckExtensionsOnDirectoriesQueryParameter != nil {
+			qrPoliciesScopeCheckExtensionsOnDirectories = *o.PoliciesScopeCheckExtensionsOnDirectoriesQueryParameter
+		}
+		qPoliciesScopeCheckExtensionsOnDirectories := swag.FormatBool(qrPoliciesScopeCheckExtensionsOnDirectories)
+		if qPoliciesScopeCheckExtensionsOnDirectories != "" {
+
+			if err := r.SetQueryParam("policies.scope.check_extensions_on_directories", qPoliciesScopeCheckExtensionsOnDirectories); err != nil {
 				return err
 			}
 		}
@@ -2264,6 +2893,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qPoliciesScopeIncludeVolumes != "" {
 
 			if err := r.SetQueryParam("policies.scope.include_volumes", qPoliciesScopeIncludeVolumes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PoliciesScopeObjectMonitoringWithNoExtensionQueryParameter != nil {
+
+		// query param policies.scope.object_monitoring_with_no_extension
+		var qrPoliciesScopeObjectMonitoringWithNoExtension bool
+
+		if o.PoliciesScopeObjectMonitoringWithNoExtensionQueryParameter != nil {
+			qrPoliciesScopeObjectMonitoringWithNoExtension = *o.PoliciesScopeObjectMonitoringWithNoExtensionQueryParameter
+		}
+		qPoliciesScopeObjectMonitoringWithNoExtension := swag.FormatBool(qrPoliciesScopeObjectMonitoringWithNoExtension)
+		if qPoliciesScopeObjectMonitoringWithNoExtension != "" {
+
+			if err := r.SetQueryParam("policies.scope.object_monitoring_with_no_extension", qPoliciesScopeObjectMonitoringWithNoExtension); err != nil {
 				return err
 			}
 		}

@@ -1,5 +1,6 @@
-// DO NOT EDIT: Auto generated using 'ifacemaker -f ontap_rest.go -s RestClient -i RestClientInterface -p api'
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
+// DO NOT EDIT: Auto generated using 'ifacemaker -f ontap_rest.go -s RestClient -i RestClientInterface -p api'
 package api
 
 //go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_ontap_rest_interface.go github.com/netapp/trident/storage_drivers/ontap/api RestClientInterface
@@ -16,7 +17,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
-// RestClientInterface is the interface which RestClient implements
+// RestClientInterface ...
 type RestClientInterface interface {
 	ClientConfig() ClientConfig
 	SetSVMUUID(svmUUID string)
@@ -27,6 +28,7 @@ type RestClientInterface interface {
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	// VolumeList returns the names of all Flexvols whose names match the supplied pattern
 	VolumeList(ctx context.Context, pattern string) (*storage.VolumeCollectionGetOK, error)
+	// VolumeListByAttrs is used to find bucket volumes for nas-eco and san-eco
 	VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error)
 	// VolumeCreate creates a volume with the specified options
 	// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
@@ -93,8 +95,9 @@ type RestClientInterface interface {
 	// IscsiInterfaceGet returns information about the vserver's  iSCSI interfaces
 	IscsiInterfaceGet(ctx context.Context, svm string) (*san.IscsiServiceCollectionGetOK, error)
 	// IscsiInitiatorSetDefaultAuth sets the authorization details for the default initiator
-	// equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
-	//                           -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
+	//
+	//	equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
+	//	                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
 	IscsiInitiatorSetDefaultAuth(ctx context.Context, authType, userName, passphrase, outbountUserName, outboundPassphrase string) error
 	// IscsiNodeGetName returns information about the vserver's iSCSI node name
 	IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetOK, error)
@@ -115,13 +118,17 @@ type RestClientInterface interface {
 	IgroupGet(ctx context.Context, uuid string) (*san.IgroupGetOK, error)
 	// IgroupGetByName gets the igroup with the specified name
 	IgroupGetByName(ctx context.Context, initiatorGroupName string) (*models.Igroup, error)
+	// LunOptions gets the LUN options
+	LunOptions(ctx context.Context) (*LunOptionsResult, error)
+	// LunCloneCreate creates a LUN clone
+	LunCloneCreate(ctx context.Context, lunPath, sourcePath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup) error
 	// LunCreate creates a LUN
-	LunCreate(ctx context.Context, lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup) error
+	LunCreate(ctx context.Context, lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup, spaceReserved, spaceAllocated bool) error
 	// LunGet gets the LUN with the specified uuid
 	LunGet(ctx context.Context, uuid string) (*san.LunGetOK, error)
 	// LunGetByName gets the LUN with the specified name
 	LunGetByName(ctx context.Context, name string) (*models.Lun, error)
-	// LunList finds LUNs with the specificed pattern
+	// LunList finds LUNs with the specified pattern
 	LunList(ctx context.Context, pattern string) (*san.LunCollectionGetOK, error)
 	// LunDelete deletes a LUN
 	LunDelete(ctx context.Context, lunUUID string) error
@@ -132,6 +139,10 @@ type RestClientInterface interface {
 	// LunSetComment sets the comment for a given LUN.
 	// This is in place of the fstype and context attributes from ZAPI
 	LunSetComment(ctx context.Context, lunPath, comment string) error
+	// LunGetAttribute gets an attribute by name for a given LUN.
+	LunGetAttribute(ctx context.Context, lunPath, attributeName string) (string, error)
+	// LunSetAttribute sets the attribute to the provided value for a given LUN.
+	LunSetAttribute(ctx context.Context, lunPath, attributeName, attributeValue string) error
 	// LunSetComment sets the comment for a given LUN.
 	LunSetQosPolicyGroup(ctx context.Context, lunPath, qosPolicyGroup string) error
 	// LunRename changes the name of a LUN
@@ -144,7 +155,14 @@ type RestClientInterface interface {
 	// LunMap maps a LUN to an id in an initiator group
 	// equivalent to filer::> lun map -vserver iscsi_vs -path /vol/v/lun1 -igroup docker -lun-id 0
 	LunMap(ctx context.Context, initiatorGroupName, lunPath string, lunID int) (*san.LunMapCreateCreated, error)
-	CliPassthroughLunMappingGet(ctx context.Context, initiatorGroupName, lunPath string) (*CliPassthroughResult, error)
+	// LunMapList equivalent to the following
+	// filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
+	// filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup *
+	// filer::> lun mapping show -vserver iscsi_vs -path *           -igroup trident
+	LunMapList(ctx context.Context, initiatorGroupName, lunPath string) (*san.LunMapCollectionGetOK, error)
+	// LunMapGetReportingNodes
+	// equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
+	LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) ([]string, error)
 	// LunSize gets the size for a given LUN.
 	LunSize(ctx context.Context, lunPath string) (int, error)
 	// LunSetSize sets the size for a given LUN.
@@ -174,11 +192,8 @@ type RestClientInterface interface {
 	// ClusterInfo returns information about the cluster
 	NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
-	CliPassthroughVolumePatch(ctx context.Context, volumeName, jsonString string) (*CliPassthroughResult, error)
-	CliPassthroughEventGeneratePost(ctx context.Context, appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int, eventSource string, logLevel int) (*CliPassthroughResult, error)
 	// EmsAutosupportLog generates an auto support message with the supplied parameters
-	EmsAutosupportLog(ctx context.Context, appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int, eventSource string, logLevel int) error
-	CliPassthroughVolumeGet(ctx context.Context, volume *Volume) (*CliPassthroughResult, error)
+	EmsAutosupportLog(ctx context.Context, appVersion string, autoSupport bool, category string, computerName string, eventDescription string, eventID int, eventSource string, logLevel int) error
 	TieringPolicyValue(ctx context.Context) string
 	// ExportPolicyCreate creates an export policy
 	// equivalent to filer::> vserver export-policy create
@@ -279,3 +294,4 @@ type RestClientInterface interface {
 	// equivalent to filer::> volume quota policy rule show
 	QuotaEntryList(ctx context.Context, volumeName string) (*storage.QuotaRuleCollectionGetOK, error)
 }
+

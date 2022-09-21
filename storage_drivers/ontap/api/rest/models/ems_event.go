@@ -34,12 +34,13 @@ type EmsEvent struct {
 	LogMessage string `json:"log_message,omitempty"`
 
 	// message
-	Message *EmsEventMessage `json:"message,omitempty"`
+	Message *EmsEventMessageType `json:"message,omitempty"`
 
 	// node
 	Node *EmsEventNode `json:"node,omitempty"`
 
 	// A list of parameters provided with the EMS event.
+	// Read Only: true
 	Parameters []*EmsEventParametersItems0 `json:"parameters,omitempty"`
 
 	// Source
@@ -273,6 +274,10 @@ func (m *EmsEvent) contextValidateNode(ctx context.Context, formats strfmt.Regis
 
 func (m *EmsEvent) contextValidateParameters(ctx context.Context, formats strfmt.Registry) error {
 
+	if err := validate.ReadOnly(ctx, "parameters", "body", []*EmsEventParametersItems0(m.Parameters)); err != nil {
+		return err
+	}
+
 	for i := 0; i < len(m.Parameters); i++ {
 
 		if m.Parameters[i] != nil {
@@ -411,13 +416,13 @@ func (m *EmsEventLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsEventMessage ems event message
+// EmsEventMessageType ems event message type
 //
-// swagger:model EmsEventMessage
-type EmsEventMessage struct {
+// swagger:model EmsEventMessageType
+type EmsEventMessageType struct {
 
 	// links
-	Links *EmsEventMessageLinks `json:"_links,omitempty"`
+	Links *EmsEventMessageTypeLinksType `json:"_links,omitempty"`
 
 	// Message name of the event. Returned by default.
 	// Example: callhome.spares.low
@@ -431,8 +436,8 @@ type EmsEventMessage struct {
 	Severity string `json:"severity,omitempty"`
 }
 
-// Validate validates this ems event message
-func (m *EmsEventMessage) Validate(formats strfmt.Registry) error {
+// Validate validates this ems event message type
+func (m *EmsEventMessageType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -449,7 +454,7 @@ func (m *EmsEventMessage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsEventMessage) validateLinks(formats strfmt.Registry) error {
+func (m *EmsEventMessageType) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -466,7 +471,7 @@ func (m *EmsEventMessage) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var emsEventMessageTypeSeverityPropEnum []interface{}
+var emsEventMessageTypeTypeSeverityPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -474,82 +479,82 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		emsEventMessageTypeSeverityPropEnum = append(emsEventMessageTypeSeverityPropEnum, v)
+		emsEventMessageTypeTypeSeverityPropEnum = append(emsEventMessageTypeTypeSeverityPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// EmsEventMessage
-	// EmsEventMessage
+	// EmsEventMessageType
+	// EmsEventMessageType
 	// severity
 	// Severity
 	// emergency
 	// END DEBUGGING
-	// EmsEventMessageSeverityEmergency captures enum value "emergency"
-	EmsEventMessageSeverityEmergency string = "emergency"
+	// EmsEventMessageTypeSeverityEmergency captures enum value "emergency"
+	EmsEventMessageTypeSeverityEmergency string = "emergency"
 
 	// BEGIN DEBUGGING
-	// EmsEventMessage
-	// EmsEventMessage
+	// EmsEventMessageType
+	// EmsEventMessageType
 	// severity
 	// Severity
 	// alert
 	// END DEBUGGING
-	// EmsEventMessageSeverityAlert captures enum value "alert"
-	EmsEventMessageSeverityAlert string = "alert"
+	// EmsEventMessageTypeSeverityAlert captures enum value "alert"
+	EmsEventMessageTypeSeverityAlert string = "alert"
 
 	// BEGIN DEBUGGING
-	// EmsEventMessage
-	// EmsEventMessage
+	// EmsEventMessageType
+	// EmsEventMessageType
 	// severity
 	// Severity
 	// error
 	// END DEBUGGING
-	// EmsEventMessageSeverityError captures enum value "error"
-	EmsEventMessageSeverityError string = "error"
+	// EmsEventMessageTypeSeverityError captures enum value "error"
+	EmsEventMessageTypeSeverityError string = "error"
 
 	// BEGIN DEBUGGING
-	// EmsEventMessage
-	// EmsEventMessage
+	// EmsEventMessageType
+	// EmsEventMessageType
 	// severity
 	// Severity
 	// notice
 	// END DEBUGGING
-	// EmsEventMessageSeverityNotice captures enum value "notice"
-	EmsEventMessageSeverityNotice string = "notice"
+	// EmsEventMessageTypeSeverityNotice captures enum value "notice"
+	EmsEventMessageTypeSeverityNotice string = "notice"
 
 	// BEGIN DEBUGGING
-	// EmsEventMessage
-	// EmsEventMessage
+	// EmsEventMessageType
+	// EmsEventMessageType
 	// severity
 	// Severity
 	// informational
 	// END DEBUGGING
-	// EmsEventMessageSeverityInformational captures enum value "informational"
-	EmsEventMessageSeverityInformational string = "informational"
+	// EmsEventMessageTypeSeverityInformational captures enum value "informational"
+	EmsEventMessageTypeSeverityInformational string = "informational"
 
 	// BEGIN DEBUGGING
-	// EmsEventMessage
-	// EmsEventMessage
+	// EmsEventMessageType
+	// EmsEventMessageType
 	// severity
 	// Severity
 	// debug
 	// END DEBUGGING
-	// EmsEventMessageSeverityDebug captures enum value "debug"
-	EmsEventMessageSeverityDebug string = "debug"
+	// EmsEventMessageTypeSeverityDebug captures enum value "debug"
+	EmsEventMessageTypeSeverityDebug string = "debug"
 )
 
 // prop value enum
-func (m *EmsEventMessage) validateSeverityEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, emsEventMessageTypeSeverityPropEnum, true); err != nil {
+func (m *EmsEventMessageType) validateSeverityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsEventMessageTypeTypeSeverityPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *EmsEventMessage) validateSeverity(formats strfmt.Registry) error {
+func (m *EmsEventMessageType) validateSeverity(formats strfmt.Registry) error {
 	if swag.IsZero(m.Severity) { // not required
 		return nil
 	}
@@ -562,8 +567,8 @@ func (m *EmsEventMessage) validateSeverity(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ems event message based on the context it is used
-func (m *EmsEventMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems event message type based on the context it is used
+func (m *EmsEventMessageType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -584,7 +589,7 @@ func (m *EmsEventMessage) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *EmsEventMessage) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsEventMessageType) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -598,7 +603,7 @@ func (m *EmsEventMessage) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *EmsEventMessage) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsEventMessageType) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "message"+"."+"name", "body", string(m.Name)); err != nil {
 		return err
@@ -607,7 +612,7 @@ func (m *EmsEventMessage) contextValidateName(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *EmsEventMessage) contextValidateSeverity(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsEventMessageType) contextValidateSeverity(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "message"+"."+"severity", "body", string(m.Severity)); err != nil {
 		return err
@@ -617,7 +622,7 @@ func (m *EmsEventMessage) contextValidateSeverity(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *EmsEventMessage) MarshalBinary() ([]byte, error) {
+func (m *EmsEventMessageType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -625,8 +630,8 @@ func (m *EmsEventMessage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsEventMessage) UnmarshalBinary(b []byte) error {
-	var res EmsEventMessage
+func (m *EmsEventMessageType) UnmarshalBinary(b []byte) error {
+	var res EmsEventMessageType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -634,17 +639,17 @@ func (m *EmsEventMessage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsEventMessageLinks ems event message links
+// EmsEventMessageTypeLinksType ems event message type links type
 //
-// swagger:model EmsEventMessageLinks
-type EmsEventMessageLinks struct {
+// swagger:model EmsEventMessageTypeLinksType
+type EmsEventMessageTypeLinksType struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems event message links
-func (m *EmsEventMessageLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ems event message type links type
+func (m *EmsEventMessageTypeLinksType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -657,7 +662,7 @@ func (m *EmsEventMessageLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsEventMessageLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EmsEventMessageTypeLinksType) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -674,8 +679,8 @@ func (m *EmsEventMessageLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ems event message links based on the context it is used
-func (m *EmsEventMessageLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems event message type links type based on the context it is used
+func (m *EmsEventMessageTypeLinksType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -688,7 +693,7 @@ func (m *EmsEventMessageLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *EmsEventMessageLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsEventMessageTypeLinksType) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -703,7 +708,7 @@ func (m *EmsEventMessageLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *EmsEventMessageLinks) MarshalBinary() ([]byte, error) {
+func (m *EmsEventMessageTypeLinksType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -711,8 +716,8 @@ func (m *EmsEventMessageLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsEventMessageLinks) UnmarshalBinary(b []byte) error {
-	var res EmsEventMessageLinks
+func (m *EmsEventMessageTypeLinksType) UnmarshalBinary(b []byte) error {
+	var res EmsEventMessageTypeLinksType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

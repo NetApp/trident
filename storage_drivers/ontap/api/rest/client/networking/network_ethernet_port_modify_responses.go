@@ -78,6 +78,7 @@ func NewNetworkEthernetPortModifyDefault(code int) *NetworkEthernetPortModifyDef
 | 1376488 | Disabling the last operational cluster port on a node is not allowed. |
 | 1377562 | Port cannot be used because it is currently the home port or current port of an interface. |
 | 1377563 | Port is already a member of a LAG. |
+| 1966288 | Disabling the cluster ports can only be done on the local node. |
 | 1967087 | The specified broadcast domain UUID is not valid. |
 | 1967088 | The specified broadcast domain name does not exist in the specified IPspace. |
 | 1967089 | The specified broadcast domain UUID, name and IPspace name do not match. |

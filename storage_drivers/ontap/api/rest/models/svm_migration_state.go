@@ -19,6 +19,15 @@ import (
 // swagger:model svm_migration_state
 type SvmMigrationState string
 
+func NewSvmMigrationState(value SvmMigrationState) *SvmMigrationState {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated SvmMigrationState.
+func (m SvmMigrationState) Pointer() *SvmMigrationState {
+	return &m
+}
+
 const (
 
 	// SvmMigrationStatePrecheckStarted captures enum value "precheck_started"

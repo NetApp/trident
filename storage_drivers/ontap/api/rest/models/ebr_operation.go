@@ -737,7 +737,7 @@ func (m *EbrOperationPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationPolicySvm SVM, applies only to SVM-scoped objects.
+// EbrOperationPolicySvm ebr operation policy svm
 //
 // swagger:model EbrOperationPolicySvm
 type EbrOperationPolicySvm struct {

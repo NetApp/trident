@@ -21,6 +21,7 @@ import (
 type StoragePort struct {
 
 	// board name
+	// Read Only: true
 	BoardName string `json:"board_name,omitempty"`
 
 	// cable
@@ -28,6 +29,7 @@ type StoragePort struct {
 
 	// description
 	// Example: SAS Host Adapter 2a (PMC-Sierra PM8072 rev. C)
+	// Read Only: true
 	Description string `json:"description,omitempty"`
 
 	// enabled
@@ -38,12 +40,18 @@ type StoragePort struct {
 
 	// firmware version
 	// Example: 03.08.09.00
+	// Read Only: true
 	FirmwareVersion string `json:"firmware_version,omitempty"`
 
+	// force
+	Force bool `json:"force,omitempty"`
+
 	// Specifies whether any devices are connected through this port
-	InUse bool `json:"in_use,omitempty"`
+	// Read Only: true
+	InUse *bool `json:"in_use,omitempty"`
 
 	// mac address
+	// Read Only: true
 	MacAddress string `json:"mac_address,omitempty"`
 
 	// Operational mode of a non-dedicated Ethernet port
@@ -53,6 +61,7 @@ type StoragePort struct {
 
 	// name
 	// Example: 2a
+	// Read Only: true
 	Name string `json:"name,omitempty"`
 
 	// node
@@ -60,34 +69,42 @@ type StoragePort struct {
 
 	// part number
 	// Example: 111-03801
+	// Read Only: true
 	PartNumber string `json:"part_number,omitempty"`
 
 	// Specifies whether all devices connected through this port have a redundant path from another port
-	Redundant bool `json:"redundant,omitempty"`
+	// Read Only: true
+	Redundant *bool `json:"redundant,omitempty"`
 
 	// serial number
 	// Example: 7A2463CC45B
+	// Read Only: true
 	SerialNumber string `json:"serial_number,omitempty"`
 
 	// Operational port speed in Gbps
 	// Example: 6
+	// Read Only: true
 	Speed float64 `json:"speed,omitempty"`
 
 	// state
 	// Example: online
+	// Read Only: true
 	// Enum: [online offline error]
 	State string `json:"state,omitempty"`
 
 	// type
 	// Example: sas
+	// Read Only: true
 	// Enum: [sas fc enet]
 	Type string `json:"type,omitempty"`
 
 	// World Wide Name
 	// Example: 50000d1703544b80
+	// Read Only: true
 	Wwn string `json:"wwn,omitempty"`
 
 	// World Wide Port Name
+	// Read Only: true
 	Wwpn string `json:"wwpn,omitempty"`
 }
 
@@ -368,7 +385,15 @@ func (m *StoragePort) validateType(formats strfmt.Registry) error {
 func (m *StoragePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateBoardName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDescription(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -376,13 +401,70 @@ func (m *StoragePort) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateFirmwareVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInUse(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMacAddress(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePartNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRedundant(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSpeed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWwn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWwpn(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *StoragePort) contextValidateBoardName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "board_name", "body", string(m.BoardName)); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -395,6 +477,15 @@ func (m *StoragePort) contextValidateCable(ctx context.Context, formats strfmt.R
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+		return err
 	}
 
 	return nil
@@ -414,6 +505,42 @@ func (m *StoragePort) contextValidateError(ctx context.Context, formats strfmt.R
 	return nil
 }
 
+func (m *StoragePort) contextValidateFirmwareVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "firmware_version", "body", string(m.FirmwareVersion)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateInUse(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "in_use", "body", m.InUse); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateMacAddress(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "mac_address", "body", string(m.MacAddress)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *StoragePort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
@@ -423,6 +550,78 @@ func (m *StoragePort) contextValidateNode(ctx context.Context, formats strfmt.Re
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidatePartNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "part_number", "body", string(m.PartNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateRedundant(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "redundant", "body", m.Redundant); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateSpeed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "speed", "body", float64(m.Speed)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateWwn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "wwn", "body", string(m.Wwn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *StoragePort) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "wwpn", "body", string(m.Wwpn)); err != nil {
+		return err
 	}
 
 	return nil

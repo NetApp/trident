@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -29,9 +30,15 @@ type NfsService struct {
 	// Specifies whether or not extended groups support over AUTH_SYS is enabled.
 	AuthSysExtendedGroupsEnabled *bool `json:"auth_sys_extended_groups_enabled,omitempty"`
 
+	// credential cache
+	CredentialCache *NfsServiceCredentialCache `json:"credential_cache,omitempty"`
+
 	// Specifies if the NFS service is administratively enabled.
 	//
 	Enabled *bool `json:"enabled,omitempty"`
+
+	// exports
+	Exports *NfsServiceExports `json:"exports,omitempty"`
 
 	// Specifies the maximum auxillary groups supported over AUTH_SYS and RPCSEC_GSS.
 	// Example: 32
@@ -39,14 +46,20 @@ type NfsService struct {
 	// Minimum: 32
 	ExtendedGroupsLimit int64 `json:"extended_groups_limit,omitempty"`
 
+	// Number of I/O operations on a file to be grouped and considered as one session for event generation applications, such as FPolicy.
+	// Example: 5000
+	// Maximum: 20000
+	// Minimum: 1000
+	FileSessionIoGroupingCount int64 `json:"file_session_io_grouping_count,omitempty"`
+
+	// The duration for which I/O operations on a file will be grouped and considered as one session for event generation applications, such as FPolicy.
+	// Example: 120
+	// Maximum: 600
+	// Minimum: 60
+	FileSessionIoGroupingDuration int64 `json:"file_session_io_grouping_duration,omitempty"`
+
 	// metric
 	Metric *NfsServiceMetric `json:"metric,omitempty"`
-
-	// Specifies the time to live value (in msecs) of a positive cached credential
-	// Example: 7200000
-	// Maximum: 6.048e+08
-	// Minimum: 60000
-	PositiveCachedCredentialTTL int64 `json:"positive_cached_credential_ttl,omitempty"`
 
 	// protocol
 	Protocol *NfsServiceProtocol `json:"protocol,omitempty"`
@@ -57,8 +70,14 @@ type NfsService struct {
 	// qtree
 	Qtree *NfsServiceQtree `json:"qtree,omitempty"`
 
+	// root
+	Root *NfsServiceRoot `json:"root,omitempty"`
+
 	// Specifies whether or not the remote quota feature is enabled.
 	RquotaEnabled *bool `json:"rquota_enabled,omitempty"`
+
+	// security
+	Security *NfsServiceSecurity `json:"security,omitempty"`
 
 	// Specifies whether or not the showmount feature is enabled.
 	ShowmountEnabled *bool `json:"showmount_enabled,omitempty"`
@@ -82,6 +101,9 @@ type NfsService struct {
 
 	// Specifies whether or not the VMware vstorage feature is enabled.
 	VstorageEnabled *bool `json:"vstorage_enabled,omitempty"`
+
+	// windows
+	Windows *NfsServiceWindows `json:"windows,omitempty"`
 }
 
 // Validate validates this nfs service
@@ -96,15 +118,27 @@ func (m *NfsService) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateCredentialCache(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExports(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateExtendedGroupsLimit(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateMetric(formats); err != nil {
+	if err := m.validateFileSessionIoGroupingCount(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validatePositiveCachedCredentialTTL(formats); err != nil {
+	if err := m.validateFileSessionIoGroupingDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMetric(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -117,6 +151,14 @@ func (m *NfsService) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateQtree(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRoot(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSecurity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -133,6 +175,10 @@ func (m *NfsService) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateTransport(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWindows(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -176,6 +222,40 @@ func (m *NfsService) validateAccessCacheConfig(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NfsService) validateCredentialCache(formats strfmt.Registry) error {
+	if swag.IsZero(m.CredentialCache) { // not required
+		return nil
+	}
+
+	if m.CredentialCache != nil {
+		if err := m.CredentialCache.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("credential_cache")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) validateExports(formats strfmt.Registry) error {
+	if swag.IsZero(m.Exports) { // not required
+		return nil
+	}
+
+	if m.Exports != nil {
+		if err := m.Exports.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("exports")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NfsService) validateExtendedGroupsLimit(formats strfmt.Registry) error {
 	if swag.IsZero(m.ExtendedGroupsLimit) { // not required
 		return nil
@@ -186,6 +266,38 @@ func (m *NfsService) validateExtendedGroupsLimit(formats strfmt.Registry) error 
 	}
 
 	if err := validate.MaximumInt("extended_groups_limit", "body", m.ExtendedGroupsLimit, 1024, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsService) validateFileSessionIoGroupingCount(formats strfmt.Registry) error {
+	if swag.IsZero(m.FileSessionIoGroupingCount) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("file_session_io_grouping_count", "body", m.FileSessionIoGroupingCount, 1000, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("file_session_io_grouping_count", "body", m.FileSessionIoGroupingCount, 20000, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsService) validateFileSessionIoGroupingDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.FileSessionIoGroupingDuration) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("file_session_io_grouping_duration", "body", m.FileSessionIoGroupingDuration, 60, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("file_session_io_grouping_duration", "body", m.FileSessionIoGroupingDuration, 600, false); err != nil {
 		return err
 	}
 
@@ -204,22 +316,6 @@ func (m *NfsService) validateMetric(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *NfsService) validatePositiveCachedCredentialTTL(formats strfmt.Registry) error {
-	if swag.IsZero(m.PositiveCachedCredentialTTL) { // not required
-		return nil
-	}
-
-	if err := validate.MinimumInt("positive_cached_credential_ttl", "body", m.PositiveCachedCredentialTTL, 60000, false); err != nil {
-		return err
-	}
-
-	if err := validate.MaximumInt("positive_cached_credential_ttl", "body", m.PositiveCachedCredentialTTL, 6.048e+08, false); err != nil {
-		return err
 	}
 
 	return nil
@@ -268,6 +364,40 @@ func (m *NfsService) validateQtree(formats strfmt.Registry) error {
 		if err := m.Qtree.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("qtree")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) validateRoot(formats strfmt.Registry) error {
+	if swag.IsZero(m.Root) { // not required
+		return nil
+	}
+
+	if m.Root != nil {
+		if err := m.Root.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("root")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) validateSecurity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Security) { // not required
+		return nil
+	}
+
+	if m.Security != nil {
+		if err := m.Security.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security")
 			}
 			return err
 		}
@@ -383,6 +513,23 @@ func (m *NfsService) validateTransport(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NfsService) validateWindows(formats strfmt.Registry) error {
+	if swag.IsZero(m.Windows) { // not required
+		return nil
+	}
+
+	if m.Windows != nil {
+		if err := m.Windows.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("windows")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this nfs service based on the context it is used
 func (m *NfsService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -392,6 +539,14 @@ func (m *NfsService) ContextValidate(ctx context.Context, formats strfmt.Registr
 	}
 
 	if err := m.contextValidateAccessCacheConfig(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCredentialCache(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateExports(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -411,6 +566,14 @@ func (m *NfsService) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateRoot(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSecurity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -424,6 +587,10 @@ func (m *NfsService) ContextValidate(ctx context.Context, formats strfmt.Registr
 	}
 
 	if err := m.contextValidateTransport(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWindows(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -453,6 +620,34 @@ func (m *NfsService) contextValidateAccessCacheConfig(ctx context.Context, forma
 		if err := m.AccessCacheConfig.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("access_cache_config")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) contextValidateCredentialCache(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.CredentialCache != nil {
+		if err := m.CredentialCache.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("credential_cache")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) contextValidateExports(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Exports != nil {
+		if err := m.Exports.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("exports")
 			}
 			return err
 		}
@@ -517,6 +712,34 @@ func (m *NfsService) contextValidateQtree(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
+func (m *NfsService) contextValidateRoot(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Root != nil {
+		if err := m.Root.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("root")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) contextValidateSecurity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Security != nil {
+		if err := m.Security.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NfsService) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
@@ -560,6 +783,20 @@ func (m *NfsService) contextValidateTransport(ctx context.Context, formats strfm
 		if err := m.Transport.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("transport")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) contextValidateWindows(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Windows != nil {
+		if err := m.Windows.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("windows")
 			}
 			return err
 		}
@@ -628,6 +865,229 @@ func (m *NfsServiceAccessCacheConfig) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NfsServiceAccessCacheConfig) UnmarshalBinary(b []byte) error {
 	var res NfsServiceAccessCacheConfig
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceCredentialCache nfs service credential cache
+//
+// swagger:model NfsServiceCredentialCache
+type NfsServiceCredentialCache struct {
+
+	// Specifies the age in milliseconds, of the negative cached credentials after which they are cleared from the cache.
+	// Example: 7200000
+	// Maximum: 6.048e+08
+	// Minimum: 60000
+	NegativeTTL int64 `json:"negative_ttl,omitempty"`
+
+	// Specifies the age in milliseconds, of the positive cached credentials after which they are cleared from the cache.
+	// Example: 7200000
+	// Maximum: 6.048e+08
+	// Minimum: 60000
+	PositiveTTL int64 `json:"positive_ttl,omitempty"`
+
+	// Specifies the age in milliseconds, of the cached entries during a transient error situation.
+	// Example: 72000
+	// Maximum: 300000
+	// Minimum: 30000
+	TransientErrorTTL int64 `json:"transient_error_ttl,omitempty"`
+}
+
+// Validate validates this nfs service credential cache
+func (m *NfsServiceCredentialCache) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateNegativeTTL(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePositiveTTL(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTransientErrorTTL(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceCredentialCache) validateNegativeTTL(formats strfmt.Registry) error {
+	if swag.IsZero(m.NegativeTTL) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("credential_cache"+"."+"negative_ttl", "body", m.NegativeTTL, 60000, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("credential_cache"+"."+"negative_ttl", "body", m.NegativeTTL, 6.048e+08, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceCredentialCache) validatePositiveTTL(formats strfmt.Registry) error {
+	if swag.IsZero(m.PositiveTTL) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("credential_cache"+"."+"positive_ttl", "body", m.PositiveTTL, 60000, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("credential_cache"+"."+"positive_ttl", "body", m.PositiveTTL, 6.048e+08, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceCredentialCache) validateTransientErrorTTL(formats strfmt.Registry) error {
+	if swag.IsZero(m.TransientErrorTTL) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("credential_cache"+"."+"transient_error_ttl", "body", m.TransientErrorTTL, 30000, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("credential_cache"+"."+"transient_error_ttl", "body", m.TransientErrorTTL, 300000, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this nfs service credential cache based on context it is used
+func (m *NfsServiceCredentialCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceCredentialCache) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceCredentialCache) UnmarshalBinary(b []byte) error {
+	var res NfsServiceCredentialCache
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceExports nfs service exports
+//
+// swagger:model NfsServiceExports
+type NfsServiceExports struct {
+
+	// Specifies the protocol to use for doing name service lookups.
+	// Enum: [tcp udp]
+	NameServiceLookupProtocol *string `json:"name_service_lookup_protocol,omitempty"`
+
+	// Specifies if you can consider a no-match result from any of the netgroup ns-switch sources to be authoritative. If this option is enabled, then a no-match response from any of the netgroup ns-switch sources is deemed conclusive even if other sources could not be searched.
+	NetgroupTrustAnyNsswitchNoMatch *bool `json:"netgroup_trust_any_nsswitch_no_match,omitempty"`
+}
+
+// Validate validates this nfs service exports
+func (m *NfsServiceExports) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateNameServiceLookupProtocol(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nfsServiceExportsTypeNameServiceLookupProtocolPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["tcp","udp"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceExportsTypeNameServiceLookupProtocolPropEnum = append(nfsServiceExportsTypeNameServiceLookupProtocolPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceExports
+	// NfsServiceExports
+	// name_service_lookup_protocol
+	// NameServiceLookupProtocol
+	// tcp
+	// END DEBUGGING
+	// NfsServiceExportsNameServiceLookupProtocolTCP captures enum value "tcp"
+	NfsServiceExportsNameServiceLookupProtocolTCP string = "tcp"
+
+	// BEGIN DEBUGGING
+	// NfsServiceExports
+	// NfsServiceExports
+	// name_service_lookup_protocol
+	// NameServiceLookupProtocol
+	// udp
+	// END DEBUGGING
+	// NfsServiceExportsNameServiceLookupProtocolUDP captures enum value "udp"
+	NfsServiceExportsNameServiceLookupProtocolUDP string = "udp"
+)
+
+// prop value enum
+func (m *NfsServiceExports) validateNameServiceLookupProtocolEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceExportsTypeNameServiceLookupProtocolPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceExports) validateNameServiceLookupProtocol(formats strfmt.Registry) error {
+	if swag.IsZero(m.NameServiceLookupProtocol) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNameServiceLookupProtocolEnum("exports"+"."+"name_service_lookup_protocol", "body", *m.NameServiceLookupProtocol); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this nfs service exports based on context it is used
+func (m *NfsServiceExports) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceExports) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceExports) UnmarshalBinary(b []byte) error {
+	var res NfsServiceExports
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3245,6 +3705,9 @@ type NfsServiceProtocol struct {
 	// Specifies whether NFSv3 protocol is enabled.
 	V3Enabled *bool `json:"v3_enabled,omitempty"`
 
+	// v3 features
+	V3Features *NfsServiceProtocolV3Features `json:"v3_features,omitempty"`
+
 	// Specifies whether NFSv4.0 protocol is enabled.
 	V40Enabled *bool `json:"v40_enabled,omitempty"`
 
@@ -3270,6 +3733,10 @@ type NfsServiceProtocol struct {
 func (m *NfsServiceProtocol) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateV3Features(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateV40Features(formats); err != nil {
 		res = append(res, err)
 	}
@@ -3281,6 +3748,23 @@ func (m *NfsServiceProtocol) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NfsServiceProtocol) validateV3Features(formats strfmt.Registry) error {
+	if swag.IsZero(m.V3Features) { // not required
+		return nil
+	}
+
+	if m.V3Features != nil {
+		if err := m.V3Features.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("protocol" + "." + "v3_features")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -3322,6 +3806,10 @@ func (m *NfsServiceProtocol) validateV41Features(formats strfmt.Registry) error 
 func (m *NfsServiceProtocol) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateV3Features(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateV40Features(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -3333,6 +3821,20 @@ func (m *NfsServiceProtocol) ContextValidate(ctx context.Context, formats strfmt
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NfsServiceProtocol) contextValidateV3Features(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.V3Features != nil {
+		if err := m.V3Features.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("protocol" + "." + "v3_features")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -3643,6 +4145,64 @@ func (m *NfsServiceProtocolAccessRules) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// NfsServiceProtocolV3Features nfs service protocol v3 features
+//
+// swagger:model NfsServiceProtocolV3Features
+type NfsServiceProtocolV3Features struct {
+
+	// Specfies whether the dropping of a connection when an NFSv3 request is dropped is enabled.
+	ConnectionDrop *bool `json:"connection_drop,omitempty"`
+
+	// Specifies whether NFSv3 EJUKEBOX error is enabled.
+	EjukeboxEnabled *bool `json:"ejukebox_enabled,omitempty"`
+
+	// Specifies whether the change in FSID as NFSv3 clients traverse filesystems should be shown.
+	FsidChange *bool `json:"fsid_change,omitempty"`
+
+	// Specifies which port the NFS mount daemon (mountd) uses.
+	MountDaemonPort *int64 `json:"mount_daemon_port,omitempty"`
+
+	// Specifies whether the SVM allows MOUNT protocol calls only from privileged ports (port numbers less than 1024).
+	MountRootOnly *bool `json:"mount_root_only,omitempty"`
+
+	// Specifies which port the Network lock manager uses.
+	NetworkLockManagerPort *int64 `json:"network_lock_manager_port,omitempty"`
+
+	// Specifies which port the Network status monitor port uses.
+	NetworkStatusMonitorPort *int64 `json:"network_status_monitor_port,omitempty"`
+
+	// Specifies which port the NFS quota daemon port uses.
+	RquotaDaemonPort *int64 `json:"rquota_daemon_port,omitempty"`
+}
+
+// Validate validates this nfs service protocol v3 features
+func (m *NfsServiceProtocolV3Features) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nfs service protocol v3 features based on context it is used
+func (m *NfsServiceProtocolV3Features) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceProtocolV3Features) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceProtocolV3Features) UnmarshalBinary(b []byte) error {
+	var res NfsServiceProtocolV3Features
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NfsServiceProtocolV40Features nfs service protocol v40 features
 //
 // swagger:model NfsServiceProtocolV40Features
@@ -3650,6 +4210,15 @@ type NfsServiceProtocolV40Features struct {
 
 	// Specifies whether NFSv4.0 ACLs is enabled.
 	ACLEnabled *bool `json:"acl_enabled,omitempty"`
+
+	// Specifies the maximum number of aces in a NFSv4.0 ACL.
+	// Example: 500
+	// Maximum: 1024
+	// Minimum: 192
+	ACLMaxAces int64 `json:"acl_max_aces,omitempty"`
+
+	// Specifies if the NFSv4 ACL is preserved or dropped when chmod is performed. In unified security style, this parameter also specifies if NTFS file permissions are preserved or dropped when chmod, chgrp, or chown are performed.
+	ACLPreserve *bool `json:"acl_preserve,omitempty"`
 
 	// Specifies whether NFSv4.0 Read Delegation is enabled.
 	ReadDelegationEnabled *bool `json:"read_delegation_enabled,omitempty"`
@@ -3660,6 +4229,31 @@ type NfsServiceProtocolV40Features struct {
 
 // Validate validates this nfs service protocol v40 features
 func (m *NfsServiceProtocolV40Features) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateACLMaxAces(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceProtocolV40Features) validateACLMaxAces(formats strfmt.Registry) error {
+	if swag.IsZero(m.ACLMaxAces) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("protocol"+"."+"v40_features"+"."+"acl_max_aces", "body", m.ACLMaxAces, 192, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("protocol"+"."+"v40_features"+"."+"acl_max_aces", "body", m.ACLMaxAces, 1024, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -3693,6 +4287,12 @@ type NfsServiceProtocolV41Features struct {
 
 	// Specifies whether NFSv4.1 or later ACLs is enabled.
 	ACLEnabled *bool `json:"acl_enabled,omitempty"`
+
+	// Specifies the NFSv4.1 or later implementation ID domain.
+	ImplementationDomain *string `json:"implementation_domain,omitempty"`
+
+	// Specifies the NFSv4.1 or later implementation ID name.
+	ImplementationName string `json:"implementation_name,omitempty"`
 
 	// Specifies whether NFSv4.1 or later Parallel NFS is enabled.
 	PnfsEnabled *bool `json:"pnfs_enabled,omitempty"`
@@ -3765,6 +4365,282 @@ func (m *NfsServiceQtree) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NfsServiceQtree) UnmarshalBinary(b []byte) error {
 	var res NfsServiceQtree
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceRoot nfs service root
+//
+// swagger:model NfsServiceRoot
+type NfsServiceRoot struct {
+
+	// Specifies whether Windows ACLs affect root access from NFS. If this option is enabled, root access from NFS ignores the NT ACL set on the file or directory.
+	IgnoreNtACL *bool `json:"ignore_nt_acl,omitempty"`
+
+	// Specifies if permission checks are to be skipped for NFS WRITE calls from root/owner. For copying read-only files to a destination folder which has inheritable ACLs, this option must be enabled.
+	SkipWritePermissionCheck *bool `json:"skip_write_permission_check,omitempty"`
+}
+
+// Validate validates this nfs service root
+func (m *NfsServiceRoot) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nfs service root based on context it is used
+func (m *NfsServiceRoot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceRoot) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceRoot) UnmarshalBinary(b []byte) error {
+	var res NfsServiceRoot
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceSecurity nfs service security
+//
+// swagger:model NfsServiceSecurity
+type NfsServiceSecurity struct {
+
+	// Specifies whether file ownership can be changed only by the superuser, or if a non-root user can also change file ownership. If you set this parameter to restricted, file ownership can be changed only by the superuser, even though the on-disk permissions allow a non-root user to change file ownership. If you set this parameter to unrestricted, file ownership can be changed by the superuser and by the non-root user, depending upon the access granted by on-disk permissions. If you set this parameter to use-export-policy, file ownership can be changed in accordance with the relevant export rules.
+	// Enum: [restricted unrestricted use_export_policy]
+	ChownMode *string `json:"chown_mode,omitempty"`
+
+	// Controls the permissions that are displayed to NFSv3 and NFSv4 clients on a file or directory that has an NT ACL set. When true, the displayed permissions are based on the maximum access granted by the NT ACL to any user. When false, the displayed permissions are based on the minimum access granted by the NT ACL to any user.
+	NtACLDisplayPermission *bool `json:"nt_acl_display_permission,omitempty"`
+
+	// Specifies how NFSv3 security changes affect NTFS volumes. If you set this parameter to ignore, ONTAP ignores NFSv3 security changes. If you set this parameter to fail, this overrides the UNIX security options set in the relevant export rules. If you set this parameter to use_export_policy, ONTAP processes NFSv3 security changes in accordance with the relevant export rules.
+	// Enum: [ignore fail use_export_policy]
+	NtfsUnixSecurity *string `json:"ntfs_unix_security,omitempty"`
+
+	// Specifies the permitted encryption types for Kerberos over NFS.
+	PermittedEncryptionTypes []string `json:"permitted_encryption_types,omitempty"`
+
+	// Specifies, in seconds, the amount of time a RPCSEC_GSS context is permitted to remain unused before it is deleted.
+	RpcsecContextIdle int64 `json:"rpcsec_context_idle,omitempty"`
+}
+
+// Validate validates this nfs service security
+func (m *NfsServiceSecurity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateChownMode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNtfsUnixSecurity(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePermittedEncryptionTypes(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nfsServiceSecurityTypeChownModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["restricted","unrestricted","use_export_policy"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceSecurityTypeChownModePropEnum = append(nfsServiceSecurityTypeChownModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceSecurity
+	// NfsServiceSecurity
+	// chown_mode
+	// ChownMode
+	// restricted
+	// END DEBUGGING
+	// NfsServiceSecurityChownModeRestricted captures enum value "restricted"
+	NfsServiceSecurityChownModeRestricted string = "restricted"
+
+	// BEGIN DEBUGGING
+	// NfsServiceSecurity
+	// NfsServiceSecurity
+	// chown_mode
+	// ChownMode
+	// unrestricted
+	// END DEBUGGING
+	// NfsServiceSecurityChownModeUnrestricted captures enum value "unrestricted"
+	NfsServiceSecurityChownModeUnrestricted string = "unrestricted"
+
+	// BEGIN DEBUGGING
+	// NfsServiceSecurity
+	// NfsServiceSecurity
+	// chown_mode
+	// ChownMode
+	// use_export_policy
+	// END DEBUGGING
+	// NfsServiceSecurityChownModeUseExportPolicy captures enum value "use_export_policy"
+	NfsServiceSecurityChownModeUseExportPolicy string = "use_export_policy"
+)
+
+// prop value enum
+func (m *NfsServiceSecurity) validateChownModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceSecurityTypeChownModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceSecurity) validateChownMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.ChownMode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateChownModeEnum("security"+"."+"chown_mode", "body", *m.ChownMode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var nfsServiceSecurityTypeNtfsUnixSecurityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ignore","fail","use_export_policy"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceSecurityTypeNtfsUnixSecurityPropEnum = append(nfsServiceSecurityTypeNtfsUnixSecurityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceSecurity
+	// NfsServiceSecurity
+	// ntfs_unix_security
+	// NtfsUnixSecurity
+	// ignore
+	// END DEBUGGING
+	// NfsServiceSecurityNtfsUnixSecurityIgnore captures enum value "ignore"
+	NfsServiceSecurityNtfsUnixSecurityIgnore string = "ignore"
+
+	// BEGIN DEBUGGING
+	// NfsServiceSecurity
+	// NfsServiceSecurity
+	// ntfs_unix_security
+	// NtfsUnixSecurity
+	// fail
+	// END DEBUGGING
+	// NfsServiceSecurityNtfsUnixSecurityFail captures enum value "fail"
+	NfsServiceSecurityNtfsUnixSecurityFail string = "fail"
+
+	// BEGIN DEBUGGING
+	// NfsServiceSecurity
+	// NfsServiceSecurity
+	// ntfs_unix_security
+	// NtfsUnixSecurity
+	// use_export_policy
+	// END DEBUGGING
+	// NfsServiceSecurityNtfsUnixSecurityUseExportPolicy captures enum value "use_export_policy"
+	NfsServiceSecurityNtfsUnixSecurityUseExportPolicy string = "use_export_policy"
+)
+
+// prop value enum
+func (m *NfsServiceSecurity) validateNtfsUnixSecurityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceSecurityTypeNtfsUnixSecurityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceSecurity) validateNtfsUnixSecurity(formats strfmt.Registry) error {
+	if swag.IsZero(m.NtfsUnixSecurity) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNtfsUnixSecurityEnum("security"+"."+"ntfs_unix_security", "body", *m.NtfsUnixSecurity); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var nfsServiceSecurityPermittedEncryptionTypesItemsEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["aes_256","aes_128","des3","des"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceSecurityPermittedEncryptionTypesItemsEnum = append(nfsServiceSecurityPermittedEncryptionTypesItemsEnum, v)
+	}
+}
+
+func (m *NfsServiceSecurity) validatePermittedEncryptionTypesItemsEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceSecurityPermittedEncryptionTypesItemsEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceSecurity) validatePermittedEncryptionTypes(formats strfmt.Registry) error {
+	if swag.IsZero(m.PermittedEncryptionTypes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PermittedEncryptionTypes); i++ {
+
+		// value enum
+		if err := m.validatePermittedEncryptionTypesItemsEnum("security"+"."+"permitted_encryption_types"+"."+strconv.Itoa(i), "body", m.PermittedEncryptionTypes[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validates this nfs service security based on context it is used
+func (m *NfsServiceSecurity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceSecurity) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceSecurity) UnmarshalBinary(b []byte) error {
+	var res NfsServiceSecurity
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5732,6 +6608,12 @@ type NfsServiceTransport struct {
 	//
 	TCPEnabled *bool `json:"tcp_enabled,omitempty"`
 
+	// Specifies the maximum transfer size in bytes, that the storage system negotiates with the client for TCP transport of data for NFSv3 and NFSv4.x protocols. The range is 8192 to 1048576.
+	// Example: 16384
+	// Maximum: 1.048576e+06
+	// Minimum: 8192
+	TCPMaxTransferSize int64 `json:"tcp_max_transfer_size,omitempty"`
+
 	// Specifies whether UDP transports are enabled on the server.
 	//
 	UDPEnabled *bool `json:"udp_enabled,omitempty"`
@@ -5739,6 +6621,31 @@ type NfsServiceTransport struct {
 
 // Validate validates this nfs service transport
 func (m *NfsServiceTransport) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateTCPMaxTransferSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceTransport) validateTCPMaxTransferSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.TCPMaxTransferSize) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("transport"+"."+"tcp_max_transfer_size", "body", m.TCPMaxTransferSize, 8192, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("transport"+"."+"tcp_max_transfer_size", "body", m.TCPMaxTransferSize, 1.048576e+06, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -5758,6 +6665,49 @@ func (m *NfsServiceTransport) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NfsServiceTransport) UnmarshalBinary(b []byte) error {
 	var res NfsServiceTransport
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceWindows nfs service windows
+//
+// swagger:model NfsServiceWindows
+type NfsServiceWindows struct {
+
+	// Specifies the default Windows user for the NFS server.
+	DefaultUser string `json:"default_user,omitempty"`
+
+	// Specifies whether or not the mapping of an unknown UID to the default Windows user is enabled.
+	MapUnknownUIDToDefaultUser *bool `json:"map_unknown_uid_to_default_user,omitempty"`
+
+	// Specifies whether NFSv3 MS-DOS client support is enabled.
+	V3MsDosClientEnabled *bool `json:"v3_ms_dos_client_enabled,omitempty"`
+}
+
+// Validate validates this nfs service windows
+func (m *NfsServiceWindows) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nfs service windows based on context it is used
+func (m *NfsServiceWindows) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceWindows) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceWindows) UnmarshalBinary(b []byte) error {
+	var res NfsServiceWindows
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

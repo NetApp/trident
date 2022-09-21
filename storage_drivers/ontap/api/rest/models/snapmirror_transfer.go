@@ -61,7 +61,7 @@ type SnapmirrorTransfer struct {
 	// This is supported for transfer of restore relationship only. Set this property to "false" to turn off storage efficiency for data transferred over the wire and written to the destination.
 	StorageEfficiencyEnabled *bool `json:"storage_efficiency_enabled,omitempty"`
 
-	// Throttle in KB/s. Defaults to throttle setting of the associated SnapMirror policy if set, or 0, which is interpreted as unlimited.
+	// Throttle, in KBs per second. This "throttle" overrides the "throttle" set on the SnapMirror relationship or SnapMirror relationship's policy. If neither of these are set, defaults to 0, which is interpreted as unlimited.
 	Throttle int64 `json:"throttle,omitempty"`
 
 	// Elapsed transfer time.

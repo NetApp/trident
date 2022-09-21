@@ -19,6 +19,15 @@ import (
 // swagger:model network_scope_readonly
 type NetworkScopeReadonly string
 
+func NewNetworkScopeReadonly(value NetworkScopeReadonly) *NetworkScopeReadonly {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated NetworkScopeReadonly.
+func (m NetworkScopeReadonly) Pointer() *NetworkScopeReadonly {
+	return &m
+}
+
 const (
 
 	// NetworkScopeReadonlySvm captures enum value "svm"

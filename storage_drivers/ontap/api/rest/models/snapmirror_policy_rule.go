@@ -110,7 +110,7 @@ func (m *SnapmirrorPolicyRule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorPolicyRuleCreationSchedule Schedule used to create Snapshot copies on the destination for long term retention.
+// SnapmirrorPolicyRuleCreationSchedule Schedule used to create Snapshot copies on the destination for long term retention. Only cron schedules are supported for SnapMirror.
 //
 // swagger:model SnapmirrorPolicyRuleCreationSchedule
 type SnapmirrorPolicyRuleCreationSchedule struct {

@@ -66,6 +66,12 @@ type RoleCollectionGetParams struct {
 	*/
 	BuiltinQueryParameter *bool
 
+	/* Comment.
+
+	   Filter by comment
+	*/
+	CommentQueryParameter *string
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -113,6 +119,12 @@ type RoleCollectionGetParams struct {
 	   Filter by privileges.path
 	*/
 	PrivilegesPathQueryParameter *string
+
+	/* PrivilegesQuery.
+
+	   Filter by privileges.query
+	*/
+	PrivilegesQueryQueryParameter *string
 
 	/* ReturnRecords.
 
@@ -214,6 +226,17 @@ func (o *RoleCollectionGetParams) SetBuiltinQueryParameter(builtin *bool) {
 	o.BuiltinQueryParameter = builtin
 }
 
+// WithCommentQueryParameter adds the comment to the role collection get params
+func (o *RoleCollectionGetParams) WithCommentQueryParameter(comment *string) *RoleCollectionGetParams {
+	o.SetCommentQueryParameter(comment)
+	return o
+}
+
+// SetCommentQueryParameter adds the comment to the role collection get params
+func (o *RoleCollectionGetParams) SetCommentQueryParameter(comment *string) {
+	o.CommentQueryParameter = comment
+}
+
 // WithFieldsQueryParameter adds the fields to the role collection get params
 func (o *RoleCollectionGetParams) WithFieldsQueryParameter(fields []string) *RoleCollectionGetParams {
 	o.SetFieldsQueryParameter(fields)
@@ -302,6 +325,17 @@ func (o *RoleCollectionGetParams) SetPrivilegesPathQueryParameter(privilegesPath
 	o.PrivilegesPathQueryParameter = privilegesPath
 }
 
+// WithPrivilegesQueryQueryParameter adds the privilegesQuery to the role collection get params
+func (o *RoleCollectionGetParams) WithPrivilegesQueryQueryParameter(privilegesQuery *string) *RoleCollectionGetParams {
+	o.SetPrivilegesQueryQueryParameter(privilegesQuery)
+	return o
+}
+
+// SetPrivilegesQueryQueryParameter adds the privilegesQuery to the role collection get params
+func (o *RoleCollectionGetParams) SetPrivilegesQueryQueryParameter(privilegesQuery *string) {
+	o.PrivilegesQueryQueryParameter = privilegesQuery
+}
+
 // WithReturnRecordsQueryParameter adds the returnRecords to the role collection get params
 func (o *RoleCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *RoleCollectionGetParams {
 	o.SetReturnRecordsQueryParameter(returnRecords)
@@ -355,6 +389,23 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qBuiltin != "" {
 
 			if err := r.SetQueryParam("builtin", qBuiltin); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CommentQueryParameter != nil {
+
+		// query param comment
+		var qrComment string
+
+		if o.CommentQueryParameter != nil {
+			qrComment = *o.CommentQueryParameter
+		}
+		qComment := qrComment
+		if qComment != "" {
+
+			if err := r.SetQueryParam("comment", qComment); err != nil {
 				return err
 			}
 		}
@@ -479,6 +530,23 @@ func (o *RoleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qPrivilegesPath != "" {
 
 			if err := r.SetQueryParam("privileges.path", qPrivilegesPath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PrivilegesQueryQueryParameter != nil {
+
+		// query param privileges.query
+		var qrPrivilegesQuery string
+
+		if o.PrivilegesQueryQueryParameter != nil {
+			qrPrivilegesQuery = *o.PrivilegesQueryQueryParameter
+		}
+		qPrivilegesQuery := qrPrivilegesQuery
+		if qPrivilegesQuery != "" {
+
+			if err := r.SetQueryParam("privileges.query", qPrivilegesQuery); err != nil {
 				return err
 			}
 		}

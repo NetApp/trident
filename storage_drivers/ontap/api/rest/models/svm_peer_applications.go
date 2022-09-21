@@ -19,6 +19,15 @@ import (
 // swagger:model svm_peer_applications
 type SvmPeerApplications string
 
+func NewSvmPeerApplications(value SvmPeerApplications) *SvmPeerApplications {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated SvmPeerApplications.
+func (m SvmPeerApplications) Pointer() *SvmPeerApplications {
+	return &m
+}
+
 const (
 
 	// SvmPeerApplicationsSnapmirror captures enum value "snapmirror"

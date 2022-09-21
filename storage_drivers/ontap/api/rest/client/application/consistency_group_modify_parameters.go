@@ -64,7 +64,7 @@ type ConsistencyGroupModifyParams struct {
 
 	/* Info.
 
-	   Request content used to patch a consistency group
+	   Request for content used to update a consistency group
 
 	*/
 	Info *models.ConsistencyGroup

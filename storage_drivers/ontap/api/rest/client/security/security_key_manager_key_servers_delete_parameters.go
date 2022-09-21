@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewSecurityKeyManagerKeyServersDeleteParams creates a new SecurityKeyManagerKeyServersDeleteParams object,
@@ -59,9 +60,16 @@ func NewSecurityKeyManagerKeyServersDeleteParamsWithHTTPClient(client *http.Clie
 */
 type SecurityKeyManagerKeyServersDeleteParams struct {
 
+	/* Force.
+
+	   Set the force flag to "true" to bypass out of quorum checks when removing a primary key server.
+
+	*/
+	ForceQueryParameter *bool
+
 	/* Server.
 
-	   Key server configured in the external key manager.
+	   Primary key server configured in the external key manager.
 	*/
 	ServerPathParameter string
 
@@ -88,7 +96,18 @@ func (o *SecurityKeyManagerKeyServersDeleteParams) WithDefaults() *SecurityKeyMa
 //
 // All values with no default are reset to their zero value.
 func (o *SecurityKeyManagerKeyServersDeleteParams) SetDefaults() {
-	// no default values defined for this parameter
+	var (
+		forceQueryParameterDefault = bool(false)
+	)
+
+	val := SecurityKeyManagerKeyServersDeleteParams{
+		ForceQueryParameter: &forceQueryParameterDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the security key manager key servers delete params
@@ -124,6 +143,17 @@ func (o *SecurityKeyManagerKeyServersDeleteParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
+// WithForceQueryParameter adds the force to the security key manager key servers delete params
+func (o *SecurityKeyManagerKeyServersDeleteParams) WithForceQueryParameter(force *bool) *SecurityKeyManagerKeyServersDeleteParams {
+	o.SetForceQueryParameter(force)
+	return o
+}
+
+// SetForceQueryParameter adds the force to the security key manager key servers delete params
+func (o *SecurityKeyManagerKeyServersDeleteParams) SetForceQueryParameter(force *bool) {
+	o.ForceQueryParameter = force
+}
+
 // WithServerPathParameter adds the server to the security key manager key servers delete params
 func (o *SecurityKeyManagerKeyServersDeleteParams) WithServerPathParameter(server string) *SecurityKeyManagerKeyServersDeleteParams {
 	o.SetServerPathParameter(server)
@@ -153,6 +183,23 @@ func (o *SecurityKeyManagerKeyServersDeleteParams) WriteToRequest(r runtime.Clie
 		return err
 	}
 	var res []error
+
+	if o.ForceQueryParameter != nil {
+
+		// query param force
+		var qrForce bool
+
+		if o.ForceQueryParameter != nil {
+			qrForce = *o.ForceQueryParameter
+		}
+		qForce := swag.FormatBool(qrForce)
+		if qForce != "" {
+
+			if err := r.SetQueryParam("force", qForce); err != nil {
+				return err
+			}
+		}
+	}
 
 	// path param server
 	if err := r.SetPathParam("server", o.ServerPathParameter); err != nil {

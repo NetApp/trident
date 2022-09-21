@@ -31,18 +31,15 @@ type Switch struct {
 	Discovered *bool `json:"discovered,omitempty"`
 
 	// Model Number.
-	// Read Only: true
 	Model string `json:"model,omitempty"`
 
 	// monitoring
 	Monitoring *SwitchMonitoring `json:"monitoring,omitempty"`
 
 	// Name.
-	// Read Only: true
 	Name string `json:"name,omitempty"`
 
 	// Switch Network.
-	// Read Only: true
 	// Enum: [cluster management storage]
 	Network string `json:"network,omitempty"`
 
@@ -213,19 +210,7 @@ func (m *Switch) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateModel(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateMonitoring(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateName(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateNetwork(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -270,15 +255,6 @@ func (m *Switch) contextValidateDiscovered(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *Switch) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "model", "body", string(m.Model)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *Switch) contextValidateMonitoring(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Monitoring != nil {
@@ -288,24 +264,6 @@ func (m *Switch) contextValidateMonitoring(ctx context.Context, formats strfmt.R
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *Switch) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Switch) contextValidateNetwork(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "network", "body", string(m.Network)); err != nil {
-		return err
 	}
 
 	return nil

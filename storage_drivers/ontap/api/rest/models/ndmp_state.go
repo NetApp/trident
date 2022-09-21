@@ -19,6 +19,15 @@ import (
 // swagger:model ndmp_state
 type NdmpState string
 
+func NewNdmpState(value NdmpState) *NdmpState {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated NdmpState.
+func (m NdmpState) Pointer() *NdmpState {
+	return &m
+}
+
 const (
 
 	// NdmpStateActive captures enum value "active"

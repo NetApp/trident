@@ -19,6 +19,15 @@ import (
 // swagger:model ip_service_policy_svm_enum
 type IPServicePolicySvmEnum string
 
+func NewIPServicePolicySvmEnum(value IPServicePolicySvmEnum) *IPServicePolicySvmEnum {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated IPServicePolicySvmEnum.
+func (m IPServicePolicySvmEnum) Pointer() *IPServicePolicySvmEnum {
+	return &m
+}
+
 const (
 
 	// IPServicePolicySvmEnumDefaultDashManagement captures enum value "default-management"
@@ -29,6 +38,12 @@ const (
 
 	// IPServicePolicySvmEnumDefaultDashDataDashBlocks captures enum value "default-data-blocks"
 	IPServicePolicySvmEnumDefaultDashDataDashBlocks IPServicePolicySvmEnum = "default-data-blocks"
+
+	// IPServicePolicySvmEnumDefaultDashDataDashIscsi captures enum value "default-data-iscsi"
+	IPServicePolicySvmEnumDefaultDashDataDashIscsi IPServicePolicySvmEnum = "default-data-iscsi"
+
+	// IPServicePolicySvmEnumDefaultDashDataDashNvmeDashTCP captures enum value "default-data-nvme-tcp"
+	IPServicePolicySvmEnumDefaultDashDataDashNvmeDashTCP IPServicePolicySvmEnum = "default-data-nvme-tcp"
 )
 
 // for schema
@@ -36,7 +51,7 @@ var ipServicePolicySvmEnumEnum []interface{}
 
 func init() {
 	var res []IPServicePolicySvmEnum
-	if err := json.Unmarshal([]byte(`["default-management","default-data-files","default-data-blocks"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["default-management","default-data-files","default-data-blocks","default-data-iscsi","default-data-nvme-tcp"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

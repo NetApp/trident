@@ -23,6 +23,12 @@ type AggregateModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *AggregateModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
+	case 200:
+		result := NewAggregateModifyOK()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	case 202:
 		result := NewAggregateModifyAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -39,6 +45,38 @@ func (o *AggregateModifyReader) ReadResponse(response runtime.ClientResponse, co
 		}
 		return nil, result
 	}
+}
+
+// NewAggregateModifyOK creates a AggregateModifyOK with default headers values
+func NewAggregateModifyOK() *AggregateModifyOK {
+	return &AggregateModifyOK{}
+}
+
+/* AggregateModifyOK describes a response with status code 200, with default header values.
+
+OK
+*/
+type AggregateModifyOK struct {
+	Payload *models.AggregatePatch
+}
+
+func (o *AggregateModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyOK  %+v", 200, o.Payload)
+}
+func (o *AggregateModifyOK) GetPayload() *models.AggregatePatch {
+	return o.Payload
+}
+
+func (o *AggregateModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AggregatePatch)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
 }
 
 // NewAggregateModifyAccepted creates a AggregateModifyAccepted with default headers values
@@ -93,6 +131,8 @@ func NewAggregateModifyDefault(code int) *AggregateModifyDefault {
 | 786447 | Failed to modify the aggregate. |
 | 786456 | Failed to add disks to the aggregate. |
 | 786458 | Failed to rename aggregate. |
+| 786465 | Failed to take aggregate offline because of the reason outlined in the message. |
+| 786467 | Failed to take aggregate online because of the reason outlined in the message. |
 | 786468 | VLDB is offline. |
 | 786472 | Node that hosts the aggregate is offline. |
 | 786479 | Cannot find node ID for the node. |
@@ -117,6 +157,19 @@ func NewAggregateModifyDefault(code int) *AggregateModifyDefault {
 | 787172 | This query is only allowed during the modification of the specified field. |
 | 787178 | Unmirroring an aggregate with a PATCH operation is not supported. |
 | 787187 | Internal error. Failed to check if the aggregate is a FabricPool. |
+| 787266 | Invalid aggregate state. This state is not supported for a PATCH operation. |
+| 787273 | Allocation unit count is not valid. |
+| 787274 | Raidtype is not valid. |
+| 787275 | Patch request with multiple records is not valid. |
+| 787276 | Storage pool name and uuid do not match. |
+| 787277 | Storage pool name and uuid are empty. |
+| 787278 | Incorrect storage pool name specified. |
+| 787279 | Incorrect storage pool uuid specified. |
+| 787280 | Allocation unit count specified is smaller than the existing allocation unit count. |
+| 787281 | Cannot modify RAID type of aggregate hybrid cache tier. |
+| 787282 | RAID group must be specified on a disk addition to an aggregate with mixed RAID types. |
+| 787283 | RAID group must be specified on a disk addition to a Flash Pool aggregate. |
+| 787284 | The specified RAID group uses capacity from one or more storage pools. |
 | 1258699 | Cannot use all the disks specified for the requested operation. |
 | 1263500 | Operation will lead to creation of new raid group. |
 | 1263501 | Operation will exceed half of the maximum volume sizes allowed on the node. |
@@ -126,8 +179,34 @@ func NewAggregateModifyDefault(code int) *AggregateModifyDefault {
 | 1263598 | One or more selected disks will be partitioned. |
 | 1263624 | Operation will lead to a no sparecore condition. |
 | 2425736 | No matching node found for the UUID provided. |
+| 7208962 | Aggregate in an inconsistent state. |
+| 7208993 | Failed to offline as the volume is being used. |
+| 7209033 | CIFS open files prevent operation. |
 | 7209049 | Cannot perform the operation because the aggregate is currently expanding. |
 | 7209075 | Cannot perform the operation because the volume size limit for this system type would be exceeded. |
+| 7209090 | Inconsistent state. |
+| 7209183 | Volume is a partial volume. |
+| 7209229 | This version of ONTAP does not recognize the filesystem. It is probably from a later version of the software and is being left offline. |
+| 7209246 | The specified operation could not be completed as the volume is currently busy. |
+| 7209247 | The volume was not found. |
+| 7209263 | Container has failed. |
+| 7209271 | wafliron is currently active. |
+| 7209275 | Container was created in an unclustered ONTAP deployment. |
+| 7209463 | Nvfile replay pending. |
+| 7209966 | Another online request is already in progress for aggregate. The previous online request is waiting on a response from the licensing manager. |
+| 11206666 | Storage pool is not healthy. |
+| 11210659 | Aggregate is not online. |
+| 11210662 | Adding capacity from storage pool to a mirrored aggregate is not supported. |
+| 11210667 | Storage pool does not have enough spare allocation units. |
+| 11210670 | Cannot add capacity from storage pool to aggregate, because currently allocated capacity to the aggregate does not span across all disks belonging to the storage pool. |
+| 11210672 | Cannot grow aggregate as no capacity is allocated to it from storage pool. |
+| 11210673 | Mixing of physical SSDs and capacity from a storage pool is not allowed in same aggregate. |
+| 11210675 | Capacity in storage pool belongs to different fault isolation domain than aggregate. |
+| 11210678 | Storage pool does not have enough disks to create RAID groups of same raid type as that of already allocated cache tier. |
+| 11210679 | Storage pool does not have enough disks to create RAID groups of type RAID-DP. |
+| 11210680 | Storage pool does not have enough disks to create RAID groups of same raid type as that of the aggregate. |
+| 11210685 | Storage pool does not have enough disks to create RAID groups of type RAID-TEC. |
+| 11210688 | Capacity from storage pool cannot be added to an SSD aggregate and a Flash Pool. |
 | 13108106 | Cannot run aggregate relocation because volume expand is in progress. |
 | 19726347 | There are a number of unassigned disks visible to the node that owns this aggregate. |
 | 19726382 | Another provisioning operation is in progress on this cluster. Wait a few minutes, and try the operation again. |

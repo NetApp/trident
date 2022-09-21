@@ -96,11 +96,41 @@ type NfsCollectionGetParams struct {
 	*/
 	AuthSysExtendedGroupsEnabledQueryParameter *bool
 
+	/* CredentialCacheNegativeTTL.
+
+	   Filter by credential_cache.negative_ttl
+	*/
+	CredentialCacheNegativeTTLQueryParameter *int64
+
+	/* CredentialCachePositiveTTL.
+
+	   Filter by credential_cache.positive_ttl
+	*/
+	CredentialCachePositiveTTLQueryParameter *int64
+
+	/* CredentialCacheTransientErrorTTL.
+
+	   Filter by credential_cache.transient_error_ttl
+	*/
+	CredentialCacheTransientErrorTTLQueryParameter *int64
+
 	/* Enabled.
 
 	   Filter by enabled
 	*/
 	EnabledQueryParameter *bool
+
+	/* ExportsNameServiceLookupProtocol.
+
+	   Filter by exports.name_service_lookup_protocol
+	*/
+	ExportsNameServiceLookupProtocolQueryParameter *string
+
+	/* ExportsNetgroupTrustAnyNsswitchNoMatch.
+
+	   Filter by exports.netgroup_trust_any_nsswitch_no_match
+	*/
+	ExportsNetgroupTrustAnyNsswitchNoMatchQueryParameter *bool
 
 	/* ExtendedGroupsLimit.
 
@@ -113,6 +143,18 @@ type NfsCollectionGetParams struct {
 	   Specify the fields to return.
 	*/
 	FieldsQueryParameter []string
+
+	/* FileSessionIoGroupingCount.
+
+	   Filter by file_session_io_grouping_count
+	*/
+	FileSessionIoGroupingCountQueryParameter *int64
+
+	/* FileSessionIoGroupingDuration.
+
+	   Filter by file_session_io_grouping_duration
+	*/
+	FileSessionIoGroupingDurationQueryParameter *int64
 
 	/* MaxRecords.
 
@@ -378,12 +420,6 @@ type NfsCollectionGetParams struct {
 	*/
 	OrderByQueryParameter []string
 
-	/* PositiveCachedCredentialTTL.
-
-	   Filter by positive_cached_credential_ttl
-	*/
-	PositiveCachedCredentialTTLQueryParameter *int64
-
 	/* ProtocolV364bitIdentifiersEnabled.
 
 	   Filter by protocol.v3_64bit_identifiers_enabled
@@ -396,6 +432,54 @@ type NfsCollectionGetParams struct {
 	*/
 	ProtocolV3EnabledQueryParameter *bool
 
+	/* ProtocolV3FeaturesConnectionDrop.
+
+	   Filter by protocol.v3_features.connection_drop
+	*/
+	ProtocolV3FeaturesConnectionDropQueryParameter *bool
+
+	/* ProtocolV3FeaturesEjukeboxEnabled.
+
+	   Filter by protocol.v3_features.ejukebox_enabled
+	*/
+	ProtocolV3FeaturesEjukeboxEnabledQueryParameter *bool
+
+	/* ProtocolV3FeaturesFsidChange.
+
+	   Filter by protocol.v3_features.fsid_change
+	*/
+	ProtocolV3FeaturesFsIDChangeQueryParameter *bool
+
+	/* ProtocolV3FeaturesMountDaemonPort.
+
+	   Filter by protocol.v3_features.mount_daemon_port
+	*/
+	ProtocolV3FeaturesMountDaemonPortQueryParameter *int64
+
+	/* ProtocolV3FeaturesMountRootOnly.
+
+	   Filter by protocol.v3_features.mount_root_only
+	*/
+	ProtocolV3FeaturesMountRootOnlyQueryParameter *bool
+
+	/* ProtocolV3FeaturesNetworkLockManagerPort.
+
+	   Filter by protocol.v3_features.network_lock_manager_port
+	*/
+	ProtocolV3FeaturesNetworkLockManagerPortQueryParameter *int64
+
+	/* ProtocolV3FeaturesNetworkStatusMonitorPort.
+
+	   Filter by protocol.v3_features.network_status_monitor_port
+	*/
+	ProtocolV3FeaturesNetworkStatusMonitorPortQueryParameter *int64
+
+	/* ProtocolV3FeaturesRquotaDaemonPort.
+
+	   Filter by protocol.v3_features.rquota_daemon_port
+	*/
+	ProtocolV3FeaturesRquotaDaemonPortQueryParameter *int64
+
 	/* ProtocolV40Enabled.
 
 	   Filter by protocol.v40_enabled
@@ -407,6 +491,18 @@ type NfsCollectionGetParams struct {
 	   Filter by protocol.v40_features.acl_enabled
 	*/
 	ProtocolV40FeaturesACLEnabledQueryParameter *bool
+
+	/* ProtocolV40FeaturesACLMaxAces.
+
+	   Filter by protocol.v40_features.acl_max_aces
+	*/
+	ProtocolV40FeaturesACLMaxAcesQueryParameter *int64
+
+	/* ProtocolV40FeaturesACLPreserve.
+
+	   Filter by protocol.v40_features.acl_preserve
+	*/
+	ProtocolV40FeaturesACLPreserveQueryParameter *bool
 
 	/* ProtocolV40FeaturesReadDelegationEnabled.
 
@@ -431,6 +527,18 @@ type NfsCollectionGetParams struct {
 	   Filter by protocol.v41_features.acl_enabled
 	*/
 	ProtocolV41FeaturesACLEnabledQueryParameter *bool
+
+	/* ProtocolV41FeaturesImplementationDomain.
+
+	   Filter by protocol.v41_features.implementation_domain
+	*/
+	ProtocolV41FeaturesImplementationDomainQueryParameter *string
+
+	/* ProtocolV41FeaturesImplementationName.
+
+	   Filter by protocol.v41_features.implementation_name
+	*/
+	ProtocolV41FeaturesImplementationNameQueryParameter *string
 
 	/* ProtocolV41FeaturesPnfsEnabled.
 
@@ -528,11 +636,53 @@ type NfsCollectionGetParams struct {
 	*/
 	ReturnTimeoutQueryParameter *int64
 
+	/* RootIgnoreNtACL.
+
+	   Filter by root.ignore_nt_acl
+	*/
+	RootIgnoreNtACLQueryParameter *bool
+
+	/* RootSkipWritePermissionCheck.
+
+	   Filter by root.skip_write_permission_check
+	*/
+	RootSkIPWritePermissionCheckQueryParameter *bool
+
 	/* RquotaEnabled.
 
 	   Filter by rquota_enabled
 	*/
 	RquotaEnabledQueryParameter *bool
+
+	/* SecurityChownMode.
+
+	   Filter by security.chown_mode
+	*/
+	SecurityChownModeQueryParameter *string
+
+	/* SecurityNtACLDisplayPermission.
+
+	   Filter by security.nt_acl_display_permission
+	*/
+	SecurityNtACLDisplayPermissionQueryParameter *bool
+
+	/* SecurityNtfsUnixSecurity.
+
+	   Filter by security.ntfs_unix_security
+	*/
+	SecurityNtfsUnixSecurityQueryParameter *string
+
+	/* SecurityPermittedEncryptionTypes.
+
+	   Filter by security.permitted_encryption_types
+	*/
+	SecurityPermittedEncryptionTypesQueryParameter *string
+
+	/* SecurityRpcsecContextIdle.
+
+	   Filter by security.rpcsec_context_idle
+	*/
+	SecurityRpcsecContextIDleQueryParameter *int64
 
 	/* ShowmountEnabled.
 
@@ -798,6 +948,12 @@ type NfsCollectionGetParams struct {
 	*/
 	TransportTCPEnabledQueryParameter *bool
 
+	/* TransportTCPMaxTransferSize.
+
+	   Filter by transport.tcp_max_transfer_size
+	*/
+	TransportTCPMaxTransferSizeQueryParameter *int64
+
 	/* TransportUDPEnabled.
 
 	   Filter by transport.udp_enabled
@@ -809,6 +965,24 @@ type NfsCollectionGetParams struct {
 	   Filter by vstorage_enabled
 	*/
 	VstorageEnabledQueryParameter *bool
+
+	/* WindowsDefaultUser.
+
+	   Filter by windows.default_user
+	*/
+	WindowsDefaultUserQueryParameter *string
+
+	/* WindowsMapUnknownUIDToDefaultUser.
+
+	   Filter by windows.map_unknown_uid_to_default_user
+	*/
+	WindowsMapUnknownUIDToDefaultUserQueryParameter *bool
+
+	/* WindowsV3MsDosClientEnabled.
+
+	   Filter by windows.v3_ms_dos_client_enabled
+	*/
+	WindowsV3MsDosClientEnabledQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -946,6 +1120,39 @@ func (o *NfsCollectionGetParams) SetAuthSysExtendedGroupsEnabledQueryParameter(a
 	o.AuthSysExtendedGroupsEnabledQueryParameter = authSysExtendedGroupsEnabled
 }
 
+// WithCredentialCacheNegativeTTLQueryParameter adds the credentialCacheNegativeTTL to the nfs collection get params
+func (o *NfsCollectionGetParams) WithCredentialCacheNegativeTTLQueryParameter(credentialCacheNegativeTTL *int64) *NfsCollectionGetParams {
+	o.SetCredentialCacheNegativeTTLQueryParameter(credentialCacheNegativeTTL)
+	return o
+}
+
+// SetCredentialCacheNegativeTTLQueryParameter adds the credentialCacheNegativeTtl to the nfs collection get params
+func (o *NfsCollectionGetParams) SetCredentialCacheNegativeTTLQueryParameter(credentialCacheNegativeTTL *int64) {
+	o.CredentialCacheNegativeTTLQueryParameter = credentialCacheNegativeTTL
+}
+
+// WithCredentialCachePositiveTTLQueryParameter adds the credentialCachePositiveTTL to the nfs collection get params
+func (o *NfsCollectionGetParams) WithCredentialCachePositiveTTLQueryParameter(credentialCachePositiveTTL *int64) *NfsCollectionGetParams {
+	o.SetCredentialCachePositiveTTLQueryParameter(credentialCachePositiveTTL)
+	return o
+}
+
+// SetCredentialCachePositiveTTLQueryParameter adds the credentialCachePositiveTtl to the nfs collection get params
+func (o *NfsCollectionGetParams) SetCredentialCachePositiveTTLQueryParameter(credentialCachePositiveTTL *int64) {
+	o.CredentialCachePositiveTTLQueryParameter = credentialCachePositiveTTL
+}
+
+// WithCredentialCacheTransientErrorTTLQueryParameter adds the credentialCacheTransientErrorTTL to the nfs collection get params
+func (o *NfsCollectionGetParams) WithCredentialCacheTransientErrorTTLQueryParameter(credentialCacheTransientErrorTTL *int64) *NfsCollectionGetParams {
+	o.SetCredentialCacheTransientErrorTTLQueryParameter(credentialCacheTransientErrorTTL)
+	return o
+}
+
+// SetCredentialCacheTransientErrorTTLQueryParameter adds the credentialCacheTransientErrorTtl to the nfs collection get params
+func (o *NfsCollectionGetParams) SetCredentialCacheTransientErrorTTLQueryParameter(credentialCacheTransientErrorTTL *int64) {
+	o.CredentialCacheTransientErrorTTLQueryParameter = credentialCacheTransientErrorTTL
+}
+
 // WithEnabledQueryParameter adds the enabled to the nfs collection get params
 func (o *NfsCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *NfsCollectionGetParams {
 	o.SetEnabledQueryParameter(enabled)
@@ -955,6 +1162,28 @@ func (o *NfsCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *NfsCo
 // SetEnabledQueryParameter adds the enabled to the nfs collection get params
 func (o *NfsCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
 	o.EnabledQueryParameter = enabled
+}
+
+// WithExportsNameServiceLookupProtocolQueryParameter adds the exportsNameServiceLookupProtocol to the nfs collection get params
+func (o *NfsCollectionGetParams) WithExportsNameServiceLookupProtocolQueryParameter(exportsNameServiceLookupProtocol *string) *NfsCollectionGetParams {
+	o.SetExportsNameServiceLookupProtocolQueryParameter(exportsNameServiceLookupProtocol)
+	return o
+}
+
+// SetExportsNameServiceLookupProtocolQueryParameter adds the exportsNameServiceLookupProtocol to the nfs collection get params
+func (o *NfsCollectionGetParams) SetExportsNameServiceLookupProtocolQueryParameter(exportsNameServiceLookupProtocol *string) {
+	o.ExportsNameServiceLookupProtocolQueryParameter = exportsNameServiceLookupProtocol
+}
+
+// WithExportsNetgroupTrustAnyNsswitchNoMatchQueryParameter adds the exportsNetgroupTrustAnyNsswitchNoMatch to the nfs collection get params
+func (o *NfsCollectionGetParams) WithExportsNetgroupTrustAnyNsswitchNoMatchQueryParameter(exportsNetgroupTrustAnyNsswitchNoMatch *bool) *NfsCollectionGetParams {
+	o.SetExportsNetgroupTrustAnyNsswitchNoMatchQueryParameter(exportsNetgroupTrustAnyNsswitchNoMatch)
+	return o
+}
+
+// SetExportsNetgroupTrustAnyNsswitchNoMatchQueryParameter adds the exportsNetgroupTrustAnyNsswitchNoMatch to the nfs collection get params
+func (o *NfsCollectionGetParams) SetExportsNetgroupTrustAnyNsswitchNoMatchQueryParameter(exportsNetgroupTrustAnyNsswitchNoMatch *bool) {
+	o.ExportsNetgroupTrustAnyNsswitchNoMatchQueryParameter = exportsNetgroupTrustAnyNsswitchNoMatch
 }
 
 // WithExtendedGroupsLimitQueryParameter adds the extendedGroupsLimit to the nfs collection get params
@@ -977,6 +1206,28 @@ func (o *NfsCollectionGetParams) WithFieldsQueryParameter(fields []string) *NfsC
 // SetFieldsQueryParameter adds the fields to the nfs collection get params
 func (o *NfsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
+}
+
+// WithFileSessionIoGroupingCountQueryParameter adds the fileSessionIoGroupingCount to the nfs collection get params
+func (o *NfsCollectionGetParams) WithFileSessionIoGroupingCountQueryParameter(fileSessionIoGroupingCount *int64) *NfsCollectionGetParams {
+	o.SetFileSessionIoGroupingCountQueryParameter(fileSessionIoGroupingCount)
+	return o
+}
+
+// SetFileSessionIoGroupingCountQueryParameter adds the fileSessionIoGroupingCount to the nfs collection get params
+func (o *NfsCollectionGetParams) SetFileSessionIoGroupingCountQueryParameter(fileSessionIoGroupingCount *int64) {
+	o.FileSessionIoGroupingCountQueryParameter = fileSessionIoGroupingCount
+}
+
+// WithFileSessionIoGroupingDurationQueryParameter adds the fileSessionIoGroupingDuration to the nfs collection get params
+func (o *NfsCollectionGetParams) WithFileSessionIoGroupingDurationQueryParameter(fileSessionIoGroupingDuration *int64) *NfsCollectionGetParams {
+	o.SetFileSessionIoGroupingDurationQueryParameter(fileSessionIoGroupingDuration)
+	return o
+}
+
+// SetFileSessionIoGroupingDurationQueryParameter adds the fileSessionIoGroupingDuration to the nfs collection get params
+func (o *NfsCollectionGetParams) SetFileSessionIoGroupingDurationQueryParameter(fileSessionIoGroupingDuration *int64) {
+	o.FileSessionIoGroupingDurationQueryParameter = fileSessionIoGroupingDuration
 }
 
 // WithMaxRecordsQueryParameter adds the maxRecords to the nfs collection get params
@@ -1463,17 +1714,6 @@ func (o *NfsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
 	o.OrderByQueryParameter = orderBy
 }
 
-// WithPositiveCachedCredentialTTLQueryParameter adds the positiveCachedCredentialTTL to the nfs collection get params
-func (o *NfsCollectionGetParams) WithPositiveCachedCredentialTTLQueryParameter(positiveCachedCredentialTTL *int64) *NfsCollectionGetParams {
-	o.SetPositiveCachedCredentialTTLQueryParameter(positiveCachedCredentialTTL)
-	return o
-}
-
-// SetPositiveCachedCredentialTTLQueryParameter adds the positiveCachedCredentialTtl to the nfs collection get params
-func (o *NfsCollectionGetParams) SetPositiveCachedCredentialTTLQueryParameter(positiveCachedCredentialTTL *int64) {
-	o.PositiveCachedCredentialTTLQueryParameter = positiveCachedCredentialTTL
-}
-
 // WithProtocolV364bitIDentifiersEnabledQueryParameter adds the protocolV364bitIdentifiersEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) WithProtocolV364bitIDentifiersEnabledQueryParameter(protocolV364bitIdentifiersEnabled *bool) *NfsCollectionGetParams {
 	o.SetProtocolV364bitIDentifiersEnabledQueryParameter(protocolV364bitIdentifiersEnabled)
@@ -1496,6 +1736,94 @@ func (o *NfsCollectionGetParams) SetProtocolV3EnabledQueryParameter(protocolV3En
 	o.ProtocolV3EnabledQueryParameter = protocolV3Enabled
 }
 
+// WithProtocolV3FeaturesConnectionDropQueryParameter adds the protocolV3FeaturesConnectionDrop to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV3FeaturesConnectionDropQueryParameter(protocolV3FeaturesConnectionDrop *bool) *NfsCollectionGetParams {
+	o.SetProtocolV3FeaturesConnectionDropQueryParameter(protocolV3FeaturesConnectionDrop)
+	return o
+}
+
+// SetProtocolV3FeaturesConnectionDropQueryParameter adds the protocolV3FeaturesConnectionDrop to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV3FeaturesConnectionDropQueryParameter(protocolV3FeaturesConnectionDrop *bool) {
+	o.ProtocolV3FeaturesConnectionDropQueryParameter = protocolV3FeaturesConnectionDrop
+}
+
+// WithProtocolV3FeaturesEjukeboxEnabledQueryParameter adds the protocolV3FeaturesEjukeboxEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV3FeaturesEjukeboxEnabledQueryParameter(protocolV3FeaturesEjukeboxEnabled *bool) *NfsCollectionGetParams {
+	o.SetProtocolV3FeaturesEjukeboxEnabledQueryParameter(protocolV3FeaturesEjukeboxEnabled)
+	return o
+}
+
+// SetProtocolV3FeaturesEjukeboxEnabledQueryParameter adds the protocolV3FeaturesEjukeboxEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV3FeaturesEjukeboxEnabledQueryParameter(protocolV3FeaturesEjukeboxEnabled *bool) {
+	o.ProtocolV3FeaturesEjukeboxEnabledQueryParameter = protocolV3FeaturesEjukeboxEnabled
+}
+
+// WithProtocolV3FeaturesFsIDChangeQueryParameter adds the protocolV3FeaturesFsidChange to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV3FeaturesFsIDChangeQueryParameter(protocolV3FeaturesFsidChange *bool) *NfsCollectionGetParams {
+	o.SetProtocolV3FeaturesFsIDChangeQueryParameter(protocolV3FeaturesFsidChange)
+	return o
+}
+
+// SetProtocolV3FeaturesFsIDChangeQueryParameter adds the protocolV3FeaturesFsidChange to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV3FeaturesFsIDChangeQueryParameter(protocolV3FeaturesFsidChange *bool) {
+	o.ProtocolV3FeaturesFsIDChangeQueryParameter = protocolV3FeaturesFsidChange
+}
+
+// WithProtocolV3FeaturesMountDaemonPortQueryParameter adds the protocolV3FeaturesMountDaemonPort to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV3FeaturesMountDaemonPortQueryParameter(protocolV3FeaturesMountDaemonPort *int64) *NfsCollectionGetParams {
+	o.SetProtocolV3FeaturesMountDaemonPortQueryParameter(protocolV3FeaturesMountDaemonPort)
+	return o
+}
+
+// SetProtocolV3FeaturesMountDaemonPortQueryParameter adds the protocolV3FeaturesMountDaemonPort to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV3FeaturesMountDaemonPortQueryParameter(protocolV3FeaturesMountDaemonPort *int64) {
+	o.ProtocolV3FeaturesMountDaemonPortQueryParameter = protocolV3FeaturesMountDaemonPort
+}
+
+// WithProtocolV3FeaturesMountRootOnlyQueryParameter adds the protocolV3FeaturesMountRootOnly to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV3FeaturesMountRootOnlyQueryParameter(protocolV3FeaturesMountRootOnly *bool) *NfsCollectionGetParams {
+	o.SetProtocolV3FeaturesMountRootOnlyQueryParameter(protocolV3FeaturesMountRootOnly)
+	return o
+}
+
+// SetProtocolV3FeaturesMountRootOnlyQueryParameter adds the protocolV3FeaturesMountRootOnly to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV3FeaturesMountRootOnlyQueryParameter(protocolV3FeaturesMountRootOnly *bool) {
+	o.ProtocolV3FeaturesMountRootOnlyQueryParameter = protocolV3FeaturesMountRootOnly
+}
+
+// WithProtocolV3FeaturesNetworkLockManagerPortQueryParameter adds the protocolV3FeaturesNetworkLockManagerPort to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV3FeaturesNetworkLockManagerPortQueryParameter(protocolV3FeaturesNetworkLockManagerPort *int64) *NfsCollectionGetParams {
+	o.SetProtocolV3FeaturesNetworkLockManagerPortQueryParameter(protocolV3FeaturesNetworkLockManagerPort)
+	return o
+}
+
+// SetProtocolV3FeaturesNetworkLockManagerPortQueryParameter adds the protocolV3FeaturesNetworkLockManagerPort to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV3FeaturesNetworkLockManagerPortQueryParameter(protocolV3FeaturesNetworkLockManagerPort *int64) {
+	o.ProtocolV3FeaturesNetworkLockManagerPortQueryParameter = protocolV3FeaturesNetworkLockManagerPort
+}
+
+// WithProtocolV3FeaturesNetworkStatusMonitorPortQueryParameter adds the protocolV3FeaturesNetworkStatusMonitorPort to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV3FeaturesNetworkStatusMonitorPortQueryParameter(protocolV3FeaturesNetworkStatusMonitorPort *int64) *NfsCollectionGetParams {
+	o.SetProtocolV3FeaturesNetworkStatusMonitorPortQueryParameter(protocolV3FeaturesNetworkStatusMonitorPort)
+	return o
+}
+
+// SetProtocolV3FeaturesNetworkStatusMonitorPortQueryParameter adds the protocolV3FeaturesNetworkStatusMonitorPort to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV3FeaturesNetworkStatusMonitorPortQueryParameter(protocolV3FeaturesNetworkStatusMonitorPort *int64) {
+	o.ProtocolV3FeaturesNetworkStatusMonitorPortQueryParameter = protocolV3FeaturesNetworkStatusMonitorPort
+}
+
+// WithProtocolV3FeaturesRquotaDaemonPortQueryParameter adds the protocolV3FeaturesRquotaDaemonPort to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV3FeaturesRquotaDaemonPortQueryParameter(protocolV3FeaturesRquotaDaemonPort *int64) *NfsCollectionGetParams {
+	o.SetProtocolV3FeaturesRquotaDaemonPortQueryParameter(protocolV3FeaturesRquotaDaemonPort)
+	return o
+}
+
+// SetProtocolV3FeaturesRquotaDaemonPortQueryParameter adds the protocolV3FeaturesRquotaDaemonPort to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV3FeaturesRquotaDaemonPortQueryParameter(protocolV3FeaturesRquotaDaemonPort *int64) {
+	o.ProtocolV3FeaturesRquotaDaemonPortQueryParameter = protocolV3FeaturesRquotaDaemonPort
+}
+
 // WithProtocolV40EnabledQueryParameter adds the protocolV40Enabled to the nfs collection get params
 func (o *NfsCollectionGetParams) WithProtocolV40EnabledQueryParameter(protocolV40Enabled *bool) *NfsCollectionGetParams {
 	o.SetProtocolV40EnabledQueryParameter(protocolV40Enabled)
@@ -1516,6 +1844,28 @@ func (o *NfsCollectionGetParams) WithProtocolV40FeaturesACLEnabledQueryParameter
 // SetProtocolV40FeaturesACLEnabledQueryParameter adds the protocolV40FeaturesAclEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) SetProtocolV40FeaturesACLEnabledQueryParameter(protocolV40FeaturesACLEnabled *bool) {
 	o.ProtocolV40FeaturesACLEnabledQueryParameter = protocolV40FeaturesACLEnabled
+}
+
+// WithProtocolV40FeaturesACLMaxAcesQueryParameter adds the protocolV40FeaturesACLMaxAces to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV40FeaturesACLMaxAcesQueryParameter(protocolV40FeaturesACLMaxAces *int64) *NfsCollectionGetParams {
+	o.SetProtocolV40FeaturesACLMaxAcesQueryParameter(protocolV40FeaturesACLMaxAces)
+	return o
+}
+
+// SetProtocolV40FeaturesACLMaxAcesQueryParameter adds the protocolV40FeaturesAclMaxAces to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV40FeaturesACLMaxAcesQueryParameter(protocolV40FeaturesACLMaxAces *int64) {
+	o.ProtocolV40FeaturesACLMaxAcesQueryParameter = protocolV40FeaturesACLMaxAces
+}
+
+// WithProtocolV40FeaturesACLPreserveQueryParameter adds the protocolV40FeaturesACLPreserve to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV40FeaturesACLPreserveQueryParameter(protocolV40FeaturesACLPreserve *bool) *NfsCollectionGetParams {
+	o.SetProtocolV40FeaturesACLPreserveQueryParameter(protocolV40FeaturesACLPreserve)
+	return o
+}
+
+// SetProtocolV40FeaturesACLPreserveQueryParameter adds the protocolV40FeaturesAclPreserve to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV40FeaturesACLPreserveQueryParameter(protocolV40FeaturesACLPreserve *bool) {
+	o.ProtocolV40FeaturesACLPreserveQueryParameter = protocolV40FeaturesACLPreserve
 }
 
 // WithProtocolV40FeaturesReadDelegationEnabledQueryParameter adds the protocolV40FeaturesReadDelegationEnabled to the nfs collection get params
@@ -1560,6 +1910,28 @@ func (o *NfsCollectionGetParams) WithProtocolV41FeaturesACLEnabledQueryParameter
 // SetProtocolV41FeaturesACLEnabledQueryParameter adds the protocolV41FeaturesAclEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) SetProtocolV41FeaturesACLEnabledQueryParameter(protocolV41FeaturesACLEnabled *bool) {
 	o.ProtocolV41FeaturesACLEnabledQueryParameter = protocolV41FeaturesACLEnabled
+}
+
+// WithProtocolV41FeaturesImplementationDomainQueryParameter adds the protocolV41FeaturesImplementationDomain to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV41FeaturesImplementationDomainQueryParameter(protocolV41FeaturesImplementationDomain *string) *NfsCollectionGetParams {
+	o.SetProtocolV41FeaturesImplementationDomainQueryParameter(protocolV41FeaturesImplementationDomain)
+	return o
+}
+
+// SetProtocolV41FeaturesImplementationDomainQueryParameter adds the protocolV41FeaturesImplementationDomain to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV41FeaturesImplementationDomainQueryParameter(protocolV41FeaturesImplementationDomain *string) {
+	o.ProtocolV41FeaturesImplementationDomainQueryParameter = protocolV41FeaturesImplementationDomain
+}
+
+// WithProtocolV41FeaturesImplementationNameQueryParameter adds the protocolV41FeaturesImplementationName to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV41FeaturesImplementationNameQueryParameter(protocolV41FeaturesImplementationName *string) *NfsCollectionGetParams {
+	o.SetProtocolV41FeaturesImplementationNameQueryParameter(protocolV41FeaturesImplementationName)
+	return o
+}
+
+// SetProtocolV41FeaturesImplementationNameQueryParameter adds the protocolV41FeaturesImplementationName to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV41FeaturesImplementationNameQueryParameter(protocolV41FeaturesImplementationName *string) {
+	o.ProtocolV41FeaturesImplementationNameQueryParameter = protocolV41FeaturesImplementationName
 }
 
 // WithProtocolV41FeaturesPnfsEnabledQueryParameter adds the protocolV41FeaturesPnfsEnabled to the nfs collection get params
@@ -1727,6 +2099,28 @@ func (o *NfsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *i
 	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
+// WithRootIgnoreNtACLQueryParameter adds the rootIgnoreNtACL to the nfs collection get params
+func (o *NfsCollectionGetParams) WithRootIgnoreNtACLQueryParameter(rootIgnoreNtACL *bool) *NfsCollectionGetParams {
+	o.SetRootIgnoreNtACLQueryParameter(rootIgnoreNtACL)
+	return o
+}
+
+// SetRootIgnoreNtACLQueryParameter adds the rootIgnoreNtAcl to the nfs collection get params
+func (o *NfsCollectionGetParams) SetRootIgnoreNtACLQueryParameter(rootIgnoreNtACL *bool) {
+	o.RootIgnoreNtACLQueryParameter = rootIgnoreNtACL
+}
+
+// WithRootSkIPWritePermissionCheckQueryParameter adds the rootSkipWritePermissionCheck to the nfs collection get params
+func (o *NfsCollectionGetParams) WithRootSkIPWritePermissionCheckQueryParameter(rootSkipWritePermissionCheck *bool) *NfsCollectionGetParams {
+	o.SetRootSkIPWritePermissionCheckQueryParameter(rootSkipWritePermissionCheck)
+	return o
+}
+
+// SetRootSkIPWritePermissionCheckQueryParameter adds the rootSkipWritePermissionCheck to the nfs collection get params
+func (o *NfsCollectionGetParams) SetRootSkIPWritePermissionCheckQueryParameter(rootSkipWritePermissionCheck *bool) {
+	o.RootSkIPWritePermissionCheckQueryParameter = rootSkipWritePermissionCheck
+}
+
 // WithRquotaEnabledQueryParameter adds the rquotaEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) WithRquotaEnabledQueryParameter(rquotaEnabled *bool) *NfsCollectionGetParams {
 	o.SetRquotaEnabledQueryParameter(rquotaEnabled)
@@ -1736,6 +2130,61 @@ func (o *NfsCollectionGetParams) WithRquotaEnabledQueryParameter(rquotaEnabled *
 // SetRquotaEnabledQueryParameter adds the rquotaEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) SetRquotaEnabledQueryParameter(rquotaEnabled *bool) {
 	o.RquotaEnabledQueryParameter = rquotaEnabled
+}
+
+// WithSecurityChownModeQueryParameter adds the securityChownMode to the nfs collection get params
+func (o *NfsCollectionGetParams) WithSecurityChownModeQueryParameter(securityChownMode *string) *NfsCollectionGetParams {
+	o.SetSecurityChownModeQueryParameter(securityChownMode)
+	return o
+}
+
+// SetSecurityChownModeQueryParameter adds the securityChownMode to the nfs collection get params
+func (o *NfsCollectionGetParams) SetSecurityChownModeQueryParameter(securityChownMode *string) {
+	o.SecurityChownModeQueryParameter = securityChownMode
+}
+
+// WithSecurityNtACLDisplayPermissionQueryParameter adds the securityNtACLDisplayPermission to the nfs collection get params
+func (o *NfsCollectionGetParams) WithSecurityNtACLDisplayPermissionQueryParameter(securityNtACLDisplayPermission *bool) *NfsCollectionGetParams {
+	o.SetSecurityNtACLDisplayPermissionQueryParameter(securityNtACLDisplayPermission)
+	return o
+}
+
+// SetSecurityNtACLDisplayPermissionQueryParameter adds the securityNtAclDisplayPermission to the nfs collection get params
+func (o *NfsCollectionGetParams) SetSecurityNtACLDisplayPermissionQueryParameter(securityNtACLDisplayPermission *bool) {
+	o.SecurityNtACLDisplayPermissionQueryParameter = securityNtACLDisplayPermission
+}
+
+// WithSecurityNtfsUnixSecurityQueryParameter adds the securityNtfsUnixSecurity to the nfs collection get params
+func (o *NfsCollectionGetParams) WithSecurityNtfsUnixSecurityQueryParameter(securityNtfsUnixSecurity *string) *NfsCollectionGetParams {
+	o.SetSecurityNtfsUnixSecurityQueryParameter(securityNtfsUnixSecurity)
+	return o
+}
+
+// SetSecurityNtfsUnixSecurityQueryParameter adds the securityNtfsUnixSecurity to the nfs collection get params
+func (o *NfsCollectionGetParams) SetSecurityNtfsUnixSecurityQueryParameter(securityNtfsUnixSecurity *string) {
+	o.SecurityNtfsUnixSecurityQueryParameter = securityNtfsUnixSecurity
+}
+
+// WithSecurityPermittedEncryptionTypesQueryParameter adds the securityPermittedEncryptionTypes to the nfs collection get params
+func (o *NfsCollectionGetParams) WithSecurityPermittedEncryptionTypesQueryParameter(securityPermittedEncryptionTypes *string) *NfsCollectionGetParams {
+	o.SetSecurityPermittedEncryptionTypesQueryParameter(securityPermittedEncryptionTypes)
+	return o
+}
+
+// SetSecurityPermittedEncryptionTypesQueryParameter adds the securityPermittedEncryptionTypes to the nfs collection get params
+func (o *NfsCollectionGetParams) SetSecurityPermittedEncryptionTypesQueryParameter(securityPermittedEncryptionTypes *string) {
+	o.SecurityPermittedEncryptionTypesQueryParameter = securityPermittedEncryptionTypes
+}
+
+// WithSecurityRpcsecContextIDleQueryParameter adds the securityRpcsecContextIdle to the nfs collection get params
+func (o *NfsCollectionGetParams) WithSecurityRpcsecContextIDleQueryParameter(securityRpcsecContextIdle *int64) *NfsCollectionGetParams {
+	o.SetSecurityRpcsecContextIDleQueryParameter(securityRpcsecContextIdle)
+	return o
+}
+
+// SetSecurityRpcsecContextIDleQueryParameter adds the securityRpcsecContextIdle to the nfs collection get params
+func (o *NfsCollectionGetParams) SetSecurityRpcsecContextIDleQueryParameter(securityRpcsecContextIdle *int64) {
+	o.SecurityRpcsecContextIDleQueryParameter = securityRpcsecContextIdle
 }
 
 // WithShowmountEnabledQueryParameter adds the showmountEnabled to the nfs collection get params
@@ -2222,6 +2671,17 @@ func (o *NfsCollectionGetParams) SetTransportTCPEnabledQueryParameter(transportT
 	o.TransportTCPEnabledQueryParameter = transportTCPEnabled
 }
 
+// WithTransportTCPMaxTransferSizeQueryParameter adds the transportTCPMaxTransferSize to the nfs collection get params
+func (o *NfsCollectionGetParams) WithTransportTCPMaxTransferSizeQueryParameter(transportTCPMaxTransferSize *int64) *NfsCollectionGetParams {
+	o.SetTransportTCPMaxTransferSizeQueryParameter(transportTCPMaxTransferSize)
+	return o
+}
+
+// SetTransportTCPMaxTransferSizeQueryParameter adds the transportTcpMaxTransferSize to the nfs collection get params
+func (o *NfsCollectionGetParams) SetTransportTCPMaxTransferSizeQueryParameter(transportTCPMaxTransferSize *int64) {
+	o.TransportTCPMaxTransferSizeQueryParameter = transportTCPMaxTransferSize
+}
+
 // WithTransportUDPEnabledQueryParameter adds the transportUDPEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) WithTransportUDPEnabledQueryParameter(transportUDPEnabled *bool) *NfsCollectionGetParams {
 	o.SetTransportUDPEnabledQueryParameter(transportUDPEnabled)
@@ -2242,6 +2702,39 @@ func (o *NfsCollectionGetParams) WithVstorageEnabledQueryParameter(vstorageEnabl
 // SetVstorageEnabledQueryParameter adds the vstorageEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) SetVstorageEnabledQueryParameter(vstorageEnabled *bool) {
 	o.VstorageEnabledQueryParameter = vstorageEnabled
+}
+
+// WithWindowsDefaultUserQueryParameter adds the windowsDefaultUser to the nfs collection get params
+func (o *NfsCollectionGetParams) WithWindowsDefaultUserQueryParameter(windowsDefaultUser *string) *NfsCollectionGetParams {
+	o.SetWindowsDefaultUserQueryParameter(windowsDefaultUser)
+	return o
+}
+
+// SetWindowsDefaultUserQueryParameter adds the windowsDefaultUser to the nfs collection get params
+func (o *NfsCollectionGetParams) SetWindowsDefaultUserQueryParameter(windowsDefaultUser *string) {
+	o.WindowsDefaultUserQueryParameter = windowsDefaultUser
+}
+
+// WithWindowsMapUnknownUIDToDefaultUserQueryParameter adds the windowsMapUnknownUIDToDefaultUser to the nfs collection get params
+func (o *NfsCollectionGetParams) WithWindowsMapUnknownUIDToDefaultUserQueryParameter(windowsMapUnknownUIDToDefaultUser *bool) *NfsCollectionGetParams {
+	o.SetWindowsMapUnknownUIDToDefaultUserQueryParameter(windowsMapUnknownUIDToDefaultUser)
+	return o
+}
+
+// SetWindowsMapUnknownUIDToDefaultUserQueryParameter adds the windowsMapUnknownUidToDefaultUser to the nfs collection get params
+func (o *NfsCollectionGetParams) SetWindowsMapUnknownUIDToDefaultUserQueryParameter(windowsMapUnknownUIDToDefaultUser *bool) {
+	o.WindowsMapUnknownUIDToDefaultUserQueryParameter = windowsMapUnknownUIDToDefaultUser
+}
+
+// WithWindowsV3MsDosClientEnabledQueryParameter adds the windowsV3MsDosClientEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) WithWindowsV3MsDosClientEnabledQueryParameter(windowsV3MsDosClientEnabled *bool) *NfsCollectionGetParams {
+	o.SetWindowsV3MsDosClientEnabledQueryParameter(windowsV3MsDosClientEnabled)
+	return o
+}
+
+// SetWindowsV3MsDosClientEnabledQueryParameter adds the windowsV3MsDosClientEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) SetWindowsV3MsDosClientEnabledQueryParameter(windowsV3MsDosClientEnabled *bool) {
+	o.WindowsV3MsDosClientEnabledQueryParameter = windowsV3MsDosClientEnabled
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -2354,6 +2847,57 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.CredentialCacheNegativeTTLQueryParameter != nil {
+
+		// query param credential_cache.negative_ttl
+		var qrCredentialCacheNegativeTTL int64
+
+		if o.CredentialCacheNegativeTTLQueryParameter != nil {
+			qrCredentialCacheNegativeTTL = *o.CredentialCacheNegativeTTLQueryParameter
+		}
+		qCredentialCacheNegativeTTL := swag.FormatInt64(qrCredentialCacheNegativeTTL)
+		if qCredentialCacheNegativeTTL != "" {
+
+			if err := r.SetQueryParam("credential_cache.negative_ttl", qCredentialCacheNegativeTTL); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CredentialCachePositiveTTLQueryParameter != nil {
+
+		// query param credential_cache.positive_ttl
+		var qrCredentialCachePositiveTTL int64
+
+		if o.CredentialCachePositiveTTLQueryParameter != nil {
+			qrCredentialCachePositiveTTL = *o.CredentialCachePositiveTTLQueryParameter
+		}
+		qCredentialCachePositiveTTL := swag.FormatInt64(qrCredentialCachePositiveTTL)
+		if qCredentialCachePositiveTTL != "" {
+
+			if err := r.SetQueryParam("credential_cache.positive_ttl", qCredentialCachePositiveTTL); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CredentialCacheTransientErrorTTLQueryParameter != nil {
+
+		// query param credential_cache.transient_error_ttl
+		var qrCredentialCacheTransientErrorTTL int64
+
+		if o.CredentialCacheTransientErrorTTLQueryParameter != nil {
+			qrCredentialCacheTransientErrorTTL = *o.CredentialCacheTransientErrorTTLQueryParameter
+		}
+		qCredentialCacheTransientErrorTTL := swag.FormatInt64(qrCredentialCacheTransientErrorTTL)
+		if qCredentialCacheTransientErrorTTL != "" {
+
+			if err := r.SetQueryParam("credential_cache.transient_error_ttl", qCredentialCacheTransientErrorTTL); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EnabledQueryParameter != nil {
 
 		// query param enabled
@@ -2366,6 +2910,40 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qEnabled != "" {
 
 			if err := r.SetQueryParam("enabled", qEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExportsNameServiceLookupProtocolQueryParameter != nil {
+
+		// query param exports.name_service_lookup_protocol
+		var qrExportsNameServiceLookupProtocol string
+
+		if o.ExportsNameServiceLookupProtocolQueryParameter != nil {
+			qrExportsNameServiceLookupProtocol = *o.ExportsNameServiceLookupProtocolQueryParameter
+		}
+		qExportsNameServiceLookupProtocol := qrExportsNameServiceLookupProtocol
+		if qExportsNameServiceLookupProtocol != "" {
+
+			if err := r.SetQueryParam("exports.name_service_lookup_protocol", qExportsNameServiceLookupProtocol); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExportsNetgroupTrustAnyNsswitchNoMatchQueryParameter != nil {
+
+		// query param exports.netgroup_trust_any_nsswitch_no_match
+		var qrExportsNetgroupTrustAnyNsswitchNoMatch bool
+
+		if o.ExportsNetgroupTrustAnyNsswitchNoMatchQueryParameter != nil {
+			qrExportsNetgroupTrustAnyNsswitchNoMatch = *o.ExportsNetgroupTrustAnyNsswitchNoMatchQueryParameter
+		}
+		qExportsNetgroupTrustAnyNsswitchNoMatch := swag.FormatBool(qrExportsNetgroupTrustAnyNsswitchNoMatch)
+		if qExportsNetgroupTrustAnyNsswitchNoMatch != "" {
+
+			if err := r.SetQueryParam("exports.netgroup_trust_any_nsswitch_no_match", qExportsNetgroupTrustAnyNsswitchNoMatch); err != nil {
 				return err
 			}
 		}
@@ -2396,6 +2974,40 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.FileSessionIoGroupingCountQueryParameter != nil {
+
+		// query param file_session_io_grouping_count
+		var qrFileSessionIoGroupingCount int64
+
+		if o.FileSessionIoGroupingCountQueryParameter != nil {
+			qrFileSessionIoGroupingCount = *o.FileSessionIoGroupingCountQueryParameter
+		}
+		qFileSessionIoGroupingCount := swag.FormatInt64(qrFileSessionIoGroupingCount)
+		if qFileSessionIoGroupingCount != "" {
+
+			if err := r.SetQueryParam("file_session_io_grouping_count", qFileSessionIoGroupingCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FileSessionIoGroupingDurationQueryParameter != nil {
+
+		// query param file_session_io_grouping_duration
+		var qrFileSessionIoGroupingDuration int64
+
+		if o.FileSessionIoGroupingDurationQueryParameter != nil {
+			qrFileSessionIoGroupingDuration = *o.FileSessionIoGroupingDurationQueryParameter
+		}
+		qFileSessionIoGroupingDuration := swag.FormatInt64(qrFileSessionIoGroupingDuration)
+		if qFileSessionIoGroupingDuration != "" {
+
+			if err := r.SetQueryParam("file_session_io_grouping_duration", qFileSessionIoGroupingDuration); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -3141,23 +3753,6 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.PositiveCachedCredentialTTLQueryParameter != nil {
-
-		// query param positive_cached_credential_ttl
-		var qrPositiveCachedCredentialTTL int64
-
-		if o.PositiveCachedCredentialTTLQueryParameter != nil {
-			qrPositiveCachedCredentialTTL = *o.PositiveCachedCredentialTTLQueryParameter
-		}
-		qPositiveCachedCredentialTTL := swag.FormatInt64(qrPositiveCachedCredentialTTL)
-		if qPositiveCachedCredentialTTL != "" {
-
-			if err := r.SetQueryParam("positive_cached_credential_ttl", qPositiveCachedCredentialTTL); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.ProtocolV364bitIDentifiersEnabledQueryParameter != nil {
 
 		// query param protocol.v3_64bit_identifiers_enabled
@@ -3192,6 +3787,142 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.ProtocolV3FeaturesConnectionDropQueryParameter != nil {
+
+		// query param protocol.v3_features.connection_drop
+		var qrProtocolV3FeaturesConnectionDrop bool
+
+		if o.ProtocolV3FeaturesConnectionDropQueryParameter != nil {
+			qrProtocolV3FeaturesConnectionDrop = *o.ProtocolV3FeaturesConnectionDropQueryParameter
+		}
+		qProtocolV3FeaturesConnectionDrop := swag.FormatBool(qrProtocolV3FeaturesConnectionDrop)
+		if qProtocolV3FeaturesConnectionDrop != "" {
+
+			if err := r.SetQueryParam("protocol.v3_features.connection_drop", qProtocolV3FeaturesConnectionDrop); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV3FeaturesEjukeboxEnabledQueryParameter != nil {
+
+		// query param protocol.v3_features.ejukebox_enabled
+		var qrProtocolV3FeaturesEjukeboxEnabled bool
+
+		if o.ProtocolV3FeaturesEjukeboxEnabledQueryParameter != nil {
+			qrProtocolV3FeaturesEjukeboxEnabled = *o.ProtocolV3FeaturesEjukeboxEnabledQueryParameter
+		}
+		qProtocolV3FeaturesEjukeboxEnabled := swag.FormatBool(qrProtocolV3FeaturesEjukeboxEnabled)
+		if qProtocolV3FeaturesEjukeboxEnabled != "" {
+
+			if err := r.SetQueryParam("protocol.v3_features.ejukebox_enabled", qProtocolV3FeaturesEjukeboxEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV3FeaturesFsIDChangeQueryParameter != nil {
+
+		// query param protocol.v3_features.fsid_change
+		var qrProtocolV3FeaturesFsidChange bool
+
+		if o.ProtocolV3FeaturesFsIDChangeQueryParameter != nil {
+			qrProtocolV3FeaturesFsidChange = *o.ProtocolV3FeaturesFsIDChangeQueryParameter
+		}
+		qProtocolV3FeaturesFsidChange := swag.FormatBool(qrProtocolV3FeaturesFsidChange)
+		if qProtocolV3FeaturesFsidChange != "" {
+
+			if err := r.SetQueryParam("protocol.v3_features.fsid_change", qProtocolV3FeaturesFsidChange); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV3FeaturesMountDaemonPortQueryParameter != nil {
+
+		// query param protocol.v3_features.mount_daemon_port
+		var qrProtocolV3FeaturesMountDaemonPort int64
+
+		if o.ProtocolV3FeaturesMountDaemonPortQueryParameter != nil {
+			qrProtocolV3FeaturesMountDaemonPort = *o.ProtocolV3FeaturesMountDaemonPortQueryParameter
+		}
+		qProtocolV3FeaturesMountDaemonPort := swag.FormatInt64(qrProtocolV3FeaturesMountDaemonPort)
+		if qProtocolV3FeaturesMountDaemonPort != "" {
+
+			if err := r.SetQueryParam("protocol.v3_features.mount_daemon_port", qProtocolV3FeaturesMountDaemonPort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV3FeaturesMountRootOnlyQueryParameter != nil {
+
+		// query param protocol.v3_features.mount_root_only
+		var qrProtocolV3FeaturesMountRootOnly bool
+
+		if o.ProtocolV3FeaturesMountRootOnlyQueryParameter != nil {
+			qrProtocolV3FeaturesMountRootOnly = *o.ProtocolV3FeaturesMountRootOnlyQueryParameter
+		}
+		qProtocolV3FeaturesMountRootOnly := swag.FormatBool(qrProtocolV3FeaturesMountRootOnly)
+		if qProtocolV3FeaturesMountRootOnly != "" {
+
+			if err := r.SetQueryParam("protocol.v3_features.mount_root_only", qProtocolV3FeaturesMountRootOnly); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV3FeaturesNetworkLockManagerPortQueryParameter != nil {
+
+		// query param protocol.v3_features.network_lock_manager_port
+		var qrProtocolV3FeaturesNetworkLockManagerPort int64
+
+		if o.ProtocolV3FeaturesNetworkLockManagerPortQueryParameter != nil {
+			qrProtocolV3FeaturesNetworkLockManagerPort = *o.ProtocolV3FeaturesNetworkLockManagerPortQueryParameter
+		}
+		qProtocolV3FeaturesNetworkLockManagerPort := swag.FormatInt64(qrProtocolV3FeaturesNetworkLockManagerPort)
+		if qProtocolV3FeaturesNetworkLockManagerPort != "" {
+
+			if err := r.SetQueryParam("protocol.v3_features.network_lock_manager_port", qProtocolV3FeaturesNetworkLockManagerPort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV3FeaturesNetworkStatusMonitorPortQueryParameter != nil {
+
+		// query param protocol.v3_features.network_status_monitor_port
+		var qrProtocolV3FeaturesNetworkStatusMonitorPort int64
+
+		if o.ProtocolV3FeaturesNetworkStatusMonitorPortQueryParameter != nil {
+			qrProtocolV3FeaturesNetworkStatusMonitorPort = *o.ProtocolV3FeaturesNetworkStatusMonitorPortQueryParameter
+		}
+		qProtocolV3FeaturesNetworkStatusMonitorPort := swag.FormatInt64(qrProtocolV3FeaturesNetworkStatusMonitorPort)
+		if qProtocolV3FeaturesNetworkStatusMonitorPort != "" {
+
+			if err := r.SetQueryParam("protocol.v3_features.network_status_monitor_port", qProtocolV3FeaturesNetworkStatusMonitorPort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV3FeaturesRquotaDaemonPortQueryParameter != nil {
+
+		// query param protocol.v3_features.rquota_daemon_port
+		var qrProtocolV3FeaturesRquotaDaemonPort int64
+
+		if o.ProtocolV3FeaturesRquotaDaemonPortQueryParameter != nil {
+			qrProtocolV3FeaturesRquotaDaemonPort = *o.ProtocolV3FeaturesRquotaDaemonPortQueryParameter
+		}
+		qProtocolV3FeaturesRquotaDaemonPort := swag.FormatInt64(qrProtocolV3FeaturesRquotaDaemonPort)
+		if qProtocolV3FeaturesRquotaDaemonPort != "" {
+
+			if err := r.SetQueryParam("protocol.v3_features.rquota_daemon_port", qProtocolV3FeaturesRquotaDaemonPort); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ProtocolV40EnabledQueryParameter != nil {
 
 		// query param protocol.v40_enabled
@@ -3221,6 +3952,40 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qProtocolV40FeaturesACLEnabled != "" {
 
 			if err := r.SetQueryParam("protocol.v40_features.acl_enabled", qProtocolV40FeaturesACLEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV40FeaturesACLMaxAcesQueryParameter != nil {
+
+		// query param protocol.v40_features.acl_max_aces
+		var qrProtocolV40FeaturesACLMaxAces int64
+
+		if o.ProtocolV40FeaturesACLMaxAcesQueryParameter != nil {
+			qrProtocolV40FeaturesACLMaxAces = *o.ProtocolV40FeaturesACLMaxAcesQueryParameter
+		}
+		qProtocolV40FeaturesACLMaxAces := swag.FormatInt64(qrProtocolV40FeaturesACLMaxAces)
+		if qProtocolV40FeaturesACLMaxAces != "" {
+
+			if err := r.SetQueryParam("protocol.v40_features.acl_max_aces", qProtocolV40FeaturesACLMaxAces); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV40FeaturesACLPreserveQueryParameter != nil {
+
+		// query param protocol.v40_features.acl_preserve
+		var qrProtocolV40FeaturesACLPreserve bool
+
+		if o.ProtocolV40FeaturesACLPreserveQueryParameter != nil {
+			qrProtocolV40FeaturesACLPreserve = *o.ProtocolV40FeaturesACLPreserveQueryParameter
+		}
+		qProtocolV40FeaturesACLPreserve := swag.FormatBool(qrProtocolV40FeaturesACLPreserve)
+		if qProtocolV40FeaturesACLPreserve != "" {
+
+			if err := r.SetQueryParam("protocol.v40_features.acl_preserve", qProtocolV40FeaturesACLPreserve); err != nil {
 				return err
 			}
 		}
@@ -3289,6 +4054,40 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qProtocolV41FeaturesACLEnabled != "" {
 
 			if err := r.SetQueryParam("protocol.v41_features.acl_enabled", qProtocolV41FeaturesACLEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV41FeaturesImplementationDomainQueryParameter != nil {
+
+		// query param protocol.v41_features.implementation_domain
+		var qrProtocolV41FeaturesImplementationDomain string
+
+		if o.ProtocolV41FeaturesImplementationDomainQueryParameter != nil {
+			qrProtocolV41FeaturesImplementationDomain = *o.ProtocolV41FeaturesImplementationDomainQueryParameter
+		}
+		qProtocolV41FeaturesImplementationDomain := qrProtocolV41FeaturesImplementationDomain
+		if qProtocolV41FeaturesImplementationDomain != "" {
+
+			if err := r.SetQueryParam("protocol.v41_features.implementation_domain", qProtocolV41FeaturesImplementationDomain); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV41FeaturesImplementationNameQueryParameter != nil {
+
+		// query param protocol.v41_features.implementation_name
+		var qrProtocolV41FeaturesImplementationName string
+
+		if o.ProtocolV41FeaturesImplementationNameQueryParameter != nil {
+			qrProtocolV41FeaturesImplementationName = *o.ProtocolV41FeaturesImplementationNameQueryParameter
+		}
+		qProtocolV41FeaturesImplementationName := qrProtocolV41FeaturesImplementationName
+		if qProtocolV41FeaturesImplementationName != "" {
+
+			if err := r.SetQueryParam("protocol.v41_features.implementation_name", qProtocolV41FeaturesImplementationName); err != nil {
 				return err
 			}
 		}
@@ -3549,6 +4348,40 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.RootIgnoreNtACLQueryParameter != nil {
+
+		// query param root.ignore_nt_acl
+		var qrRootIgnoreNtACL bool
+
+		if o.RootIgnoreNtACLQueryParameter != nil {
+			qrRootIgnoreNtACL = *o.RootIgnoreNtACLQueryParameter
+		}
+		qRootIgnoreNtACL := swag.FormatBool(qrRootIgnoreNtACL)
+		if qRootIgnoreNtACL != "" {
+
+			if err := r.SetQueryParam("root.ignore_nt_acl", qRootIgnoreNtACL); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RootSkIPWritePermissionCheckQueryParameter != nil {
+
+		// query param root.skip_write_permission_check
+		var qrRootSkipWritePermissionCheck bool
+
+		if o.RootSkIPWritePermissionCheckQueryParameter != nil {
+			qrRootSkipWritePermissionCheck = *o.RootSkIPWritePermissionCheckQueryParameter
+		}
+		qRootSkipWritePermissionCheck := swag.FormatBool(qrRootSkipWritePermissionCheck)
+		if qRootSkipWritePermissionCheck != "" {
+
+			if err := r.SetQueryParam("root.skip_write_permission_check", qRootSkipWritePermissionCheck); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.RquotaEnabledQueryParameter != nil {
 
 		// query param rquota_enabled
@@ -3561,6 +4394,91 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qRquotaEnabled != "" {
 
 			if err := r.SetQueryParam("rquota_enabled", qRquotaEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityChownModeQueryParameter != nil {
+
+		// query param security.chown_mode
+		var qrSecurityChownMode string
+
+		if o.SecurityChownModeQueryParameter != nil {
+			qrSecurityChownMode = *o.SecurityChownModeQueryParameter
+		}
+		qSecurityChownMode := qrSecurityChownMode
+		if qSecurityChownMode != "" {
+
+			if err := r.SetQueryParam("security.chown_mode", qSecurityChownMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityNtACLDisplayPermissionQueryParameter != nil {
+
+		// query param security.nt_acl_display_permission
+		var qrSecurityNtACLDisplayPermission bool
+
+		if o.SecurityNtACLDisplayPermissionQueryParameter != nil {
+			qrSecurityNtACLDisplayPermission = *o.SecurityNtACLDisplayPermissionQueryParameter
+		}
+		qSecurityNtACLDisplayPermission := swag.FormatBool(qrSecurityNtACLDisplayPermission)
+		if qSecurityNtACLDisplayPermission != "" {
+
+			if err := r.SetQueryParam("security.nt_acl_display_permission", qSecurityNtACLDisplayPermission); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityNtfsUnixSecurityQueryParameter != nil {
+
+		// query param security.ntfs_unix_security
+		var qrSecurityNtfsUnixSecurity string
+
+		if o.SecurityNtfsUnixSecurityQueryParameter != nil {
+			qrSecurityNtfsUnixSecurity = *o.SecurityNtfsUnixSecurityQueryParameter
+		}
+		qSecurityNtfsUnixSecurity := qrSecurityNtfsUnixSecurity
+		if qSecurityNtfsUnixSecurity != "" {
+
+			if err := r.SetQueryParam("security.ntfs_unix_security", qSecurityNtfsUnixSecurity); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityPermittedEncryptionTypesQueryParameter != nil {
+
+		// query param security.permitted_encryption_types
+		var qrSecurityPermittedEncryptionTypes string
+
+		if o.SecurityPermittedEncryptionTypesQueryParameter != nil {
+			qrSecurityPermittedEncryptionTypes = *o.SecurityPermittedEncryptionTypesQueryParameter
+		}
+		qSecurityPermittedEncryptionTypes := qrSecurityPermittedEncryptionTypes
+		if qSecurityPermittedEncryptionTypes != "" {
+
+			if err := r.SetQueryParam("security.permitted_encryption_types", qSecurityPermittedEncryptionTypes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityRpcsecContextIDleQueryParameter != nil {
+
+		// query param security.rpcsec_context_idle
+		var qrSecurityRpcsecContextIdle int64
+
+		if o.SecurityRpcsecContextIDleQueryParameter != nil {
+			qrSecurityRpcsecContextIdle = *o.SecurityRpcsecContextIDleQueryParameter
+		}
+		qSecurityRpcsecContextIdle := swag.FormatInt64(qrSecurityRpcsecContextIdle)
+		if qSecurityRpcsecContextIdle != "" {
+
+			if err := r.SetQueryParam("security.rpcsec_context_idle", qSecurityRpcsecContextIdle); err != nil {
 				return err
 			}
 		}
@@ -4314,6 +5232,23 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.TransportTCPMaxTransferSizeQueryParameter != nil {
+
+		// query param transport.tcp_max_transfer_size
+		var qrTransportTCPMaxTransferSize int64
+
+		if o.TransportTCPMaxTransferSizeQueryParameter != nil {
+			qrTransportTCPMaxTransferSize = *o.TransportTCPMaxTransferSizeQueryParameter
+		}
+		qTransportTCPMaxTransferSize := swag.FormatInt64(qrTransportTCPMaxTransferSize)
+		if qTransportTCPMaxTransferSize != "" {
+
+			if err := r.SetQueryParam("transport.tcp_max_transfer_size", qTransportTCPMaxTransferSize); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.TransportUDPEnabledQueryParameter != nil {
 
 		// query param transport.udp_enabled
@@ -4343,6 +5278,57 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qVstorageEnabled != "" {
 
 			if err := r.SetQueryParam("vstorage_enabled", qVstorageEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.WindowsDefaultUserQueryParameter != nil {
+
+		// query param windows.default_user
+		var qrWindowsDefaultUser string
+
+		if o.WindowsDefaultUserQueryParameter != nil {
+			qrWindowsDefaultUser = *o.WindowsDefaultUserQueryParameter
+		}
+		qWindowsDefaultUser := qrWindowsDefaultUser
+		if qWindowsDefaultUser != "" {
+
+			if err := r.SetQueryParam("windows.default_user", qWindowsDefaultUser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.WindowsMapUnknownUIDToDefaultUserQueryParameter != nil {
+
+		// query param windows.map_unknown_uid_to_default_user
+		var qrWindowsMapUnknownUIDToDefaultUser bool
+
+		if o.WindowsMapUnknownUIDToDefaultUserQueryParameter != nil {
+			qrWindowsMapUnknownUIDToDefaultUser = *o.WindowsMapUnknownUIDToDefaultUserQueryParameter
+		}
+		qWindowsMapUnknownUIDToDefaultUser := swag.FormatBool(qrWindowsMapUnknownUIDToDefaultUser)
+		if qWindowsMapUnknownUIDToDefaultUser != "" {
+
+			if err := r.SetQueryParam("windows.map_unknown_uid_to_default_user", qWindowsMapUnknownUIDToDefaultUser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.WindowsV3MsDosClientEnabledQueryParameter != nil {
+
+		// query param windows.v3_ms_dos_client_enabled
+		var qrWindowsV3MsDosClientEnabled bool
+
+		if o.WindowsV3MsDosClientEnabledQueryParameter != nil {
+			qrWindowsV3MsDosClientEnabled = *o.WindowsV3MsDosClientEnabledQueryParameter
+		}
+		qWindowsV3MsDosClientEnabled := swag.FormatBool(qrWindowsV3MsDosClientEnabled)
+		if qWindowsV3MsDosClientEnabled != "" {
+
+			if err := r.SetQueryParam("windows.v3_ms_dos_client_enabled", qWindowsV3MsDosClientEnabled); err != nil {
 				return err
 			}
 		}

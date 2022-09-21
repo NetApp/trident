@@ -85,8 +85,13 @@ func NewSnapmirrorPolicyCreateDefault(code int) *SnapmirrorPolicyCreateDefault {
  ONTAP Error Response codes
 | Error code  |  Description |
 |-------------|--------------|
+| 6619714     | Schedule specified is an interval schedule. SnapMirror does not support interval schedules. |
 | 13303850    | Invalid input parameter|
 | 13303887    | Failed to create SnapMirror policy. Reason: Maximum number of allowed retention rules reached |
+| 13304083    | The specified property is not supported because all nodes in the cluster are not capable of supporting this property. |
+| 13304084    | Properties specified are mutually exclusive. Provide only one property. |
+| 13304085    | The specified property does not support the specified value. |
+
 
 */
 type SnapmirrorPolicyCreateDefault struct {

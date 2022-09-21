@@ -237,7 +237,7 @@ func (m *WwpnAliasLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WwpnAliasSvm SVM, applies only to SVM-scoped objects.
+// WwpnAliasSvm wwpn alias svm
 //
 // swagger:model WwpnAliasSvm
 type WwpnAliasSvm struct {

@@ -66,6 +66,54 @@ type IgroupCollectionGetParams struct {
 	*/
 	CommentQueryParameter *string
 
+	/* ConnectivityTrackingAlertsSummaryArgumentsCode.
+
+	   Filter by connectivity_tracking.alerts.summary.arguments.code
+	*/
+	ConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter *string
+
+	/* ConnectivityTrackingAlertsSummaryArgumentsMessage.
+
+	   Filter by connectivity_tracking.alerts.summary.arguments.message
+	*/
+	ConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter *string
+
+	/* ConnectivityTrackingAlertsSummaryCode.
+
+	   Filter by connectivity_tracking.alerts.summary.code
+	*/
+	ConnectivityTrackingAlertsSummaryCodeQueryParameter *string
+
+	/* ConnectivityTrackingAlertsSummaryMessage.
+
+	   Filter by connectivity_tracking.alerts.summary.message
+	*/
+	ConnectivityTrackingAlertsSummaryMessageQueryParameter *string
+
+	/* ConnectivityTrackingAlertsSummaryTarget.
+
+	   Filter by connectivity_tracking.alerts.summary.target
+	*/
+	ConnectivityTrackingAlertsSummaryTargetQueryParameter *string
+
+	/* ConnectivityTrackingConnectionState.
+
+	   Filter by connectivity_tracking.connection_state
+	*/
+	ConnectivityTrackingConnectionStateQueryParameter *string
+
+	/* ConnectivityTrackingRequiredNodesName.
+
+	   Filter by connectivity_tracking.required_nodes.name
+	*/
+	ConnectivityTrackingRequiredNodesNameQueryParameter *string
+
+	/* ConnectivityTrackingRequiredNodesUUID.
+
+	   Filter by connectivity_tracking.required_nodes.uuid
+	*/
+	ConnectivityTrackingRequiredNodesUUIDQueryParameter *string
+
 	/* DeleteOnUnmap.
 
 	   Filter by delete_on_unmap
@@ -101,6 +149,12 @@ type IgroupCollectionGetParams struct {
 	   Filter by initiators.comment
 	*/
 	InitiatorsCommentQueryParameter *string
+
+	/* InitiatorsConnectivityTrackingConnectionState.
+
+	   Filter by initiators.connectivity_tracking.connection_state
+	*/
+	InitiatorsConnectivityTrackingConnectionStateQueryParameter *string
 
 	/* InitiatorsIgroupName.
 
@@ -244,6 +298,24 @@ type IgroupCollectionGetParams struct {
 	*/
 	SVMUUIDQueryParameter *string
 
+	/* TargetFirmwareRevision.
+
+	   Filter by target.firmware_revision
+	*/
+	TargetFirmwareRevisionQueryParameter *string
+
+	/* TargetProductID.
+
+	   Filter by target.product_id
+	*/
+	TargetProductIDQueryParameter *string
+
+	/* TargetVendorID.
+
+	   Filter by target.vendor_id
+	*/
+	TargetVendorIDQueryParameter *string
+
 	/* UUID.
 
 	   Filter by uuid
@@ -328,6 +400,94 @@ func (o *IgroupCollectionGetParams) SetCommentQueryParameter(comment *string) {
 	o.CommentQueryParameter = comment
 }
 
+// WithConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter adds the connectivityTrackingAlertsSummaryArgumentsCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter(connectivityTrackingAlertsSummaryArgumentsCode *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter(connectivityTrackingAlertsSummaryArgumentsCode)
+	return o
+}
+
+// SetConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter adds the connectivityTrackingAlertsSummaryArgumentsCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter(connectivityTrackingAlertsSummaryArgumentsCode *string) {
+	o.ConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter = connectivityTrackingAlertsSummaryArgumentsCode
+}
+
+// WithConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter adds the connectivityTrackingAlertsSummaryArgumentsMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter(connectivityTrackingAlertsSummaryArgumentsMessage *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter(connectivityTrackingAlertsSummaryArgumentsMessage)
+	return o
+}
+
+// SetConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter adds the connectivityTrackingAlertsSummaryArgumentsMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter(connectivityTrackingAlertsSummaryArgumentsMessage *string) {
+	o.ConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter = connectivityTrackingAlertsSummaryArgumentsMessage
+}
+
+// WithConnectivityTrackingAlertsSummaryCodeQueryParameter adds the connectivityTrackingAlertsSummaryCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryCodeQueryParameter(connectivityTrackingAlertsSummaryCode *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingAlertsSummaryCodeQueryParameter(connectivityTrackingAlertsSummaryCode)
+	return o
+}
+
+// SetConnectivityTrackingAlertsSummaryCodeQueryParameter adds the connectivityTrackingAlertsSummaryCode to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryCodeQueryParameter(connectivityTrackingAlertsSummaryCode *string) {
+	o.ConnectivityTrackingAlertsSummaryCodeQueryParameter = connectivityTrackingAlertsSummaryCode
+}
+
+// WithConnectivityTrackingAlertsSummaryMessageQueryParameter adds the connectivityTrackingAlertsSummaryMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryMessageQueryParameter(connectivityTrackingAlertsSummaryMessage *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingAlertsSummaryMessageQueryParameter(connectivityTrackingAlertsSummaryMessage)
+	return o
+}
+
+// SetConnectivityTrackingAlertsSummaryMessageQueryParameter adds the connectivityTrackingAlertsSummaryMessage to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryMessageQueryParameter(connectivityTrackingAlertsSummaryMessage *string) {
+	o.ConnectivityTrackingAlertsSummaryMessageQueryParameter = connectivityTrackingAlertsSummaryMessage
+}
+
+// WithConnectivityTrackingAlertsSummaryTargetQueryParameter adds the connectivityTrackingAlertsSummaryTarget to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingAlertsSummaryTargetQueryParameter(connectivityTrackingAlertsSummaryTarget *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingAlertsSummaryTargetQueryParameter(connectivityTrackingAlertsSummaryTarget)
+	return o
+}
+
+// SetConnectivityTrackingAlertsSummaryTargetQueryParameter adds the connectivityTrackingAlertsSummaryTarget to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingAlertsSummaryTargetQueryParameter(connectivityTrackingAlertsSummaryTarget *string) {
+	o.ConnectivityTrackingAlertsSummaryTargetQueryParameter = connectivityTrackingAlertsSummaryTarget
+}
+
+// WithConnectivityTrackingConnectionStateQueryParameter adds the connectivityTrackingConnectionState to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingConnectionStateQueryParameter(connectivityTrackingConnectionState *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingConnectionStateQueryParameter(connectivityTrackingConnectionState)
+	return o
+}
+
+// SetConnectivityTrackingConnectionStateQueryParameter adds the connectivityTrackingConnectionState to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingConnectionStateQueryParameter(connectivityTrackingConnectionState *string) {
+	o.ConnectivityTrackingConnectionStateQueryParameter = connectivityTrackingConnectionState
+}
+
+// WithConnectivityTrackingRequiredNodesNameQueryParameter adds the connectivityTrackingRequiredNodesName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingRequiredNodesNameQueryParameter(connectivityTrackingRequiredNodesName *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingRequiredNodesNameQueryParameter(connectivityTrackingRequiredNodesName)
+	return o
+}
+
+// SetConnectivityTrackingRequiredNodesNameQueryParameter adds the connectivityTrackingRequiredNodesName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingRequiredNodesNameQueryParameter(connectivityTrackingRequiredNodesName *string) {
+	o.ConnectivityTrackingRequiredNodesNameQueryParameter = connectivityTrackingRequiredNodesName
+}
+
+// WithConnectivityTrackingRequiredNodesUUIDQueryParameter adds the connectivityTrackingRequiredNodesUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithConnectivityTrackingRequiredNodesUUIDQueryParameter(connectivityTrackingRequiredNodesUUID *string) *IgroupCollectionGetParams {
+	o.SetConnectivityTrackingRequiredNodesUUIDQueryParameter(connectivityTrackingRequiredNodesUUID)
+	return o
+}
+
+// SetConnectivityTrackingRequiredNodesUUIDQueryParameter adds the connectivityTrackingRequiredNodesUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetConnectivityTrackingRequiredNodesUUIDQueryParameter(connectivityTrackingRequiredNodesUUID *string) {
+	o.ConnectivityTrackingRequiredNodesUUIDQueryParameter = connectivityTrackingRequiredNodesUUID
+}
+
 // WithDeleteOnUnmapQueryParameter adds the deleteOnUnmap to the igroup collection get params
 func (o *IgroupCollectionGetParams) WithDeleteOnUnmapQueryParameter(deleteOnUnmap *bool) *IgroupCollectionGetParams {
 	o.SetDeleteOnUnmapQueryParameter(deleteOnUnmap)
@@ -392,6 +552,17 @@ func (o *IgroupCollectionGetParams) WithInitiatorsCommentQueryParameter(initiato
 // SetInitiatorsCommentQueryParameter adds the initiatorsComment to the igroup collection get params
 func (o *IgroupCollectionGetParams) SetInitiatorsCommentQueryParameter(initiatorsComment *string) {
 	o.InitiatorsCommentQueryParameter = initiatorsComment
+}
+
+// WithInitiatorsConnectivityTrackingConnectionStateQueryParameter adds the initiatorsConnectivityTrackingConnectionState to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsConnectivityTrackingConnectionStateQueryParameter(initiatorsConnectivityTrackingConnectionState *string) *IgroupCollectionGetParams {
+	o.SetInitiatorsConnectivityTrackingConnectionStateQueryParameter(initiatorsConnectivityTrackingConnectionState)
+	return o
+}
+
+// SetInitiatorsConnectivityTrackingConnectionStateQueryParameter adds the initiatorsConnectivityTrackingConnectionState to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsConnectivityTrackingConnectionStateQueryParameter(initiatorsConnectivityTrackingConnectionState *string) {
+	o.InitiatorsConnectivityTrackingConnectionStateQueryParameter = initiatorsConnectivityTrackingConnectionState
 }
 
 // WithInitiatorsIgroupNameQueryParameter adds the initiatorsIgroupName to the igroup collection get params
@@ -647,6 +818,39 @@ func (o *IgroupCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
 	o.SVMUUIDQueryParameter = svmUUID
 }
 
+// WithTargetFirmwareRevisionQueryParameter adds the targetFirmwareRevision to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithTargetFirmwareRevisionQueryParameter(targetFirmwareRevision *string) *IgroupCollectionGetParams {
+	o.SetTargetFirmwareRevisionQueryParameter(targetFirmwareRevision)
+	return o
+}
+
+// SetTargetFirmwareRevisionQueryParameter adds the targetFirmwareRevision to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetTargetFirmwareRevisionQueryParameter(targetFirmwareRevision *string) {
+	o.TargetFirmwareRevisionQueryParameter = targetFirmwareRevision
+}
+
+// WithTargetProductIDQueryParameter adds the targetProductID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithTargetProductIDQueryParameter(targetProductID *string) *IgroupCollectionGetParams {
+	o.SetTargetProductIDQueryParameter(targetProductID)
+	return o
+}
+
+// SetTargetProductIDQueryParameter adds the targetProductId to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetTargetProductIDQueryParameter(targetProductID *string) {
+	o.TargetProductIDQueryParameter = targetProductID
+}
+
+// WithTargetVendorIDQueryParameter adds the targetVendorID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithTargetVendorIDQueryParameter(targetVendorID *string) *IgroupCollectionGetParams {
+	o.SetTargetVendorIDQueryParameter(targetVendorID)
+	return o
+}
+
+// SetTargetVendorIDQueryParameter adds the targetVendorId to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetTargetVendorIDQueryParameter(targetVendorID *string) {
+	o.TargetVendorIDQueryParameter = targetVendorID
+}
+
 // WithUUIDQueryParameter adds the uuid to the igroup collection get params
 func (o *IgroupCollectionGetParams) WithUUIDQueryParameter(uuid *string) *IgroupCollectionGetParams {
 	o.SetUUIDQueryParameter(uuid)
@@ -678,6 +882,142 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qComment != "" {
 
 			if err := r.SetQueryParam("comment", qComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter != nil {
+
+		// query param connectivity_tracking.alerts.summary.arguments.code
+		var qrConnectivityTrackingAlertsSummaryArgumentsCode string
+
+		if o.ConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter != nil {
+			qrConnectivityTrackingAlertsSummaryArgumentsCode = *o.ConnectivityTrackingAlertsSummaryArgumentsCodeQueryParameter
+		}
+		qConnectivityTrackingAlertsSummaryArgumentsCode := qrConnectivityTrackingAlertsSummaryArgumentsCode
+		if qConnectivityTrackingAlertsSummaryArgumentsCode != "" {
+
+			if err := r.SetQueryParam("connectivity_tracking.alerts.summary.arguments.code", qConnectivityTrackingAlertsSummaryArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter != nil {
+
+		// query param connectivity_tracking.alerts.summary.arguments.message
+		var qrConnectivityTrackingAlertsSummaryArgumentsMessage string
+
+		if o.ConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter != nil {
+			qrConnectivityTrackingAlertsSummaryArgumentsMessage = *o.ConnectivityTrackingAlertsSummaryArgumentsMessageQueryParameter
+		}
+		qConnectivityTrackingAlertsSummaryArgumentsMessage := qrConnectivityTrackingAlertsSummaryArgumentsMessage
+		if qConnectivityTrackingAlertsSummaryArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("connectivity_tracking.alerts.summary.arguments.message", qConnectivityTrackingAlertsSummaryArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityTrackingAlertsSummaryCodeQueryParameter != nil {
+
+		// query param connectivity_tracking.alerts.summary.code
+		var qrConnectivityTrackingAlertsSummaryCode string
+
+		if o.ConnectivityTrackingAlertsSummaryCodeQueryParameter != nil {
+			qrConnectivityTrackingAlertsSummaryCode = *o.ConnectivityTrackingAlertsSummaryCodeQueryParameter
+		}
+		qConnectivityTrackingAlertsSummaryCode := qrConnectivityTrackingAlertsSummaryCode
+		if qConnectivityTrackingAlertsSummaryCode != "" {
+
+			if err := r.SetQueryParam("connectivity_tracking.alerts.summary.code", qConnectivityTrackingAlertsSummaryCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityTrackingAlertsSummaryMessageQueryParameter != nil {
+
+		// query param connectivity_tracking.alerts.summary.message
+		var qrConnectivityTrackingAlertsSummaryMessage string
+
+		if o.ConnectivityTrackingAlertsSummaryMessageQueryParameter != nil {
+			qrConnectivityTrackingAlertsSummaryMessage = *o.ConnectivityTrackingAlertsSummaryMessageQueryParameter
+		}
+		qConnectivityTrackingAlertsSummaryMessage := qrConnectivityTrackingAlertsSummaryMessage
+		if qConnectivityTrackingAlertsSummaryMessage != "" {
+
+			if err := r.SetQueryParam("connectivity_tracking.alerts.summary.message", qConnectivityTrackingAlertsSummaryMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityTrackingAlertsSummaryTargetQueryParameter != nil {
+
+		// query param connectivity_tracking.alerts.summary.target
+		var qrConnectivityTrackingAlertsSummaryTarget string
+
+		if o.ConnectivityTrackingAlertsSummaryTargetQueryParameter != nil {
+			qrConnectivityTrackingAlertsSummaryTarget = *o.ConnectivityTrackingAlertsSummaryTargetQueryParameter
+		}
+		qConnectivityTrackingAlertsSummaryTarget := qrConnectivityTrackingAlertsSummaryTarget
+		if qConnectivityTrackingAlertsSummaryTarget != "" {
+
+			if err := r.SetQueryParam("connectivity_tracking.alerts.summary.target", qConnectivityTrackingAlertsSummaryTarget); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityTrackingConnectionStateQueryParameter != nil {
+
+		// query param connectivity_tracking.connection_state
+		var qrConnectivityTrackingConnectionState string
+
+		if o.ConnectivityTrackingConnectionStateQueryParameter != nil {
+			qrConnectivityTrackingConnectionState = *o.ConnectivityTrackingConnectionStateQueryParameter
+		}
+		qConnectivityTrackingConnectionState := qrConnectivityTrackingConnectionState
+		if qConnectivityTrackingConnectionState != "" {
+
+			if err := r.SetQueryParam("connectivity_tracking.connection_state", qConnectivityTrackingConnectionState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityTrackingRequiredNodesNameQueryParameter != nil {
+
+		// query param connectivity_tracking.required_nodes.name
+		var qrConnectivityTrackingRequiredNodesName string
+
+		if o.ConnectivityTrackingRequiredNodesNameQueryParameter != nil {
+			qrConnectivityTrackingRequiredNodesName = *o.ConnectivityTrackingRequiredNodesNameQueryParameter
+		}
+		qConnectivityTrackingRequiredNodesName := qrConnectivityTrackingRequiredNodesName
+		if qConnectivityTrackingRequiredNodesName != "" {
+
+			if err := r.SetQueryParam("connectivity_tracking.required_nodes.name", qConnectivityTrackingRequiredNodesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConnectivityTrackingRequiredNodesUUIDQueryParameter != nil {
+
+		// query param connectivity_tracking.required_nodes.uuid
+		var qrConnectivityTrackingRequiredNodesUUID string
+
+		if o.ConnectivityTrackingRequiredNodesUUIDQueryParameter != nil {
+			qrConnectivityTrackingRequiredNodesUUID = *o.ConnectivityTrackingRequiredNodesUUIDQueryParameter
+		}
+		qConnectivityTrackingRequiredNodesUUID := qrConnectivityTrackingRequiredNodesUUID
+		if qConnectivityTrackingRequiredNodesUUID != "" {
+
+			if err := r.SetQueryParam("connectivity_tracking.required_nodes.uuid", qConnectivityTrackingRequiredNodesUUID); err != nil {
 				return err
 			}
 		}
@@ -774,6 +1114,23 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qInitiatorsComment != "" {
 
 			if err := r.SetQueryParam("initiators.comment", qInitiatorsComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InitiatorsConnectivityTrackingConnectionStateQueryParameter != nil {
+
+		// query param initiators.connectivity_tracking.connection_state
+		var qrInitiatorsConnectivityTrackingConnectionState string
+
+		if o.InitiatorsConnectivityTrackingConnectionStateQueryParameter != nil {
+			qrInitiatorsConnectivityTrackingConnectionState = *o.InitiatorsConnectivityTrackingConnectionStateQueryParameter
+		}
+		qInitiatorsConnectivityTrackingConnectionState := qrInitiatorsConnectivityTrackingConnectionState
+		if qInitiatorsConnectivityTrackingConnectionState != "" {
+
+			if err := r.SetQueryParam("initiators.connectivity_tracking.connection_state", qInitiatorsConnectivityTrackingConnectionState); err != nil {
 				return err
 			}
 		}
@@ -1159,6 +1516,57 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSvmUUID != "" {
 
 			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TargetFirmwareRevisionQueryParameter != nil {
+
+		// query param target.firmware_revision
+		var qrTargetFirmwareRevision string
+
+		if o.TargetFirmwareRevisionQueryParameter != nil {
+			qrTargetFirmwareRevision = *o.TargetFirmwareRevisionQueryParameter
+		}
+		qTargetFirmwareRevision := qrTargetFirmwareRevision
+		if qTargetFirmwareRevision != "" {
+
+			if err := r.SetQueryParam("target.firmware_revision", qTargetFirmwareRevision); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TargetProductIDQueryParameter != nil {
+
+		// query param target.product_id
+		var qrTargetProductID string
+
+		if o.TargetProductIDQueryParameter != nil {
+			qrTargetProductID = *o.TargetProductIDQueryParameter
+		}
+		qTargetProductID := qrTargetProductID
+		if qTargetProductID != "" {
+
+			if err := r.SetQueryParam("target.product_id", qTargetProductID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TargetVendorIDQueryParameter != nil {
+
+		// query param target.vendor_id
+		var qrTargetVendorID string
+
+		if o.TargetVendorIDQueryParameter != nil {
+			qrTargetVendorID = *o.TargetVendorIDQueryParameter
+		}
+		qTargetVendorID := qrTargetVendorID
+		if qTargetVendorID != "" {
+
+			if err := r.SetQueryParam("target.vendor_id", qTargetVendorID); err != nil {
 				return err
 			}
 		}

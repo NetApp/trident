@@ -22,6 +22,9 @@ type UnixGroupResponse struct {
 	// links
 	Links *UnixGroupResponseLinks `json:"_links,omitempty"`
 
+	// Number of UNIX groups and members.
+	CurrentCount int64 `json:"current_count,omitempty"`
+
 	// Number of UNIX group records.
 	NumRecords int64 `json:"num_records,omitempty"`
 

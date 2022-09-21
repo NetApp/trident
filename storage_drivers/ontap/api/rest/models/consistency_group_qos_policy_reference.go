@@ -11,7 +11,6 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // ConsistencyGroupQosPolicyReference When "min_throughput_iops", "min_throughput_mbps", "max_throughput_iops" or "max_throughput_mbps" attributes are specified, the storage object is assigned to an auto-generated QoS policy group. If the attributes are later modified, the auto-generated QoS policy-group attributes are modified. Attributes can be removed by specifying "0" and policy group by specifying "none". Upon deletion of the storage object or if the attributes are removed, then the QoS policy-group is also removed.
@@ -24,32 +23,26 @@ type ConsistencyGroupQosPolicyReference struct {
 
 	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 10000
-	// Read Only: true
 	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
 
 	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	// Read Only: true
 	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
-	// Read Only: true
 	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
 
 	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	// Read Only: true
 	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
-	// Read Only: true
 	Name string `json:"name,omitempty"`
 
 	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
 }
 
@@ -92,30 +85,6 @@ func (m *ConsistencyGroupQosPolicyReference) ContextValidate(ctx context.Context
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateMaxThroughputIops(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMaxThroughputMbps(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMinThroughputIops(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMinThroughputMbps(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateName(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -131,60 +100,6 @@ func (m *ConsistencyGroupQosPolicyReference) contextValidateLinks(ctx context.Co
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupQosPolicyReference) contextValidateMaxThroughputIops(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "max_throughput_iops", "body", int64(m.MaxThroughputIops)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupQosPolicyReference) contextValidateMaxThroughputMbps(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "max_throughput_mbps", "body", int64(m.MaxThroughputMbps)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupQosPolicyReference) contextValidateMinThroughputIops(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "min_throughput_iops", "body", int64(m.MinThroughputIops)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupQosPolicyReference) contextValidateMinThroughputMbps(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "min_throughput_mbps", "body", int64(m.MinThroughputMbps)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupQosPolicyReference) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupQosPolicyReference) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
-		return err
 	}
 
 	return nil

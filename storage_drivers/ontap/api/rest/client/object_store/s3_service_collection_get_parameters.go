@@ -60,6 +60,18 @@ func NewS3ServiceCollectionGetParamsWithHTTPClient(client *http.Client) *S3Servi
 */
 type S3ServiceCollectionGetParams struct {
 
+	/* BucketsAuditEventSelectorAccess.
+
+	   Filter by buckets.audit_event_selector.access
+	*/
+	BucketsAuditEventSelectorAccessQueryParameter *string
+
+	/* BucketsAuditEventSelectorPermission.
+
+	   Filter by buckets.audit_event_selector.permission
+	*/
+	BucketsAuditEventSelectorPermissionQueryParameter *string
+
 	/* BucketsComment.
 
 	   Filter by buckets.comment
@@ -233,6 +245,12 @@ type S3ServiceCollectionGetParams struct {
 	   Filter by buckets.uuid
 	*/
 	BucketsUUIDQueryParameter *string
+
+	/* BucketsVersioningState.
+
+	   Filter by buckets.versioning_state
+	*/
+	BucketsVersioningStateQueryParameter *string
 
 	/* BucketsVolumeName.
 
@@ -605,6 +623,28 @@ func (o *S3ServiceCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithBucketsAuditEventSelectorAccessQueryParameter adds the bucketsAuditEventSelectorAccess to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsAuditEventSelectorAccessQueryParameter(bucketsAuditEventSelectorAccess *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsAuditEventSelectorAccessQueryParameter(bucketsAuditEventSelectorAccess)
+	return o
+}
+
+// SetBucketsAuditEventSelectorAccessQueryParameter adds the bucketsAuditEventSelectorAccess to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsAuditEventSelectorAccessQueryParameter(bucketsAuditEventSelectorAccess *string) {
+	o.BucketsAuditEventSelectorAccessQueryParameter = bucketsAuditEventSelectorAccess
+}
+
+// WithBucketsAuditEventSelectorPermissionQueryParameter adds the bucketsAuditEventSelectorPermission to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsAuditEventSelectorPermissionQueryParameter(bucketsAuditEventSelectorPermission *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsAuditEventSelectorPermissionQueryParameter(bucketsAuditEventSelectorPermission)
+	return o
+}
+
+// SetBucketsAuditEventSelectorPermissionQueryParameter adds the bucketsAuditEventSelectorPermission to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsAuditEventSelectorPermissionQueryParameter(bucketsAuditEventSelectorPermission *string) {
+	o.BucketsAuditEventSelectorPermissionQueryParameter = bucketsAuditEventSelectorPermission
+}
+
 // WithBucketsCommentQueryParameter adds the bucketsComment to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) WithBucketsCommentQueryParameter(bucketsComment *string) *S3ServiceCollectionGetParams {
 	o.SetBucketsCommentQueryParameter(bucketsComment)
@@ -922,6 +962,17 @@ func (o *S3ServiceCollectionGetParams) WithBucketsUUIDQueryParameter(bucketsUUID
 // SetBucketsUUIDQueryParameter adds the bucketsUuid to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) SetBucketsUUIDQueryParameter(bucketsUUID *string) {
 	o.BucketsUUIDQueryParameter = bucketsUUID
+}
+
+// WithBucketsVersioningStateQueryParameter adds the bucketsVersioningState to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsVersioningStateQueryParameter(bucketsVersioningState *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsVersioningStateQueryParameter(bucketsVersioningState)
+	return o
+}
+
+// SetBucketsVersioningStateQueryParameter adds the bucketsVersioningState to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsVersioningStateQueryParameter(bucketsVersioningState *string) {
+	o.BucketsVersioningStateQueryParameter = bucketsVersioningState
 }
 
 // WithBucketsVolumeNameQueryParameter adds the bucketsVolumeName to the s3 service collection get params
@@ -1482,6 +1533,40 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
+	if o.BucketsAuditEventSelectorAccessQueryParameter != nil {
+
+		// query param buckets.audit_event_selector.access
+		var qrBucketsAuditEventSelectorAccess string
+
+		if o.BucketsAuditEventSelectorAccessQueryParameter != nil {
+			qrBucketsAuditEventSelectorAccess = *o.BucketsAuditEventSelectorAccessQueryParameter
+		}
+		qBucketsAuditEventSelectorAccess := qrBucketsAuditEventSelectorAccess
+		if qBucketsAuditEventSelectorAccess != "" {
+
+			if err := r.SetQueryParam("buckets.audit_event_selector.access", qBucketsAuditEventSelectorAccess); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsAuditEventSelectorPermissionQueryParameter != nil {
+
+		// query param buckets.audit_event_selector.permission
+		var qrBucketsAuditEventSelectorPermission string
+
+		if o.BucketsAuditEventSelectorPermissionQueryParameter != nil {
+			qrBucketsAuditEventSelectorPermission = *o.BucketsAuditEventSelectorPermissionQueryParameter
+		}
+		qBucketsAuditEventSelectorPermission := qrBucketsAuditEventSelectorPermission
+		if qBucketsAuditEventSelectorPermission != "" {
+
+			if err := r.SetQueryParam("buckets.audit_event_selector.permission", qBucketsAuditEventSelectorPermission); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BucketsCommentQueryParameter != nil {
 
 		// query param buckets.comment
@@ -1970,6 +2055,23 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qBucketsUUID != "" {
 
 			if err := r.SetQueryParam("buckets.uuid", qBucketsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsVersioningStateQueryParameter != nil {
+
+		// query param buckets.versioning_state
+		var qrBucketsVersioningState string
+
+		if o.BucketsVersioningStateQueryParameter != nil {
+			qrBucketsVersioningState = *o.BucketsVersioningStateQueryParameter
+		}
+		qBucketsVersioningState := qrBucketsVersioningState
+		if qBucketsVersioningState != "" {
+
+			if err := r.SetQueryParam("buckets.versioning_state", qBucketsVersioningState); err != nil {
 				return err
 			}
 		}

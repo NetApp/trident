@@ -524,9 +524,11 @@ func (a *Client) FcpServiceModify(params *FcpServiceModifyParams, authInfo runti
   IgroupCollectionGet Retrieves initiator groups.
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `connectivity_tracking.*`
 * `igroups.*`
 * `lun_maps.*`
 * `parent_igroups.*`
+* `target.*`
 ### Related ONTAP commands
 * `lun igroup show`
 * `lun mapping show`
@@ -671,6 +673,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `igroups.*`
 * `lun_maps.*`
 * `parent_igroups.*`
+* `connectivity_tracking.*`
 ### Related ONTAP commands
 * `lun igroup show`
 * `lun mapping show`
@@ -718,6 +721,9 @@ func (a *Client) IgroupGet(params *IgroupGetParams, authInfo runtime.ClientAuthI
 This API only reports initiators owned directly by the initiator group.
 Initiators of nested initiator groups are not included in this
 collection.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `connectivity_tracking.*`
 ### Related ONTAP commands
 * `lun igroup show`
 ### Learn more
@@ -856,6 +862,9 @@ func (a *Client) IgroupInitiatorDelete(params *IgroupInitiatorDeleteParams, auth
   IgroupInitiatorGet Retrieves an initiator of an initiator group.
 This API only reports initiators owned directly by the initiator group.
 Initiators of nested initiator groups are not part of this collection.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `connectivity_tracking.*`
 ### Related ONTAP commands
 * `lun igroup show`
 ### Learn more
@@ -2075,6 +2084,7 @@ If not specified in POST, the follow default property values are assigned.
 * `auto_delete` - _false_
 ### Related ONTAP commands
 * `lun create`
+* `lun convert-from-namespace`
 * `lun copy start`
 * `volume file clone autodelete`
 * `volume file clone create`
@@ -2162,7 +2172,8 @@ func (a *Client) LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  LunGet Retrieves a LUN.
+  LunGet Retrieves a LUN's properties or a LUN's data.<br/>
+LUN data read requests are distinguished by the header entry `Accept: multipart/form-data`. When this header entry is provided, query parameters `data.offset` and `data.size` are required and used to specify the portion of the LUN's data to read; no other query parameters are allowed. Reads are limited to one megabyte (1MB) per request. Data is returned as `multipart/form-data` content with exactly one form entry containing the data. The form entry has content type `application/octet-stream`.
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `attributes.*`
@@ -2193,7 +2204,7 @@ func (a *Client) LunGet(params *LunGetParams, authInfo runtime.ClientAuthInfoWri
 		ID:                 "lun_get",
 		Method:             "GET",
 		PathPattern:        "/storage/luns/{uuid}",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ProducesMediaTypes: []string{"application/hal+json", "application/json", "multipart/form-data"},
 		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
@@ -2573,7 +2584,11 @@ func (a *Client) LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, au
 }
 
 /*
-  LunModify Updates the properties of a LUN. A PATCH request can also be be used to overwrite the contents of a LUN as a clone of another, to begin movement of a LUN between volumes, and to pause and resume the movement of a LUN between volumes.
+  LunModify Updates an existing LUN in one of several ways:
+- Updates the properties of a LUN.
+- Writes data to a LUN. LUN data write requests are distinguished by the header entry `Content-Type: multipart/form-data`. When this header entry is provided, query parameter `data.offset` is required and used to specify the location within the LUN at which to write the data; no other query parameters are allowed. The request body must be `multipart/form-data` content with exactly one form entry containing the data to write. The content type entry of the form data is ignored and always treated as `application/octet-stream`. Writes are limited to one megabyte (1MB) per request.
+- Overwrites the contents of a LUN as a clone of another.
+- Begins the movement of a LUN between volumes. PATCH can also pause and resume the movement of a LUN between volumes that is already in active.
 ### Related ONTAP commands
 * `lun copy modify`
 * `lun copy pause`
@@ -2600,7 +2615,7 @@ func (a *Client) LunModify(params *LunModifyParams, authInfo runtime.ClientAuthI
 		Method:             "PATCH",
 		PathPattern:        "/storage/luns/{uuid}",
 		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/json", "multipart/form-data"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &LunModifyReader{formats: a.formats},

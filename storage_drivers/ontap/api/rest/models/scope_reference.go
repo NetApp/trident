@@ -19,6 +19,15 @@ import (
 // swagger:model scope_reference
 type ScopeReference string
 
+func NewScopeReference(value ScopeReference) *ScopeReference {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated ScopeReference.
+func (m ScopeReference) Pointer() *ScopeReference {
+	return &m
+}
+
 const (
 
 	// ScopeReferenceCluster captures enum value "cluster"

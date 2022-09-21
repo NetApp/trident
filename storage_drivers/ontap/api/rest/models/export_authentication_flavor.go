@@ -28,6 +28,15 @@ import (
 // swagger:model export_authentication_flavor
 type ExportAuthenticationFlavor string
 
+func NewExportAuthenticationFlavor(value ExportAuthenticationFlavor) *ExportAuthenticationFlavor {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated ExportAuthenticationFlavor.
+func (m ExportAuthenticationFlavor) Pointer() *ExportAuthenticationFlavor {
+	return &m
+}
+
 const (
 
 	// ExportAuthenticationFlavorAny captures enum value "any"

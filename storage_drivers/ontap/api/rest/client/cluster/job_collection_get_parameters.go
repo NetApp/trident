@@ -126,6 +126,12 @@ type JobCollectionGetParams struct {
 	*/
 	MessageQueryParameter *string
 
+	/* NodeName.
+
+	   Filter by node.name
+	*/
+	NodeNameQueryParameter *string
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
@@ -364,6 +370,17 @@ func (o *JobCollectionGetParams) WithMessageQueryParameter(message *string) *Job
 // SetMessageQueryParameter adds the message to the job collection get params
 func (o *JobCollectionGetParams) SetMessageQueryParameter(message *string) {
 	o.MessageQueryParameter = message
+}
+
+// WithNodeNameQueryParameter adds the nodeName to the job collection get params
+func (o *JobCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *JobCollectionGetParams {
+	o.SetNodeNameQueryParameter(nodeName)
+	return o
+}
+
+// SetNodeNameQueryParameter adds the nodeName to the job collection get params
+func (o *JobCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
+	o.NodeNameQueryParameter = nodeName
 }
 
 // WithOrderByQueryParameter adds the orderBy to the job collection get params
@@ -638,6 +655,23 @@ func (o *JobCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qMessage != "" {
 
 			if err := r.SetQueryParam("message", qMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NodeNameQueryParameter != nil {
+
+		// query param node.name
+		var qrNodeName string
+
+		if o.NodeNameQueryParameter != nil {
+			qrNodeName = *o.NodeNameQueryParameter
+		}
+		qNodeName := qrNodeName
+		if qNodeName != "" {
+
+			if err := r.SetQueryParam("node.name", qNodeName); err != nil {
 				return err
 			}
 		}

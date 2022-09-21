@@ -25,19 +25,10 @@ type S3AuditEventSelector struct {
 	// Enum: [read write all]
 	Access *string `json:"access,omitempty"`
 
-	// Specifies the name of the bucket. Bucket name is a string that can only contain the following combination of ASCII-range alphanumeric characters 0-9, a-z, ".", and "-".
-	// Example: bucket1
-	// Max Length: 63
-	// Min Length: 3
-	Bucket string `json:"bucket,omitempty"`
-
 	// Specifies allow and deny permission types.
 	//
 	// Enum: [deny allow all]
 	Permission *string `json:"permission,omitempty"`
-
-	// svm
-	Svm *S3AuditEventSelectorSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this s3 audit event selector
@@ -48,15 +39,7 @@ func (m *S3AuditEventSelector) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateBucket(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validatePermission(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -132,22 +115,6 @@ func (m *S3AuditEventSelector) validateAccess(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3AuditEventSelector) validateBucket(formats strfmt.Registry) error {
-	if swag.IsZero(m.Bucket) { // not required
-		return nil
-	}
-
-	if err := validate.MinLength("bucket", "body", m.Bucket, 3); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("bucket", "body", m.Bucket, 63); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 var s3AuditEventSelectorTypePermissionPropEnum []interface{}
 
 func init() {
@@ -214,48 +181,8 @@ func (m *S3AuditEventSelector) validatePermission(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *S3AuditEventSelector) validateSvm(formats strfmt.Registry) error {
-	if swag.IsZero(m.Svm) { // not required
-		return nil
-	}
-
-	if m.Svm != nil {
-		if err := m.Svm.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this s3 audit event selector based on the context it is used
+// ContextValidate validates this s3 audit event selector based on context it is used
 func (m *S3AuditEventSelector) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateSvm(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *S3AuditEventSelector) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Svm != nil {
-		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -270,188 +197,6 @@ func (m *S3AuditEventSelector) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *S3AuditEventSelector) UnmarshalBinary(b []byte) error {
 	var res S3AuditEventSelector
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// S3AuditEventSelectorSvm s3 audit event selector svm
-//
-// swagger:model S3AuditEventSelectorSvm
-type S3AuditEventSelectorSvm struct {
-
-	// links
-	Links *S3AuditEventSelectorSvmLinks `json:"_links,omitempty"`
-
-	// The name of the SVM.
-	//
-	// Example: svm1
-	Name string `json:"name,omitempty"`
-
-	// The unique identifier of the SVM.
-	//
-	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
-}
-
-// Validate validates this s3 audit event selector svm
-func (m *S3AuditEventSelectorSvm) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *S3AuditEventSelectorSvm) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Links) { // not required
-		return nil
-	}
-
-	if m.Links != nil {
-		if err := m.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this s3 audit event selector svm based on the context it is used
-func (m *S3AuditEventSelectorSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *S3AuditEventSelectorSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Links != nil {
-		if err := m.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *S3AuditEventSelectorSvm) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *S3AuditEventSelectorSvm) UnmarshalBinary(b []byte) error {
-	var res S3AuditEventSelectorSvm
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// S3AuditEventSelectorSvmLinks s3 audit event selector svm links
-//
-// swagger:model S3AuditEventSelectorSvmLinks
-type S3AuditEventSelectorSvmLinks struct {
-
-	// self
-	Self *Href `json:"self,omitempty"`
-}
-
-// Validate validates this s3 audit event selector svm links
-func (m *S3AuditEventSelectorSvmLinks) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *S3AuditEventSelectorSvmLinks) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(m.Self) { // not required
-		return nil
-	}
-
-	if m.Self != nil {
-		if err := m.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this s3 audit event selector svm links based on the context it is used
-func (m *S3AuditEventSelectorSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *S3AuditEventSelectorSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Self != nil {
-		if err := m.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *S3AuditEventSelectorSvmLinks) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *S3AuditEventSelectorSvmLinks) UnmarshalBinary(b []byte) error {
-	var res S3AuditEventSelectorSvmLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

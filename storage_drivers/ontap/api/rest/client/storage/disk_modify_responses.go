@@ -71,13 +71,13 @@ func NewDiskModifyDefault(code int) *DiskModifyDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
+| 720951 | Unable to unfail the disk. |
 | 721066 | Node is outside the list of controllers for disk. |
 | 1441795 | Setting the data key ID to the manufacture secure ID is not allowed when in FIPS-compliance mode. |
 | 14155777 | The operation failed on one or more disks. |
 | 14155778 | No self-encrypting disks were specified. |
 | 14155779 | Status from a node shows that a conflicting operation has occurred. Some disk controls might have changed. |
 | 14155780 | Could not retrieve the required key ID from the key manager. |
-| 14155786 | Changes to encryption controls are not allowed with drive assignment. |
 
 */
 type DiskModifyDefault struct {

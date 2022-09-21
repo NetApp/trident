@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// KeyManagerConfig Manages the various keymanager configuration options.
+// KeyManagerConfig Manages the various key manager configuration options.
 //
 //
 // swagger:model key_manager_config
@@ -25,6 +25,10 @@ type KeyManagerConfig struct {
 
 	// Indicates whether the Common Criteria Mode configuration is enabled.
 	CcModeEnabled bool `json:"cc_mode_enabled,omitempty"`
+
+	// Cloud key manager connection retry count. Supported value range of 0-10.
+	// Example: 3
+	CloudKmsRetryCount int64 `json:"cloud_kms_retry_count,omitempty"`
 
 	// Health Monitor Polling Period, in minutes. Supported value range of 15-30 minutes.
 	// Example: 20

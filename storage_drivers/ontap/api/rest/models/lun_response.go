@@ -22,7 +22,8 @@ type LunResponse struct {
 	// links
 	Links *LunResponseLinks `json:"_links,omitempty"`
 
-	// Number of records.
+	// The number of records in the response.
+	// Example: 1
 	NumRecords int64 `json:"num_records,omitempty"`
 
 	// records

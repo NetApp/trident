@@ -72,11 +72,29 @@ type TapeDeviceCollectionGetParams struct {
 	*/
 	AliasNameQueryParameter *string
 
+	/* AliasesMapping.
+
+	   Filter by aliases.mapping
+	*/
+	AliasesMappingQueryParameter *string
+
+	/* AliasesName.
+
+	   Filter by aliases.name
+	*/
+	AliasesNameQueryParameter *string
+
 	/* BlockNumber.
 
 	   Filter by block_number
 	*/
 	BlockNumberQueryParameter *int64
+
+	/* Density.
+
+	   Filter by density
+	*/
+	DensityQueryParameter *string
 
 	/* Description.
 
@@ -155,6 +173,12 @@ type TapeDeviceCollectionGetParams struct {
 	   Filter by node.uuid
 	*/
 	NodeUUIDQueryParameter *string
+
+	/* Online.
+
+	   Filter by online
+	*/
+	OnlineQueryParameter *bool
 
 	/* OrderBy.
 
@@ -309,6 +333,28 @@ func (o *TapeDeviceCollectionGetParams) SetAliasNameQueryParameter(aliasName *st
 	o.AliasNameQueryParameter = aliasName
 }
 
+// WithAliasesMappingQueryParameter adds the aliasesMapping to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithAliasesMappingQueryParameter(aliasesMapping *string) *TapeDeviceCollectionGetParams {
+	o.SetAliasesMappingQueryParameter(aliasesMapping)
+	return o
+}
+
+// SetAliasesMappingQueryParameter adds the aliasesMapping to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetAliasesMappingQueryParameter(aliasesMapping *string) {
+	o.AliasesMappingQueryParameter = aliasesMapping
+}
+
+// WithAliasesNameQueryParameter adds the aliasesName to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithAliasesNameQueryParameter(aliasesName *string) *TapeDeviceCollectionGetParams {
+	o.SetAliasesNameQueryParameter(aliasesName)
+	return o
+}
+
+// SetAliasesNameQueryParameter adds the aliasesName to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetAliasesNameQueryParameter(aliasesName *string) {
+	o.AliasesNameQueryParameter = aliasesName
+}
+
 // WithBlockNumberQueryParameter adds the blockNumber to the tape device collection get params
 func (o *TapeDeviceCollectionGetParams) WithBlockNumberQueryParameter(blockNumber *int64) *TapeDeviceCollectionGetParams {
 	o.SetBlockNumberQueryParameter(blockNumber)
@@ -318,6 +364,17 @@ func (o *TapeDeviceCollectionGetParams) WithBlockNumberQueryParameter(blockNumbe
 // SetBlockNumberQueryParameter adds the blockNumber to the tape device collection get params
 func (o *TapeDeviceCollectionGetParams) SetBlockNumberQueryParameter(blockNumber *int64) {
 	o.BlockNumberQueryParameter = blockNumber
+}
+
+// WithDensityQueryParameter adds the density to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithDensityQueryParameter(density *string) *TapeDeviceCollectionGetParams {
+	o.SetDensityQueryParameter(density)
+	return o
+}
+
+// SetDensityQueryParameter adds the density to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetDensityQueryParameter(density *string) {
+	o.DensityQueryParameter = density
 }
 
 // WithDescriptionQueryParameter adds the description to the tape device collection get params
@@ -461,6 +518,17 @@ func (o *TapeDeviceCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *str
 // SetNodeUUIDQueryParameter adds the nodeUuid to the tape device collection get params
 func (o *TapeDeviceCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
 	o.NodeUUIDQueryParameter = nodeUUID
+}
+
+// WithOnlineQueryParameter adds the online to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) WithOnlineQueryParameter(online *bool) *TapeDeviceCollectionGetParams {
+	o.SetOnlineQueryParameter(online)
+	return o
+}
+
+// SetOnlineQueryParameter adds the online to the tape device collection get params
+func (o *TapeDeviceCollectionGetParams) SetOnlineQueryParameter(online *bool) {
+	o.OnlineQueryParameter = online
 }
 
 // WithOrderByQueryParameter adds the orderBy to the tape device collection get params
@@ -615,6 +683,40 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
+	if o.AliasesMappingQueryParameter != nil {
+
+		// query param aliases.mapping
+		var qrAliasesMapping string
+
+		if o.AliasesMappingQueryParameter != nil {
+			qrAliasesMapping = *o.AliasesMappingQueryParameter
+		}
+		qAliasesMapping := qrAliasesMapping
+		if qAliasesMapping != "" {
+
+			if err := r.SetQueryParam("aliases.mapping", qAliasesMapping); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AliasesNameQueryParameter != nil {
+
+		// query param aliases.name
+		var qrAliasesName string
+
+		if o.AliasesNameQueryParameter != nil {
+			qrAliasesName = *o.AliasesNameQueryParameter
+		}
+		qAliasesName := qrAliasesName
+		if qAliasesName != "" {
+
+			if err := r.SetQueryParam("aliases.name", qAliasesName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BlockNumberQueryParameter != nil {
 
 		// query param block_number
@@ -627,6 +729,23 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		if qBlockNumber != "" {
 
 			if err := r.SetQueryParam("block_number", qBlockNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DensityQueryParameter != nil {
+
+		// query param density
+		var qrDensity string
+
+		if o.DensityQueryParameter != nil {
+			qrDensity = *o.DensityQueryParameter
+		}
+		qDensity := qrDensity
+		if qDensity != "" {
+
+			if err := r.SetQueryParam("density", qDensity); err != nil {
 				return err
 			}
 		}
@@ -842,6 +961,23 @@ func (o *TapeDeviceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		if qNodeUUID != "" {
 
 			if err := r.SetQueryParam("node.uuid", qNodeUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OnlineQueryParameter != nil {
+
+		// query param online
+		var qrOnline bool
+
+		if o.OnlineQueryParameter != nil {
+			qrOnline = *o.OnlineQueryParameter
+		}
+		qOnline := swag.FormatBool(qrOnline)
+		if qOnline != "" {
+
+			if err := r.SetQueryParam("online", qOnline); err != nil {
 				return err
 			}
 		}

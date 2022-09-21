@@ -470,7 +470,7 @@ func (m *WebSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// WebSvmSvm SVM, applies only to SVM-scoped objects.
+// WebSvmSvm web svm svm
 //
 // swagger:model WebSvmSvm
 type WebSvmSvm struct {

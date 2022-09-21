@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -358,6 +359,10 @@ func (m *MetroclusterDiagnostics) UnmarshalBinary(b []byte) error {
 // swagger:model MetroclusterDiagnosticsAggregate
 type MetroclusterDiagnosticsAggregate struct {
 
+	// Display details of the MetroCluster check for aggregates.
+	// Read Only: true
+	Details []*MetroclusterDiagDetails `json:"details,omitempty"`
+
 	// Status of diagnostic operation for this component.
 	// Read Only: true
 	// Enum: [ok warning not_run not_applicable]
@@ -377,6 +382,10 @@ type MetroclusterDiagnosticsAggregate struct {
 func (m *MetroclusterDiagnosticsAggregate) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDetails(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
 	}
@@ -392,6 +401,30 @@ func (m *MetroclusterDiagnosticsAggregate) Validate(formats strfmt.Registry) err
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsAggregate) validateDetails(formats strfmt.Registry) error {
+	if swag.IsZero(m.Details) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Details); i++ {
+		if swag.IsZero(m.Details[i]) { // not required
+			continue
+		}
+
+		if m.Details[i] != nil {
+			if err := m.Details[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("aggregate" + "." + "details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -504,6 +537,10 @@ func (m *MetroclusterDiagnosticsAggregate) validateTimestamp(formats strfmt.Regi
 func (m *MetroclusterDiagnosticsAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDetails(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -519,6 +556,28 @@ func (m *MetroclusterDiagnosticsAggregate) ContextValidate(ctx context.Context, 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsAggregate) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "aggregate"+"."+"details", "body", []*MetroclusterDiagDetails(m.Details)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Details); i++ {
+
+		if m.Details[i] != nil {
+			if err := m.Details[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("aggregate" + "." + "details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -1818,6 +1877,10 @@ func (m *MetroclusterDiagnosticsInterfaceSummary) UnmarshalBinary(b []byte) erro
 // swagger:model MetroclusterDiagnosticsNode
 type MetroclusterDiagnosticsNode struct {
 
+	// Displays details of the MetroCluster check for nodes.
+	// Read Only: true
+	Details []*MetroclusterDiagDetails `json:"details,omitempty"`
+
 	// Status of diagnostic operation for this component.
 	// Read Only: true
 	// Enum: [ok warning not_run not_applicable]
@@ -1837,6 +1900,10 @@ type MetroclusterDiagnosticsNode struct {
 func (m *MetroclusterDiagnosticsNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDetails(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
 	}
@@ -1852,6 +1919,30 @@ func (m *MetroclusterDiagnosticsNode) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsNode) validateDetails(formats strfmt.Registry) error {
+	if swag.IsZero(m.Details) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Details); i++ {
+		if swag.IsZero(m.Details[i]) { // not required
+			continue
+		}
+
+		if m.Details[i] != nil {
+			if err := m.Details[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("node" + "." + "details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -1964,6 +2055,10 @@ func (m *MetroclusterDiagnosticsNode) validateTimestamp(formats strfmt.Registry)
 func (m *MetroclusterDiagnosticsNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDetails(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1979,6 +2074,28 @@ func (m *MetroclusterDiagnosticsNode) ContextValidate(ctx context.Context, forma
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsNode) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "node"+"."+"details", "body", []*MetroclusterDiagDetails(m.Details)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Details); i++ {
+
+		if m.Details[i] != nil {
+			if err := m.Details[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("node" + "." + "details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 

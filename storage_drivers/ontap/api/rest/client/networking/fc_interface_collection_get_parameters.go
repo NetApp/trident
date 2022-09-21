@@ -258,6 +258,64 @@ type FcInterfaceCollectionGetParams struct {
 	*/
 	PortAddressQueryParameter *string
 
+	/* RecommendDataProtocol.
+
+	   The target data protocol for which to recommend FC interfaces. This query parameter is required when recommending FC interfaces.
+
+	*/
+	RecommendDataProtocolQueryParameter *string
+
+	/* RecommendFabricsName.
+
+	   The names of the FC fabrics to target when recommending FC interfaces. If this query parameter is not provided, FC interfaces will be recommended for each FC fabric discovered.
+
+	*/
+	RecommendFabricsNameQueryParameter []string
+
+	/* RecommendInterfacesPerNode.
+
+	   The target number of interfaces per FC fabric per cluster node when recommending FC interfaces. If this query parameter is not provided, the default value is one (1).
+
+
+	   Default: 1
+	*/
+	RecommendInterfacesPerNodeQueryParameter *int64
+
+	/* RecommendNodesName.
+
+	   The names of the cluster nodes to target when recommending FC interfaces. If this query parameter is not provided, FC interfaces will be recommended for all nodes that have FC network ports supporting target data protocol. Query parameters `recommend.nodes.name` and `recommend.nodes.uuid` are mutually exclusive; use either names or UUIDs to identify cluster nodes.
+
+	*/
+	RecommendNodesNameQueryParameter []string
+
+	/* RecommendNodesUUID.
+
+	   The UUIDs of the cluster nodes to target when recommending FC interfaces. If this query parameter is not provided, FC interfaces will be recommended for all nodes that have FC network ports supporting target data protocol. Query parameters `recommend.nodes.name` and `recommend.nodes.uuid` are mutually exclusive; use either names or UUIDs to identify cluster nodes.
+
+	*/
+	RecommendNodesUUIDQueryParameter []string
+
+	/* RecommendProposedLocationsPortUUID.
+
+	   The UUIDs of the FC ports on which FC interfaces are proposed. A UUID may be supplied multiple times to proposed multiple FC interfaces. FC ports must be enabled, support the target data protocol and be reporting an FC fabric.
+
+	*/
+	RecommendProposedLocationsPortUUIDQueryParameter []string
+
+	/* RecommendSvmName.
+
+	   The name of an existing SVM for which to recommend FC interfaces. If neither query parameter `recommend.svm.name` nor `recommend.svm.uuid` are provided when recommending FC interfaces, recommendations are made for a new, non-existent SVM.
+
+	*/
+	RecommendSVMNameQueryParameter *string
+
+	/* RecommendSvmUUID.
+
+	   The UUID of an existing SVM for which to recommend FC interfaces. If neither query parameter `recommend.svm.name` nor `recommend.svm.uuid` are provided when recommending FC interfaces, recommendations are made for a new, non-existent SVM.
+
+	*/
+	RecommendSVMUUIDQueryParameter *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -406,14 +464,17 @@ func (o *FcInterfaceCollectionGetParams) WithDefaults() *FcInterfaceCollectionGe
 // All values with no default are reset to their zero value.
 func (o *FcInterfaceCollectionGetParams) SetDefaults() {
 	var (
+		recommendInterfacesPerNodeQueryParameterDefault = int64(1)
+
 		returnRecordsQueryParameterDefault = bool(true)
 
 		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := FcInterfaceCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		RecommendInterfacesPerNodeQueryParameter: &recommendInterfacesPerNodeQueryParameterDefault,
+		ReturnRecordsQueryParameter:              &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter:              &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -816,6 +877,94 @@ func (o *FcInterfaceCollectionGetParams) WithPortAddressQueryParameter(portAddre
 // SetPortAddressQueryParameter adds the portAddress to the fc interface collection get params
 func (o *FcInterfaceCollectionGetParams) SetPortAddressQueryParameter(portAddress *string) {
 	o.PortAddressQueryParameter = portAddress
+}
+
+// WithRecommendDataProtocolQueryParameter adds the recommendDataProtocol to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithRecommendDataProtocolQueryParameter(recommendDataProtocol *string) *FcInterfaceCollectionGetParams {
+	o.SetRecommendDataProtocolQueryParameter(recommendDataProtocol)
+	return o
+}
+
+// SetRecommendDataProtocolQueryParameter adds the recommendDataProtocol to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetRecommendDataProtocolQueryParameter(recommendDataProtocol *string) {
+	o.RecommendDataProtocolQueryParameter = recommendDataProtocol
+}
+
+// WithRecommendFabricsNameQueryParameter adds the recommendFabricsName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithRecommendFabricsNameQueryParameter(recommendFabricsName []string) *FcInterfaceCollectionGetParams {
+	o.SetRecommendFabricsNameQueryParameter(recommendFabricsName)
+	return o
+}
+
+// SetRecommendFabricsNameQueryParameter adds the recommendFabricsName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetRecommendFabricsNameQueryParameter(recommendFabricsName []string) {
+	o.RecommendFabricsNameQueryParameter = recommendFabricsName
+}
+
+// WithRecommendInterfacesPerNodeQueryParameter adds the recommendInterfacesPerNode to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithRecommendInterfacesPerNodeQueryParameter(recommendInterfacesPerNode *int64) *FcInterfaceCollectionGetParams {
+	o.SetRecommendInterfacesPerNodeQueryParameter(recommendInterfacesPerNode)
+	return o
+}
+
+// SetRecommendInterfacesPerNodeQueryParameter adds the recommendInterfacesPerNode to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetRecommendInterfacesPerNodeQueryParameter(recommendInterfacesPerNode *int64) {
+	o.RecommendInterfacesPerNodeQueryParameter = recommendInterfacesPerNode
+}
+
+// WithRecommendNodesNameQueryParameter adds the recommendNodesName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithRecommendNodesNameQueryParameter(recommendNodesName []string) *FcInterfaceCollectionGetParams {
+	o.SetRecommendNodesNameQueryParameter(recommendNodesName)
+	return o
+}
+
+// SetRecommendNodesNameQueryParameter adds the recommendNodesName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetRecommendNodesNameQueryParameter(recommendNodesName []string) {
+	o.RecommendNodesNameQueryParameter = recommendNodesName
+}
+
+// WithRecommendNodesUUIDQueryParameter adds the recommendNodesUUID to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithRecommendNodesUUIDQueryParameter(recommendNodesUUID []string) *FcInterfaceCollectionGetParams {
+	o.SetRecommendNodesUUIDQueryParameter(recommendNodesUUID)
+	return o
+}
+
+// SetRecommendNodesUUIDQueryParameter adds the recommendNodesUuid to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetRecommendNodesUUIDQueryParameter(recommendNodesUUID []string) {
+	o.RecommendNodesUUIDQueryParameter = recommendNodesUUID
+}
+
+// WithRecommendProposedLocationsPortUUIDQueryParameter adds the recommendProposedLocationsPortUUID to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithRecommendProposedLocationsPortUUIDQueryParameter(recommendProposedLocationsPortUUID []string) *FcInterfaceCollectionGetParams {
+	o.SetRecommendProposedLocationsPortUUIDQueryParameter(recommendProposedLocationsPortUUID)
+	return o
+}
+
+// SetRecommendProposedLocationsPortUUIDQueryParameter adds the recommendProposedLocationsPortUuid to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetRecommendProposedLocationsPortUUIDQueryParameter(recommendProposedLocationsPortUUID []string) {
+	o.RecommendProposedLocationsPortUUIDQueryParameter = recommendProposedLocationsPortUUID
+}
+
+// WithRecommendSVMNameQueryParameter adds the recommendSvmName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithRecommendSVMNameQueryParameter(recommendSvmName *string) *FcInterfaceCollectionGetParams {
+	o.SetRecommendSVMNameQueryParameter(recommendSvmName)
+	return o
+}
+
+// SetRecommendSVMNameQueryParameter adds the recommendSvmName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetRecommendSVMNameQueryParameter(recommendSvmName *string) {
+	o.RecommendSVMNameQueryParameter = recommendSvmName
+}
+
+// WithRecommendSVMUUIDQueryParameter adds the recommendSvmUUID to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithRecommendSVMUUIDQueryParameter(recommendSvmUUID *string) *FcInterfaceCollectionGetParams {
+	o.SetRecommendSVMUUIDQueryParameter(recommendSvmUUID)
+	return o
+}
+
+// SetRecommendSVMUUIDQueryParameter adds the recommendSvmUuid to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetRecommendSVMUUIDQueryParameter(recommendSvmUUID *string) {
+	o.RecommendSVMUUIDQueryParameter = recommendSvmUUID
 }
 
 // WithReturnRecordsQueryParameter adds the returnRecords to the fc interface collection get params
@@ -1606,6 +1755,118 @@ func (o *FcInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.RecommendDataProtocolQueryParameter != nil {
+
+		// query param recommend.data_protocol
+		var qrRecommendDataProtocol string
+
+		if o.RecommendDataProtocolQueryParameter != nil {
+			qrRecommendDataProtocol = *o.RecommendDataProtocolQueryParameter
+		}
+		qRecommendDataProtocol := qrRecommendDataProtocol
+		if qRecommendDataProtocol != "" {
+
+			if err := r.SetQueryParam("recommend.data_protocol", qRecommendDataProtocol); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendFabricsNameQueryParameter != nil {
+
+		// binding items for recommend.fabrics.name
+		joinedRecommendFabricsName := o.bindParamRecommendFabricsName(reg)
+
+		// query array param recommend.fabrics.name
+		if err := r.SetQueryParam("recommend.fabrics.name", joinedRecommendFabricsName...); err != nil {
+			return err
+		}
+	}
+
+	if o.RecommendInterfacesPerNodeQueryParameter != nil {
+
+		// query param recommend.interfaces_per_node
+		var qrRecommendInterfacesPerNode int64
+
+		if o.RecommendInterfacesPerNodeQueryParameter != nil {
+			qrRecommendInterfacesPerNode = *o.RecommendInterfacesPerNodeQueryParameter
+		}
+		qRecommendInterfacesPerNode := swag.FormatInt64(qrRecommendInterfacesPerNode)
+		if qRecommendInterfacesPerNode != "" {
+
+			if err := r.SetQueryParam("recommend.interfaces_per_node", qRecommendInterfacesPerNode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendNodesNameQueryParameter != nil {
+
+		// binding items for recommend.nodes.name
+		joinedRecommendNodesName := o.bindParamRecommendNodesName(reg)
+
+		// query array param recommend.nodes.name
+		if err := r.SetQueryParam("recommend.nodes.name", joinedRecommendNodesName...); err != nil {
+			return err
+		}
+	}
+
+	if o.RecommendNodesUUIDQueryParameter != nil {
+
+		// binding items for recommend.nodes.uuid
+		joinedRecommendNodesUUID := o.bindParamRecommendNodesUUID(reg)
+
+		// query array param recommend.nodes.uuid
+		if err := r.SetQueryParam("recommend.nodes.uuid", joinedRecommendNodesUUID...); err != nil {
+			return err
+		}
+	}
+
+	if o.RecommendProposedLocationsPortUUIDQueryParameter != nil {
+
+		// binding items for recommend.proposed.locations.port.uuid
+		joinedRecommendProposedLocationsPortUUID := o.bindParamRecommendProposedLocationsPortUUID(reg)
+
+		// query array param recommend.proposed.locations.port.uuid
+		if err := r.SetQueryParam("recommend.proposed.locations.port.uuid", joinedRecommendProposedLocationsPortUUID...); err != nil {
+			return err
+		}
+	}
+
+	if o.RecommendSVMNameQueryParameter != nil {
+
+		// query param recommend.svm.name
+		var qrRecommendSvmName string
+
+		if o.RecommendSVMNameQueryParameter != nil {
+			qrRecommendSvmName = *o.RecommendSVMNameQueryParameter
+		}
+		qRecommendSvmName := qrRecommendSvmName
+		if qRecommendSvmName != "" {
+
+			if err := r.SetQueryParam("recommend.svm.name", qRecommendSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendSVMUUIDQueryParameter != nil {
+
+		// query param recommend.svm.uuid
+		var qrRecommendSvmUUID string
+
+		if o.RecommendSVMUUIDQueryParameter != nil {
+			qrRecommendSvmUUID = *o.RecommendSVMUUIDQueryParameter
+		}
+		qRecommendSvmUUID := qrRecommendSvmUUID
+		if qRecommendSvmUUID != "" {
+
+			if err := r.SetQueryParam("recommend.svm.uuid", qRecommendSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
@@ -2001,4 +2262,72 @@ func (o *FcInterfaceCollectionGetParams) bindParamOrderBy(formats strfmt.Registr
 	orderByIS := swag.JoinByFormat(orderByIC, "csv")
 
 	return orderByIS
+}
+
+// bindParamFcInterfaceCollectionGet binds the parameter recommend.fabrics.name
+func (o *FcInterfaceCollectionGetParams) bindParamRecommendFabricsName(formats strfmt.Registry) []string {
+	recommendFabricsNameIR := o.RecommendFabricsNameQueryParameter
+
+	var recommendFabricsNameIC []string
+	for _, recommendFabricsNameIIR := range recommendFabricsNameIR { // explode []string
+
+		recommendFabricsNameIIV := recommendFabricsNameIIR // string as string
+		recommendFabricsNameIC = append(recommendFabricsNameIC, recommendFabricsNameIIV)
+	}
+
+	// items.CollectionFormat: ""
+	recommendFabricsNameIS := swag.JoinByFormat(recommendFabricsNameIC, "")
+
+	return recommendFabricsNameIS
+}
+
+// bindParamFcInterfaceCollectionGet binds the parameter recommend.nodes.name
+func (o *FcInterfaceCollectionGetParams) bindParamRecommendNodesName(formats strfmt.Registry) []string {
+	recommendNodesNameIR := o.RecommendNodesNameQueryParameter
+
+	var recommendNodesNameIC []string
+	for _, recommendNodesNameIIR := range recommendNodesNameIR { // explode []string
+
+		recommendNodesNameIIV := recommendNodesNameIIR // string as string
+		recommendNodesNameIC = append(recommendNodesNameIC, recommendNodesNameIIV)
+	}
+
+	// items.CollectionFormat: ""
+	recommendNodesNameIS := swag.JoinByFormat(recommendNodesNameIC, "")
+
+	return recommendNodesNameIS
+}
+
+// bindParamFcInterfaceCollectionGet binds the parameter recommend.nodes.uuid
+func (o *FcInterfaceCollectionGetParams) bindParamRecommendNodesUUID(formats strfmt.Registry) []string {
+	recommendNodesUUIDIR := o.RecommendNodesUUIDQueryParameter
+
+	var recommendNodesUUIDIC []string
+	for _, recommendNodesUUIDIIR := range recommendNodesUUIDIR { // explode []string
+
+		recommendNodesUUIDIIV := recommendNodesUUIDIIR // string as string
+		recommendNodesUUIDIC = append(recommendNodesUUIDIC, recommendNodesUUIDIIV)
+	}
+
+	// items.CollectionFormat: ""
+	recommendNodesUUIDIS := swag.JoinByFormat(recommendNodesUUIDIC, "")
+
+	return recommendNodesUUIDIS
+}
+
+// bindParamFcInterfaceCollectionGet binds the parameter recommend.proposed.locations.port.uuid
+func (o *FcInterfaceCollectionGetParams) bindParamRecommendProposedLocationsPortUUID(formats strfmt.Registry) []string {
+	recommendProposedLocationsPortUUIDIR := o.RecommendProposedLocationsPortUUIDQueryParameter
+
+	var recommendProposedLocationsPortUUIDIC []string
+	for _, recommendProposedLocationsPortUUIDIIR := range recommendProposedLocationsPortUUIDIR { // explode []string
+
+		recommendProposedLocationsPortUUIDIIV := recommendProposedLocationsPortUUIDIIR // string as string
+		recommendProposedLocationsPortUUIDIC = append(recommendProposedLocationsPortUUIDIC, recommendProposedLocationsPortUUIDIIV)
+	}
+
+	// items.CollectionFormat: ""
+	recommendProposedLocationsPortUUIDIS := swag.JoinByFormat(recommendProposedLocationsPortUUIDIC, "")
+
+	return recommendProposedLocationsPortUUIDIS
 }

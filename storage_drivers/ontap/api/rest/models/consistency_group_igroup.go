@@ -29,6 +29,12 @@ import (
 // swagger:model consistency_group_igroup
 type ConsistencyGroupIgroup struct {
 
+	// A comment available for use by the administrator. Valid in POST and PATCH.
+	//
+	// Max Length: 254
+	// Min Length: 0
+	Comment *string `json:"comment,omitempty"`
+
 	// Separate igroup definitions to include in this igroup.
 	//
 	Igroups []*ConsistencyGroupIgroupIgroupsItems0 `json:"igroups,omitempty"`
@@ -66,6 +72,10 @@ type ConsistencyGroupIgroup struct {
 func (m *ConsistencyGroupIgroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateIgroups(formats); err != nil {
 		res = append(res, err)
 	}
@@ -89,6 +99,22 @@ func (m *ConsistencyGroupIgroup) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ConsistencyGroupIgroup) validateComment(formats strfmt.Registry) error {
+	if swag.IsZero(m.Comment) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("comment", "body", *m.Comment, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("comment", "body", *m.Comment, 254); err != nil {
+		return err
+	}
+
 	return nil
 }
 

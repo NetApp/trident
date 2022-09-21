@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // TopMetricsFileResponse top metrics file response
@@ -21,6 +22,9 @@ type TopMetricsFileResponse struct {
 
 	// links
 	Links *TopMetricsFileResponseLinks `json:"_links,omitempty"`
+
+	// notice
+	Notice *TopMetricsFileResponseNotice `json:"notice,omitempty"`
 
 	// Number of records.
 	NumRecords int64 `json:"num_records,omitempty"`
@@ -34,6 +38,10 @@ func (m *TopMetricsFileResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNotice(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -56,6 +64,23 @@ func (m *TopMetricsFileResponse) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TopMetricsFileResponse) validateNotice(formats strfmt.Registry) error {
+	if swag.IsZero(m.Notice) { // not required
+		return nil
+	}
+
+	if m.Notice != nil {
+		if err := m.Notice.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("notice")
 			}
 			return err
 		}
@@ -96,6 +121,10 @@ func (m *TopMetricsFileResponse) ContextValidate(ctx context.Context, formats st
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateNotice(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -112,6 +141,20 @@ func (m *TopMetricsFileResponse) contextValidateLinks(ctx context.Context, forma
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TopMetricsFileResponse) contextValidateNotice(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Notice != nil {
+		if err := m.Notice.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("notice")
 			}
 			return err
 		}
@@ -277,6 +320,81 @@ func (m *TopMetricsFileResponseLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *TopMetricsFileResponseLinks) UnmarshalBinary(b []byte) error {
 	var res TopMetricsFileResponseLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// TopMetricsFileResponseNotice Optional field that indicates why no records are returned by the volume activity tracking REST API.
+//
+// swagger:model TopMetricsFileResponseNotice
+type TopMetricsFileResponseNotice struct {
+
+	// Warning code indicating why no records are returned.
+	// Example: 111411207
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// Details why no records are returned.
+	// Example: No read/write traffic on volume.
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this top metrics file response notice
+func (m *TopMetricsFileResponseNotice) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this top metrics file response notice based on the context it is used
+func (m *TopMetricsFileResponseNotice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TopMetricsFileResponseNotice) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "notice"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TopMetricsFileResponseNotice) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "notice"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *TopMetricsFileResponseNotice) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *TopMetricsFileResponseNotice) UnmarshalBinary(b []byte) error {
+	var res TopMetricsFileResponseNotice
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

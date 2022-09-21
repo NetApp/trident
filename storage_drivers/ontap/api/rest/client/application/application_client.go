@@ -494,24 +494,28 @@ The application APIs appear to be complex and long in this documentation because
 * `svm.uuid` or `svm.name` - The existing SVM in which to create the application.
 * `name` - The name for the application.
 * `<template>` - Properties for one template must be provided. In general, the following properties are required, however the naming of these may vary slightly from template to template.
-  * `name` - The generic templates require names for the components of the application. Other templates name the components automatically.
-  * `size` - This generally refers to the size of an application component, which may be spread across multiple underlying storage objects (volumes, LUNs, etc...).
+  * `<template>.name` - The generic templates require names for the components of the application. Other templates name the components automatically.
+  * `<template>.application_component.size` - This generally refers to the size of an application component, which may be spread across multiple underlying storage objects (volumes, LUNs, etc...).
   * One of the following must be specified:
-      * `nfs_access` or an identifier (name or id) of an existing `export-policy`.
-      * `cifs_access`
-      * `igroup_name`
-  * `os_type` - All SAN applications require an os_type to be specified in some way. Some templates refer to this as the `hypervisor`.
+      * `nas.nfs_access` or an identifier (name or id) of an existing `export-policy`.
+      * `nas.cifs_access`
+      * `san.application_application.igroup_name`
+  * To specify that a NAS application is not to be exposed via NFS nor CIFS:
+      * `nas.application_component.export_policy.name` is 'none', and
+      * `nas.application.cifs_share_name` is 'none'.
+  * The name of the CIFS share can be provided through the `nas.application.cifs_share_name` attribute. If not provided, the CIFS share name will be the same as the `nas.application_component.name` attribute, including any suffix applied due to creating multiple application components in one post.
+  * `san.os_type` - All SAN applications require an os_type to be specified in some way. Some templates refer to this as the `hypervisor`.
 ### Recommended optional properties
 * `<template>` - The following properties are available in some templates.
-  * `new_igroups.*` - SAN applications can use existing initiator groups or create new ones. When creating new initiator groups, `new_igroups.name` is required and the other properties may be used to fully specify the new initiator group.
+  * `san.new_igroups.*` - SAN applications can use existing initiator groups or create new ones. When creating new initiator groups, `new_igroups.name` is required and the other properties may be used to fully specify the new initiator group.
 ### Default property values
 If not specified in POST, the follow default property values are assigned. It is recommended that most of these properties be provided explicitly rather than relying upon the defaults. The defaults are intended to make it as easy as possible to provision and connect to an application.
 * `template.name` - Defaults to match the `<template>` provided. If specified, the value of this property must match the provided template properties.
 * `<template>` - The majority of template properties have default values. The defaults may vary from template to template. See the model of each template for complete details. In general the following patterns are common across all template properties. The location of these properties varies from template to template.
-  * `storage_service.name` - _value_
-  * `protection_type.local_rpo` - _hourly_ (Hourly Snapshot copies)
-  * `protection_type.remote_rpo` - _none_ (Not MetroCluster)
-  * `new_igroups.os_type` - Defaults to match the `os_type` provided for the application, but may need to be provided explicitly when using virtualization.
+  * `<template>.storage_service.name` - _value_
+  * `<template>.protection_type.local_rpo` - _hourly_ (Hourly Snapshot copies)
+  * `<template>.protection_type.remote_rpo` - _none_ (Not MetroCluster)
+  * `san.new_igroups.os_type` - Defaults to match the `os_type` provided for the application, but may need to be provided explicitly when using virtualization.
 ### Optional components
 A common pattern across many templates are objects that are optional, but once any property in the object is specified, other properties within the object become required. Many applications have optional components. For example, provisioning a database without a component to store the logs is supported. If the properties related to the logs are omitted, no storage will be provisioned for logs. But when the additional component is desired, the size is required. Specifying any other property of a component without specifying the size is not supported. In the model of each template, the required components are indicated with a red '*'. When a `size` property is listed as optional, that means the component itself is optional, and the size should be specified to include that component in the application.
 ### POST body examples
@@ -1130,296 +1134,13 @@ func (a *Client) ApplicationTemplateGet(params *ApplicationTemplateGetParams, au
 /*
   ConsistencyGroupCollectionGet Retrieve details of a collection or a specific consistency group.
 ## Notes
-When volume granular properties such as the storage SLC, Fabric Pool tiering are not the same for all the existing volumes of a consistency group, the corresponding property will not be reported at consistency group granularity. It will only be reported if all the volumes of the consistency group have the same value for that property.
-<br>The "replicated" parameter will be true, if this consistency group instance is part of a replication relationship. Otherwise, it will be false. Also, the "replicated" parameter will not be present in the output for Nested-consistency groups, but is included only for single and top-level consistency groups. The "replication_source" parameter will be true, if this consistency group instance is the source of a replication relationship. Otherwise, it will be false.
+When volume granular properties, such as, the storage SLC, Fabric Pool tiering are not the same for all the existing volumes of a consistency group, the corresponding property is not reported at consistency group granularity. It is only reported if all the volumes of the consistency group have the same value for that property.
+<br>If this consistency group instance is part of a replication relationship, the "replicated" parameter will be true. Otherwise, it is false. Also, the "replicated" parameter will not be present in the output for Nested-consistency groups, it is included only for single and top-level consistency groups. If this consistency group instance is the source of a replication relationship, the "replication_source" parameter will be true. Otherwise, it is false.
 ## Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
 * `volumes`
 * `luns`
 * `namespaces`
-## Examples
-### Retrieving all consistency groups of an SVM
-  ```
-  curl -X GET -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups?svm.name=vs1
-  ```
-#### Response:
-  ```
-  {
-    "records": [
-      {
-        "uuid": "6f48d798-0a7f-11ec-a449-005056bbcf9f",
-        "name": "vol1",
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/6f48d798-0a7f-11ec-a449-005056bbcf9f"
-          }
-        }
-      },
-      {
-        "uuid": "c1b22c85-0a82-11ec-a449-005056bbcf9f",
-        "name": "parent_cg",
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/c1b22c85-0a82-11ec-a449-005056bbcf9f"
-          }
-        }
-      },
-      {
-        "uuid": "c1b270b1-0a82-11ec-a449-005056bbcf9f",
-        "name": "child_1",
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/c1b270b1-0a82-11ec-a449-005056bbcf9f"
-          }
-        }
-      },
-      {
-        "uuid": "c1b270c3-0a82-11ec-a449-005056bbcf9f",
-        "name": "child_2",
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/c1b270c3-0a82-11ec-a449-005056bbcf9f"
-          }
-        }
-      }
-    ],
-    "num_records": 4,
-    "_links": {
-      "self": {
-        "href": "/api/application/consistency-groups"
-      }
-    }
-  }
-  ```
-### Retrieving details of all consistency groups of an SVM
-Retrieving details of the consistency groups for a specified SVM. These details are considered to be performant and will return within 1 second when 40 records or less are requested.<br/>
-  ```
-  curl -X GET -k -u admin:netapp1! "https://netapp-cluster.netapp.com/api/application/consistency-groups?svm.name=vs1&fields=*&max_records=40"
-  ```
-#### Response:
-  ```
-  {
-    "records": [
-      {
-        "uuid": "6f48d798-0a7f-11ec-a449-005056bbcf9f",
-        "name": "vol1",
-        "svm": {
-          "uuid": "4853f97a-0a63-11ec-a449-005056bbcf9f",
-          "name": "vs1",
-          "_links": {
-            "self": {
-              "href": "/api/svm/svms/4853f97a-0a63-11ec-a449-005056bbcf9f"
-            }
-          }
-        },
-        "space": {
-          "size": 108003328,
-          "available": 107704320,
-          "used": 299008
-        },
-        "replicated": false,
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/6f48d798-0a7f-11ec-a449-005056bbcf9f"
-          }
-        }
-      },
-      {
-        "uuid": "c1b22c85-0a82-11ec-a449-005056bbcf9f",
-        "name": "parent_cg",
-        "svm": {
-          "uuid": "4853f97a-0a63-11ec-a449-005056bbcf9f",
-          "name": "vs1",
-          "_links": {
-            "self": {
-              "href": "/api/svm/svms/4853f97a-0a63-11ec-a449-005056bbcf9f"
-            }
-          }
-        },
-        "snapshot_policy": {
-          "name": "default-1weekly",
-          "uuid": "a30bd0fe-067d-11ec-a449-005056bbcf9f",
-          "_links": {
-            "self": {
-              "href": "/api/storage/snapshot-policies/a30bd0fe-067d-11ec-a449-005056bbcf9f"
-            }
-          }
-        },
-        "consistency_groups": [
-          {
-            "uuid": "c1b270b1-0a82-11ec-a449-005056bbcf9f",
-            "name": "child_1",
-            "space": {
-              "size": 41943040,
-              "available": 39346176,
-              "used": 499712
-            },
-            "_links": {
-              "self": {
-                "href": "/api/application/consistency-groups/c1b270b1-0a82-11ec-a449-005056bbcf9f"
-              }
-            }
-          },
-          {
-            "uuid": "c1b270c3-0a82-11ec-a449-005056bbcf9f",
-            "name": "child_2",
-            "space": {
-              "size": 41943040,
-              "available": 39350272,
-              "used": 495616
-            },
-            "_links": {
-              "self": {
-                "href": "/api/application/consistency-groups/c1b270c3-0a82-11ec-a449-005056bbcf9f"
-              }
-            }
-          }
-        ],
-        "space": {
-          "size": 83886080,
-          "available": 78696448,
-          "used": 995328
-        },
-        "replicated": false,
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/c1b22c85-0a82-11ec-a449-005056bbcf9f"
-          }
-        }
-      },
-      {
-        "uuid": "c1b270b1-0a82-11ec-a449-005056bbcf9f",
-        "name": "child_1",
-        "parent_consistency_group": {
-          "uuid": "c1b22c85-0a82-11ec-a449-005056bbcf9f",
-          "name": "parent_cg",
-          "_links": {
-            "self": {
-              "href": "/api/application/consistency-groups/c1b22c85-0a82-11ec-a449-005056bbcf9f"
-            }
-          }
-        },
-        "svm": {
-          "uuid": "4853f97a-0a63-11ec-a449-005056bbcf9f",
-          "name": "vs1",
-          "_links": {
-            "self": {
-              "href": "/api/svm/svms/4853f97a-0a63-11ec-a449-005056bbcf9f"
-            }
-          }
-        },
-        "snapshot_policy": {
-          "name": "default",
-          "uuid": "a30b60a4-067d-11ec-a449-005056bbcf9f",
-          "_links": {
-            "self": {
-              "href": "/api/storage/snapshot-policies/a30b60a4-067d-11ec-a449-005056bbcf9f"
-            }
-          }
-        },
-        "space": {
-          "size": 41943040,
-          "available": 39346176,
-          "used": 499712
-        },
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/c1b270b1-0a82-11ec-a449-005056bbcf9f"
-          }
-        }
-      },
-      {
-        "uuid": "c1b270c3-0a82-11ec-a449-005056bbcf9f",
-        "name": "child_2",
-        "parent_consistency_group": {
-          "uuid": "c1b22c85-0a82-11ec-a449-005056bbcf9f",
-          "name": "parent_cg",
-          "_links": {
-            "self": {
-              "href": "/api/application/consistency-groups/c1b22c85-0a82-11ec-a449-005056bbcf9f"
-            }
-          }
-        },
-        "svm": {
-          "uuid": "4853f97a-0a63-11ec-a449-005056bbcf9f",
-          "name": "vs1",
-          "_links": {
-            "self": {
-              "href": "/api/svm/svms/4853f97a-0a63-11ec-a449-005056bbcf9f"
-            }
-          }
-        },
-        "snapshot_policy": {
-          "name": "default",
-          "uuid": "a30b60a4-067d-11ec-a449-005056bbcf9f",
-          "_links": {
-            "self": {
-              "href": "/api/storage/snapshot-policies/a30b60a4-067d-11ec-a449-005056bbcf9f"
-            }
-          }
-        },
-        "space": {
-          "size": 41943040,
-          "available": 39350272,
-          "used": 495616
-        },
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/c1b270c3-0a82-11ec-a449-005056bbcf9f"
-          }
-        }
-      }
-    ],
-    "num_records": 4,
-    "_links": {
-      "self": {
-        "href": "/api/application/consistency-groups?svm.name=vs1&fields=*&max_records=40"
-      }
-    }
-  }
-  ```
-### Retrieving details of non-nested consistency groups
-  Retrieves details of the consistency groups without nested consistency groups, or only the parent consistency group for a number of consistency groups of a specified SVM.
-  ```
-  curl -X GET -k -u admin:netapp1! "https://netapp-cluster.netapp.com/api/application/consistency-groups?svm.name=vs1&parent_consistency_group.uuid=null"
-  ```
-#### Response:
-  ```
-  {
-    "records": [
-      {
-        "uuid": "6f48d798-0a7f-11ec-a449-005056bbcf9f",
-        "name": "vol1",
-        "svm": {
-          "name": "vs1"
-        },
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/6f48d798-0a7f-11ec-a449-005056bbcf9f"
-          }
-        }
-      },
-      {
-        "uuid": "c1b22c85-0a82-11ec-a449-005056bbcf9f",
-        "name": "parent_cg",
-        "svm": {
-          "name": "vs1"
-        },
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/c1b22c85-0a82-11ec-a449-005056bbcf9f"
-          }
-        }
-      }
-    ],
-    "num_records": 2,
-    "_links": {
-      "self": {
-        "href": "/api/application/consistency-groups?svm.name=vs1&parent_consistency_group.uuid=null"
-      }
-    }
-  }
-  ```
 
 */
 func (a *Client) ConsistencyGroupCollectionGet(params *ConsistencyGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupCollectionGetOK, error) {
@@ -1458,7 +1179,7 @@ func (a *Client) ConsistencyGroupCollectionGet(params *ConsistencyGroupCollectio
 }
 
 /*
-  ConsistencyGroupCreate You can create a consistency group with one or more consistency groups with:
+  ConsistencyGroupCreate Creates a consistency group with one or more consistency groups having:
 * new SAN volumes,
 * existing SAN, NVMe or NAS FlexVol volumes in a new or existing consistency group
 ## Required properties
@@ -1466,7 +1187,7 @@ func (a *Client) ConsistencyGroupCollectionGet(params *ConsistencyGroupCollectio
 * `volumes`, `luns` or `namespaces`
 ## Naming Conventions
 ### Consistency groups
-  * name or consistency_groups[].name if specified
+  * name or consistency_groups[].name, if specified
   * derived from volumes[0].name, if only one volume is specified, same as volume name
 ### Volume
   * volumes[].name, if specified
@@ -1481,133 +1202,8 @@ func (a *Client) ConsistencyGroupCollectionGet(params *ConsistencyGroupCollectio
   * namespaces[].name, if specified
   * derived from volumes[].name, suffixed by "_#" where "#" is a system generated unique number
   * suffixed by "_#" where "#" is a system generated unique number, if provisioning_options.count is provided
-## Examples
-### Creating a single consistency group with a new SAN volume
-  Provisions an application with one consistency group, each with one new SAN volumes, with one LUN, an igroup and no explicit Snapshot copy policy, FabricPool tiering policy, storage service, and QoS policy specification. The igroup to map a LUN to is specified at LUN-granularity.
-  ```
-  curl -X POST -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups?return_records=true -d '{ "svm": { "name": "vs1" }, "luns": [ { "name": "/vol/vol1/lun1", "space": { "size": "100mb" }, "os_type": "linux", "lun_maps": [ { "igroup": { "name": "igroup1", "initiators": [ { "name": "iqn.2021-07.com.netapp.englab.gdl:scspr2429998001" } ] } } ] } ] }'
-  ```
-#### Response:
-  ```
-  {
-    "num_records": 1,
-    "records": [
-      {
-        "uuid": "6f48d798-0a7f-11ec-a449-005056bbcf9f",
-        "name": "vol1",
-        "svm": {
-        "uuid": "4853f97a-0a63-11ec-a449-005056bbcf9f",
-        "name": "vs1",
-        "_links": {
-          "self": {
-            "href": "/api/svm/svms/4853f97a-0a63-11ec-a449-005056bbcf9f"
-          }
-        }
-        },
-        "luns": [
-        {
-          "lun_maps": [
-            {
-              "igroup": {
-                "name": "igroup1",
-                "initiators": [
-                  {
-                    "name": "iqn.2021-07.com.netapp.englab.gdl:scspr2429998001"
-                  }
-                ]
-              }
-            }
-          ],
-          "name": "/vol/vol1/lun1",
-          "os_type": "linux",
-          "space": {
-            "size": 104857600
-          }
-        }
-        ]
-      }
-    ],
-    "job": {
-      "uuid": "6f4907ae-0a7f-11ec-a449-005056bbcf9f",
-      "_links": {
-        "self": {
-        "href": "/api/cluster/jobs/6f4907ae-0a7f-11ec-a449-005056bbcf9f"
-        }
-      }
-    }
-  }
-  ```
-### Creating an Application with two consistency groups with existing SAN volumes
-  Provisions an application with two consistency groups, each with two existing SAN volumes, a Snapshot copy policy at application-granularity, and a distinct consistency group granular Snapshot copy policy.
-  ```
-  curl -X POST -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups?return_records=true -d '{ "svm": { "name": "vs1" }, "name": "parent_cg", "snapshot_policy": { "name": "default-1weekly" }, "consistency_groups": [ { "name": "child_1", "snapshot_policy": { "name": "default" }, "volumes": [ { "name": "existing_vol1", "provisioning_options": { "action": "add" } }, { "name": "existing_vol2", "provisioning_options": { "action": "add" } } ] }, { "name": "child_2", "snapshot_policy": { "name": "default" }, "volumes": [ { "name": "existing_vol3", "provisioning_options": { "action": "add" } }, { "name": "existing_vol4", "provisioning_options": { "action": "add" } } ] } ] }'
-  ```
-#### Response:
-  ```
-  {
-    "num_records": 1,
-    "records": [
-      {
-        "uuid": "c1b22c85-0a82-11ec-a449-005056bbcf9f",
-        "name": "parent_cg",
-        "svm": {
-          "uuid": "4853f97a-0a63-11ec-a449-005056bbcf9f",
-          "name": "vs1",
-          "_links": {
-            "self": {
-              "href": "/api/svm/svms/4853f97a-0a63-11ec-a449-005056bbcf9f"
-            }
-          }
-        },
-        "snapshot_policy": {
-          "name": "default-1weekly"
-        },
-        "consistency_groups": [
-          {
-            "uuid": "c1b270b1-0a82-11ec-a449-005056bbcf9f",
-            "name": "child_1",
-            "snapshot_policy": {
-              "name": "default"
-            },
-            "volumes": [
-              {
-                "name": "existing_vol1"
-              },
-              {
-                "name": "existing_vol2"
-              }
-            ]
-          },
-          {
-            "uuid": "c1b270c3-0a82-11ec-a449-005056bbcf9f",
-            "name": "child_2",
-            "snapshot_policy": {
-              "name": "default"
-            },
-            "volumes": [
-              {
-                "name": "existing_vol3"
-              },
-              {
-                "name": "existing_vol4"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "job": {
-      "uuid": "c1b272b9-0a82-11ec-a449-005056bbcf9f",
-      "_links": {
-        "self": {
-          "href": "/api/cluster/jobs/c1b272b9-0a82-11ec-a449-005056bbcf9f"
-        }
-      }
-    }
-  }
-  ```
 ## Related ONTAP commands
-N/A. There are no ONTAP commands for managing consistency group.
+There are no ONTAP commands for managing consistency group.
 
 */
 func (a *Client) ConsistencyGroupCreate(params *ConsistencyGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupCreateCreated, *ConsistencyGroupCreateAccepted, error) {
@@ -1651,18 +1247,7 @@ func (a *Client) ConsistencyGroupCreate(params *ConsistencyGroupCreateParams, au
   ConsistencyGroupDelete Deletes a consistency group.
 <br>Note this will not delete any associated volumes or LUNs. To remove those elements, you can use the appropriate object endpoint.
 ## Related ONTAP commands
-N/A. There are no ONTAP commands for managing consistency groups.
-## Examples
-### Deleting a consistency group
-  Deletes a consistency group, where all storage originally associated with that consistency group remains in place.
-  ```
-  curl -X DELETE -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups/6f48d798-0a7f-11ec-a449-005056bbcf9f
-  ```
-#### Response:
-  ```
-  {
-  }
-  ```
+There are no ONTAP commands for managing consistency groups.
 
 */
 func (a *Client) ConsistencyGroupDelete(params *ConsistencyGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupDeleteOK, *ConsistencyGroupDeleteAccepted, error) {
@@ -1710,208 +1295,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `luns`
 * `namespaces`
 ## Related ONTAP commands
-N/A. There are no ONTAP commands for managing consistency groups.
-## Examples
-### Retrieving specific details of an existing consistency group
-  Retrieves the details of an existing consistency group.
-  ```
-  curl -X GET -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups/6f48d798-0a7f-11ec-a449-005056bbcf9f
-  ```
-#### Response:
-  ```
-  {
-    "uuid": "6f48d798-0a7f-11ec-a449-005056bbcf9f",
-    "name": "vol1",
-    "svm": {
-      "uuid": "4853f97a-0a63-11ec-a449-005056bbcf9f",
-      "name": "vs1",
-      "_links": {
-        "self": {
-          "href": "/api/svm/svms/4853f97a-0a63-11ec-a449-005056bbcf9f"
-        }
-      }
-    },
-    "space": {
-      "size": 108003328,
-      "available": 107724800,
-      "used": 278528
-    },
-    "replicated": false,
-    "_links": {
-      "self": {
-        "href": "/api/application/consistency-groups/6f48d798-0a7f-11ec-a449-005056bbcf9f"
-      }
-    }
-  }
-  ```
-### Retrieving all details of an existing consistency group
-  Retrieves all details of an existing consistency group. These details are not considered to be performant and are not guaranteed to return within one second.
-  ```
-  curl -X GET -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups/6f48d798-0a7f-11ec-a449-005056bbcf9f?fields=**
-  ```
-#### Response:
-  ```
-  {
-    "uuid": "6f48d798-0a7f-11ec-a449-005056bbcf9f",
-    "name": "vol1",
-    "svm": {
-      "uuid": "4853f97a-0a63-11ec-a449-005056bbcf9f",
-      "name": "vs1",
-      "_links": {
-        "self": {
-          "href": "/api/svm/svms/4853f97a-0a63-11ec-a449-005056bbcf9f"
-        }
-      }
-    },
-    "qos": {
-      "policy": {
-        "uuid": "b7189398-e572-48ab-8f69-82cd46580812",
-        "name": "extreme-fixed",
-        "_links": {
-          "self": {
-            "href": "/api/storage/qos/policies/b7189398-e572-48ab-8f69-82cd46580812"
-          }
-        }
-      }
-    },
-    "tiering": {
-      "policy": "none"
-    },
-    "create_time": "2021-08-31T13:18:24-04:00",
-    "volumes": [
-      {
-        "uuid": "6f516c6c-0a7f-11ec-a449-005056bbcf9f",
-        "qos": {
-          "policy": {
-            "uuid": "b7189398-e572-48ab-8f69-82cd46580812",
-            "name": "extreme-fixed",
-            "_links": {
-              "self": {
-                "href": "/api/storage/qos/policies/b7189398-e572-48ab-8f69-82cd46580812"
-              }
-            }
-          }
-        },
-        "tiering": {
-          "policy": "none"
-        },
-        "comment": "",
-        "create_time": "2021-08-31T13:18:22-04:00",
-        "name": "vol1",
-        "snapshot_policy": {
-          "name": "default",
-          "uuid": "a30b60a4-067d-11ec-a449-005056bbcf9f"
-        },
-        "space": {
-          "size": 108003328,
-          "available": 107569152,
-          "used": 434176,
-          "snapshot": {
-            "used": 151552,
-            "reserve_percent": 0,
-            "autodelete_enabled": false
-          }
-        },
-        "activity_tracking": {
-          "supported": false,
-          "unsupported_reason": {
-            "message": "Volume activity tracking is not supported on volumes that contain LUNs.",
-            "code": "124518405"
-          },
-          "state": "off"
-        },
-        "_links": {
-          "self": {
-            "href": "/api/storage/volumes/6f516c6c-0a7f-11ec-a449-005056bbcf9f"
-          }
-        }
-      }
-    ],
-    "luns": [
-      {
-        "uuid": "6f51748a-0a7f-11ec-a449-005056bbcf9f",
-        "location": {
-          "logical_unit": "lun1",
-          "node": {
-            "name": "johnhil-vsim1",
-            "uuid": "6eb682f2-067d-11ec-a449-005056bbcf9f",
-            "_links": {
-              "self": {
-                "href": "/api/cluster/nodes/6eb682f2-067d-11ec-a449-005056bbcf9f"
-              }
-            }
-          },
-          "volume": {
-            "uuid": "6f516c6c-0a7f-11ec-a449-005056bbcf9f",
-            "name": "vol1",
-            "_links": {
-              "self": {
-                "href": "/api/storage/volumes/6f516c6c-0a7f-11ec-a449-005056bbcf9f"
-              }
-            }
-          }
-        },
-        "lun_maps": [
-          {
-            "igroup": {
-              "uuid": "6f4a4b86-0a7f-11ec-a449-005056bbcf9f",
-              "name": "igroup1",
-              "os_type": "linux",
-              "protocol": "mixed",
-              "initiators": [
-                {
-                  "name": "iqn.2021-07.com.netapp.englab.gdl:scspr2429998001"
-                }
-              ],
-              "_links": {
-                "self": {
-                  "href": "/api/protocols/san/igroups/6f4a4b86-0a7f-11ec-a449-005056bbcf9f"
-                }
-              }
-            },
-            "logical_unit_number": 0
-          }
-        ],
-        "name": "/vol/vol1/lun1",
-        "auto_delete": false,
-        "class": "regular",
-        "create_time": "2021-08-31T13:18:24-04:00",
-        "os_type": "linux",
-        "serial_number": "wIqM6]RfQK3t",
-        "space": {
-          "size": 104857600,
-          "used": 0,
-          "guarantee": {
-            "requested": false,
-            "reserved": false
-          }
-        },
-        "status": {
-          "container_state": "online",
-          "mapped": true,
-          "read_only": false,
-          "state": "online"
-        },
-        "_links": {
-          "self": {
-            "href": "/api/storage/luns/6f51748a-0a7f-11ec-a449-005056bbcf9f"
-          }
-        }
-      }
-    ],
-    "space": {
-      "size": 108003328,
-      "available": 107569152,
-      "used": 434176
-    },
-    "replicated": false,
-    "_links": {
-      "self": {
-        "href": "/api/application/consistency-groups/6f48d798-0a7f-11ec-a449-005056bbcf9f?fields=**"
-      }
-    }
-  }
-  ```
+There are no ONTAP commands for managing consistency groups.
 
 */
 func (a *Client) ConsistencyGroupGet(params *ConsistencyGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupGetOK, error) {
@@ -1954,61 +1338,24 @@ func (a *Client) ConsistencyGroupGet(params *ConsistencyGroupGetParams, authInfo
 <br>Note that this operation will never delete storage elements. You can specify only elements that should be added to the consistency group regardless of existing storage objects.
 ## Related ONTAP commands
 N/A. There are no ONTAP commands for managing consistency groups.
-## Examples
-### Adding LUNs to an existing volume in an existing consistency group
-  Adds two NVMe namespaces to an existing volume in an existing consistency group, creates a new subsystem, and binds the new namespaces to it.
-  ```
-  curl -X PATCH -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups/6f48d798-0a7f-11ec-a449-005056bbcf9f -d '{ "luns": [ { "name": "/vol/vol1/new_luns", "provisioning_options": { "count": 2, "action": "create" }, "space": { "size": "100mb" }, "os_type": "linux", "lun_maps": [ { "igroup": { "name": "igroup2", "initiators": [ { "name": "01:02:03:04:05:06:07:01" } ] } } ] } ] }'
-  ```
-#### Response:
-  ```
-  {
-    "job": {
-      "uuid": "5306ea44-0a87-11ec-a449-005056bbcf9f",
-      "_links": {
-        "self": {
-          "href": "/api/cluster/jobs/5306ea44-0a87-11ec-a449-005056bbcf9f"
-        }
-      }
-    }
-  }
-  ```
+## Examples:
 ### Adding namespaces to an existing volume in an existing consistency group
-  Add 2 NVMe Namespaces to an existing volume in an existing consistency group, create a new subsystem and bind the new namespaces to it.
-  ```
-  curl -X PATCH -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups/6f51748a-0a7f-11ec-a449-005056bbcf9f -d '{ "namespaces": [ { "name": "/vol/vol1/new_namespace", "space": { "size": "10M" }, "os_type": "windows", "provisioning_options": { "count": 2 }, "subsystem_map": { "subsystem": { "name": "mySubsystem", "hosts": [ { "nqn": "nqn.1992-08.com.netapp:sn.d04594ef915b4c73b642169e72e4c0b1:subsystem.host1" }, { "nqn": "nqn.1992-08.com.netapp:sn.d04594ef915b4c73b642169e72e4c0b1:subsystem.host2" } ] } } } ] }'
-  ```
+To add two NVMe Namespaces to an existing volume in an existing consistency group, create a new subsystem and bind the new namespaces to it.
+```
+curl -X PATCH 'https://<mgmt-ip>/api/application/consistency-groups/6f51748a-0a7f-11ec-a449-005056bbcf9f' -d '{ "namespaces": [ { "name": "/vol/vol1/new_namespace", "space": { "size": "10M" }, "os_type": "windows", "provisioning_options": { "count": 2 }, "subsystem_map": { "subsystem": { "name": "mySubsystem", "hosts": [ { "nqn": "nqn.1992-08.com.netapp:sn.d04594ef915b4c73b642169e72e4c0b1:subsystem.host1" }, { "nqn": "nqn.1992-08.com.netapp:sn.d04594ef915b4c73b642169e72e4c0b1:subsystem.host2" } ] } } } ] }'
 #### Response:
-  ```
-  {
-    "job": {
-      "uuid": "8c9cabf3-0a88-11ec-a449-005056bbcf9f",
-      "_links": {
-        "self": {
-          "href": "/api/cluster/jobs/8c9cabf3-0a88-11ec-a449-005056bbcf9f"
-        }
+```
+{
+  "job": {
+    "uuid": "8c9cabf3-0a88-11ec-a449-005056bbcf9f",
+    "_links": {
+      "self": {
+        "href": "/api/cluster/jobs/8c9cabf3-0a88-11ec-a449-005056bbcf9f"
       }
     }
   }
-  ```
-### Restore a consistency group to the contents of an existing snapshot
-  Restore an existing consistency group to the contents of an existing snapshot of the consistency group
-  ```
-  curl -X -k -u admin:netapp1! PATCH https://netapp-cluster.netapp.com/api/application/consistency-groups/6f51748a-0a7f-11ec-a449-005056bbcf9f' -d '{ "restore_to": { "snapshot": { "uuid": "92c6c770-17a1-11eb-b141-005056acd498"} } }'
-  ```
-#### Response:
-  ```
-  {
-    "job": {
-      "uuid": "8907bd9e-1463-11eb-a719-005056ac70af",
-      "_links": {
-        "self": {
-          "href": "/api/cluster/jobs/8907bd9e-1463-11eb-a719-005056ac70af"
-        }
-      }
-    }
-  }
-  ```
+}
+```
 
 */
 func (a *Client) ConsistencyGroupModify(params *ConsistencyGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupModifyOK, *ConsistencyGroupModifyAccepted, error) {
@@ -2055,43 +1402,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `is_partial`
 * `missing_voumes.uuid`
 * `missing_voumes.name`
-## Examples
-### Retrieveing the list of existing Snapshot copies for a consistency group
-  Retrieves the list of consistency group granluar Snapshot copies for a specific consistency group.
-  ```
-  curl -X GET -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency_groups/92c6c770-17a1-11eb-b141-005056acd498/snapshots
-  ```
-#### Response:
-  ```
-  {
-    "records": [
-      {
-        "uuid": "92c6c770-17a1-11eb-b141-005056acd498",
-        "name": "sa3s1",
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/a8d0626a-17a0-11eb-b141-005056acd498/snapshots/92c6c770-17a1-11eb-b141-005056acd498"
-          }
-        }
-      },
-      {
-        "uuid": "c5a250ba-17a1-11eb-b141-005056acd498",
-        "name": "sa3s2",
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/a8d0626a-17a0-11eb-b141-005056acd498/snapshots/c5a250ba-17a1-11eb-b141-005056acd498"
-          }
-        }
-      }
-    ],
-    "num_records": 2,
-    "_links": {
-      "self": {
-        "href": "/api/application/consistency-groups/a8d0626a-17a0-11eb-b141-005056acd498/snapshots"
-      }
-    }
-  }
-  ```
 
 */
 func (a *Client) ConsistencyGroupSnapshotCollectionGet(params *ConsistencyGroupSnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotCollectionGetOK, error) {
@@ -2131,27 +1441,8 @@ func (a *Client) ConsistencyGroupSnapshotCollectionGet(params *ConsistencyGroupS
 
 /*
   ConsistencyGroupSnapshotCreate Creates a Snapshot copy of an existing consistency group.
-## Examples
-### Creating a crash-consistent Snapshot copy of a consistency group
-  Creates an on-demand crash-consistent Snapshot copy of an existing consistency group.
-  ```
-  curl -X POST -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups/a8d0626a-17a0-11eb-b141-005056acd498/snapshots -d '{ "name": "name_of_this_snapshot", "type": "crash", "comment": "this is a manually created on-demand snapshot", "snapmirror_label": "my_special_sm_label" }'
-  ```
-#### Response:
-  ```
-  {
-  }
-  ```
-### Creating a app-consistent Snapshot copy of a consistency group
-  Creates an on-demand crash-consistent Snapshot copy of an existing consistency group.
-  ```
-  curl -X POST -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups/a8d0626a-17a0-11eb-b141-005056acd498/snapshots -d '{ "name": "name_of_this_snapshot", "type": "application", "comment": "this is a manually created on-demand snapshot", "snapmirror_label": "my_special_sm_label" }'
-  ```
-#### Response:
-  ```
-  {
-  }
-  ```
+### Required properties
+* `consistency_group.uuid` - Existing consistency group UUID in which to create the Snapshot copy.
 
 */
 func (a *Client) ConsistencyGroupSnapshotCreate(params *ConsistencyGroupSnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotCreateCreated, *ConsistencyGroupSnapshotCreateAccepted, error) {
@@ -2194,16 +1485,6 @@ func (a *Client) ConsistencyGroupSnapshotCreate(params *ConsistencyGroupSnapshot
 /*
   ConsistencyGroupSnapshotDelete Deletes a Snapshot copy of a consistency group.
 ## Examples
-### Deleting a Snapshot copy from a consistency group
-  Deletes an existing Snapshot copy from a consistency group.
-  ```
-  curl -X DELETE -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency-groups/a8d0626a-17a0-11eb-b141-005056acd498/snapshots/92c6c770-17a1-11eb-b141-005056acd498
-  ```
-#### Response:
-  ```
-  {
-  }
-  ```
 
 */
 func (a *Client) ConsistencyGroupSnapshotDelete(params *ConsistencyGroupSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotDeleteOK, *ConsistencyGroupSnapshotDeleteAccepted, error) {
@@ -2250,53 +1531,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `is_partial`
 * `missing_voumes.uuid`
 * `missing_voumes.name`
-## Examples
-### Retrieves details of a specific Snapshot copy for a consistency group.
-  Retrieves details for a specific Snapshot copy in a consistency group.
-  ```
-  curl -X GET -k -u admin:netapp1! https://netapp-cluster.netapp.com/api/application/consistency_groups/92c6c770-17a1-11eb-b141-005056acd498/snapshots/a8d0626a-17a0-11eb-b141-005056acd498
-  ```
-#### Response:
-    ```
-    {
-      "consistency_group": {
-        "uuid": "92c6c770-17a1-11eb-b141-005056acd498",
-        "name": "cg1",
-        "_links": {
-          "self": {
-            "href": "/api/application/consistency-groups/92c6c770-17a1-11eb-b141-005056acd498",
-          }
-        }
-      },
-      "name": "sa3s1",
-      "uuid": "a8d0626a-17a0-11eb-b141-005056acd498",
-      "svm": {
-        "name": "vs1",
-        "uuid": "6475f238-12f4-11eb-b141-005056acd498"
-      },
-      "consistency_type": "crash",
-      "create_time": "2020-11-04T19:00:00Z",
-      "expiry_time": "2020-11-04T19:00:00Z",
-      "snapmirror_label": "string",
-      "is_partial": true,
-      "missing_volumes": [
-        {
-          "uuid": "ea88cf84-0d01-11eb-9c68-005056ac1439",
-          "name": "vol6",
-          "_links": {
-              "self": {
-                "href": "/api/storage/volumes/ea88cf84-0d01-11eb-9c68-005056ac1439"
-            }
-          }
-        }
-      ],
-      "_links": {
-        "self": {
-          "href": "/api/application/consistency-groups/a8d0626a-17a0-11eb-b141-005056acd498/snapshots/92c6c770-17a1-11eb-b141-005056acd498"
-        }
-      }
-    }
-    ```
 
 */
 func (a *Client) ConsistencyGroupSnapshotGet(params *ConsistencyGroupSnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotGetOK, error) {

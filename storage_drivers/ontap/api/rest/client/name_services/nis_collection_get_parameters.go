@@ -60,6 +60,24 @@ func NewNisCollectionGetParamsWithHTTPClient(client *http.Client) *NisCollection
 */
 type NisCollectionGetParams struct {
 
+	/* BindingDetailsServer.
+
+	   Filter by binding_details.server
+	*/
+	BindingDetailsServerQueryParameter *string
+
+	/* BindingDetailsStatusCode.
+
+	   Filter by binding_details.status.code
+	*/
+	BindingDetailsStatusCodeQueryParameter *string
+
+	/* BindingDetailsStatusMessage.
+
+	   Filter by binding_details.status.message
+	*/
+	BindingDetailsStatusMessageQueryParameter *string
+
 	/* BoundServers.
 
 	   Filter by bound_servers
@@ -191,6 +209,39 @@ func (o *NisCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithBindingDetailsServerQueryParameter adds the bindingDetailsServer to the nis collection get params
+func (o *NisCollectionGetParams) WithBindingDetailsServerQueryParameter(bindingDetailsServer *string) *NisCollectionGetParams {
+	o.SetBindingDetailsServerQueryParameter(bindingDetailsServer)
+	return o
+}
+
+// SetBindingDetailsServerQueryParameter adds the bindingDetailsServer to the nis collection get params
+func (o *NisCollectionGetParams) SetBindingDetailsServerQueryParameter(bindingDetailsServer *string) {
+	o.BindingDetailsServerQueryParameter = bindingDetailsServer
+}
+
+// WithBindingDetailsStatusCodeQueryParameter adds the bindingDetailsStatusCode to the nis collection get params
+func (o *NisCollectionGetParams) WithBindingDetailsStatusCodeQueryParameter(bindingDetailsStatusCode *string) *NisCollectionGetParams {
+	o.SetBindingDetailsStatusCodeQueryParameter(bindingDetailsStatusCode)
+	return o
+}
+
+// SetBindingDetailsStatusCodeQueryParameter adds the bindingDetailsStatusCode to the nis collection get params
+func (o *NisCollectionGetParams) SetBindingDetailsStatusCodeQueryParameter(bindingDetailsStatusCode *string) {
+	o.BindingDetailsStatusCodeQueryParameter = bindingDetailsStatusCode
+}
+
+// WithBindingDetailsStatusMessageQueryParameter adds the bindingDetailsStatusMessage to the nis collection get params
+func (o *NisCollectionGetParams) WithBindingDetailsStatusMessageQueryParameter(bindingDetailsStatusMessage *string) *NisCollectionGetParams {
+	o.SetBindingDetailsStatusMessageQueryParameter(bindingDetailsStatusMessage)
+	return o
+}
+
+// SetBindingDetailsStatusMessageQueryParameter adds the bindingDetailsStatusMessage to the nis collection get params
+func (o *NisCollectionGetParams) SetBindingDetailsStatusMessageQueryParameter(bindingDetailsStatusMessage *string) {
+	o.BindingDetailsStatusMessageQueryParameter = bindingDetailsStatusMessage
+}
+
 // WithBoundServersQueryParameter adds the boundServers to the nis collection get params
 func (o *NisCollectionGetParams) WithBoundServersQueryParameter(boundServers *string) *NisCollectionGetParams {
 	o.SetBoundServersQueryParameter(boundServers)
@@ -308,6 +359,57 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		return err
 	}
 	var res []error
+
+	if o.BindingDetailsServerQueryParameter != nil {
+
+		// query param binding_details.server
+		var qrBindingDetailsServer string
+
+		if o.BindingDetailsServerQueryParameter != nil {
+			qrBindingDetailsServer = *o.BindingDetailsServerQueryParameter
+		}
+		qBindingDetailsServer := qrBindingDetailsServer
+		if qBindingDetailsServer != "" {
+
+			if err := r.SetQueryParam("binding_details.server", qBindingDetailsServer); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BindingDetailsStatusCodeQueryParameter != nil {
+
+		// query param binding_details.status.code
+		var qrBindingDetailsStatusCode string
+
+		if o.BindingDetailsStatusCodeQueryParameter != nil {
+			qrBindingDetailsStatusCode = *o.BindingDetailsStatusCodeQueryParameter
+		}
+		qBindingDetailsStatusCode := qrBindingDetailsStatusCode
+		if qBindingDetailsStatusCode != "" {
+
+			if err := r.SetQueryParam("binding_details.status.code", qBindingDetailsStatusCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BindingDetailsStatusMessageQueryParameter != nil {
+
+		// query param binding_details.status.message
+		var qrBindingDetailsStatusMessage string
+
+		if o.BindingDetailsStatusMessageQueryParameter != nil {
+			qrBindingDetailsStatusMessage = *o.BindingDetailsStatusMessageQueryParameter
+		}
+		qBindingDetailsStatusMessage := qrBindingDetailsStatusMessage
+		if qBindingDetailsStatusMessage != "" {
+
+			if err := r.SetQueryParam("binding_details.status.message", qBindingDetailsStatusMessage); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.BoundServersQueryParameter != nil {
 

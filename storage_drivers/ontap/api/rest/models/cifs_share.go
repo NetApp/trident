@@ -35,6 +35,10 @@ type CifsShare struct {
 	// acls
 	Acls []*CifsShareAclsItems0 `json:"acls,omitempty"`
 
+	// Specifies whether or not the SMB2 clients are allowed to access the encrypted share.
+	//
+	AllowUnencryptedAccess *bool `json:"allow_unencrypted_access,omitempty"`
+
 	// Specifies whether CIFS clients can request for change notifications for directories on this share.
 	ChangeNotify *bool `json:"change_notify,omitempty"`
 

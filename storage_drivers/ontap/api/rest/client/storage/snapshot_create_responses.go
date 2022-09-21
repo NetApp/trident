@@ -82,7 +82,21 @@ func NewSnapshotCreateDefault(code int) *SnapshotCreateDefault {
 
 /* SnapshotCreateDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Code
+| Error Code | Description |
+| ---------- | ----------- |
+| 524479     | The specified volume is not online or does not have enough space to create a Snapshot copy. |
+| 2621462    | The specified SVM name does not exist. |
+| 1638433    | A Snapshot copy with the specified name already exists. |
+| 1638461    | Snapshot copies can only be created on read/write (RW) volumes. |
+| 1638477    | User-created Snapshot copy names cannot begin with the specified prefix. |
+| 1638518    | The specified Snapshot copy name is invalid. |
+| 1638532    | Failed to create the Snapshot copy on the specified volume because a revert operation is in progress. |
+| 1638537    | Cannot determine the status of the Snapshot copy create operation for the specified volume. |
+| 1638616    | Bulk Snapshot copy create is not supported with multiple Snapshot copy names. |
+| 1638617    | Bulk Snapshot copy create is not supported with volume names in a mixed-version cluster. |
+| 1638618    | The property cannot be specified for Snapshot copy create. |
+
 */
 type SnapshotCreateDefault struct {
 	_statusCode int

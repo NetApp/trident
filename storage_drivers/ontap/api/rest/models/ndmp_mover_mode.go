@@ -19,6 +19,15 @@ import (
 // swagger:model ndmp_mover_mode
 type NdmpMoverMode string
 
+func NewNdmpMoverMode(value NdmpMoverMode) *NdmpMoverMode {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated NdmpMoverMode.
+func (m NdmpMoverMode) Pointer() *NdmpMoverMode {
+	return &m
+}
+
 const (
 
 	// NdmpMoverModeRead captures enum value "read"

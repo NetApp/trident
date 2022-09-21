@@ -70,6 +70,8 @@ type ClientService interface {
 
 	CoredumpGet(params *CoredumpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpGetOK, error)
 
+	EmsApplicationLogsCreate(params *EmsApplicationLogsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsApplicationLogsCreateCreated, error)
+
 	EmsConfigGet(params *EmsConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsConfigGetOK, error)
 
 	EmsConfigModify(params *EmsConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsConfigModifyOK, error)
@@ -1000,6 +1002,54 @@ func (a *Client) CoredumpGet(params *CoredumpGetParams, authInfo runtime.ClientA
 }
 
 /*
+  EmsApplicationLogsCreate Creates an app.log.* event. Setting the "autosupport_required" flag causes callhome.client.app.* events also to be generated, which in turn triggers AutoSupports.
+### Required properties
+* `computer_name` - Client computer connected to the cluster.
+* `event_source` - Client application that generated this event.
+* `app_version` - Client application version.
+* `event_id` - Application eventID.
+* `category` - Event category.
+* `event_description` - Event description.
+* `severity` - Severity of the event.
+* `autosupport_required` - Indicates whether AutoSupport generation is required.
+
+*/
+func (a *Client) EmsApplicationLogsCreate(params *EmsApplicationLogsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsApplicationLogsCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEmsApplicationLogsCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ems_application_logs_create",
+		Method:             "POST",
+		PathPattern:        "/support/ems/application-logs",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EmsApplicationLogsCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EmsApplicationLogsCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EmsApplicationLogsCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   EmsConfigGet Retrieves the EMS configuration.
 ### Related ONTAP commands
 * `event config show`
@@ -1216,6 +1266,9 @@ func (a *Client) EmsDestinationDelete(params *EmsDestinationDeleteParams, authIn
 
 /*
   EmsDestinationGet Retrieves event destinations.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter.
+* `connectivity.*`
 ### Related ONTAP commands
 * `event notification destination show`
 * `event notification show`

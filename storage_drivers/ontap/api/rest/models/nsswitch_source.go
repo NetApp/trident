@@ -19,6 +19,15 @@ import (
 // swagger:model nsswitch_source
 type NsswitchSource string
 
+func NewNsswitchSource(value NsswitchSource) *NsswitchSource {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated NsswitchSource.
+func (m NsswitchSource) Pointer() *NsswitchSource {
+	return &m
+}
+
 const (
 
 	// NsswitchSourceFiles captures enum value "files"

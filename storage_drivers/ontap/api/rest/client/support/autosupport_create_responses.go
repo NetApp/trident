@@ -89,8 +89,8 @@ func NewAutosupportCreateDefault(code int) *AutosupportCreateDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
-| 53149748   | The destination URI provided for the invoked AutoSupport is invalid |
-| 655294464  | The message parameter is not supported with performance AutoSupports |
+| 8650866 | The message parameter is not supported with performance AutoSupports |
+| 53149748 | The destination URI provided for the invoked AutoSupport is invalid |
 
 */
 type AutosupportCreateDefault struct {

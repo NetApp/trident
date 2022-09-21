@@ -286,7 +286,7 @@ func (m *PerformanceMetricResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceMetricResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput.
+// PerformanceMetricResponseRecordsItems0 performance metric response records items0
 //
 // swagger:model PerformanceMetricResponseRecordsItems0
 type PerformanceMetricResponseRecordsItems0 struct {

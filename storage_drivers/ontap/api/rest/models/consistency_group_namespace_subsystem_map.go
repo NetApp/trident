@@ -11,7 +11,6 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // ConsistencyGroupNamespaceSubsystemMap The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
@@ -29,19 +28,16 @@ type ConsistencyGroupNamespaceSubsystemMap struct {
 	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
 	//
 	// Example: 00103050h
-	// Read Only: true
 	Anagrpid string `json:"anagrpid,omitempty"`
 
 	// The NVMe namespace identifier. This is an identifier used by an NVMe controller to provide access to the NVMe namespace.<br/>
 	// The format for an NVMe namespace identifier is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
 	//
 	// Example: 00000001h
-	// Read Only: true
 	Nsid string `json:"nsid,omitempty"`
 
 	// The NVMe subsystem to which the NVMe namespace is mapped.
 	//
-	// Read Only: true
 	Subsystem *NvmeSubsystemReference `json:"subsystem,omitempty"`
 }
 
@@ -105,14 +101,6 @@ func (m *ConsistencyGroupNamespaceSubsystemMap) ContextValidate(ctx context.Cont
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateAnagrpid(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateNsid(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateSubsystem(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -132,24 +120,6 @@ func (m *ConsistencyGroupNamespaceSubsystemMap) contextValidateLinks(ctx context
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupNamespaceSubsystemMap) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "anagrpid", "body", string(m.Anagrpid)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ConsistencyGroupNamespaceSubsystemMap) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "nsid", "body", string(m.Nsid)); err != nil {
-		return err
 	}
 
 	return nil

@@ -108,6 +108,12 @@ type SnapshotCollectionGetParams struct {
 	*/
 	OwnersQueryParameter *string
 
+	/* ProvenanceVolumeUUID.
+
+	   Filter by provenance_volume.uuid
+	*/
+	ProvenanceVolumeUUIDQueryParameter *string
+
 	/* ReclaimableSpace.
 
 	   Filter by reclaimable_space
@@ -171,6 +177,12 @@ type SnapshotCollectionGetParams struct {
 	   Filter by uuid
 	*/
 	UUIDQueryParameter *string
+
+	/* VersionUUID.
+
+	   Filter by version_uuid
+	*/
+	VersionUUIDQueryParameter *string
 
 	/* VolumeName.
 
@@ -339,6 +351,17 @@ func (o *SnapshotCollectionGetParams) SetOwnersQueryParameter(owners *string) {
 	o.OwnersQueryParameter = owners
 }
 
+// WithProvenanceVolumeUUIDQueryParameter adds the provenanceVolumeUUID to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithProvenanceVolumeUUIDQueryParameter(provenanceVolumeUUID *string) *SnapshotCollectionGetParams {
+	o.SetProvenanceVolumeUUIDQueryParameter(provenanceVolumeUUID)
+	return o
+}
+
+// SetProvenanceVolumeUUIDQueryParameter adds the provenanceVolumeUuid to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetProvenanceVolumeUUIDQueryParameter(provenanceVolumeUUID *string) {
+	o.ProvenanceVolumeUUIDQueryParameter = provenanceVolumeUUID
+}
+
 // WithReclaimableSpaceQueryParameter adds the reclaimableSpace to the snapshot collection get params
 func (o *SnapshotCollectionGetParams) WithReclaimableSpaceQueryParameter(reclaimableSpace *int64) *SnapshotCollectionGetParams {
 	o.SetReclaimableSpaceQueryParameter(reclaimableSpace)
@@ -447,6 +470,17 @@ func (o *SnapshotCollectionGetParams) WithUUIDQueryParameter(uuid *string) *Snap
 // SetUUIDQueryParameter adds the uuid to the snapshot collection get params
 func (o *SnapshotCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
 	o.UUIDQueryParameter = uuid
+}
+
+// WithVersionUUIDQueryParameter adds the versionUUID to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithVersionUUIDQueryParameter(versionUUID *string) *SnapshotCollectionGetParams {
+	o.SetVersionUUIDQueryParameter(versionUUID)
+	return o
+}
+
+// SetVersionUUIDQueryParameter adds the versionUuid to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetVersionUUIDQueryParameter(versionUUID *string) {
+	o.VersionUUIDQueryParameter = versionUUID
 }
 
 // WithVolumeNameQueryParameter adds the volumeName to the snapshot collection get params
@@ -598,6 +632,23 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qOwners != "" {
 
 			if err := r.SetQueryParam("owners", qOwners); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProvenanceVolumeUUIDQueryParameter != nil {
+
+		// query param provenance_volume.uuid
+		var qrProvenanceVolumeUUID string
+
+		if o.ProvenanceVolumeUUIDQueryParameter != nil {
+			qrProvenanceVolumeUUID = *o.ProvenanceVolumeUUIDQueryParameter
+		}
+		qProvenanceVolumeUUID := qrProvenanceVolumeUUID
+		if qProvenanceVolumeUUID != "" {
+
+			if err := r.SetQueryParam("provenance_volume.uuid", qProvenanceVolumeUUID); err != nil {
 				return err
 			}
 		}
@@ -768,6 +819,23 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qUUID != "" {
 
 			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VersionUUIDQueryParameter != nil {
+
+		// query param version_uuid
+		var qrVersionUUID string
+
+		if o.VersionUUIDQueryParameter != nil {
+			qrVersionUUID = *o.VersionUUIDQueryParameter
+		}
+		qVersionUUID := qrVersionUUID
+		if qVersionUUID != "" {
+
+			if err := r.SetQueryParam("version_uuid", qVersionUUID); err != nil {
 				return err
 			}
 		}

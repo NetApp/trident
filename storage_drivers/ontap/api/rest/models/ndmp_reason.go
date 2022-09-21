@@ -19,6 +19,15 @@ import (
 // swagger:model ndmp_reason
 type NdmpReason string
 
+func NewNdmpReason(value NdmpReason) *NdmpReason {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated NdmpReason.
+func (m NdmpReason) Pointer() *NdmpReason {
+	return &m
+}
+
 const (
 
 	// NdmpReasonAborted captures enum value "aborted"

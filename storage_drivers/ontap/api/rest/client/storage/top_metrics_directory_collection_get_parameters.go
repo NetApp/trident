@@ -168,7 +168,7 @@ type TopMetricsDirectoryCollectionGetParams struct {
 
 	/* TopMetric.
 
-	   IO activity type
+	   Type of performance metric or capacity metric.
 
 	   Default: "iops.read"
 	*/

@@ -19,6 +19,15 @@ import (
 // swagger:model ndmp_addr_type
 type NdmpAddrType string
 
+func NewNdmpAddrType(value NdmpAddrType) *NdmpAddrType {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated NdmpAddrType.
+func (m NdmpAddrType) Pointer() *NdmpAddrType {
+	return &m
+}
+
 const (
 
 	// NdmpAddrTypeLocal captures enum value "local"

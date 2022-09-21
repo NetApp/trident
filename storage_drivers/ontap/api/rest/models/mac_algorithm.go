@@ -20,6 +20,15 @@ import (
 // swagger:model mac_algorithm
 type MacAlgorithm string
 
+func NewMacAlgorithm(value MacAlgorithm) *MacAlgorithm {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated MacAlgorithm.
+func (m MacAlgorithm) Pointer() *MacAlgorithm {
+	return &m
+}
+
 const (
 
 	// MacAlgorithmHmacSha1 captures enum value "hmac_sha1"

@@ -27,6 +27,9 @@ type EmsDestination struct {
 	// certificate
 	Certificate *EmsDestinationCertificate `json:"certificate,omitempty"`
 
+	// connectivity
+	Connectivity *EmsDestinationConnectivity `json:"connectivity,omitempty"`
+
 	// Event destination
 	// Example: administrator@mycompany.com
 	Destination string `json:"destination,omitempty"`
@@ -58,6 +61,10 @@ func (m *EmsDestination) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateCertificate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConnectivity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -101,6 +108,23 @@ func (m *EmsDestination) validateCertificate(formats strfmt.Registry) error {
 		if err := m.Certificate.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *EmsDestination) validateConnectivity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Connectivity) { // not required
+		return nil
+	}
+
+	if m.Connectivity != nil {
+		if err := m.Connectivity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("connectivity")
 			}
 			return err
 		}
@@ -221,6 +245,10 @@ func (m *EmsDestination) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateConnectivity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFilters(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -255,6 +283,20 @@ func (m *EmsDestination) contextValidateCertificate(ctx context.Context, formats
 		if err := m.Certificate.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *EmsDestination) contextValidateConnectivity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Connectivity != nil {
+		if err := m.Connectivity.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("connectivity")
 			}
 			return err
 		}
@@ -308,16 +350,24 @@ func (m *EmsDestination) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsDestinationCertificate Certificate information is valid for the "rest_api" type.
+// EmsDestinationCertificate Security certificate object reference
 //
 // swagger:model EmsDestinationCertificate
 type EmsDestinationCertificate struct {
+
+	// links
+	Links *EmsDestinationCertificateLinks `json:"_links,omitempty"`
 
 	// Client certificate issuing CA
 	// Example: VeriSign
 	// Max Length: 256
 	// Min Length: 1
 	Ca string `json:"ca,omitempty"`
+
+	// Certificate name
+	// Example: cert1
+	// Read Only: true
+	Name string `json:"name,omitempty"`
 
 	// Client certificate serial number
 	// Example: 1234567890
@@ -330,6 +380,10 @@ type EmsDestinationCertificate struct {
 func (m *EmsDestinationCertificate) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateCa(formats); err != nil {
 		res = append(res, err)
 	}
@@ -341,6 +395,23 @@ func (m *EmsDestinationCertificate) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *EmsDestinationCertificate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -376,8 +447,44 @@ func (m *EmsDestinationCertificate) validateSerialNumber(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validates this ems destination certificate based on context it is used
+// ContextValidate validate this ems destination certificate based on the context it is used
 func (m *EmsDestinationCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *EmsDestinationCertificate) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "certificate"+"."+"name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -392,6 +499,802 @@ func (m *EmsDestinationCertificate) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *EmsDestinationCertificate) UnmarshalBinary(b []byte) error {
 	var res EmsDestinationCertificate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsDestinationCertificateLinks ems destination certificate links
+//
+// swagger:model EmsDestinationCertificateLinks
+type EmsDestinationCertificateLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this ems destination certificate links
+func (m *EmsDestinationCertificateLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationCertificateLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems destination certificate links based on the context it is used
+func (m *EmsDestinationCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationCertificateLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationCertificateLinks) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationCertificateLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsDestinationConnectivity ems destination connectivity
+//
+// swagger:model EmsDestinationConnectivity
+type EmsDestinationConnectivity struct {
+
+	// A list of errors encountered during connectivity checks.
+	// Read Only: true
+	Errors []*EmsDestinationConnectivityErrorsItems0 `json:"errors,omitempty"`
+
+	// Current connectivity state.
+	// Example: fail
+	// Read Only: true
+	// Enum: [success fail not_supported]
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this ems destination connectivity
+func (m *EmsDestinationConnectivity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateErrors(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivity) validateErrors(formats strfmt.Registry) error {
+	if swag.IsZero(m.Errors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Errors); i++ {
+		if swag.IsZero(m.Errors[i]) { // not required
+			continue
+		}
+
+		if m.Errors[i] != nil {
+			if err := m.Errors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connectivity" + "." + "errors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var emsDestinationConnectivityTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["success","fail","not_supported"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		emsDestinationConnectivityTypeStatePropEnum = append(emsDestinationConnectivityTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// EmsDestinationConnectivity
+	// EmsDestinationConnectivity
+	// state
+	// State
+	// success
+	// END DEBUGGING
+	// EmsDestinationConnectivityStateSuccess captures enum value "success"
+	EmsDestinationConnectivityStateSuccess string = "success"
+
+	// BEGIN DEBUGGING
+	// EmsDestinationConnectivity
+	// EmsDestinationConnectivity
+	// state
+	// State
+	// fail
+	// END DEBUGGING
+	// EmsDestinationConnectivityStateFail captures enum value "fail"
+	EmsDestinationConnectivityStateFail string = "fail"
+
+	// BEGIN DEBUGGING
+	// EmsDestinationConnectivity
+	// EmsDestinationConnectivity
+	// state
+	// State
+	// not_supported
+	// END DEBUGGING
+	// EmsDestinationConnectivityStateNotSupported captures enum value "not_supported"
+	EmsDestinationConnectivityStateNotSupported string = "not_supported"
+)
+
+// prop value enum
+func (m *EmsDestinationConnectivity) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsDestinationConnectivityTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivity) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("connectivity"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems destination connectivity based on the context it is used
+func (m *EmsDestinationConnectivity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateErrors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivity) contextValidateErrors(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connectivity"+"."+"errors", "body", []*EmsDestinationConnectivityErrorsItems0(m.Errors)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Errors); i++ {
+
+		if m.Errors[i] != nil {
+			if err := m.Errors[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connectivity" + "." + "errors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *EmsDestinationConnectivity) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connectivity"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationConnectivity) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationConnectivity) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationConnectivity
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsDestinationConnectivityErrorsItems0 Error object included in the event of connectivity failure.
+//
+// swagger:model EmsDestinationConnectivityErrorsItems0
+type EmsDestinationConnectivityErrorsItems0 struct {
+
+	// message
+	Message *EmsDestinationConnectivityErrorsItems0Message `json:"message,omitempty"`
+
+	// node
+	Node *EmsDestinationConnectivityErrorsItems0Node `json:"node,omitempty"`
+}
+
+// Validate validates this ems destination connectivity errors items0
+func (m *EmsDestinationConnectivityErrorsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMessage(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0) validateMessage(formats strfmt.Registry) error {
+	if swag.IsZero(m.Message) { // not required
+		return nil
+	}
+
+	if m.Message != nil {
+		if err := m.Message.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("message")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0) validateNode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Node) { // not required
+		return nil
+	}
+
+	if m.Node != nil {
+		if err := m.Node.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems destination connectivity errors items0 based on the context it is used
+func (m *EmsDestinationConnectivityErrorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Message != nil {
+		if err := m.Message.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("message")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Node != nil {
+		if err := m.Node.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationConnectivityErrorsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationConnectivityErrorsItems0) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationConnectivityErrorsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsDestinationConnectivityErrorsItems0Message Information to be displayed to the user.
+//
+// swagger:model EmsDestinationConnectivityErrorsItems0Message
+type EmsDestinationConnectivityErrorsItems0Message struct {
+
+	// Message arguments
+	// Read Only: true
+	Arguments []*EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0 `json:"arguments,omitempty"`
+
+	// Unique message code.
+	// Example: 4
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// User message.
+	// Example: entry doesn't exist
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this ems destination connectivity errors items0 message
+func (m *EmsDestinationConnectivityErrorsItems0Message) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateArguments(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0Message) validateArguments(formats strfmt.Registry) error {
+	if swag.IsZero(m.Arguments) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Arguments); i++ {
+		if swag.IsZero(m.Arguments[i]) { // not required
+			continue
+		}
+
+		if m.Arguments[i] != nil {
+			if err := m.Arguments[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("message" + "." + "arguments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems destination connectivity errors items0 message based on the context it is used
+func (m *EmsDestinationConnectivityErrorsItems0Message) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateArguments(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0Message) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "message"+"."+"arguments", "body", []*EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0(m.Arguments)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Arguments); i++ {
+
+		if m.Arguments[i] != nil {
+			if err := m.Arguments[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("message" + "." + "arguments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0Message) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "message"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0Message) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "message"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationConnectivityErrorsItems0Message) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationConnectivityErrorsItems0Message) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationConnectivityErrorsItems0Message
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0 ems destination connectivity errors items0 message arguments items0
+//
+// swagger:model EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0
+type EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0 struct {
+
+	// Argument code
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// Message argument
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this ems destination connectivity errors items0 message arguments items0
+func (m *EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this ems destination connectivity errors items0 message arguments items0 based on the context it is used
+func (m *EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationConnectivityErrorsItems0MessageArgumentsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsDestinationConnectivityErrorsItems0Node ems destination connectivity errors items0 node
+//
+// swagger:model EmsDestinationConnectivityErrorsItems0Node
+type EmsDestinationConnectivityErrorsItems0Node struct {
+
+	// links
+	Links *EmsDestinationConnectivityErrorsItems0NodeLinks `json:"_links,omitempty"`
+
+	// name
+	// Example: node1
+	Name string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this ems destination connectivity errors items0 node
+func (m *EmsDestinationConnectivityErrorsItems0Node) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0Node) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems destination connectivity errors items0 node based on the context it is used
+func (m *EmsDestinationConnectivityErrorsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationConnectivityErrorsItems0Node) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationConnectivityErrorsItems0Node) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationConnectivityErrorsItems0Node
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EmsDestinationConnectivityErrorsItems0NodeLinks ems destination connectivity errors items0 node links
+//
+// swagger:model EmsDestinationConnectivityErrorsItems0NodeLinks
+type EmsDestinationConnectivityErrorsItems0NodeLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this ems destination connectivity errors items0 node links
+func (m *EmsDestinationConnectivityErrorsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ems destination connectivity errors items0 node links based on the context it is used
+func (m *EmsDestinationConnectivityErrorsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EmsDestinationConnectivityErrorsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EmsDestinationConnectivityErrorsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EmsDestinationConnectivityErrorsItems0NodeLinks) UnmarshalBinary(b []byte) error {
+	var res EmsDestinationConnectivityErrorsItems0NodeLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

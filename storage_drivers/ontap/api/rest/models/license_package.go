@@ -24,6 +24,14 @@ type LicensePackage struct {
 	// links
 	Links *LicensePackageLinks `json:"_links,omitempty"`
 
+	// License description
+	// Example: NFS License
+	// Read Only: true
+	Description string `json:"description,omitempty"`
+
+	// entitlement
+	Entitlement *LicensePackageEntitlement `json:"entitlement,omitempty"`
+
 	// keys
 	Keys []string `json:"keys,omitempty"`
 
@@ -56,6 +64,10 @@ func (m *LicensePackage) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateEntitlement(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateLicenses(formats); err != nil {
 		res = append(res, err)
 	}
@@ -83,6 +95,23 @@ func (m *LicensePackage) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LicensePackage) validateEntitlement(formats strfmt.Registry) error {
+	if swag.IsZero(m.Entitlement) { // not required
+		return nil
+	}
+
+	if m.Entitlement != nil {
+		if err := m.Entitlement.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("entitlement")
 			}
 			return err
 		}
@@ -275,6 +304,14 @@ func (m *LicensePackage) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEntitlement(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateLicenses(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -303,6 +340,29 @@ func (m *LicensePackage) contextValidateLinks(ctx context.Context, formats strfm
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LicensePackage) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LicensePackage) contextValidateEntitlement(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Entitlement != nil {
+		if err := m.Entitlement.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("entitlement")
 			}
 			return err
 		}
@@ -378,6 +438,266 @@ func (m *LicensePackage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// LicensePackageEntitlement license package entitlement
+//
+// swagger:model LicensePackageEntitlement
+type LicensePackageEntitlement struct {
+
+	// Entitlement action to be taken to mitigate the risk
+	// Read Only: true
+	// Enum: [acquire_license adjust_capacity verify_entitlement verify_system_health none]
+	Action string `json:"action,omitempty"`
+
+	// Entitlement risk of the package
+	// Read Only: true
+	// Enum: [high medium low unlicensed unknown]
+	Risk string `json:"risk,omitempty"`
+}
+
+// Validate validates this license package entitlement
+func (m *LicensePackageEntitlement) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAction(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRisk(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var licensePackageEntitlementTypeActionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["acquire_license","adjust_capacity","verify_entitlement","verify_system_health","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		licensePackageEntitlementTypeActionPropEnum = append(licensePackageEntitlementTypeActionPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// LicensePackageEntitlement
+	// LicensePackageEntitlement
+	// action
+	// Action
+	// acquire_license
+	// END DEBUGGING
+	// LicensePackageEntitlementActionAcquireLicense captures enum value "acquire_license"
+	LicensePackageEntitlementActionAcquireLicense string = "acquire_license"
+
+	// BEGIN DEBUGGING
+	// LicensePackageEntitlement
+	// LicensePackageEntitlement
+	// action
+	// Action
+	// adjust_capacity
+	// END DEBUGGING
+	// LicensePackageEntitlementActionAdjustCapacity captures enum value "adjust_capacity"
+	LicensePackageEntitlementActionAdjustCapacity string = "adjust_capacity"
+
+	// BEGIN DEBUGGING
+	// LicensePackageEntitlement
+	// LicensePackageEntitlement
+	// action
+	// Action
+	// verify_entitlement
+	// END DEBUGGING
+	// LicensePackageEntitlementActionVerifyEntitlement captures enum value "verify_entitlement"
+	LicensePackageEntitlementActionVerifyEntitlement string = "verify_entitlement"
+
+	// BEGIN DEBUGGING
+	// LicensePackageEntitlement
+	// LicensePackageEntitlement
+	// action
+	// Action
+	// verify_system_health
+	// END DEBUGGING
+	// LicensePackageEntitlementActionVerifySystemHealth captures enum value "verify_system_health"
+	LicensePackageEntitlementActionVerifySystemHealth string = "verify_system_health"
+
+	// BEGIN DEBUGGING
+	// LicensePackageEntitlement
+	// LicensePackageEntitlement
+	// action
+	// Action
+	// none
+	// END DEBUGGING
+	// LicensePackageEntitlementActionNone captures enum value "none"
+	LicensePackageEntitlementActionNone string = "none"
+)
+
+// prop value enum
+func (m *LicensePackageEntitlement) validateActionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, licensePackageEntitlementTypeActionPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LicensePackageEntitlement) validateAction(formats strfmt.Registry) error {
+	if swag.IsZero(m.Action) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateActionEnum("entitlement"+"."+"action", "body", m.Action); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var licensePackageEntitlementTypeRiskPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["high","medium","low","unlicensed","unknown"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		licensePackageEntitlementTypeRiskPropEnum = append(licensePackageEntitlementTypeRiskPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// LicensePackageEntitlement
+	// LicensePackageEntitlement
+	// risk
+	// Risk
+	// high
+	// END DEBUGGING
+	// LicensePackageEntitlementRiskHigh captures enum value "high"
+	LicensePackageEntitlementRiskHigh string = "high"
+
+	// BEGIN DEBUGGING
+	// LicensePackageEntitlement
+	// LicensePackageEntitlement
+	// risk
+	// Risk
+	// medium
+	// END DEBUGGING
+	// LicensePackageEntitlementRiskMedium captures enum value "medium"
+	LicensePackageEntitlementRiskMedium string = "medium"
+
+	// BEGIN DEBUGGING
+	// LicensePackageEntitlement
+	// LicensePackageEntitlement
+	// risk
+	// Risk
+	// low
+	// END DEBUGGING
+	// LicensePackageEntitlementRiskLow captures enum value "low"
+	LicensePackageEntitlementRiskLow string = "low"
+
+	// BEGIN DEBUGGING
+	// LicensePackageEntitlement
+	// LicensePackageEntitlement
+	// risk
+	// Risk
+	// unlicensed
+	// END DEBUGGING
+	// LicensePackageEntitlementRiskUnlicensed captures enum value "unlicensed"
+	LicensePackageEntitlementRiskUnlicensed string = "unlicensed"
+
+	// BEGIN DEBUGGING
+	// LicensePackageEntitlement
+	// LicensePackageEntitlement
+	// risk
+	// Risk
+	// unknown
+	// END DEBUGGING
+	// LicensePackageEntitlementRiskUnknown captures enum value "unknown"
+	LicensePackageEntitlementRiskUnknown string = "unknown"
+)
+
+// prop value enum
+func (m *LicensePackageEntitlement) validateRiskEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, licensePackageEntitlementTypeRiskPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LicensePackageEntitlement) validateRisk(formats strfmt.Registry) error {
+	if swag.IsZero(m.Risk) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateRiskEnum("entitlement"+"."+"risk", "body", m.Risk); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this license package entitlement based on the context it is used
+func (m *LicensePackageEntitlement) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAction(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRisk(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LicensePackageEntitlement) contextValidateAction(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "entitlement"+"."+"action", "body", string(m.Action)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LicensePackageEntitlement) contextValidateRisk(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "entitlement"+"."+"risk", "body", string(m.Risk)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LicensePackageEntitlement) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LicensePackageEntitlement) UnmarshalBinary(b []byte) error {
+	var res LicensePackageEntitlement
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // LicensePackageLicensesItems0 license package licenses items0
 //
 // swagger:model LicensePackageLicensesItems0
@@ -422,6 +742,10 @@ type LicensePackageLicensesItems0 struct {
 	// Example: 123456789
 	// Read Only: true
 	SerialNumber string `json:"serial_number,omitempty"`
+
+	// A flag indicating whether the Cloud ONTAP system is going to shutdown as the Cloud platform license has already expired.
+	// Read Only: true
+	ShutdownImminent *bool `json:"shutdown_imminent,omitempty"`
 
 	// Date and time when the license starts.
 	// Example: 2019-02-02T19:00:00Z
@@ -554,6 +878,10 @@ func (m *LicensePackageLicensesItems0) ContextValidate(ctx context.Context, form
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateShutdownImminent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStartTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -649,6 +977,15 @@ func (m *LicensePackageLicensesItems0) contextValidateOwner(ctx context.Context,
 func (m *LicensePackageLicensesItems0) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LicensePackageLicensesItems0) contextValidateShutdownImminent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "shutdown_imminent", "body", m.ShutdownImminent); err != nil {
 		return err
 	}
 

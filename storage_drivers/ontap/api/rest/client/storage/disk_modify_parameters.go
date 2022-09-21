@@ -90,6 +90,12 @@ type DiskModifyParams struct {
 	*/
 	NodeQueryParameter *string
 
+	/* Pool.
+
+	   Pool to assign disk to
+	*/
+	PoolQueryParameter *string
+
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
@@ -204,6 +210,17 @@ func (o *DiskModifyParams) SetNodeQueryParameter(node *string) {
 	o.NodeQueryParameter = node
 }
 
+// WithPoolQueryParameter adds the pool to the disk modify params
+func (o *DiskModifyParams) WithPoolQueryParameter(pool *string) *DiskModifyParams {
+	o.SetPoolQueryParameter(pool)
+	return o
+}
+
+// SetPoolQueryParameter adds the pool to the disk modify params
+func (o *DiskModifyParams) SetPoolQueryParameter(pool *string) {
+	o.PoolQueryParameter = pool
+}
+
 // WithReturnRecordsQueryParameter adds the returnRecords to the disk modify params
 func (o *DiskModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *DiskModifyParams {
 	o.SetReturnRecordsQueryParameter(returnRecords)
@@ -274,6 +291,23 @@ func (o *DiskModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		if qNode != "" {
 
 			if err := r.SetQueryParam("node", qNode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PoolQueryParameter != nil {
+
+		// query param pool
+		var qrPool string
+
+		if o.PoolQueryParameter != nil {
+			qrPool = *o.PoolQueryParameter
+		}
+		qPool := qrPool
+		if qPool != "" {
+
+			if err := r.SetQueryParam("pool", qPool); err != nil {
 				return err
 			}
 		}

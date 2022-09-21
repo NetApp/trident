@@ -752,7 +752,7 @@ func (m *SvmPeerPeerClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmPeerPeerSvm SVM, applies only to SVM-scoped objects.
+// SvmPeerPeerSvm svm peer peer svm
 //
 // swagger:model SvmPeerPeerSvm
 type SvmPeerPeerSvm struct {

@@ -23,6 +23,9 @@ type ClusterNisService struct {
 	// links
 	Links *ClusterNisServiceLinks `json:"_links,omitempty"`
 
+	// An array of objects where each object represents the NIS server and it's status for a given NIS domain. It is an advanced field.
+	BindingDetails []*ClusterNisServiceBindingDetailsItems0 `json:"binding_details,omitempty"`
+
 	// bound servers
 	// Read Only: true
 	BoundServers []string `json:"bound_servers,omitempty"`
@@ -45,6 +48,10 @@ func (m *ClusterNisService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBindingDetails(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -78,6 +85,30 @@ func (m *ClusterNisService) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNisService) validateBindingDetails(formats strfmt.Registry) error {
+	if swag.IsZero(m.BindingDetails) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.BindingDetails); i++ {
+		if swag.IsZero(m.BindingDetails[i]) { // not required
+			continue
+		}
+
+		if m.BindingDetails[i] != nil {
+			if err := m.BindingDetails[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("binding_details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -153,6 +184,10 @@ func (m *ClusterNisService) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateBindingDetails(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateBoundServers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -172,6 +207,24 @@ func (m *ClusterNisService) contextValidateLinks(ctx context.Context, formats st
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNisService) contextValidateBindingDetails(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.BindingDetails); i++ {
+
+		if m.BindingDetails[i] != nil {
+			if err := m.BindingDetails[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("binding_details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -197,6 +250,117 @@ func (m *ClusterNisService) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ClusterNisService) UnmarshalBinary(b []byte) error {
 	var res ClusterNisService
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNisServiceBindingDetailsItems0 cluster nis service binding details items0
+//
+// swagger:model ClusterNisServiceBindingDetailsItems0
+type ClusterNisServiceBindingDetailsItems0 struct {
+
+	// Hostname/IP address of the NIS server in the domain.
+	// Max Length: 255
+	// Min Length: 1
+	Server string `json:"server,omitempty"`
+
+	// status
+	Status *BindingStatus `json:"status,omitempty"`
+}
+
+// Validate validates this cluster nis service binding details items0
+func (m *ClusterNisServiceBindingDetailsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateServer(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNisServiceBindingDetailsItems0) validateServer(formats strfmt.Registry) error {
+	if swag.IsZero(m.Server) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("server", "body", m.Server, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("server", "body", m.Server, 255); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNisServiceBindingDetailsItems0) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	if m.Status != nil {
+		if err := m.Status.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nis service binding details items0 based on the context it is used
+func (m *ClusterNisServiceBindingDetailsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNisServiceBindingDetailsItems0) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Status != nil {
+		if err := m.Status.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNisServiceBindingDetailsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNisServiceBindingDetailsItems0) UnmarshalBinary(b []byte) error {
+	var res ClusterNisServiceBindingDetailsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

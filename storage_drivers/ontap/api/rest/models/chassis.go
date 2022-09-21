@@ -472,7 +472,7 @@ type ChassisNodesItems0 struct {
 	// pcis
 	Pcis *ChassisNodesItems0Pcis `json:"pcis,omitempty"`
 
-	// The Position of the Node in the Chassis
+	// The position of the node in the chassis, when viewed from the rear of the system.
 	// Example: top
 	// Enum: [top bottom left right unknown]
 	Position string `json:"position,omitempty"`

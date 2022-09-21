@@ -34,6 +34,7 @@ type KeyServer struct {
 	Records []*KeyServerRecordsItems0 `json:"records,omitempty"`
 
 	// A list of the secondary key servers associated with the primary key server.
+	// Example: ["secondary1.com","10.1.2.3"]
 	SecondaryKeyServers []string `json:"secondary_key_servers,omitempty"`
 
 	// External key server for key management. If no port is provided, a default port of 5696 is used. Not valid in POST if `records` is provided.
@@ -319,11 +320,8 @@ type KeyServerRecordsItems0 struct {
 	// Format: password
 	Password strfmt.Password `json:"password,omitempty"`
 
-	// A list of the secondary key servers associated with the primary key server.
-	SecondaryKeyServers []string `json:"secondary_key_servers,omitempty"`
-
 	// External key server for key management. If no port is provided, a default port of 5696 is used. Not valid in POST if `records` is provided.
-	// Example: keyserver1.com:5698
+	// Example: bulkkeyserver.com:5698
 	Server string `json:"server,omitempty"`
 
 	// I/O timeout in seconds for communicating with the key server.

@@ -1678,7 +1678,7 @@ func (m *IpsecPolicyResponseRecordsItems0RemoteEndpoint) UnmarshalBinary(b []byt
 	return nil
 }
 
-// IpsecPolicyResponseRecordsItems0Svm SVM, applies only to SVM-scoped objects.
+// IpsecPolicyResponseRecordsItems0Svm ipsec policy response records items0 svm
 //
 // swagger:model IpsecPolicyResponseRecordsItems0Svm
 type IpsecPolicyResponseRecordsItems0Svm struct {

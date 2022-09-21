@@ -31,7 +31,7 @@ type NASFlexGroupStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
 	API         api.OntapAPI
-	telemetry   *TelemetryAbstraction
+	telemetry   *Telemetry
 
 	physicalPool storage.Pool
 	virtualPools map[string]storage.Pool
@@ -45,7 +45,7 @@ func (d *NASFlexGroupStorageDriver) GetAPI() api.OntapAPI {
 	return d.API
 }
 
-func (d *NASFlexGroupStorageDriver) GetTelemetry() *TelemetryAbstraction {
+func (d *NASFlexGroupStorageDriver) GetTelemetry() *Telemetry {
 	return d.telemetry
 }
 
@@ -85,7 +85,7 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriverAbstraction(ctx, config)
+	d.API, err = InitializeOntapDriver(ctx, config)
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
@@ -102,7 +102,7 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	}
 
 	// Set up the autosupport heartbeat
-	d.telemetry = NewOntapTelemetryAbstraction(ctx, d)
+	d.telemetry = NewOntapTelemetry(ctx, d)
 	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	d.telemetry.TridentBackendUUID = backendUUID
 	d.telemetry.Start(ctx)
@@ -400,7 +400,7 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 		return fmt.Errorf("ONTAP version does not support FlexGroups")
 	}
 
-	if err := ValidateNASDriverAbstraction(ctx, d.API, &d.Config); err != nil {
+	if err := ValidateNASDriver(ctx, d.API, &d.Config); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
@@ -412,7 +412,7 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 	physicalPools := map[string]storage.Pool{
 		d.physicalPool.Name(): d.physicalPool,
 	}
-	if err := ValidateStoragePoolsAbstraction(ctx, physicalPools, d.virtualPools, d,
+	if err := ValidateStoragePools(ctx, physicalPools, d.virtualPools, d,
 		api.MaxNASLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
@@ -904,7 +904,7 @@ func (d *NASFlexGroupStorageDriver) Publish(
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = mountOptions
 
-	return publishShareAbstraction(ctx, d.API, &d.Config, publishInfo, name, d.API.FlexgroupModifyExportPolicy)
+	return publishShare(ctx, d.API, &d.Config, publishInfo, name, d.API.FlexgroupModifyExportPolicy)
 }
 
 // getFlexgroupSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
@@ -1174,7 +1174,7 @@ func (d *NASFlexGroupStorageDriver) DeleteSnapshot(
 	if err := d.API.FlexgroupSnapshotDelete(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName); err != nil {
 		if api.IsSnapshotBusyError(err) {
 			// Start a split here before returning the error so a subsequent delete attempt may succeed.
-			_ = SplitVolumeFromBusySnapshotAbstraction(ctx, snapConfig, &d.Config, d.API,
+			_ = SplitVolumeFromBusySnapshot(ctx, snapConfig, &d.Config, d.API,
 				d.API.FlexgroupCloneSplitStart)
 		}
 		// we must return the err, even if we started a split, so the snapshot delete is retried
@@ -1441,7 +1441,7 @@ func (d *NASFlexGroupStorageDriver) Resize(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
 	}
 
-	flexgroupSize, err := resizeValidationAbstraction(ctx, name, requestedSizeBytes, d.API.FlexgroupExists,
+	flexgroupSize, err := resizeValidation(ctx, name, requestedSizeBytes, d.API.FlexgroupExists,
 		d.API.FlexgroupSize)
 	if err != nil {
 		return err
@@ -1452,7 +1452,7 @@ func (d *NASFlexGroupStorageDriver) Resize(
 		return nil
 	}
 
-	snapshotReserveInt, err := getSnapshotReserveFromOntapAbstraction(ctx, name, d.API.FlexgroupInfo)
+	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.FlexgroupInfo)
 	if err != nil {
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
 	}
@@ -1486,7 +1486,7 @@ func (d *NASFlexGroupStorageDriver) ReconcileNodeAccess(
 
 	policyName := getExportPolicyName(backendUUID)
 
-	return reconcileNASNodeAccessAbstraction(ctx, nodes, &d.Config, d.API, policyName)
+	return reconcileNASNodeAccess(ctx, nodes, &d.Config, d.API, policyName)
 }
 
 // String makes NASFlexGroupStorageDriver satisfy the Stringer interface.

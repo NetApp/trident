@@ -865,7 +865,7 @@ func (m *SvmMigrationDestinationIpspaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmMigrationDestinationVolumePlacement Optional property to specify the source volume placement in the destination.
+// SvmMigrationDestinationVolumePlacement Optional property to specify the source volume placement in the destination. It is input only and won't be returned by a subsequent GET.
 //
 // swagger:model SvmMigrationDestinationVolumePlacement
 type SvmMigrationDestinationVolumePlacement struct {
@@ -962,7 +962,7 @@ func (m *SvmMigrationDestinationVolumePlacement) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// SvmMigrationDestinationVolumePlacementAggregatesItems0 Aggregate
+// SvmMigrationDestinationVolumePlacementAggregatesItems0 svm migration destination volume placement aggregates items0
 //
 // swagger:model SvmMigrationDestinationVolumePlacementAggregatesItems0
 type SvmMigrationDestinationVolumePlacementAggregatesItems0 struct {

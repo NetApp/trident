@@ -30,6 +30,10 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	FabricCollectionGet(params *FabricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FabricCollectionGetOK, error)
+
+	FabricGet(params *FabricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FabricGetOK, error)
+
 	FcInterfaceCollectionGet(params *FcInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceCollectionGetOK, error)
 
 	FcInterfaceCreate(params *FcInterfaceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceCreateCreated, error)
@@ -45,6 +49,14 @@ type ClientService interface {
 	FcPortGet(params *FcPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcPortGetOK, error)
 
 	FcPortModify(params *FcPortModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcPortModifyOK, error)
+
+	FcSwitchCollectionGet(params *FcSwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcSwitchCollectionGetOK, error)
+
+	FcSwitchGet(params *FcSwitchGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcSwitchGetOK, error)
+
+	FcZoneCollectionGet(params *FcZoneCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcZoneCollectionGetOK, error)
+
+	FcZoneGet(params *FcZoneGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcZoneGetOK, error)
 
 	HTTPProxyCollectionGet(params *HTTPProxyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyCollectionGetOK, error)
 
@@ -63,6 +75,16 @@ type ClientService interface {
 	IPServicePolicyDelete(params *IPServicePolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyDeleteOK, error)
 
 	IPServicePolicyModify(params *IPServicePolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyModifyOK, error)
+
+	IPSubnetCollectionGet(params *IPSubnetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetCollectionGetOK, error)
+
+	IPSubnetCreate(params *IPSubnetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetCreateCreated, error)
+
+	IPSubnetDelete(params *IPSubnetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetDeleteOK, error)
+
+	IPSubnetGet(params *IPSubnetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetGetOK, error)
+
+	IPSubnetModify(params *IPSubnetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetModifyOK, error)
 
 	IpspaceDelete(params *IpspaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceDeleteOK, error)
 
@@ -134,6 +156,10 @@ type ClientService interface {
 
 	SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCollectionGetOK, error)
 
+	SwitchCreate(params *SwitchCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCreateAccepted, error)
+
+	SwitchDelete(params *SwitchDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchDeleteOK, error)
+
 	SwitchGet(params *SwitchGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchGetOK, error)
 
 	SwitchModify(params *SwitchModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchModifyAccepted, error)
@@ -143,6 +169,102 @@ type ClientService interface {
 	SwitchPortGet(params *SwitchPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchPortGetOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+  FabricCollectionGet Retrieves Fibre Channel fabrics.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `connections`
+* `zoneset`
+### Related ONTAP commands
+* `network fcp topology show`
+* `network fcp zone show`
+### Learn more
+* [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
+
+*/
+func (a *Client) FabricCollectionGet(params *FabricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FabricCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFabricCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fabric_collection_get",
+		Method:             "GET",
+		PathPattern:        "/network/fc/fabrics",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FabricCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FabricCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FabricCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FabricGet Retrieves a Fibre Channel fabric.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `connections`
+* `zoneset`
+### Related ONTAP commands
+* `network fcp topology show`
+* `network fcp zone show`
+### Learn more
+* [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
+
+*/
+func (a *Client) FabricGet(params *FabricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FabricGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFabricGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fabric_get",
+		Method:             "GET",
+		PathPattern:        "/network/fc/fabrics/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FabricGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FabricGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FabricGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -510,6 +632,190 @@ func (a *Client) FcPortModify(params *FcPortModifyParams, authInfo runtime.Clien
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FcPortModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FcSwitchCollectionGet Retrieves the Fibre Channel switches of a Fibre Channel fabric.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `ports`
+### Related ONTAP commands
+* `network fcp topology show`
+### Learn more
+* [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
+
+*/
+func (a *Client) FcSwitchCollectionGet(params *FcSwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcSwitchCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFcSwitchCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fc_switch_collection_get",
+		Method:             "GET",
+		PathPattern:        "/network/fc/fabrics/{fabric.name}/switches",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FcSwitchCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FcSwitchCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FcSwitchCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FcSwitchGet Retrieves a Fibre Channel switch.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `ports`
+### Related ONTAP commands
+* `network fcp topology show`
+### Learn more
+* [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
+
+*/
+func (a *Client) FcSwitchGet(params *FcSwitchGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcSwitchGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFcSwitchGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fc_switch_get",
+		Method:             "GET",
+		PathPattern:        "/network/fc/fabrics/{fabric.name}/switches/{wwn}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FcSwitchGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FcSwitchGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FcSwitchGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FcZoneCollectionGet Retrieves the zones of the active zoneset of a Fibre Channel fabric.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `members`
+### Related ONTAP commands
+* `network fcp zone show`
+### Learn more
+* [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
+
+*/
+func (a *Client) FcZoneCollectionGet(params *FcZoneCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcZoneCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFcZoneCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fc_zone_collection_get",
+		Method:             "GET",
+		PathPattern:        "/network/fc/fabrics/{fabric.name}/zones",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FcZoneCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FcZoneCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FcZoneCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FcZoneGet Retrieves a zone of the active zoneset of a Fibre Channel fabric.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `members`
+### Related ONTAP commands
+* `network fcp zone show`
+### Learn more
+* [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
+
+*/
+func (a *Client) FcZoneGet(params *FcZoneGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcZoneGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFcZoneGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fc_zone_get",
+		Method:             "GET",
+		PathPattern:        "/network/fc/fabrics/{fabric.name}/zones/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FcZoneGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FcZoneGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FcZoneGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -904,6 +1210,227 @@ func (a *Client) IPServicePolicyModify(params *IPServicePolicyModifyParams, auth
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*IPServicePolicyModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IPSubnetCollectionGet Retrieves details for all subnets.
+### Related ONTAP Commands
+* `network subnet show`
+
+*/
+func (a *Client) IPSubnetCollectionGet(params *IPSubnetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPSubnetCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_subnet_collection_get",
+		Method:             "GET",
+		PathPattern:        "/network/ip/subnets",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPSubnetCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPSubnetCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPSubnetCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IPSubnetCreate Creates a new named subnet.
+### Required properties
+* `name` - Name of the subnet to create.
+* `broadcast_domain` - Broadcast domain containing the subnet.
+* `ipspace` - IPspace containing the subnet. Required only if `broadcast_domain.uuid` is not provided.
+* `subnet.address` - IP address for the subnet.
+* `subnet.netmask` - IP netmask of the subnet.
+### Recommended property values
+### Default property values
+If not specified in POST, the following default property values are assigned:
+* `gateway` - no gateway
+* `ip_ranges` - empty
+* `fail_if_lifs_conflict` - _true_
+### Related ONTAP commands
+* `network subnet create`
+
+*/
+func (a *Client) IPSubnetCreate(params *IPSubnetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPSubnetCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_subnet_create",
+		Method:             "POST",
+		PathPattern:        "/network/ip/subnets",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPSubnetCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPSubnetCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPSubnetCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IPSubnetDelete Deletes an IP subnet.
+### Related ONTAP commands
+* `network subnet delete`
+
+*/
+func (a *Client) IPSubnetDelete(params *IPSubnetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPSubnetDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_subnet_delete",
+		Method:             "DELETE",
+		PathPattern:        "/network/ip/subnets/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPSubnetDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPSubnetDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for ip_subnet_delete: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  IPSubnetGet Retrieves details for a specific IP subnet.
+### Related ONTAP commands
+* `network subnet show`
+
+*/
+func (a *Client) IPSubnetGet(params *IPSubnetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPSubnetGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_subnet_get",
+		Method:             "GET",
+		PathPattern:        "/network/ip/subnets/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPSubnetGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPSubnetGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPSubnetGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IPSubnetModify Updates an IP subnet.
+### Related ONTAP commands
+* `network subnet modify`
+* `network subnet rename`
+* `network subnet add-ranges`
+* `network subnet remove-ranges`
+
+*/
+func (a *Client) IPSubnetModify(params *IPSubnetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPSubnetModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_subnet_modify",
+		Method:             "PATCH",
+		PathPattern:        "/network/ip/subnets/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPSubnetModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPSubnetModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPSubnetModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1909,8 +2436,10 @@ func (a *Client) NetworkIPInterfaceModify(params *NetworkIPInterfaceModifyParams
   NetworkIPInterfacesCreate Creates a new Cluster-scoped or SVM-scoped interface.<br/>
 ### Required properties
 * `name` - Name of the interface to create.
-* `ip.address` - IP address for the interface.
-* `ip.netmask` - IP subnet of the interface.
+* `ip` or `subnet`
+  * `ip.address` - IP address for the interface.
+  * `ip.netmask` - IP subnet of the interface.
+  * `subnet.uuid` or `subnet.name`
 * `ipspace.name` or `ipspace.uuid`
   * Required for Cluster-scoped interfaces.
   * Optional for SVM-scoped interfaces.
@@ -1922,7 +2451,8 @@ func (a *Client) NetworkIPInterfaceModify(params *NetworkIPInterfaceModifyParams
 * `service_policy`
   * `for SVM scoped interfaces`
     * _default-data-files_ for interfaces carrying file-oriented NAS data traffic
-    * _default-data-blocks_ for interfaces carrying block-oriented SAN data traffic
+    * (DEPRECATED) _default-data-blocks_ for interfaces carrying block-oriented SAN data traffic
+    * _default-data-iscsi_ for interfaces carrying iSCSI data traffic
     * _default-management_ for interfaces carrying SVM management requests
   * `for Cluster scoped interfaces`
     * _default-intercluster_ for interfaces carrying cluster peering traffic
@@ -1938,11 +2468,12 @@ If not specified in POST, the following default property values are assigned:
 * `service_policy`
   * _default-data-files_ if scope is `svm`
   * _default-management_ if scope is `cluster` and IPspace is not `Cluster`
-  * _default-cluster_ if scope is `svm` and IPspace is `Cluster`
+  * _default-cluster_ if scope is `cluster` and IPspace is `Cluster`
 * `failover` - Selects the least restrictive failover policy supported by all the services in the service policy.
 * `ddns_enabled`
   * _true_ if the interface supports _data_nfs_ or _data_cifs_ services
   * _false_ otherwise
+* `fail_if_subnet_conflicts` - _true_
 ### Related ONTAP commands
 * `network interface create`
 
@@ -2120,6 +2651,7 @@ If not specified in POST, the following default property values are assigned:
 * `ipspace.name`
   * _Default_ for Cluster-scoped routes.
   * Name of the SVM's IPspace for SVM-scoped routes.
+* `metric` - 20.
 ### Related ONTAP commands
 * `network route create`
 
@@ -2444,7 +2976,104 @@ func (a *Client) SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo
 }
 
 /*
-  SwitchGet Retrieves the details of an ethernet switch.
+  SwitchCreate Creates an ethernet switch.
+### Required properties
+* `name` - Name of the switch to create.
+* `address` - Switch IP address.
+* `model` - Switch model number.
+* `monitoring.enabled` - Whether the switch should be monitored by CSHM.
+* `network`
+  * _cluster_ for cluster or shared switches.
+  * _storage_ for storage switches.
+  * _management_ for management switches.
+* `snmp.version` - SNMP version.
+* `snmp.user` - SNMP user.
+### Related ONTAP commands
+* `system switch ethernet create`
+### Learn more
+* [`DOC /network/ethernet/switches`](#docs-networking-network_ethernet_switches)
+
+*/
+func (a *Client) SwitchCreate(params *SwitchCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSwitchCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "switch_create",
+		Method:             "POST",
+		PathPattern:        "/network/ethernet/switches",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SwitchCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SwitchCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SwitchCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SwitchDelete Deletes an Ethernet switch.
+### Related ONTAP commands
+* `system switch ethernet delete`
+### Learn more
+* [`DOC /network/ethernet/switches`](#docs-networking-network_ethernet_switches)
+
+*/
+func (a *Client) SwitchDelete(params *SwitchDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSwitchDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "switch_delete",
+		Method:             "DELETE",
+		PathPattern:        "/network/ethernet/switches/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SwitchDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SwitchDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SwitchDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SwitchGet Retrieves the details of an Ethernet switch.
 ### Related ONTAP commands
 * `system switch ethernet show`
 ### Learn more

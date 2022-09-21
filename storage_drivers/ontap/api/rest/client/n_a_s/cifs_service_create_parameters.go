@@ -62,6 +62,12 @@ func NewCifsServiceCreateParamsWithHTTPClient(client *http.Client) *CifsServiceC
 */
 type CifsServiceCreateParams struct {
 
+	/* Force.
+
+	   If this is set and a machine account with the same name as specified in 'cifs-server name' exists in the Active Directory, existing  machine account will be overwritten and reused.
+	*/
+	ForceQueryParameter *bool
+
 	/* Info.
 
 	   Info specification
@@ -147,6 +153,17 @@ func (o *CifsServiceCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithForceQueryParameter adds the force to the cifs service create params
+func (o *CifsServiceCreateParams) WithForceQueryParameter(force *bool) *CifsServiceCreateParams {
+	o.SetForceQueryParameter(force)
+	return o
+}
+
+// SetForceQueryParameter adds the force to the cifs service create params
+func (o *CifsServiceCreateParams) SetForceQueryParameter(force *bool) {
+	o.ForceQueryParameter = force
+}
+
 // WithInfo adds the info to the cifs service create params
 func (o *CifsServiceCreateParams) WithInfo(info *models.CifsService) *CifsServiceCreateParams {
 	o.SetInfo(info)
@@ -187,6 +204,23 @@ func (o *CifsServiceCreateParams) WriteToRequest(r runtime.ClientRequest, reg st
 		return err
 	}
 	var res []error
+
+	if o.ForceQueryParameter != nil {
+
+		// query param force
+		var qrForce bool
+
+		if o.ForceQueryParameter != nil {
+			qrForce = *o.ForceQueryParameter
+		}
+		qForce := swag.FormatBool(qrForce)
+		if qForce != "" {
+
+			if err := r.SetQueryParam("force", qForce); err != nil {
+				return err
+			}
+		}
+	}
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err

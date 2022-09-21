@@ -82,7 +82,13 @@ func NewSwitchModifyDefault(code int) *SwitchModifyDefault {
 
 /* SwitchModifyDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 12517378 | Settings updated, but the IP address \"{address}\" is not reachable. Verify that the address is valid or check the network path. |
+| 12517380 | Settings updated, but the SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid. |
+| 12517382 | Settings updated, but the SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid (i.e., the SNMPv3 user exists in ONTAP and on the remote switch). If the \"snmp.user\" parameter is valid, verify that the SNMPv3 user's credentials are the same both in ONTAP as well as in the remote switch. If a custom engine-id was provided for the SNMPv3 user, ensure it is the same as that of the remote switch. |
+
 */
 type SwitchModifyDefault struct {
 	_statusCode int

@@ -92,7 +92,7 @@ func NewIpsecPolicyCreateDefault(code int) *IpsecPolicyCreateDefault {
 | 66257107 | The specified pre-shared key is not a valid hexadecimal string. |
 | 66257109 | The specified pre-shared key is not a valid Base64 encoded binary string. |
 | 66257110 | Failed to a create policy sequencing value. |
-| 66257111 | The IPsec policy with action ESP TRANSPORT provides packet protection and requires a secret key for authentication. |
+| 66257111 | The IPsec policy with action ESP TRANSPORT provides packet protection and requires a secret key or certificate for authentication. |
 | 66257112 | The IPsec policy with the action specified does not provide packet protection and the authentication method provided for the policy will be ignored. |
 | 66257113 | Only one local IP subnet can be specified. |
 | 66257114 | Only one remote IP subnet can be specified. |
@@ -103,6 +103,9 @@ func NewIpsecPolicyCreateDefault(code int) *IpsecPolicyCreateDefault {
 | 66257125 | The local_endpoint.address must be specified with local_endpoint.netmask. |
 | 66257126 | The remote_endpoint.address must be specified with remote_endpoint.netmask. |
 | 66257132 | Invalid value for port field. Value should be in range <1-65535>. |
+| 66257133 | A pre-shared key is needed for the PSK authentication method. Use the secret_key option to specify a key. |
+| 66257134 | An end-entity certificate is needed for the PKI authentication method. Use the certificate.uuid option to specify an end-entity certificate. |
+| 66257137 | A pre-shared key is not needed for the PKI authentication method. |
 | 66257139 | Certificate with the specified UUID was not found. |
 | 66257140 | Only certificates with a client or server type are supported. |
 

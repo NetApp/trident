@@ -327,7 +327,7 @@ func getMirrorStatus(
 	return "", nil
 }
 
-func checkSVMPeeredAbstraction(
+func checkSVMPeered(
 	ctx context.Context, volConfig *storage.VolumeConfig, svm string, d api.OntapAPI,
 ) error {
 	remoteSVM, _, err := parseVolumeHandle(volConfig.PeerVolumeHandle)
@@ -343,9 +343,9 @@ func checkSVMPeeredAbstraction(
 	return nil
 }
 
-// validateReplicationPolicyAbstraction checks that a given replication policy is valid and returns if the policy is
+// validateReplicationPolicy checks that a given replication policy is valid and returns if the policy is
 // of async type
-func validateReplicationPolicyAbstraction(ctx context.Context, policyName string, d api.OntapAPI) (bool, error) {
+func validateReplicationPolicy(ctx context.Context, policyName string, d api.OntapAPI) (bool, error) {
 	if policyName == "" {
 		return false, nil
 	}
@@ -393,7 +393,7 @@ func validateReplicationSchedule(ctx context.Context, replicationSchedule string
 func validateReplicationConfig(
 	ctx context.Context, replicationPolicy, replicationSchedule string, d api.OntapAPI,
 ) error {
-	if _, err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d); err != nil {
+	if _, err := validateReplicationPolicy(ctx, replicationPolicy, d); err != nil {
 		return fmt.Errorf("failed to validate replication policy: %v", replicationPolicy)
 	}
 

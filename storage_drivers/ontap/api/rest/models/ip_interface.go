@@ -34,6 +34,9 @@ type IPInterface struct {
 	// The administrative state of the interface.
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// This command fails if the specified IP address falls within the address range of a named subnet. Set this value to false to use the specified IP address and to assign the subnet owning that address to the interface.
+	FailIfSubnetConflicts *bool `json:"fail_if_subnet_conflicts,omitempty"`
+
 	// ip
 	IP *IPInfo `json:"ip,omitempty"`
 
@@ -75,6 +78,9 @@ type IPInterface struct {
 
 	// statistics
 	Statistics *IPInterfaceStatistics `json:"statistics,omitempty"`
+
+	// Use this field to allocate an interface address from a subnet. If needed, a default route is created for this subnet.
+	Subnet *IPSubnetReference `json:"subnet,omitempty"`
 
 	// svm
 	Svm *IPInterfaceSvmType `json:"svm,omitempty"`
@@ -133,6 +139,10 @@ func (m *IPInterface) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateStatistics(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSubnet(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -432,6 +442,23 @@ func (m *IPInterface) validateStatistics(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *IPInterface) validateSubnet(formats strfmt.Registry) error {
+	if swag.IsZero(m.Subnet) { // not required
+		return nil
+	}
+
+	if m.Subnet != nil {
+		if err := m.Subnet.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("subnet")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *IPInterface) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -486,6 +513,10 @@ func (m *IPInterface) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 
 	if err := m.contextValidateStatistics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSubnet(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -622,6 +653,20 @@ func (m *IPInterface) contextValidateStatistics(ctx context.Context, formats str
 		if err := m.Statistics.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("statistics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IPInterface) contextValidateSubnet(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Subnet != nil {
+		if err := m.Subnet.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("subnet")
 			}
 			return err
 		}
@@ -1235,7 +1280,7 @@ func (m *IPInterfaceLocation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationBroadcastDomain Broadcast domain UUID along with a readable name.
+// IPInterfaceLocationBroadcastDomain IP interface location broadcast domain
 //
 // swagger:model IPInterfaceLocationBroadcastDomain
 type IPInterfaceLocationBroadcastDomain struct {
@@ -1595,7 +1640,7 @@ func (m *IPInterfaceLocationHomeNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationHomePort Port UUID along with readable names. Either the UUID or both names may be supplied on input.
+// IPInterfaceLocationHomePort IP interface location home port
 //
 // swagger:model IPInterfaceLocationHomePort
 type IPInterfaceLocationHomePort struct {
@@ -2035,7 +2080,7 @@ func (m *IPInterfaceLocationNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationPort Port UUID along with readable names. Either the UUID or both names may be supplied on input.
+// IPInterfaceLocationPort IP interface location port
 //
 // swagger:model IPInterfaceLocationPort
 type IPInterfaceLocationPort struct {

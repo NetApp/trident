@@ -19,6 +19,15 @@ import (
 // swagger:model network_scope
 type NetworkScope string
 
+func NewNetworkScope(value NetworkScope) *NetworkScope {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated NetworkScope.
+func (m NetworkScope) Pointer() *NetworkScope {
+	return &m
+}
+
 const (
 
 	// NetworkScopeSvm captures enum value "svm"

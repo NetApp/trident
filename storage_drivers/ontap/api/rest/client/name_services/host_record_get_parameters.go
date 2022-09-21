@@ -68,7 +68,7 @@ type HostRecordGetParams struct {
 
 	/* Host.
 
-	   Hostname or IP address
+	   Hostname or IP address.
 	*/
 	HostPathParameter string
 
@@ -77,6 +77,12 @@ type HostRecordGetParams struct {
 	   UUID of the SVM to which this object belongs.
 	*/
 	SVMUUIDPathParameter string
+
+	/* UseCache.
+
+	   Enables or disables the cache.
+	*/
+	UseCacheQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -95,7 +101,18 @@ func (o *HostRecordGetParams) WithDefaults() *HostRecordGetParams {
 //
 // All values with no default are reset to their zero value.
 func (o *HostRecordGetParams) SetDefaults() {
-	// no default values defined for this parameter
+	var (
+		useCacheQueryParameterDefault = bool(false)
+	)
+
+	val := HostRecordGetParams{
+		UseCacheQueryParameter: &useCacheQueryParameterDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the host record get params
@@ -164,6 +181,17 @@ func (o *HostRecordGetParams) SetSVMUUIDPathParameter(svmUUID string) {
 	o.SVMUUIDPathParameter = svmUUID
 }
 
+// WithUseCacheQueryParameter adds the useCache to the host record get params
+func (o *HostRecordGetParams) WithUseCacheQueryParameter(useCache *bool) *HostRecordGetParams {
+	o.SetUseCacheQueryParameter(useCache)
+	return o
+}
+
+// SetUseCacheQueryParameter adds the useCache to the host record get params
+func (o *HostRecordGetParams) SetUseCacheQueryParameter(useCache *bool) {
+	o.UseCacheQueryParameter = useCache
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *HostRecordGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -191,6 +219,23 @@ func (o *HostRecordGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	// path param svm.uuid
 	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
+	}
+
+	if o.UseCacheQueryParameter != nil {
+
+		// query param use_cache
+		var qrUseCache bool
+
+		if o.UseCacheQueryParameter != nil {
+			qrUseCache = *o.UseCacheQueryParameter
+		}
+		qUseCache := swag.FormatBool(qrUseCache)
+		if qUseCache != "" {
+
+			if err := r.SetQueryParam("use_cache", qUseCache); err != nil {
+				return err
+			}
+		}
 	}
 
 	if len(res) > 0 {

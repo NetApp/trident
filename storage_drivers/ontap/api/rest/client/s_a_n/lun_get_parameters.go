@@ -60,6 +60,26 @@ func NewLunGetParamsWithHTTPClient(client *http.Client) *LunGetParams {
 */
 type LunGetParams struct {
 
+	/* DataOffset.
+
+	     The offset, in bytes, at which to begin reading LUN data.<br/>
+	LUN data read requests are distinguished by the header entry `Accept: multipart/form-data`. When this header entry is provided, query parameters `data.offset` and `data.size` are required and used to specify the portion of the LUN's data to read; no other query parameters are allowed. Reads are limited to one megabyte (1MB) per request. Data is returned as `multipart/form-data` content with exactly one form entry containing the data. The form entry has content type `application/octet-stream`.
+
+
+	     Format: int64
+	*/
+	DataOffsetQueryParameter *int64
+
+	/* DataSize.
+
+	     The size, in bytes, of LUN data to read.<br/>
+	LUN data read requests are distinguished by the header entry `Accept: multipart/form-data`. When this header entry is provided, query parameters `data.offset` and `data.size` are required and used to specify the portion of the LUN's data to read; no other query parameters are allowed. Reads are limited to one megabyte (1MB) per request. Data is returned as `multipart/form-data` content with exactly one form entry containing the data. The form entry has content type `application/octet-stream`.
+
+
+	     Format: int64
+	*/
+	DataSizeQueryParameter *int64
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -126,6 +146,28 @@ func (o *LunGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithDataOffsetQueryParameter adds the dataOffset to the lun get params
+func (o *LunGetParams) WithDataOffsetQueryParameter(dataOffset *int64) *LunGetParams {
+	o.SetDataOffsetQueryParameter(dataOffset)
+	return o
+}
+
+// SetDataOffsetQueryParameter adds the dataOffset to the lun get params
+func (o *LunGetParams) SetDataOffsetQueryParameter(dataOffset *int64) {
+	o.DataOffsetQueryParameter = dataOffset
+}
+
+// WithDataSizeQueryParameter adds the dataSize to the lun get params
+func (o *LunGetParams) WithDataSizeQueryParameter(dataSize *int64) *LunGetParams {
+	o.SetDataSizeQueryParameter(dataSize)
+	return o
+}
+
+// SetDataSizeQueryParameter adds the dataSize to the lun get params
+func (o *LunGetParams) SetDataSizeQueryParameter(dataSize *int64) {
+	o.DataSizeQueryParameter = dataSize
+}
+
 // WithFieldsQueryParameter adds the fields to the lun get params
 func (o *LunGetParams) WithFieldsQueryParameter(fields []string) *LunGetParams {
 	o.SetFieldsQueryParameter(fields)
@@ -155,6 +197,40 @@ func (o *LunGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 		return err
 	}
 	var res []error
+
+	if o.DataOffsetQueryParameter != nil {
+
+		// query param data.offset
+		var qrDataOffset int64
+
+		if o.DataOffsetQueryParameter != nil {
+			qrDataOffset = *o.DataOffsetQueryParameter
+		}
+		qDataOffset := swag.FormatInt64(qrDataOffset)
+		if qDataOffset != "" {
+
+			if err := r.SetQueryParam("data.offset", qDataOffset); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DataSizeQueryParameter != nil {
+
+		// query param data.size
+		var qrDataSize int64
+
+		if o.DataSizeQueryParameter != nil {
+			qrDataSize = *o.DataSizeQueryParameter
+		}
+		qDataSize := swag.FormatInt64(qrDataSize)
+		if qDataSize != "" {
+
+			if err := r.SetQueryParam("data.size", qDataSize); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.FieldsQueryParameter != nil {
 

@@ -403,7 +403,7 @@ func (m *Plex) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PlexAggregate Aggregate
+// PlexAggregate plex aggregate
 //
 // swagger:model PlexAggregate
 type PlexAggregate struct {

@@ -411,9 +411,6 @@ func (m *SnapmirrorEndpointClusterLinks) UnmarshalBinary(b []byte) error {
 // swagger:model SnapmirrorEndpointConsistencyGroupVolumesItems0
 type SnapmirrorEndpointConsistencyGroupVolumesItems0 struct {
 
-	// links
-	Links *SnapmirrorEndpointConsistencyGroupVolumesItems0Links `json:"_links,omitempty"`
-
 	// The name of the volume.
 	// Example: volume1
 	Name string `json:"name,omitempty"`
@@ -425,60 +422,11 @@ type SnapmirrorEndpointConsistencyGroupVolumesItems0 struct {
 
 // Validate validates this snapmirror endpoint consistency group volumes items0
 func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Links) { // not required
-		return nil
-	}
-
-	if m.Links != nil {
-		if err := m.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this snapmirror endpoint consistency group volumes items0 based on the context it is used
+// ContextValidate validates this snapmirror endpoint consistency group volumes items0 based on context it is used
 func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Links != nil {
-		if err := m.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -493,92 +441,6 @@ func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) MarshalBinary() ([]byt
 // UnmarshalBinary interface implementation
 func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) UnmarshalBinary(b []byte) error {
 	var res SnapmirrorEndpointConsistencyGroupVolumesItems0
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// SnapmirrorEndpointConsistencyGroupVolumesItems0Links snapmirror endpoint consistency group volumes items0 links
-//
-// swagger:model SnapmirrorEndpointConsistencyGroupVolumesItems0Links
-type SnapmirrorEndpointConsistencyGroupVolumesItems0Links struct {
-
-	// self
-	Self *Href `json:"self,omitempty"`
-}
-
-// Validate validates this snapmirror endpoint consistency group volumes items0 links
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(m.Self) { // not required
-		return nil
-	}
-
-	if m.Self != nil {
-		if err := m.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this snapmirror endpoint consistency group volumes items0 links based on the context it is used
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Self != nil {
-		if err := m.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorEndpointConsistencyGroupVolumesItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

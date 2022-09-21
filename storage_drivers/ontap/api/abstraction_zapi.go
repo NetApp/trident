@@ -255,6 +255,47 @@ type OntapAPIZAPI struct {
 	api ZapiClientInterface
 }
 
+func (d OntapAPIZAPI) LunGetGeometry(ctx context.Context, lunPath string) (uint64, error) {
+	// Check LUN geometry and verify LUN max size.
+	var lunMaxSize uint64 = 0
+	lunGeometry, err := d.api.LunGetGeometry(lunPath)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Error("LUN resize failed.")
+		return lunMaxSize, fmt.Errorf("volume resize failed")
+	}
+
+	if lunGeometry != nil && lunGeometry.Result.MaxResizeSizePtr != nil {
+		lunMaxSize = uint64(lunGeometry.Result.MaxResizeSize())
+	}
+	return lunMaxSize, nil
+}
+
+func (d OntapAPIZAPI) LunCloneCreate(ctx context.Context, flexvol, source, lunName string, qosPolicyGroup QosPolicyGroup) error {
+	cloneResponse, err := d.api.LunCloneCreate(flexvol, source, lunName, qosPolicyGroup)
+	if err != nil {
+		return fmt.Errorf("error creating clone: %v", err)
+	}
+	if zerr := azgo.NewZapiError(cloneResponse); !zerr.IsPassed() {
+		if zerr.Code() == azgo.EOBJECTNOTFOUND {
+			return fmt.Errorf("snapshot does not exist in volume %s", source)
+		} else if zerr.IsFailedToLoadJobError() {
+			fields := log.Fields{
+				"zerr": zerr,
+			}
+			Logc(ctx).WithFields(fields).Warn(
+				"Problem encountered during the clone create operation, " +
+					"attempting to verify the clone was actually created",
+			)
+			if volumeLookupError := d.probeForVolume(ctx, lunName); volumeLookupError != nil {
+				return volumeLookupError
+			}
+		} else {
+			return fmt.Errorf("error creating clone: %v", zerr)
+		}
+	}
+	return nil
+}
+
 func (d OntapAPIZAPI) ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error) {
 	// ParseLunComment shouldn't be called as it isn't needed for ZAPI
 	Logc(ctx).Info("Not implemented")
@@ -277,7 +318,10 @@ func (d OntapAPIZAPI) LunList(ctx context.Context, pattern string) (Luns, error)
 			}
 			luns = append(luns, *lunInfo)
 		}
-	}
+	} // TODO: For snapshot economy we currently return an error if AttributesListPtr is nil
+	// "error snapshot attribute pointer nil"
+	// Determine if that is an error case in general, OK to ignore
+	// r needs to be returned only for SAN eco specifically
 
 	return luns, nil
 }
@@ -309,10 +353,18 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 	if err = azgo.GetError(ctx, lunCreateResponse, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
 			// Handle case where the Create is passed to every Docker Swarm node
-			if zerr.Code() == azgo.EAPIERROR && strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
-				Logc(ctx).WithField("LUN", lun.Name).Warn("LUN create job already exists, " +
-					"skipping LUN create on this node.")
-				err = VolumeCreateJobExistsError(fmt.Sprintf("LUN create job already exists, %s", lun.Name))
+			if zerr.Code() == azgo.EAPIERROR {
+				if strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
+					Logc(ctx).WithField("LUN", lun.Name).Warn("LUN create job already exists, " +
+						"skipping LUN create on this node.")
+					err = VolumeCreateJobExistsError(fmt.Sprintf("LUN create job already exists, %s", lun.Name))
+				} else if strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
+					// The originally chosen flexvol has hit the ONTAP hard limit of LUNs per flexvol.
+					// This limit is model dependent therefore we must handle the error after-the-fact.
+					// Add the full flexvol to the ignored list and find/create a new one
+					Logc(ctx).WithError(err).Warn("ONTAP limit for LUNs/Flexvol reached; finding a new Flexvol")
+					err = TooManyLunsError(fmt.Sprintf("ONTAP limit for LUNs/Flexvol reached; finding a new Flexvol, %s", lun.Name))
+				}
 			}
 		}
 	}
@@ -321,7 +373,13 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 }
 
 func (d OntapAPIZAPI) LunDestroy(ctx context.Context, lunPath string) error {
-	_, err := d.api.LunDestroy(lunPath)
+	offlineResponse, err := d.api.LunOffline(lunPath)
+	if err != nil {
+		fields := log.Fields{"LUN": lunPath, "offlineResponse": offlineResponse}
+		Logc(ctx).WithFields(fields).Errorf("Error LUN offline failed: %v", err)
+		return err
+	}
+	_, err = d.api.LunDestroy(lunPath)
 	return err
 }
 
@@ -818,13 +876,8 @@ func NewZAPIClientFromOntapConfig(
 
 		// Try the SVM as given
 		vserverResponse, err := client.VserverGetRequest()
-		if err != nil {
+		if err = azgo.GetError(ctx, vserverResponse, err); err != nil {
 			return nil, fmt.Errorf("error reading SVM details: %v", err)
-		}
-
-		// Ensure we got the SVM (MCC or not)
-		if zapiError := azgo.NewZapiError(vserverResponse); !zapiError.IsPassed() {
-			return nil, fmt.Errorf("error reading SVM details: %v", zapiError.Error())
 		}
 
 		// Update everything to use our derived SVM

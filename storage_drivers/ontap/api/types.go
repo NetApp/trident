@@ -26,19 +26,6 @@ type Volume struct {
 	DPVolume          bool
 }
 
-type CLIVolume struct {
-	Vserver             string `json:"vserver"`
-	Name                string `json:"volume"`
-	Aggregate           string `json:"aggregate"`
-	State               string `json:"state"`
-	VolumeStyleExtended string `json:"volume_style_extended"`
-	SpaceGuarantee      string `json:"space_guarantee"`
-	SnapdirAccess       bool   `json:"snapdir_access"`
-	SnapshotPolicy      string `json:"snapshot_policy"`
-	Encrypt             bool   `json:"encrypt"`
-	TieringPolicy       string `json:"tiering_policy"`
-}
-
 type (
 	Volumes        []*Volume
 	VolumeNameList []string
@@ -53,6 +40,7 @@ type Snapshots []Snapshot
 
 type Lun struct {
 	Comment        string
+	CreateTime     string
 	Enabled        bool
 	LunMaps        []LunMap
 	Name           string

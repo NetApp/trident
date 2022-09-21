@@ -73,6 +73,7 @@ func NewNetworkIPInterfaceModifyDefault(code int) *NetworkIPInterfaceModifyDefau
 | ---------- | ----------- |
 | 1376663 | Cannot add interface to DNS zone because all interfaces from a single DNS zone must be in the same SVM. |
 | 1376963 | Duplicate IP address. |
+| 1376976 | The specified port is not capable of hosting this LIF. |
 | 1376997 | Interface failed to migrate because the node hosting the port is not healthy. |
 | 1376998 | The specified location.node does not own any ports in the same broadcast domain as the home port of the interface. |
 | 1376999 | Interface failed to migrate because port is in the down admin state. |
@@ -119,6 +120,10 @@ func NewNetworkIPInterfaceModifyDefault(code int) *NetworkIPInterfaceModifyDefau
 | 1967390 | Cannot patch a LIF revert as it requires an effective cluster version of 9.9.1 or later. |
 | 1967391 | Patching the DNS zone requires an effective cluster version of 9.9.1 or later. |
 | 1967392 | Patching the DDNS enable parameter requires an effective cluster version of 9.9.1 or later. |
+| 1967396 | The specified subnet.name does not match the subnet name of subnet.uuid. |
+| 1967397 | The specified subnet.uuid does not match any configured subnet."; |
+| 1967398 | Address must be specified by either ip.address and ip.netmask, or at least one subnet field, not both."; |
+| 53281018 | Failover policy is not compatible with one or more services in service policy |
 | 53281065 | The service_policy does not exist in the SVM. |
 | 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |
 | 53281089 | LIF on SVM cannot be updated to use service policy because that service policy includes SAN services and the target LIF is not home. |

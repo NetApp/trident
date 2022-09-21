@@ -30,6 +30,9 @@ type Nas struct {
 	// The list of CIFS access controls. You must provide either 'user_or_group' or 'access' to enable CIFS access.
 	CifsAccess []*AppCifsAccess `json:"cifs_access,omitempty"`
 
+	// The name of the CIFS share. Usage: &lt;Share&gt;
+	CifsShareName string `json:"cifs_share_name,omitempty"`
+
 	// exclude aggregates
 	ExcludeAggregates []*NasExcludeAggregatesItems0 `json:"exclude_aggregates,omitempty"`
 
@@ -1349,7 +1352,7 @@ func (m *NasApplicationComponentsItems0StorageService) UnmarshalBinary(b []byte)
 // swagger:model NasExcludeAggregatesItems0
 type NasExcludeAggregatesItems0 struct {
 
-	// The name of the aggregate to exclude. Usage: &lt;aggr0_svctridentci_vsim3&gt;
+	// The name of the aggregate to exclude. Usage: &lt;aggr0_jrippy_vsim1&gt;
 	Name string `json:"name,omitempty"`
 
 	// The ID of the aggregate to exclude. Usage: &lt;UUID&gt;

@@ -58,6 +58,11 @@ type AggregateSpare struct {
 	// Enum: [pool0 pool1]
 	SyncmirrorPool string `json:"syncmirror_pool,omitempty"`
 
+	// Total number of spares in the bucket. The total spare count for each class of spares also includes reserved spare capacity recommended by ONTAP best practices.
+	// Example: 10
+	// Read Only: true
+	Total int64 `json:"total,omitempty"`
+
 	// Total number of usable spares in the bucket. The usable count for each class of spares does not include reserved spare capacity recommended by ONTAP best practices.
 	// Example: 9
 	// Read Only: true
@@ -559,6 +564,10 @@ func (m *AggregateSpare) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateTotal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateUsable(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -649,6 +658,15 @@ func (m *AggregateSpare) contextValidateSize(ctx context.Context, formats strfmt
 func (m *AggregateSpare) contextValidateSyncmirrorPool(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "syncmirror_pool", "body", string(m.SyncmirrorPool)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateSpare) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "total", "body", int64(m.Total)); err != nil {
 		return err
 	}
 

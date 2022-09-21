@@ -21,6 +21,12 @@ import (
 // swagger:model service_processor
 type ServiceProcessor struct {
 
+	// api service
+	APIService *ServiceProcessorAPIService `json:"api_service,omitempty"`
+
+	// auto config
+	AutoConfig *ServiceProcessorAutoConfig `json:"auto_config,omitempty"`
+
 	// Indicates whether the service processor can be automatically updated from ONTAP.
 	AutoupdateEnabled bool `json:"autoupdate_enabled,omitempty"`
 
@@ -79,6 +85,14 @@ type ServiceProcessor struct {
 func (m *ServiceProcessor) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAPIService(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAutoConfig(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateBackup(formats); err != nil {
 		res = append(res, err)
 	}
@@ -118,6 +132,40 @@ func (m *ServiceProcessor) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ServiceProcessor) validateAPIService(formats strfmt.Registry) error {
+	if swag.IsZero(m.APIService) { // not required
+		return nil
+	}
+
+	if m.APIService != nil {
+		if err := m.APIService.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("api_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessor) validateAutoConfig(formats strfmt.Registry) error {
+	if swag.IsZero(m.AutoConfig) { // not required
+		return nil
+	}
+
+	if m.AutoConfig != nil {
+		if err := m.AutoConfig.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("auto_config")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -524,6 +572,14 @@ func (m *ServiceProcessor) validateType(formats strfmt.Registry) error {
 func (m *ServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateAPIService(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAutoConfig(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateBackup(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -575,6 +631,34 @@ func (m *ServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.R
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ServiceProcessor) contextValidateAPIService(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.APIService != nil {
+		if err := m.APIService.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("api_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessor) contextValidateAutoConfig(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AutoConfig != nil {
+		if err := m.AutoConfig.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("auto_config")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -722,6 +806,143 @@ func (m *ServiceProcessor) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ServiceProcessor) UnmarshalBinary(b []byte) error {
 	var res ServiceProcessor
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ServiceProcessorAPIService Provides the properties of the service processor API service.
+//
+// swagger:model ServiceProcessorAPIService
+type ServiceProcessorAPIService struct {
+
+	// Indicates whether the service processor API service is enabled.
+	// Read Only: true
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Indicates whether the service processor API service limit access is enabled.
+	// Read Only: true
+	LimitAccess *bool `json:"limit_access,omitempty"`
+
+	// Indicates the port number of service processor API service.
+	// Read Only: true
+	Port int64 `json:"port,omitempty"`
+}
+
+// Validate validates this service processor API service
+func (m *ServiceProcessorAPIService) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this service processor API service based on the context it is used
+func (m *ServiceProcessorAPIService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateEnabled(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLimitAccess(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePort(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ServiceProcessorAPIService) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "api_service"+"."+"enabled", "body", m.Enabled); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessorAPIService) contextValidateLimitAccess(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "api_service"+"."+"limit_access", "body", m.LimitAccess); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessorAPIService) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "api_service"+"."+"port", "body", int64(m.Port)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ServiceProcessorAPIService) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ServiceProcessorAPIService) UnmarshalBinary(b []byte) error {
+	var res ServiceProcessorAPIService
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ServiceProcessorAutoConfig Provides the properties of the service processor auto configuration.
+//
+// swagger:model ServiceProcessorAutoConfig
+type ServiceProcessorAutoConfig struct {
+
+	// Indicates the service processor auto configuration IPv4 subnet name. To enable IPv4 auto-config give the subnet name, give the value as null or an empty string "" to disable auto-config.
+	// Example: ipv4_mgmt
+	IPV4Subnet string `json:"ipv4_subnet,omitempty"`
+
+	// Indicates the service processor auto configuration IPv6 subnet name. To enable IPv6 auto-config give the subnet name, give the value as null or an empty string "" to disable auto-config.
+	// Example: ipv6_mgmt
+	IPV6Subnet string `json:"ipv6_subnet,omitempty"`
+}
+
+// Validate validates this service processor auto config
+func (m *ServiceProcessorAutoConfig) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this service processor auto config based on the context it is used
+func (m *ServiceProcessorAutoConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ServiceProcessorAutoConfig) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ServiceProcessorAutoConfig) UnmarshalBinary(b []byte) error {
+	var res ServiceProcessorAutoConfig
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

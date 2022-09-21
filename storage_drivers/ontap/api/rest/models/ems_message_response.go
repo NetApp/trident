@@ -304,7 +304,7 @@ type EmsMessageResponseRecordsItems0 struct {
 	// Read Only: true
 	Deprecated *bool `json:"deprecated,omitempty"`
 
-	// Description
+	// Description of the event.
 	// Read Only: true
 	Description string `json:"description,omitempty"`
 
