@@ -185,7 +185,8 @@ dist_tar: build
 	@cp -a deploy /tmp/trident-installer/
 	@cp ${BIN_DIR}/${CLI_BIN} /tmp/trident-installer/
 	@sed -Ei.bak "s|${DEFAULT_TRIDENT_OPERATOR_IMAGE}|${OPERATOR_DIST_TAG}|g" /tmp/trident-installer/deploy/operator.yaml
-	@sed -Ei.bak "s|${DEFAULT_TRIDENT_OPERATOR_IMAGE}|${OPERATOR_DIST_TAG}|g" /tmp/trident-installer/deploy/bundle.yaml
+	@sed -Ei.bak "s|${DEFAULT_TRIDENT_OPERATOR_IMAGE}|${OPERATOR_DIST_TAG}|g" /tmp/trident-installer/deploy/bundle_pre_1_25.yaml
+	@sed -Ei.bak "s|${DEFAULT_TRIDENT_OPERATOR_IMAGE}|${OPERATOR_DIST_TAG}|g" /tmp/trident-installer/deploy/bundle_post_1_25.yaml
 	@rm /tmp/trident-installer/deploy/*.bak
 	@mkdir -p /tmp/trident-installer/helm
 	@cp -a trident-operator-*.tgz /tmp/trident-installer/helm
