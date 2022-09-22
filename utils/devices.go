@@ -27,7 +27,8 @@ func waitForDevice(ctx context.Context, device string) error {
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.waitForDevice")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.waitForDevice")
 
-	if !PathExists(device) {
+	exists, err := PathExists(device)
+	if !exists || err != nil {
 		return errors.New("device not yet present")
 	} else {
 		Logc(ctx).WithField("device", device).Debug("Device found.")

@@ -84,3 +84,19 @@ func getFilesystemSize(ctx context.Context, path string) (int64, error) {
 
 	return size, nil
 }
+
+// GetDeviceFilePath returns the staging path for volume.
+func GetDeviceFilePath(ctx context.Context, path, volumeId string) (string, error) {
+	Logc(ctx).Debug(">>>> filesystem_linux.GetDeviceFilePath")
+	defer Logc(ctx).Debug("<<<< filesystem_linux.GetDeviceFilePath")
+
+	return path, nil
+}
+
+// GetUnmountPath is a dummy added for compilation
+func GetUnmountPath(ctx context.Context, resourcePath, arg string) (string, error) {
+	Logc(ctx).Debug(">>>> filesystem_linux.GetUnmountPath")
+	defer Logc(ctx).Debug("<<<< filesystem_linux.GetUnmountPath")
+
+	return "", UnsupportedError("GetUnmountPath is not supported for linux")
+}

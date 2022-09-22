@@ -2,44 +2,113 @@
 package utils
 
 import (
-	"os"
-	"path/filepath"
-	"strings"
-	"syscall"
+	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 
 	. "github.com/netapp/trident/logger"
 )
 
-// IsLikelyNotMountPoint uses heuristics to determine if a directory is not a mountpoint.
-// It should return ErrNotExist when the directory does not exist.
-// IsLikelyNotMountPoint does NOT properly detect all mountpoint types
-// most notably Linux bind mounts and symbolic links. For callers that do not
-// care about such situations, this is a faster alternative to scanning the list of mounts.
-// A return value of false means the directory is definitely a mount point.
-// A return value of true means it's not a mount this function knows how to find,
-// but it could still be a mount point.
 func IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error) {
-	fields := log.Fields{"mountpoint": mountpoint}
-	Logc(ctx).WithFields(fields).Debug(">>>> mount_darwin.IsLikelyNotMountPoint")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< mount_darwin.IsLikelyNotMountPoint")
+	Logc(ctx).Debug(">>>> mount_darwin.IsLikelyNotMountPoint")
+	defer Logc(ctx).Debug("<<<< mount_darwin.IsLikelyNotMountPoint")
+	return false, UnsupportedError("IsLikelyNotMountPoint is not supported on non-linux platform")
+}
 
-	stat, err := os.Stat(mountpoint)
-	if err != nil {
-		return true, err
-	}
-	rootStat, err := os.Lstat(filepath.Dir(strings.TrimSuffix(mountpoint, "/")))
-	if err != nil {
-		return true, err
-	}
-	// If the directory has a different device as parent, then it is a mountpoint.
-	if stat.Sys().(*syscall.Stat_t).Dev != rootStat.Sys().(*syscall.Stat_t).Dev {
-		Logc(ctx).WithFields(fields).Debug("Path is a mountpoint.")
-		return false, nil
-	}
+func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions string) (bool, error) {
+	Logc(ctx).Debug(">>>> mount_darwin.IsMounted")
+	defer Logc(ctx).Debug("<<<< mount_darwin.IsMounted")
+	return false, UnsupportedError("IsMounted is not supported on non-linux platform")
+}
 
-	Logc(ctx).WithFields(fields).Debug("Path is likely not a mountpoint.")
-	return true, nil
+// mountNFSPath is a dummy added for compilation on non-linux platform.
+func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) error {
+	Logc(ctx).Debug(">>>> mount_darwin.mountNFSPath")
+	defer Logc(ctx).Debug("<<<< mount_darwin.mountNFSPath")
+	return UnsupportedError("mountNFSPath is not supported on non-linux platform")
+}
+
+// mountSMBPath is a dummy added for compilation on non-windows platform.
+func mountSMBPath(ctx context.Context, exportPath, mountpoint, username, password string) error {
+	Logc(ctx).Debug(">>>> mount_darwin.mountSMBPath")
+	defer Logc(ctx).Debug("<<<< mount_darwin.mountSMBPath")
+	return UnsupportedError("mountSMBPath is not supported on non-windows platform")
+}
+
+// UmountSMBPath is a dummy added for compilation on non-windows platform.
+func UmountSMBPath(ctx context.Context, mappingPath, target string) error {
+	Logc(ctx).Debug(">>>> mount_darwin.UmountSMBPath")
+	defer Logc(ctx).Debug("<<<< mount_darwin.UmountSMBPath")
+	return UnsupportedError("UmountSMBPath is not supported on non-windows platform")
+}
+
+// WindowsBindMount is a dummy added for compilation on non-windows platform.
+func WindowsBindMount(ctx context.Context, source, target string, options []string) error {
+	Logc(ctx).Debug(">>>> mount_darwin.WindowsBindMount")
+	defer Logc(ctx).Debug("<<<< mount_darwin.WindowsBindMount")
+	return UnsupportedError("WindowsBindMount is not supported on non-windows platform")
+}
+
+// IsNFSShareMounted is a dummy added for compilation on non-linux platform.
+func IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool, error) {
+	Logc(ctx).Debug(">>>> mount_darwin.IsNFSShareMounted")
+	defer Logc(ctx).Debug("<<<< mount_darwin.IsNFSShareMounted")
+	return false, UnsupportedError("IsNFSShareMounted is not supported on non-linux platform")
+}
+
+// MountDevice is a dummy added for compilation on non-linux platform.
+func MountDevice(ctx context.Context, device, mountpoint, options string, isMountPointFile bool) (err error) {
+	Logc(ctx).Debug(">>>> mount_darwin.MountDevice")
+	defer Logc(ctx).Debug("<<<< mount_darwin.MountDevice")
+	return UnsupportedError("MountDevice is not supported on non-linux platform")
+}
+
+// Umount is a dummy added for compilation on darwin.
+func Umount(ctx context.Context, mountpoint string) (err error) {
+	Logc(ctx).Debug(">>>> mount_darwin.Umount")
+	defer Logc(ctx).Debug("<<<< mount_darwin.Umount")
+	return UnsupportedError("Umount is not supported on darwin")
+}
+
+// RemoveMountPoint is a dummy added for compilation on non-linux platform.
+func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
+	Logc(ctx).Debug(">>>> mount_darwin.RemoveMountPoint")
+	defer Logc(ctx).Debug("<<<< mount_darwin.RemoveMountPoint")
+	return UnsupportedError("RemoveMountPoint is not supported on non-linux platform")
+}
+
+// UmountAndRemoveTemporaryMountPoint is a dummy added for compilation on non-linux platform.
+func UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) error {
+	Logc(ctx).Debug(">>>> mount_darwin.UmountAndRemoveTemporaryMountPoint")
+	defer Logc(ctx).Debug("<<<< mount_darwin.UmountAndRemoveTemporaryMountPoint")
+	return UnsupportedError("UmountAndRemoveTemporaryMountPoint is not supported on non-linux platform")
+}
+
+// UmountAndRemoveMountPoint is a dummy added for compilation on non-linux platform.
+func UmountAndRemoveMountPoint(ctx context.Context, mountPoint string) error {
+	Logc(ctx).Debug(">>>> mount_darwin.UmountAndRemoveMountPoint")
+	defer Logc(ctx).Debug("<<<< mount_darwin.UmountAndRemoveMountPoint")
+	return UnsupportedError("UmountAndRemoveMountPoint is not supported on non-linux platform")
+}
+
+// RemountDevice is a dummy added for compilation on non-linux platform.
+func RemountDevice(ctx context.Context, mountpoint, options string) (err error) {
+	Logc(ctx).Debug(">>>> mount_darwin.RemountDevice")
+	defer Logc(ctx).Debug("<<<< mount_darwin.RemountDevice")
+	return UnsupportedError("RemountDevice is not supported on non-linux platform")
+}
+
+// GetMountInfo is a dummy added for compilation on non-linux platform.
+func GetMountInfo(ctx context.Context) ([]MountInfo, error) {
+	Logc(ctx).Debug(">>>> mount_darwin.GetMountInfo")
+	defer Logc(ctx).Debug("<<<< mount_darwin.GetMountInfo")
+	return nil, UnsupportedError("GetMountInfo is not supported on non-linux platform")
+}
+
+// IsCompatible checks for compatibility of protocol and platform
+func IsCompatible(ctx context.Context, protocol string) error {
+	Logc(ctx).Debug(">>>> mount_darwin.IsCompatible")
+	defer Logc(ctx).Debug("<<<< mount_darwin.IsCompatible")
+
+	return fmt.Errorf("mounting %s volume is not supported on darwin", protocol)
 }

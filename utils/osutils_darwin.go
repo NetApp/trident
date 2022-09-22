@@ -4,8 +4,8 @@ package utils
 
 import (
 	"context"
-	"errors"
 	"net"
+	"os"
 
 	. "github.com/netapp/trident/logger"
 )
@@ -18,21 +18,36 @@ import (
 func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.getIPAddresses")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.getIPAddresses")
-	return nil, errors.New("getIPAddresses is not supported for darwin")
+	return nil, UnsupportedError("getIPAddresses is not supported for darwin")
 }
 
 // GetHostSystemInfo unused stub function
 func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.GetHostSystemInfo")
-	msg := "GetHostSystemInfo is not supported for darwin"
-	return nil, UnsupportedError(msg)
+	return nil, UnsupportedError("GetHostSystemInfo is not supported for darwin")
 }
 
 // NFSActiveOnHost unused stub function
 func NFSActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.NFSActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.NFSActiveOnHost")
-	msg := "NFSActiveOnHost is not supported for darwin"
-	return false, UnsupportedError(msg)
+	return false, UnsupportedError("NFSActiveOnHost is not supported for darwin")
+}
+
+// IsLikelyDir determines if mountpoint is a directory
+func IsLikelyDir(mountpoint string) (bool, error) {
+	stat, err := os.Stat(mountpoint)
+	if err != nil {
+		return false, err
+	}
+
+	return stat.IsDir(), nil
+}
+
+// GetTargetFilePath method returns the path of target file based on OS.
+func GetTargetFilePath(ctx context.Context, resourcePath, arg string) string {
+	Logc(ctx).Debug(">>>> osutils_darwin.GetTargetFilePath")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.GetTargetFilePath")
+	return ""
 }

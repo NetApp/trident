@@ -144,3 +144,36 @@ func TestCheckMountOptionsNegative(t *testing.T) {
 	res = CheckMountOptions(ctx, mountInfo, "sm9")
 	assert.Error(t, res, "expecting mount option mismatch")
 }
+
+func TestMountSMBPath(t *testing.T) {
+	ctx := context.Background()
+	result := mountSMBPath(ctx, "\\export\\path", "\\mount\\path", "test-user", "password")
+	assert.Error(t, result, "no error")
+	assert.True(t, IsUnsupportedError(result), "not UnsupportedError")
+}
+
+func TestUmountSMBPath(t *testing.T) {
+	ctx := context.Background()
+	result := UmountSMBPath(ctx, "", "test-target")
+	assert.Error(t, result, "no error")
+	assert.True(t, IsUnsupportedError(result), "not UnsupportedError")
+}
+
+func TestWindowsBindMount(t *testing.T) {
+	ctx := context.Background()
+	result := WindowsBindMount(ctx, "test-source", "test-target", []string{"test-val1", "test-val2"})
+	assert.Error(t, result, "no error")
+	assert.True(t, IsUnsupportedError(result), "not UnsupportedError")
+}
+
+func TestIsCompatible_NFSProtocol(t *testing.T) {
+	ctx := context.Background()
+	err := IsCompatible(ctx, "nfs")
+	assert.NoError(t, err, "error")
+}
+
+func TestIsCompatible_SMBProtocol(t *testing.T) {
+	ctx := context.Background()
+	err := IsCompatible(ctx, "smb")
+	assert.Error(t, err, "no error")
+}

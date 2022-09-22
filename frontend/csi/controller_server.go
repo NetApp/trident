@@ -381,10 +381,16 @@ func (p *Plugin) ControllerPublishVolume(
 	}
 
 	publishInfo["mountOptions"] = volumePublishInfo.MountOptions
+	publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 	switch volume.Config.Protocol {
 	case tridentconfig.File:
-		publishInfo["nfsServerIp"] = volumePublishInfo.NfsServerIP
-		publishInfo["nfsPath"] = volumePublishInfo.NfsPath
+		if volumePublishInfo.FilesystemType == "smb" {
+			publishInfo["smbServer"] = volumePublishInfo.SMBServer
+			publishInfo["smbPath"] = volumePublishInfo.SMBPath
+		} else {
+			publishInfo["nfsServerIp"] = volumePublishInfo.NfsServerIP
+			publishInfo["nfsPath"] = volumePublishInfo.NfsPath
+		}
 	case tridentconfig.Block:
 		stashIscsiTargetPortals(publishInfo, volumePublishInfo)
 		publishInfo["iscsiTargetIqn"] = volumePublishInfo.IscsiTargetIQN
@@ -404,7 +410,6 @@ func (p *Plugin) ControllerPublishVolume(
 				return nil, status.Error(codes.Internal, msg)
 			}
 		}
-		publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 		publishInfo["useCHAP"] = strconv.FormatBool(volumePublishInfo.UseCHAP)
 		publishInfo["LUKSEncryption"] = volumePublishInfo.LUKSEncryption
 		publishInfo["sharedTarget"] = strconv.FormatBool(volumePublishInfo.SharedTarget)
@@ -414,7 +419,6 @@ func (p *Plugin) ControllerPublishVolume(
 		publishInfo["nfsPath"] = volumePublishInfo.NfsPath
 		publishInfo["nfsUniqueID"] = volumePublishInfo.NfsUniqueID
 		publishInfo["subvolumeName"] = volumePublishInfo.SubvolumeName
-		publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 		publishInfo["backendUUID"] = volumePublishInfo.BackendUUID
 	}
 

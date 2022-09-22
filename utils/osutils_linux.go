@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
+	"path"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
@@ -221,4 +223,21 @@ func getUsableAddressesFromLinks(ctx context.Context, links []netlink.Link) []ne
 	}
 
 	return addrs
+}
+
+// IsLikelyDir determines if mountpoint is a directory
+func IsLikelyDir(mountpoint string) (bool, error) {
+	stat, err := os.Stat(mountpoint)
+	if err != nil {
+		return false, err
+	}
+
+	return stat.IsDir(), nil
+}
+
+// GetTargetFilePath method returns the path of target file based on OS.
+func GetTargetFilePath(ctx context.Context, resourcePath, arg string) string {
+	Logc(ctx).Debug(">>>> osutils_linux.GetTargetFilePath")
+	defer Logc(ctx).Debug("<<<< osutils_linux.GetTargetFilePath")
+	return path.Join(resourcePath, arg)
 }

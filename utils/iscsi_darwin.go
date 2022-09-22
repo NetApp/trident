@@ -14,6 +14,5 @@ import (
 func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
 	Logc(ctx).Debug(">>>> iscsi_darwin.ISCSIActiveOnHost")
 	defer Logc(ctx).Debug("<<<< iscsi_darwin.ISCSIActiveOnHost")
-	msg := "ISCSIActiveOnHost is not supported for darwin"
-	return false, UnsupportedError(msg)
+	return false, UnsupportedError("ISCSIActiveOnHost is not supported for darwin")
 }

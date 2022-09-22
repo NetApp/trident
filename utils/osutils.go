@@ -102,7 +102,8 @@ func execCommand(ctx context.Context, name string, args ...string) ([]byte, erro
 }
 
 // execCommandRedacted invokes an external process, and redacts sensitive arguments
-func execCommandRedacted(ctx context.Context, name string, args []string,
+func execCommandRedacted(
+	ctx context.Context, name string, args []string,
 	secretsToRedact map[string]string,
 ) ([]byte, error) {
 	var sanitizedArgs []string
@@ -210,23 +211,11 @@ func sanitizeExecOutput(s string) string {
 	return s
 }
 
-// IsLikelyDir determines if mountpoint is a directory
-func IsLikelyDir(mountpoint string) (bool, error) {
-	stat, err := os.Stat(mountpoint)
-	if err != nil {
-		return false, err
-	}
-
-	return stat.IsDir(), nil
-}
-
-// PathExists returns true if the file/directory at the specified path exists,
-// false otherwise or if an error occurs.
-func PathExists(path string) bool {
+func PathExists(path string) (bool, error) {
 	if _, err := os.Stat(path); err == nil {
-		return true
+		return true, nil
 	}
-	return false
+	return false, nil
 }
 
 // EnsureFileExists makes sure that file of given name exists

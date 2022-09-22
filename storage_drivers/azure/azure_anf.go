@@ -1339,11 +1339,18 @@ func (d *NASStorageDriver) Publish(
 		mountOptions = volConfig.MountOptions
 	}
 
-	// Add fields needed by Attach
-	publishInfo.NfsPath = "/" + volume.CreationToken
-	publishInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
-	publishInfo.FilesystemType = "nfs"
-	publishInfo.MountOptions = mountOptions
+	// Add required fields for attaching SMB volume
+	if d.Config.NASType == sa.SMB {
+		publishInfo.SMBPath = "\\" + volume.CreationToken
+		publishInfo.SMBServer = (volume.MountTargets)[0].SmbServerFqdn
+		publishInfo.FilesystemType = sa.SMB
+	} else {
+		// Add fields needed by Attach
+		publishInfo.NfsPath = "/" + volume.CreationToken
+		publishInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
+		publishInfo.FilesystemType = sa.NFS
+		publishInfo.MountOptions = mountOptions
+	}
 
 	return nil
 }
@@ -1807,10 +1814,16 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 		return fmt.Errorf("volume %s has no mount targets", volConfig.InternalName)
 	}
 
-	// Just use the first mount target found
-	volConfig.AccessInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
-	volConfig.AccessInfo.NfsPath = "/" + volume.CreationToken
-	volConfig.FileSystem = ""
+	// Set the mount target based on the NASType
+	if d.Config.NASType == sa.SMB {
+		volConfig.AccessInfo.SMBPath = "\\" + volume.CreationToken
+		volConfig.AccessInfo.SMBServer = (volume.MountTargets)[0].SmbServerFqdn
+		volConfig.FileSystem = sa.SMB
+	} else {
+		volConfig.AccessInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
+		volConfig.AccessInfo.NfsPath = "/" + volume.CreationToken
+		volConfig.FileSystem = sa.NFS
+	}
 
 	return nil
 }

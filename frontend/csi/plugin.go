@@ -6,6 +6,7 @@ import (
 	"context"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -120,13 +121,22 @@ func NewNodePlugin(
 		opCache:      sync.Map{},
 	}
 
-	p.addNodeServiceCapabilities(
-		[]csi.NodeServiceCapability_RPC_Type{
-			csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
-			csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
-			csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
-		},
-	)
+	if runtime.GOOS == "windows" {
+		p.addNodeServiceCapabilities(
+			[]csi.NodeServiceCapability_RPC_Type{
+				csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
+				csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
+			},
+		)
+	} else {
+		p.addNodeServiceCapabilities(
+			[]csi.NodeServiceCapability_RPC_Type{
+				csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
+				csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
+				csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
+			},
+		)
+	}
 
 	port := os.Getenv("TRIDENT_CSI_SERVICE_PORT")
 	if port == "" {

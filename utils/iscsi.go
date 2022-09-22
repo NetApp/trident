@@ -293,7 +293,8 @@ func getDevicesForLUN(paths []string) ([]string, error) {
 	devices := make([]string, 0)
 	for _, p := range paths {
 		dirname := p + "/block"
-		if !PathExists(dirname) {
+		exists, err := PathExists(dirname)
+		if !exists || err != nil {
 			continue
 		}
 		dirFd, err := os.Open(dirname)
@@ -347,7 +348,8 @@ func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) err
 	// Check if all paths present, and return nil (success) if so
 	for _, p := range paths {
 		dirname := p + "/block"
-		if !PathExists(dirname) {
+		exists, err := PathExists(dirname)
+		if !exists || err != nil {
 			// Set flag to false as device is missing
 			allDevicesExist = false
 		} else {
@@ -1200,7 +1202,12 @@ func loginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, porta
 		}
 
 		authPasswordArgs := append(args,
-			[]string{"--op=update", "--name", "node.session.auth.password", "--value=" + publishInfo.IscsiInitiatorSecret}...)
+			[]string{
+				"--op=update",
+				"--name",
+				"node.session.auth.password",
+				"--value=" + publishInfo.IscsiInitiatorSecret,
+			}...)
 		if _, err := execIscsiadmCommandRedacted(ctx, authPasswordArgs, secretsToRedact); err != nil {
 			Logc(ctx).Error("Error running iscsiadm set authpassword.")
 			return err
@@ -1208,14 +1215,24 @@ func loginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, porta
 
 		if publishInfo.IscsiTargetUsername != "" && publishInfo.IscsiTargetSecret != "" {
 			targetAuthUserArgs := append(args,
-				[]string{"--op=update", "--name", "node.session.auth.username_in", "--value=" + publishInfo.IscsiTargetUsername}...)
+				[]string{
+					"--op=update",
+					"--name",
+					"node.session.auth.username_in",
+					"--value=" + publishInfo.IscsiTargetUsername,
+				}...)
 			if _, err := execIscsiadmCommandRedacted(ctx, targetAuthUserArgs, secretsToRedact); err != nil {
 				Logc(ctx).Error("Error running iscsiadm set authuser_in.")
 				return err
 			}
 
 			targetAuthPasswordArgs := append(args,
-				[]string{"--op=update", "--name", "node.session.auth.password_in", "--value=" + publishInfo.IscsiTargetSecret}...)
+				[]string{
+					"--op=update",
+					"--name",
+					"node.session.auth.password_in",
+					"--value=" + publishInfo.IscsiTargetSecret,
+				}...)
 			if _, err := execIscsiadmCommandRedacted(ctx, targetAuthPasswordArgs, secretsToRedact); err != nil {
 				Logc(ctx).Error("Error running iscsiadm set authpassword_in.")
 				return err
@@ -1431,7 +1448,9 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 }
 
 // execIscsiadmCommand uses the 'iscsiadm' command to perform operations without logging specified secrets
-func execIscsiadmCommandRedacted(ctx context.Context, args []string, secretsToRedact map[string]string) ([]byte, error) {
+func execIscsiadmCommandRedacted(ctx context.Context, args []string, secretsToRedact map[string]string) ([]byte,
+	error,
+) {
 	return execCommandRedacted(ctx, "iscsiadm", args, secretsToRedact)
 }
 

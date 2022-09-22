@@ -198,9 +198,6 @@ func init() {
 	if err := installCmd.Flags().MarkHidden("autosupport-hostname"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
-	if err := installCmd.Flags().MarkHidden("windows"); err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
-	}
 	if err := installCmd.Flags().MarkDeprecated("enable-node-prep",
 		"enable-node-prep is disabled; flag may be removed in a future release."); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)

@@ -49,6 +49,9 @@ const (
 	Debian = "debian"
 
 	REDACTED = "<REDACTED>"
+
+	// NAS protocols
+	SMB = "smb"
 )
 
 var (

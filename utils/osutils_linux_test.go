@@ -191,3 +191,9 @@ func TestISCSIActiveOnHost(t *testing.T) {
 		})
 	}
 }
+
+func TestGetTargetFilePath(t *testing.T) {
+	ctx := context.Background()
+	result := GetTargetFilePath(ctx, "/host/path1", "/test/path")
+	assert.NotEmpty(t, result, "path is empty")
+}

@@ -3261,7 +3261,7 @@ func TestDestroy_SMBVolume(t *testing.T) {
 	assert.Nil(t, result, "not nil")
 }
 
-func getStructsForPublish(
+func getStructsForPublish_NFSVolume(
 	ctx context.Context, driver *NASStorageDriver,
 ) (*storage.VolumeConfig, *api.FileSystem, *utils.VolumePublishInfo) {
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
@@ -3313,11 +3313,63 @@ func getStructsForPublish(
 	return volConfig, filesystem, publishInfo
 }
 
-func TestPublish(t *testing.T) {
+func getStructsForPublish_SMBVolume(
+	ctx context.Context, driver *NASStorageDriver,
+) (*storage.VolumeConfig, *api.FileSystem, *utils.VolumePublishInfo) {
+	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
+	volumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "importMe")
+
+	volConfig := &storage.VolumeConfig{
+		Version:      "1",
+		Name:         "testvol1",
+		InternalName: "trident-testvol1",
+		Size:         VolumeSizeStr,
+		InternalID:   volumeID,
+	}
+
+	labels := make(map[string]string)
+	labels[drivers.TridentLabelTag] = driver.getTelemetryLabels(ctx)
+	labels[storage.ProvisioningLabelTag] = ""
+
+	mountTargets := []api.MountTarget{
+		{
+			MountTargetID: "mountTargetID",
+			FileSystemID:  "filesystemID",
+			IPAddress:     "1.1.1.1",
+			SmbServerFqdn: "trident-1234.trident.com",
+		},
+	}
+
+	filesystem := &api.FileSystem{
+		ID:                volumeID,
+		ResourceGroup:     "RG1",
+		NetAppAccount:     "NA1",
+		CapacityPool:      "CP1",
+		Name:              "testvol1",
+		FullName:          "RG1/NA1/CP1/testvol1",
+		Location:          Location,
+		Labels:            labels,
+		ProvisioningState: api.StateAvailable,
+		CreationToken:     "trident-testvol1",
+		ProtocolTypes:     []string{api.ProtocolTypeCIFS},
+		QuotaInBytes:      VolumeSizeI64,
+		ServiceLevel:      api.ServiceLevelUltra,
+		SnapshotDirectory: true,
+		SubnetID:          subnetID,
+		MountTargets:      mountTargets,
+	}
+
+	publishInfo := &utils.VolumePublishInfo{}
+
+	return volConfig, filesystem, publishInfo
+}
+
+func TestPublish_NFSVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "nfs"
 
-	volConfig, filesystem, publishInfo := getStructsForPublish(ctx, driver)
+	volConfig, filesystem, publishInfo := getStructsForPublish_NFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
@@ -3332,11 +3384,31 @@ func TestPublish(t *testing.T) {
 	assert.Equal(t, "nfsvers=3", publishInfo.MountOptions, "mount options mismatch")
 }
 
+func TestPublish_SMBVolume(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "smb"
+
+	volConfig, filesystem, publishInfo := getStructsForPublish_SMBVolume(ctx, driver)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+
+	result := driver.Publish(ctx, volConfig, publishInfo)
+
+	assert.Nil(t, result, "not nil")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, "\\trident-testvol1", publishInfo.SMBPath, "SMB path mismatch")
+	assert.Equal(t, "trident-1234.trident.com", publishInfo.SMBServer, "SMB server mismatch")
+	assert.Equal(t, "smb", publishInfo.FilesystemType, "filesystem type mismatch")
+}
+
 func TestPublish_MountOptions(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "nfs"
 
-	volConfig, filesystem, publishInfo := getStructsForPublish(ctx, driver)
+	volConfig, filesystem, publishInfo := getStructsForPublish_NFSVolume(ctx, driver)
 	volConfig.InternalID = ""
 	volConfig.MountOptions = "nfsvers=4.1"
 
@@ -3357,7 +3429,7 @@ func TestPublish_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _, publishInfo := getStructsForPublish(ctx, driver)
+	volConfig, _, publishInfo := getStructsForPublish_NFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
 
@@ -3374,7 +3446,7 @@ func TestPublish_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _, publishInfo := getStructsForPublish(ctx, driver)
+	volConfig, _, publishInfo := getStructsForPublish_NFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, errFailed).Times(1)
@@ -3392,7 +3464,7 @@ func TestPublish_NoMountTargets(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem, publishInfo := getStructsForPublish(ctx, driver)
+	volConfig, filesystem, publishInfo := getStructsForPublish_NFSVolume(ctx, driver)
 	filesystem.MountTargets = nil
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -4344,11 +4416,12 @@ func TestGetInternalVolumeName_NonCSI(t *testing.T) {
 	assert.True(t, anfRegex.MatchString(result), "internal name mismatch")
 }
 
-func TestCreateFollowup(t *testing.T) {
+func TestCreateFollowup_NFSVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "nfs"
 
-	volConfig, filesystem, _ := getStructsForPublish(ctx, driver)
+	volConfig, filesystem, _ := getStructsForPublish_NFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
@@ -4358,14 +4431,32 @@ func TestCreateFollowup(t *testing.T) {
 	assert.Nil(t, result, "not nil")
 	assert.Equal(t, (filesystem.MountTargets)[0].IPAddress, volConfig.AccessInfo.NfsServerIP, "NFS server IP mismatch")
 	assert.Equal(t, "/"+filesystem.CreationToken, volConfig.AccessInfo.NfsPath, "NFS path mismatch")
-	assert.Equal(t, "", volConfig.FileSystem, "filesystem type mismatch")
+	assert.Equal(t, "nfs", volConfig.FileSystem, "filesystem type mismatch")
+}
+
+func TestCreateFollowup_SMBVolume(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "smb"
+
+	volConfig, filesystem, _ := getStructsForPublish_NFSVolume(ctx, driver)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+
+	result := driver.CreateFollowup(ctx, volConfig)
+
+	assert.Nil(t, result, "not nil")
+	assert.Equal(t, (filesystem.MountTargets)[0].SmbServerFqdn, volConfig.AccessInfo.SMBServer, "SMB server mismatch")
+	assert.Equal(t, "\\"+filesystem.CreationToken, volConfig.AccessInfo.SMBPath, "SMB path mismatch")
+	assert.Equal(t, "smb", volConfig.FileSystem, "filesystem type mismatch")
 }
 
 func TestCreateFollowup_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _, _ := getStructsForPublish(ctx, driver)
+	volConfig, _, _ := getStructsForPublish_NFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
 
@@ -4381,7 +4472,7 @@ func TestCreateFollowup_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _, _ := getStructsForPublish(ctx, driver)
+	volConfig, _, _ := getStructsForPublish_NFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, utils.NotFoundError("not found")).Times(1)
@@ -4404,7 +4495,7 @@ func TestCreateFollowup_VolumeNotAvailable(t *testing.T) {
 		mockAPI, driver := newMockANFDriver(t)
 		driver.initializeTelemetry(ctx, BackendUUID)
 
-		volConfig, filesystem, _ := getStructsForPublish(ctx, driver)
+		volConfig, filesystem, _ := getStructsForPublish_NFSVolume(ctx, driver)
 		filesystem.ProvisioningState = state
 
 		mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -4423,7 +4514,7 @@ func TestCreateFollowup_NoMountTargets(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem, _ := getStructsForPublish(ctx, driver)
+	volConfig, filesystem, _ := getStructsForPublish_NFSVolume(ctx, driver)
 	filesystem.MountTargets = nil
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)

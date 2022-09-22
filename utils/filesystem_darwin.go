@@ -5,8 +5,6 @@
 package utils
 
 import (
-	"errors"
-
 	"golang.org/x/net/context"
 
 	. "github.com/netapp/trident/logger"
@@ -16,12 +14,28 @@ import (
 func GetFilesystemStats(ctx context.Context, _ string) (int64, int64, int64, int64, int64, int64, error) {
 	Logc(ctx).Debug(">>>> filesystem_darwin.GetFilesystemStats")
 	defer Logc(ctx).Debug("<<<< filesystem_darwin.GetFilesystemStats")
-	return 0, 0, 0, 0, 0, 0, errors.New("GetFilesystemStats is not supported for darwin")
+	return 0, 0, 0, 0, 0, 0, UnsupportedError("GetFilesystemStats is not supported for darwin")
 }
 
 // getFilesystemSize unused stub function
 func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
 	Logc(ctx).Debug(">>>> filesystem_darwin.getFilesystemSize")
 	defer Logc(ctx).Debug("<<<< filesystem_darwin.getFilesystemSize")
-	return 0, errors.New("getFilesystemSize is not supported for darwin")
+	return 0, UnsupportedError("getFilesystemSize is not supported for darwin")
+}
+
+// GetDeviceFilePath returns the staging path for volume.
+// This function is dummy for darwin.
+func GetDeviceFilePath(ctx context.Context, path, volumeId string) (string, error) {
+	Logc(ctx).Debug(">>>> filesystem_darwin.GetDeviceFilePath")
+	defer Logc(ctx).Debug("<<<< filesystem_darwin.GetDeviceFilePath")
+	return "", UnsupportedError("GetDeviceFilePath is not supported for darwin")
+}
+
+// GetUnmountPath is a dummy added for compilation.
+func GetUnmountPath(ctx context.Context, resourcePath, arg string) (string, error) {
+	Logc(ctx).Debug(">>>> filesystem_darwin.GetUnmountPath")
+	defer Logc(ctx).Debug("<<<< filesystem_darwin.GetUnmountPath")
+
+	return "", UnsupportedError("GetUnmountPath is not supported for darwin")
 }

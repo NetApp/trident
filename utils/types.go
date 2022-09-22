@@ -5,6 +5,7 @@ package utils
 type VolumeAccessInfo struct {
 	IscsiAccessInfo
 	NfsAccessInfo
+	SMBAccessInfo
 	NfsBlockAccessInfo
 	MountOptions       string `json:"mountOptions,omitempty"`
 	PublishEnforcement bool   `json:"publishEnforcement,omitempty"`
@@ -43,6 +44,11 @@ type NfsAccessInfo struct {
 	NfsServerIP string `json:"nfsServerIp,omitempty"`
 	NfsPath     string `json:"nfsPath,omitempty"`
 	NfsUniqueID string `json:"nfsUniqueID,omitempty"`
+}
+
+type SMBAccessInfo struct {
+	SMBServer string `json:"smbServer,omitempty"`
+	SMBPath   string `json:"smbPath,omitempty"`
 }
 
 type NfsBlockAccessInfo struct {
