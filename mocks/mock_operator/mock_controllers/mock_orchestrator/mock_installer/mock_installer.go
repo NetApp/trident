@@ -852,7 +852,7 @@ func (mr *MockExtendedK8sClientMockRecorder) DeleteObjectByYAML(arg0, arg1 inter
 }
 
 // DeleteOpenShiftSCC mocks base method.
-func (m *MockExtendedK8sClient) DeleteOpenShiftSCC(arg0, arg1, arg2 string) error {
+func (m *MockExtendedK8sClient) DeleteOpenShiftSCC(arg0, arg1 []string, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteOpenShiftSCC", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -1118,7 +1118,7 @@ func (mr *MockExtendedK8sClientMockRecorder) DeleteTransientVersionPod(arg0 inte
 }
 
 // DeleteTridentClusterRole mocks base method.
-func (m *MockExtendedK8sClient) DeleteTridentClusterRole(arg0, arg1 string) error {
+func (m *MockExtendedK8sClient) DeleteTridentClusterRole(arg0 []string, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTridentClusterRole", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -1132,7 +1132,7 @@ func (mr *MockExtendedK8sClientMockRecorder) DeleteTridentClusterRole(arg0, arg1
 }
 
 // DeleteTridentClusterRoleBinding mocks base method.
-func (m *MockExtendedK8sClient) DeleteTridentClusterRoleBinding(arg0, arg1 string) error {
+func (m *MockExtendedK8sClient) DeleteTridentClusterRoleBinding(arg0 []string, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTridentClusterRoleBinding", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -1230,7 +1230,7 @@ func (mr *MockExtendedK8sClientMockRecorder) DeleteTridentService(arg0, arg1, ar
 }
 
 // DeleteTridentServiceAccount mocks base method.
-func (m *MockExtendedK8sClient) DeleteTridentServiceAccount(arg0, arg1, arg2 string) error {
+func (m *MockExtendedK8sClient) DeleteTridentServiceAccount(arg0 []string, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTridentServiceAccount", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -1419,13 +1419,28 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleBindingByLabel(arg0 i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleBindingByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetClusterRoleBindingByLabel), arg0)
 }
 
+// GetClusterRoleBindingByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) GetClusterRoleBindingByLabelAndName(arg0, arg1 string) (*v12.ClusterRoleBinding, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetClusterRoleBindingByLabelAndName", arg0, arg1)
+	ret0, _ := ret[0].(*v12.ClusterRoleBinding)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetClusterRoleBindingByLabelAndName indicates an expected call of GetClusterRoleBindingByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleBindingByLabelAndName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleBindingByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetClusterRoleBindingByLabelAndName), arg0, arg1)
+}
+
 // GetClusterRoleBindingInformation mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleBindingInformation(arg0, arg1 string, arg2 bool) (*v12.ClusterRoleBinding, []v12.ClusterRoleBinding, bool, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleBindingInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v12.ClusterRoleBinding, []v12.ClusterRoleBinding, map[string]bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleBindingInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v12.ClusterRoleBinding)
+	ret0, _ := ret[0].(map[string]*v12.ClusterRoleBinding)
 	ret1, _ := ret[1].([]v12.ClusterRoleBinding)
-	ret2, _ := ret[2].(bool)
+	ret2, _ := ret[2].(map[string]bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
 }
@@ -1466,13 +1481,28 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleByLabel(arg0 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetClusterRoleByLabel), arg0)
 }
 
+// GetClusterRoleByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) GetClusterRoleByLabelAndName(arg0, arg1 string) (*v12.ClusterRole, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetClusterRoleByLabelAndName", arg0, arg1)
+	ret0, _ := ret[0].(*v12.ClusterRole)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetClusterRoleByLabelAndName indicates an expected call of GetClusterRoleByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleByLabelAndName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetClusterRoleByLabelAndName), arg0, arg1)
+}
+
 // GetClusterRoleInformation mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleInformation(arg0, arg1 string, arg2 bool) (*v12.ClusterRole, []v12.ClusterRole, bool, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v12.ClusterRole, []v12.ClusterRole, map[string]bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v12.ClusterRole)
+	ret0, _ := ret[0].(map[string]*v12.ClusterRole)
 	ret1, _ := ret[1].([]v12.ClusterRole)
-	ret2, _ := ret[2].(bool)
+	ret2, _ := ret[2].(map[string]bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
 }
@@ -1945,14 +1975,29 @@ func (mr *MockExtendedK8sClientMockRecorder) GetServiceAccountByLabel(arg0, arg1
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceAccountByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetServiceAccountByLabel), arg0, arg1)
 }
 
+// GetServiceAccountByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) GetServiceAccountByLabelAndName(arg0, arg1 string, arg2 bool) (*v11.ServiceAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetServiceAccountByLabelAndName", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*v11.ServiceAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetServiceAccountByLabelAndName indicates an expected call of GetServiceAccountByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) GetServiceAccountByLabelAndName(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceAccountByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetServiceAccountByLabelAndName), arg0, arg1, arg2)
+}
+
 // GetServiceAccountInformation mocks base method.
-func (m *MockExtendedK8sClient) GetServiceAccountInformation(arg0, arg1, arg2 string, arg3 bool) (*v11.ServiceAccount, []v11.ServiceAccount, []string, bool, error) {
+func (m *MockExtendedK8sClient) GetServiceAccountInformation(arg0 []string, arg1, arg2 string, arg3 bool) (map[string]*v11.ServiceAccount, []v11.ServiceAccount, map[string][]string, map[string]bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceAccountInformation", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(*v11.ServiceAccount)
+	ret0, _ := ret[0].(map[string]*v11.ServiceAccount)
 	ret1, _ := ret[1].([]v11.ServiceAccount)
-	ret2, _ := ret[2].([]string)
-	ret3, _ := ret[3].(bool)
+	ret2, _ := ret[2].(map[string][]string)
+	ret3, _ := ret[3].(map[string]bool)
 	ret4, _ := ret[4].(error)
 	return ret0, ret1, ret2, ret3, ret4
 }
@@ -2070,12 +2115,12 @@ func (mr *MockExtendedK8sClientMockRecorder) GetStatefulSetsByLabel(arg0, arg1 i
 }
 
 // GetTridentOpenShiftSCCInformation mocks base method.
-func (m *MockExtendedK8sClient) GetTridentOpenShiftSCCInformation(arg0, arg1 string, arg2 bool) ([]byte, bool, bool, error) {
+func (m *MockExtendedK8sClient) GetTridentOpenShiftSCCInformation(arg0, arg1 []string, arg2 bool) (map[string][]byte, map[string]bool, map[string]bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTridentOpenShiftSCCInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(bool)
-	ret2, _ := ret[2].(bool)
+	ret0, _ := ret[0].(map[string][]byte)
+	ret1, _ := ret[1].(map[string]bool)
+	ret2, _ := ret[2].(map[string]bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
 }
@@ -2157,6 +2202,20 @@ func (mr *MockExtendedK8sClientMockRecorder) PatchClusterRoleBindingByLabel(arg0
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleBindingByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchClusterRoleBindingByLabel), arg0, arg1, arg2)
 }
 
+// PatchClusterRoleBindingByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) PatchClusterRoleBindingByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchClusterRoleBindingByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchClusterRoleBindingByLabelAndName indicates an expected call of PatchClusterRoleBindingByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) PatchClusterRoleBindingByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleBindingByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchClusterRoleBindingByLabelAndName), arg0, arg1, arg2, arg3)
+}
+
 // PatchClusterRoleByLabel mocks base method.
 func (m *MockExtendedK8sClient) PatchClusterRoleByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()
@@ -2169,6 +2228,20 @@ func (m *MockExtendedK8sClient) PatchClusterRoleByLabel(arg0 string, arg1 []byte
 func (mr *MockExtendedK8sClientMockRecorder) PatchClusterRoleByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchClusterRoleByLabel), arg0, arg1, arg2)
+}
+
+// PatchClusterRoleByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) PatchClusterRoleByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchClusterRoleByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchClusterRoleByLabelAndName indicates an expected call of PatchClusterRoleByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) PatchClusterRoleByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchClusterRoleByLabelAndName), arg0, arg1, arg2, arg3)
 }
 
 // PatchDaemonSetByLabel mocks base method.
@@ -2309,6 +2382,20 @@ func (m *MockExtendedK8sClient) PatchServiceAccountByLabel(arg0 string, arg1 []b
 func (mr *MockExtendedK8sClientMockRecorder) PatchServiceAccountByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchServiceAccountByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchServiceAccountByLabel), arg0, arg1, arg2)
+}
+
+// PatchServiceAccountByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) PatchServiceAccountByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchServiceAccountByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchServiceAccountByLabelAndName indicates an expected call of PatchServiceAccountByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) PatchServiceAccountByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchServiceAccountByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchServiceAccountByLabelAndName), arg0, arg1, arg2, arg3)
 }
 
 // PatchServiceByLabel mocks base method.

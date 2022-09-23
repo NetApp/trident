@@ -93,7 +93,7 @@ func (i *Installer) UninstallTrident() error {
 	}
 
 	// Delete Trident RBAC objects
-	if err := i.removeRBACObjects(csi); err != nil {
+	if err := i.removeRBACObjects(); err != nil {
 		return fmt.Errorf("could not delete all Trident's RBAC objects; %v", err)
 	}
 
@@ -126,33 +126,56 @@ func (i *Installer) UninstallLegacyTrident() error {
 		return err
 	}
 
-	// legacy Trident will not use Trident-CSI names
-	return i.removeRBACObjects(false)
+	// Legacy Trident will not use Trident-CSI names
+	return i.removeRBACObjects()
 }
 
 // removeRBACObjects removes any ClusterRoleBindings, ClusterRoles,
 // ServicesAccounts and OpenShiftSCCs associated with legacy Trident or Trident-CSI.
-func (i *Installer) removeRBACObjects(csi bool) error {
-	// Delete cluster role binding
-	if err := i.client.DeleteTridentClusterRoleBinding(getClusterRoleBindingName(csi), appLabel); err != nil {
+func (i *Installer) removeRBACObjects() error {
+	var controllerResourceNames, nodeResourceNames []string
+
+	controllerResourceNames = []string{getControllerRBACResourceName(true)}
+	nodeResourceNames = []string{getNodeRBACResourceName(false), getNodeRBACResourceName(true)}
+
+	// Delete controller cluster role binding
+	if err := i.client.DeleteTridentClusterRoleBinding(controllerResourceNames, TridentCSILabel); err != nil {
 		return err
 	}
 
-	// Delete cluster role
-	if err := i.client.DeleteTridentClusterRole(getClusterRoleName(csi), appLabel); err != nil {
+	// Delete node cluster role binding
+	if err := i.client.DeleteTridentClusterRoleBinding(nodeResourceNames, TridentNodeLabel); err != nil {
 		return err
 	}
 
-	// Delete service account
-	if err := i.client.DeleteTridentServiceAccount(getServiceAccountName(csi), appLabel,
-		i.namespace); err != nil {
+	// Delete controller cluster role
+	if err := i.client.DeleteTridentClusterRole(controllerResourceNames, TridentCSILabel); err != nil {
+		return err
+	}
+
+	// Delete node cluster role
+	if err := i.client.DeleteTridentClusterRole(nodeResourceNames, TridentNodeLabel); err != nil {
+		return err
+	}
+
+	// Delete controller service account
+	if err := i.client.DeleteTridentServiceAccount(controllerResourceNames, TridentCSILabel, i.namespace); err != nil {
+		return err
+	}
+
+	// Delete node service account
+	if err := i.client.DeleteTridentServiceAccount(nodeResourceNames, TridentNodeLabel, i.namespace); err != nil {
 		return err
 	}
 
 	// If OpenShift, delete Trident Security Context Constraint(s)
 	if i.client.Flavor() == k8sclient.FlavorOpenShift {
-		if err := i.client.DeleteOpenShiftSCC(getOpenShiftSCCUserName(), getOpenShiftSCCName(),
-			appLabelValue); err != nil {
+		if err := i.client.DeleteOpenShiftSCC(controllerResourceNames, controllerResourceNames,
+			TridentCSILabel); err != nil {
+			return err
+		}
+		if err := i.client.DeleteOpenShiftSCC(nodeResourceNames, nodeResourceNames,
+			TridentNodeLabel); err != nil {
 			return err
 		}
 	}

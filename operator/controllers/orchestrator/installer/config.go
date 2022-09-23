@@ -36,10 +36,13 @@ const (
 	TridentPersistentObjectLabel      = TridentPersistentObjectLabelKey + "=" + TridentPersistentObjectLabelValue
 
 	// Constants used for various resource names
-	TridentCSI        = "trident-csi"
-	TridentCSIWindows = "trident-csi-windows"
-	TridentLegacy     = "trident"
-	OpenShiftSCCName  = "trident"
+	TridentCSI            = "trident-csi"
+	TridentCSIController  = "trident-csi-controller"
+	TridentCSILinuxNode   = "trident-csi-linux-node"
+	TridentCSIWindowsNode = "trident-csi-windows-node"
+	TridentCSIWindows     = "trident-csi-windows"
+	TridentLegacy         = "trident"
+	OpenShiftSCCName      = "trident"
 
 	TridentEncryptionKeys = "trident-encryption-keys"
 

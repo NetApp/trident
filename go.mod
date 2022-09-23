@@ -41,7 +41,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // github.com/golang/crypto
 	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // github.com/golang/net
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a // github.com/golang/oauth2
-	golang.org/x/sys v0.0.0-20220708085239-5a0f0661e09d // github.com/golang/sys
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // github.com/golang/sys
 	golang.org/x/text v0.3.7 // github.com/golang/text
 	google.golang.org/grpc v1.47.0 // github.com/grpc/grpc-go
 	k8s.io/api v0.24.2 // github.com/kubernetes/api

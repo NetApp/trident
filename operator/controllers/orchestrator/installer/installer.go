@@ -411,7 +411,7 @@ func (i *Installer) InstallOrPatchTrident(
 	cr netappv1.TridentOrchestrator, currentInstallationVersion string, k8sUpdateNeeded, crdUpdateNeeded bool,
 ) (*netappv1.TridentOrchestratorSpecValues, string, error) {
 	var returnError error
-	var newServiceAccount bool
+	reuseServiceAccountMap := make(map[string]bool)
 
 	// Set installation params
 	controllingCRDetails, labels, tridentUpdateNeeded, err := i.setInstallationParams(cr, currentInstallationVersion)
@@ -440,7 +440,7 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	// Create or patch or update the RBAC objects
-	if newServiceAccount, returnError = i.createRBACObjects(controllingCRDetails, labels,
+	if reuseServiceAccountMap, returnError = i.createRBACObjects(controllingCRDetails, labels,
 		shouldUpdate); returnError != nil {
 		return nil, "", returnError
 	}
@@ -503,28 +503,28 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	// Create or update the Trident CSI deployment
-	returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
+	returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate, reuseServiceAccountMap)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident Deployment; %v", returnError)
 		return nil, "", returnError
 	}
 
+	returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, reuseServiceAccountMap, false)
+	if returnError != nil {
+		returnError = fmt.Errorf("failed to create or patch Trident daemonset %s; %v", getDaemonSetName(false),
+			returnError)
+		return nil, "", returnError
+	}
+
 	// Create or update the Trident CSI daemonset
 	if windows {
-		returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, newServiceAccount,
+		returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, reuseServiceAccountMap,
 			true)
 		if returnError != nil {
 			returnError = fmt.Errorf("failed to create or patch Trident daemonset %s; %v", getDaemonSetName(true),
 				returnError)
 			return nil, "", returnError
 		}
-	}
-
-	returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, newServiceAccount, false)
-	if returnError != nil {
-		returnError = fmt.Errorf("failed to create or patch Trident daemonset %s; %v", getDaemonSetName(false),
-			returnError)
-		return nil, "", returnError
 	}
 
 	// Wait for Trident pod to be running
@@ -667,9 +667,9 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 
 func (i *Installer) createRBACObjects(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
-) (newServiceAccount bool, returnError error) {
+) (reuseServiceAccountMap map[string]bool, returnError error) {
 	// Create service account
-	newServiceAccount, returnError = i.createOrPatchTridentServiceAccount(controllingCRDetails, labels, false)
+	reuseServiceAccountMap, returnError = i.createOrPatchTridentServiceAccount(controllingCRDetails, labels, false)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident service account; %v", returnError)
 		return
@@ -742,53 +742,107 @@ func (i *Installer) createOrPatchTridentInstallationNamespace() error {
 
 func (i *Installer) createOrPatchTridentServiceAccount(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
-) (bool, error) {
-	serviceAccountName := getServiceAccountName(true)
+) (map[string]bool, error) {
+	serviceAccountNames := getRBACResourceNames()
 
-	currentServiceAccount, unwantedServiceAccounts, serviceAccountSecretNames, createServiceAccount, err := i.client.GetServiceAccountInformation(serviceAccountName,
-		appLabel, i.namespace, shouldUpdate)
+	// Service account details are fetched with controller label
+	currentServiceAccountMap,
+		unwantedServiceAccounts,
+		serviceAccountSecretMap,
+		reuseServiceAccountMap, err := i.client.GetServiceAccountInformation(serviceAccountNames, appLabel, i.namespace, shouldUpdate)
 	if err != nil {
-		return false, fmt.Errorf("failed to get Trident service accounts; %v", err)
+		return nil, fmt.Errorf("failed to get Trident service accounts with controller label; %v", err)
 	}
 
-	if err = i.client.RemoveMultipleServiceAccounts(unwantedServiceAccounts); err != nil {
-		return false, fmt.Errorf("failed to remove unwanted service accounts; %v", err)
-	}
-
-	newServiceAccountYAML := k8sclient.GetServiceAccountYAML(serviceAccountName, serviceAccountSecretNames, labels,
-		controllingCRDetails)
-
-	newServiceAccount, err := i.client.PutServiceAccount(currentServiceAccount, createServiceAccount,
-		newServiceAccountYAML, appLabel)
+	// Service account details are fetched with node label
+	nodeServiceAccountMap,
+		unwantedNodeServiceAccounts,
+		nodeServiceAccountSecretMap,
+		reuseNodeServiceAccountMap, err := i.client.GetServiceAccountInformation(serviceAccountNames, TridentNodeLabel,
+		i.namespace, shouldUpdate)
 	if err != nil {
-		return false, fmt.Errorf("failed to create or patch Trident service accounts; %v", err)
+		return nil, fmt.Errorf("failed to get Trident service accounts with node label; %v", err)
 	}
 
-	return newServiceAccount, nil
+	// Merge the maps together
+	for key, value := range nodeServiceAccountMap {
+		currentServiceAccountMap[key] = value
+	}
+
+	for key, value := range nodeServiceAccountSecretMap {
+		serviceAccountSecretMap[key] = value
+	}
+
+	for key, value := range reuseNodeServiceAccountMap {
+		reuseServiceAccountMap[key] = value
+	}
+
+	combinedUnwantedServiceAccounts := append(unwantedServiceAccounts, unwantedNodeServiceAccounts...)
+
+	if err = i.client.RemoveMultipleServiceAccounts(combinedUnwantedServiceAccounts); err != nil {
+		return nil, fmt.Errorf("failed to remove unwanted service accounts; %v", err)
+	}
+
+	for _, accountName := range serviceAccountNames {
+		labelMap, labelString := getAppLabelForResource(accountName)
+		newServiceAccountYAML := k8sclient.GetServiceAccountYAML(accountName, serviceAccountSecretMap[accountName],
+			labelMap, controllingCRDetails)
+
+		_, err = i.client.PutServiceAccount(currentServiceAccountMap[accountName], reuseServiceAccountMap[accountName],
+			newServiceAccountYAML, labelString)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create or patch Trident service account %v got error: %v", accountName, err)
+		}
+	}
+
+	return reuseServiceAccountMap, nil
 }
 
 func (i *Installer) createOrPatchTridentClusterRole(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-	clusterRoleName := getClusterRoleName(true)
+	clusterRoleNames := getRBACResourceNames()
 
-	currentClusterRole, unwantedClusterRoles, createClusterRole, err := i.client.GetClusterRoleInformation(
-		clusterRoleName, appLabel, shouldUpdate)
+	currentClusterRoleMap, unwantedClusterRoles, reuseClusterRoleMap, err := i.client.GetClusterRoleInformation(
+		clusterRoleNames, appLabel, shouldUpdate)
 	if err != nil {
-		return fmt.Errorf("failed to get Trident cluster roles; %v", err)
+		return fmt.Errorf("failed to get Trident cluster roles with controller label; %v", err)
 	}
 
-	if err = i.client.RemoveMultipleClusterRoles(unwantedClusterRoles); err != nil {
+	// Retrieve cluster roles with node label
+	nodeClusterRoleMap, unwantedNodeClusterRoles, reuseNodeClusterRoleMap, err := i.client.GetClusterRoleInformation(
+		clusterRoleNames, TridentNodeLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident cluster roles with node label; %v", err)
+	}
+
+	// Merging the maps together
+	for key, value := range nodeClusterRoleMap {
+		currentClusterRoleMap[key] = value
+	}
+
+	for key, value := range reuseNodeClusterRoleMap {
+		reuseClusterRoleMap[key] = value
+	}
+
+	combinedUnwantedClusterRoles := append(unwantedClusterRoles, unwantedNodeClusterRoles...)
+
+	if err = i.client.RemoveMultipleClusterRoles(combinedUnwantedClusterRoles); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident cluster roles; %v", err)
 	}
 
 	k8sFlavor := i.client.Flavor()
-	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(k8sFlavor, clusterRoleName, labels, controllingCRDetails,
-		true)
 
-	err = i.client.PutClusterRole(currentClusterRole, createClusterRole, newClusterRoleYAML, appLabel)
-	if err != nil {
-		return fmt.Errorf("failed to create or patch Trident cluster role; %v", err)
+	for _, clusterRoleName := range clusterRoleNames {
+		labelMap, labelString := getAppLabelForResource(clusterRoleName)
+		newClusterRoleYAML := k8sclient.GetClusterRoleYAML(k8sFlavor, clusterRoleName,
+			labelMap, controllingCRDetails, true)
+
+		err = i.client.PutClusterRole(currentClusterRoleMap[clusterRoleName], reuseClusterRoleMap[clusterRoleName],
+			newClusterRoleYAML, labelString)
+		if err != nil {
+			return fmt.Errorf("failed to create or patch Trident cluster role name %v got error; %v", clusterRoleName, err)
+		}
 	}
 
 	return nil
@@ -797,26 +851,47 @@ func (i *Installer) createOrPatchTridentClusterRole(
 func (i *Installer) createOrPatchTridentClusterRoleBinding(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-	clusterRoleBindingName := getClusterRoleBindingName(true)
+	clusterRoleBindingNames := getRBACResourceNames()
 
-	currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding,
-		err := i.client.GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, shouldUpdate)
+	currentClusterRoleBindingMap, unwantedClusterRoleBindings, reuseClusterRoleBindingMap,
+		err := i.client.GetClusterRoleBindingInformation(clusterRoleBindingNames, appLabel, shouldUpdate)
 	if err != nil {
-		return fmt.Errorf("failed to get Trident cluster role bindings; %v", err)
+		return fmt.Errorf("failed to get Trident cluster role bindings with controller label; %v", err)
 	}
 
-	if err = i.client.RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings); err != nil {
+	// Retrieve cluster role bindings with node label
+	nodeClusterRoleBindingMap, unwantedNodeClusterRoleBindings, reuseNodeClusterRoleBindingMap,
+		err := i.client.GetClusterRoleBindingInformation(clusterRoleBindingNames, TridentNodeLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident cluster role bindings with node label; %v", err)
+	}
+
+	// Merging the maps together
+	for key, value := range nodeClusterRoleBindingMap {
+		currentClusterRoleBindingMap[key] = value
+	}
+
+	for key, value := range reuseNodeClusterRoleBindingMap {
+		reuseClusterRoleBindingMap[key] = value
+	}
+
+	combinedUnwantedClusterRoleBindings := append(unwantedClusterRoleBindings, unwantedNodeClusterRoleBindings...)
+
+	if err = i.client.RemoveMultipleClusterRoleBindings(combinedUnwantedClusterRoleBindings); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident cluster role bindings; %v", err)
 	}
 
-	newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, i.client.Flavor(),
-		clusterRoleBindingName,
-		labels, controllingCRDetails, true)
+	for _, clusterRoleBindingName := range clusterRoleBindingNames {
+		labelMap, labelString := getAppLabelForResource(clusterRoleBindingName)
+		newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, clusterRoleBindingName,
+			i.client.Flavor(), labelMap, controllingCRDetails, true)
 
-	err = i.client.PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding,
-		newClusterRoleBindingYAML, appLabel)
-	if err != nil {
-		return fmt.Errorf("failed to create or patch Trident cluster role binding; %v", err)
+		err = i.client.PutClusterRoleBinding(currentClusterRoleBindingMap[clusterRoleBindingName],
+			reuseClusterRoleBindingMap[clusterRoleBindingName], newClusterRoleBindingYAML, labelString)
+
+		if err != nil {
+			return fmt.Errorf("failed to create or patch Trident cluster role binding; %v", err)
+		}
 	}
 
 	return nil
@@ -825,39 +900,49 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(
 func (i *Installer) createOrPatchTridentOpenShiftSCC(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-	var currentOpenShiftSCCJSON []byte
+	openShiftSCCUserNames := getRBACResourceNames()
+	openShiftSCCNames := getRBACResourceNames()
 
-	openShiftSCCUserName := getOpenShiftSCCUserName()
-	openShiftSCCName := getOpenShiftSCCName()
-
-	// duplicated in GetTridentOpenShiftSCCInformation because it's valuable in both places
-	logFields := log.Fields{
-		"sccUserName": openShiftSCCUserName,
-		"sccName":     openShiftSCCName,
-	}
-
-	currentOpenShiftSCCJSON, createOpenShiftSCC, removeExistingSCC, err := i.client.GetTridentOpenShiftSCCInformation(
-		openShiftSCCName, openShiftSCCUserName, shouldUpdate)
+	currentOpenShiftSCCJSONMap, reuseOpenShiftSCCMap, removeExistingSCCMap, err := i.client.GetTridentOpenShiftSCCInformation(
+		openShiftSCCUserNames, openShiftSCCNames, shouldUpdate)
 	if err != nil {
-		log.WithFields(logFields).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
+		log.WithFields(nil).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
 		return fmt.Errorf("failed to get Trident OpenShift SCC; %v", err)
 	}
 
-	// keep this logic here
-	if removeExistingSCC {
-		if err = i.client.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCQueryYAML(openShiftSCCName), true); err != nil {
+	deleteOpenShiftSCCByName := func(sccName string) error {
+		var err error
+		err = i.client.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCQueryYAML(sccName), true)
+		if err != nil {
+			logFields := log.Fields{"sccName": sccName}
 			logFields["err"] = err
 			log.WithFields(logFields).Errorf("Unable to delete OpenShift SCC.")
-			return fmt.Errorf("unable to delete OpenShift SCC; %v", err)
+			return fmt.Errorf("unable to delete OpenShift SCC name %v got error: %v", sccName, err)
 		}
+		return err
 	}
 
-	newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(openShiftSCCName, openShiftSCCUserName, i.namespace,
-		labels, controllingCRDetails)
+	// Remove old trident SCC during upgrade scenario
+	if err = deleteOpenShiftSCCByName(getOpenShiftSCCName()); err != nil {
+		return err
+	}
 
-	err = i.client.PutOpenShiftSCC(currentOpenShiftSCCJSON, createOpenShiftSCC, newOpenShiftSCCYAML)
-	if err != nil {
-		return fmt.Errorf("failed to create or patch Trident OpenShift SCC; %v", err)
+	for idx := 0; idx < len(openShiftSCCNames); idx++ {
+		if removeExistingSCCMap[openShiftSCCNames[idx]] {
+			if err = deleteOpenShiftSCCByName(openShiftSCCNames[idx]); err != nil {
+				return err
+			}
+		}
+
+		appLabels, _ := getAppLabelForResource(openShiftSCCNames[idx])
+		newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(openShiftSCCNames[idx], openShiftSCCUserNames[idx], i.namespace,
+			appLabels, controllingCRDetails)
+
+		err = i.client.PutOpenShiftSCC(currentOpenShiftSCCJSONMap[openShiftSCCNames[idx]], reuseOpenShiftSCCMap[openShiftSCCNames[idx]],
+			newOpenShiftSCCYAML)
+		if err != nil {
+			return fmt.Errorf("failed to create or patch Trident OpenShift SCC name %v got error: %v", openShiftSCCNames[idx], err)
+		}
 	}
 
 	return nil
@@ -1053,7 +1138,7 @@ func (i *Installer) createOrPatchTridentResourceQuota(
 }
 
 func (i *Installer) createOrPatchTridentDeployment(
-	controllingCRDetails, labels map[string]string, shouldUpdate, newServiceAccount bool,
+	controllingCRDetails, labels map[string]string, shouldUpdate bool, reuseServiceAccountMap map[string]bool,
 ) error {
 	topologyEnabled, err := i.client.IsTopologyInUse()
 	if err != nil {
@@ -1061,6 +1146,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 	}
 
 	deploymentName := getDeploymentName(true)
+	serviceAccName := getControllerRBACResourceName(true)
 
 	currentDeployment, unwantedDeployments, createDeployment, err := i.client.GetDeploymentInformation(deploymentName,
 		appLabel, i.namespace)
@@ -1070,7 +1156,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 
 	// Create a new deployment if there is a current deployment and
 	// a new service account or it should be updated
-	if currentDeployment != nil && (shouldUpdate || newServiceAccount) {
+	if currentDeployment != nil && (shouldUpdate || !reuseServiceAccountMap[serviceAccName]) {
 		unwantedDeployments = append(unwantedDeployments, *currentDeployment)
 		createDeployment = true
 	}
@@ -1111,6 +1197,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		HTTPRequestTimeout:      httpTimeout,
 		NodeSelector:            controllerPluginNodeSelector,
 		Tolerations:             tolerations,
+		ServiceAccountName:      serviceAccName,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
@@ -1133,9 +1220,11 @@ func (i *Installer) TridentDeploymentInformation(
 }
 
 func (i *Installer) createOrPatchTridentDaemonSet(
-	controllingCRDetails, labels map[string]string, shouldUpdate, newServiceAccount, isWindows bool,
+	controllingCRDetails, labels map[string]string, shouldUpdate bool, reuseServiceAccountMap map[string]bool,
+	isWindows bool,
 ) error {
 	nodeLabel := TridentNodeLabel
+	serviceAccountName := getNodeRBACResourceName(isWindows)
 
 	currentDaemonSet, unwantedDaemonSets, createDaemonSet, err := i.client.GetDaemonSetInformation(nodeLabel,
 		i.namespace, isWindows)
@@ -1145,7 +1234,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 
 	// Create a new daemonset if there is a current daemonset and
 	// a new service account or it should be updated
-	if currentDaemonSet != nil && (shouldUpdate || newServiceAccount) {
+	if currentDaemonSet != nil && (shouldUpdate || !reuseServiceAccountMap[serviceAccountName]) {
 		unwantedDaemonSets = append(unwantedDaemonSets, *currentDaemonSet)
 		createDaemonSet = true
 	}
@@ -1179,13 +1268,16 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		HTTPRequestTimeout:   httpTimeout,
 		NodeSelector:         nodePluginNodeSelector,
 		Tolerations:          tolerations,
+		ServiceAccountName:   serviceAccountName,
 	}
 
 	var newDaemonSetYAML string
 	if isWindows {
 		newDaemonSetYAML = k8sclient.GetCSIDaemonSetYAMLWindows(daemonSetArgs)
+		daemonSetArgs.ServiceAccountName = getNodeRBACResourceName(true)
 	} else {
 		newDaemonSetYAML = k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)
+		daemonSetArgs.ServiceAccountName = getNodeRBACResourceName(false)
 	}
 
 	err = i.client.PutDaemonSet(currentDaemonSet, createDaemonSet, newDaemonSetYAML, nodeLabel,
@@ -1475,7 +1567,9 @@ func (i *Installer) createTridentVersionPod(
 		return fmt.Errorf("failed to delete previous transient version pod; %v", err)
 	}
 
-	serviceAccountName := getServiceAccountName(true)
+	// Using node service account which requires minimal permissions, to be used for
+	// spinning up this transient pod.
+	serviceAccountName := getNodeRBACResourceName(false)
 
 	newTridentVersionPodYAML := k8sclient.GetTridentVersionPodYAML(
 		podName, imageName, serviceAccountName, imagePullSecrets, podLabels, controllingCRDetails,
@@ -1492,4 +1586,18 @@ func (i *Installer) createTridentVersionPod(
 	}).Info("Created Trident version pod.")
 
 	return nil
+}
+
+// getAppLabelForResource returns the right app labels for RBAC resource name passed
+func getAppLabelForResource(resourceName string) (map[string]string, string) {
+	var label string
+	labelMap := make(map[string]string, 1)
+	if strings.Contains(resourceName, "node") {
+		labelMap[TridentAppLabelKey] = TridentNodeLabelValue
+		label = TridentNodeLabel
+	} else {
+		labelMap[TridentAppLabelKey] = TridentCSILabelValue
+		label = TridentCSILabel
+	}
+	return labelMap, label
 }

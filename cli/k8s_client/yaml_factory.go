@@ -209,8 +209,8 @@ rules:
       - tridentpods
 `
 
-func GetClusterRoleBindingYAML(
-	namespace string, flavor OrchestratorFlavor, name string, labels, controllingCRDetails map[string]string, csi bool,
+func GetClusterRoleBindingYAML(namespace, name string, flavor OrchestratorFlavor,
+	labels, controllingCRDetails map[string]string, csi bool,
 ) string {
 	var crbYAML string
 
@@ -404,6 +404,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		strconv.FormatBool(args.SilenceAutosupport))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{PROVISIONER_FEATURE_GATES}", provisionerFeatureGates)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "LABELS", constructLabels(args.Labels))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "IMAGE_PULL_SECRETS",
@@ -433,7 +434,7 @@ spec:
       labels:
         app: {LABEL_APP}
     spec:
-      serviceAccount: trident-csi
+      serviceAccount: {SERVICE_ACCOUNT}
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
@@ -594,7 +595,7 @@ spec:
       labels:
         app: {LABEL_APP}
     spec:
-      serviceAccount: trident-csi
+      serviceAccount: {SERVICE_ACCOUNT}
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
@@ -783,6 +784,7 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
@@ -840,6 +842,7 @@ func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
@@ -866,7 +869,7 @@ spec:
       labels:
         app: {LABEL_APP}
     spec:
-      serviceAccount: trident-csi
+      serviceAccount: {SERVICE_ACCOUNT}
       hostNetwork: true
       hostIPC: true
       hostPID: true
@@ -1023,7 +1026,7 @@ spec:
       labels:
         app: {LABEL_APP}
     spec:
-      serviceAccount: trident-csi
+      serviceAccount: {SERVICE_ACCOUNT}
       hostNetwork: true
       hostIPC: true
       hostPID: true
@@ -1189,7 +1192,7 @@ spec:
         app: {LABEL_APP}
     spec:
       priorityClassName: system-node-critical
-      serviceAccount: trident-csi
+      serviceAccount: {SERVICE_ACCOUNT}
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}

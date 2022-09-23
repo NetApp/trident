@@ -15,6 +15,7 @@ import (
 	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/ghodss/yaml"
 	"github.com/golang/mock/gomock"
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -1019,42 +1020,56 @@ func TestRemoveMultipleCSIDriverCRs(t *testing.T) {
 
 func TestGetClusterRoleInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
-	var label, name, invalidName, namespace string
-	var validClusterRole, invalidClusterRole rbacv1.ClusterRole
-	var unwantedClusterRoles, combinationClusterRoles, emptyClusterRoles []rbacv1.ClusterRole
+	var label, invalidName, namespace string
+	var invalidClusterRole rbacv1.ClusterRole
+	var validClusterRoles, unwantedClusterRoles, combinationClusterRoles, emptyClusterRoles []rbacv1.ClusterRole
 
+	// initialize expected map variables
+	expValidClusterRolesMap := make(map[string]*rbacv1.ClusterRole)
+	expReuseClusterRoleMap := make(map[string]bool)
+
+	clusterRoleNames := getRBACResourceNames()
 	label = "tridentCSILabel"
-	name = getClusterRoleName(true) // could be anything
+
 	namespace = "default"
 	invalidName = ""
 
-	validClusterRole = rbacv1.ClusterRole{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
+	for _, name := range clusterRoleNames {
+		validClusterRole := rbacv1.ClusterRole{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+			},
+		}
+		validClusterRoles = append(validClusterRoles, validClusterRole)
+		// initialize the map variables that will be compared with the values from the function under test
+		expValidClusterRolesMap[name] = &validClusterRole
+		expReuseClusterRoleMap[name] = true
 	}
+
 	invalidClusterRole = rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      invalidName,
 			Namespace: namespace,
 		},
 	}
+
 	unwantedClusterRoles = []rbacv1.ClusterRole{invalidClusterRole, invalidClusterRole}
-	combinationClusterRoles = append([]rbacv1.ClusterRole{validClusterRole}, append(combinationClusterRoles,
-		unwantedClusterRoles...)...)
+	// combinationClusterRoles is a set of valid and invalid cluster roles
+	combinationClusterRoles = append(combinationClusterRoles, validClusterRoles...)
+	combinationClusterRoles = append(combinationClusterRoles, unwantedClusterRoles...)
 
 	// setup input and output test types for easy use
 	type input struct {
-		name         string
+		names        []string
 		label        string
 		shouldUpdate bool
 	}
 
 	type output struct {
-		currentClusterRole   *rbacv1.ClusterRole
+		currentClusterRole   map[string]*rbacv1.ClusterRole
 		unwantedClusterRoles []rbacv1.ClusterRole
-		createClusterRole    bool
+		createClusterRole    map[string]bool
 		err                  error
 	}
 
@@ -1068,13 +1083,13 @@ func TestGetClusterRoleInformation(t *testing.T) {
 		"expect to fail with k8s error": {
 			input: input{
 				label:        label,
-				name:         name,
+				names:        clusterRoleNames,
 				shouldUpdate: true,
 			},
 			output: output{
-				currentClusterRole:   nil,
+				currentClusterRole:   make(map[string]*rbacv1.ClusterRole),
 				unwantedClusterRoles: nil,
-				createClusterRole:    true,
+				createClusterRole:    make(map[string]bool),
 				err:                  fmt.Errorf("unable to get list of cluster roles"),
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
@@ -1086,32 +1101,34 @@ func TestGetClusterRoleInformation(t *testing.T) {
 		"expect to pass with no cluster role found and no k8s error": {
 			input: input{
 				label:        label,
-				name:         invalidName,
+				names:        []string{invalidName},
 				shouldUpdate: false,
 			},
 			output: output{
-				currentClusterRole:   nil,
+				currentClusterRole:   make(map[string]*rbacv1.ClusterRole),
 				unwantedClusterRoles: nil,
-				createClusterRole:    true,
+				createClusterRole:    make(map[string]bool),
 				err:                  nil,
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
 				// args[0] = label, args[1] = name, args[2] = shouldUpdate
 				mockKubeClient.EXPECT().GetClusterRolesByLabel(args[0]).Return(emptyClusterRoles, nil)
-				mockKubeClient.EXPECT().DeleteClusterRole(args[1]).Return(nil)
+				for _, arg := range args[1].([]string) {
+					mockKubeClient.EXPECT().DeleteClusterRole(arg).Return(nil)
+				}
 			},
 		},
 		"expect to pass with valid current cluster role found and no k8s error": {
 			input: input{
 				label:        label,
-				name:         name,
+				names:        clusterRoleNames,
 				shouldUpdate: false,
 			},
 			output: output{
-				currentClusterRole:   &validClusterRole,
+				currentClusterRole:   expValidClusterRolesMap,
 				unwantedClusterRoles: unwantedClusterRoles,
-				createClusterRole:    false,
+				createClusterRole:    expReuseClusterRoleMap,
 				err:                  nil,
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
@@ -1129,24 +1146,27 @@ func TestGetClusterRoleInformation(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				label, name, shouldUpdate := test.input.label, test.input.name, test.input.shouldUpdate
+				label, roleNames, shouldUpdate := test.input.label, test.input.names, test.input.shouldUpdate
 
 				// extract the output variables from the test case definition
-				expectedClusterRole, expectedUnwantedClusterRoles, expectedCreateClusterRole,
+				expectedClusterRole, expectedUnwantedClusterRoles, expectedReuseClusterRoleMap,
 					expectedErr := test.output.currentClusterRole, test.output.unwantedClusterRoles,
 					test.output.createClusterRole, test.output.err
 
 				// mock out the k8s client calls needed to test this
 				// args[0] = label, args[1] = name, args[2] = shouldUpdate
-				test.mocks(mockKubeClient, label, name, shouldUpdate)
+				test.mocks(mockKubeClient, label, roleNames, shouldUpdate)
 				extendedK8sClient := &K8sClient{mockKubeClient}
-				currentClusterRole, unwantedClusterRoles, createClusterRole, err := extendedK8sClient.GetClusterRoleInformation(name,
-					label, shouldUpdate)
+				currentClusterRoleMap, unwantedClusterRoles, reuseClusterRoleMap, err := extendedK8sClient.GetClusterRoleInformation(
+					roleNames, label, shouldUpdate)
 
-				assert.EqualValues(t, expectedClusterRole, currentClusterRole)
-				assert.EqualValues(t, expectedUnwantedClusterRoles, unwantedClusterRoles)
+				// Using cmp.Equal is a better way to deep compare recursive structs/maps and cmp.Diff prints the verbose
+				// difference between the two values in comparison for easy debug
+				assert.True(t, cmp.Equal(expectedClusterRole, currentClusterRoleMap), cmp.Diff(expectedClusterRole, currentClusterRoleMap))
+				assert.True(t, cmp.Equal(expectedUnwantedClusterRoles, unwantedClusterRoles), cmp.Diff(expectedUnwantedClusterRoles, unwantedClusterRoles))
 				assert.Equal(t, len(expectedUnwantedClusterRoles), len(unwantedClusterRoles))
-				assert.Equal(t, expectedCreateClusterRole, createClusterRole)
+				assert.True(t, cmp.Equal(expectedReuseClusterRoleMap, reuseClusterRoleMap),
+					cmp.Diff(expectedReuseClusterRoleMap, reuseClusterRoleMap))
 				assert.Equal(t, expectedErr, err)
 			},
 		)
@@ -1175,7 +1195,7 @@ func TestPutClusterRole(t *testing.T) {
 	// defining a custom input type makes testing different cases easier
 	type input struct {
 		currentClusterRole *rbacv1.ClusterRole
-		createClusterRole  bool
+		reuseClusterRole   bool
 		newClusterRoleYAML string
 		appLabel           string
 		patchBytes         []byte
@@ -1191,8 +1211,8 @@ func TestPutClusterRole(t *testing.T) {
 	}{
 		"expect to pass when creating a ClusterRole and no k8s error occurs": {
 			input: input{
-				currentClusterRole: nil,
-				createClusterRole:  true,
+				currentClusterRole: &rbacv1.ClusterRole{},
+				reuseClusterRole:   false,
 				newClusterRoleYAML: newClusterRoleYAML,
 				appLabel:           appLabel,
 			},
@@ -1205,8 +1225,8 @@ func TestPutClusterRole(t *testing.T) {
 		},
 		"expect to fail when creating a ClusterRole and a k8s error occurs": {
 			input: input{
-				currentClusterRole: nil,
-				createClusterRole:  true,
+				currentClusterRole: &rbacv1.ClusterRole{},
+				reuseClusterRole:   false,
 				newClusterRoleYAML: newClusterRoleYAML,
 				appLabel:           appLabel,
 			},
@@ -1220,7 +1240,7 @@ func TestPutClusterRole(t *testing.T) {
 		"expect to fail when updating a ClusterRole and a k8s error occurs": {
 			input: input{
 				currentClusterRole: validClusterRole,
-				createClusterRole:  false,
+				reuseClusterRole:   true,
 				newClusterRoleYAML: newClusterRoleYAML,
 				appLabel:           appLabel,
 			},
@@ -1231,14 +1251,14 @@ func TestPutClusterRole(t *testing.T) {
 				patchBytes, _ := args[2].([]byte)
 				patchType, _ := args[3].(types.PatchType)
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchClusterRoleByLabel(appLabel, patchBytesMatcher,
+				mockKubeClient.EXPECT().PatchClusterRoleByLabelAndName(appLabel, clusterRoleName, patchBytesMatcher,
 					patchType).Return(k8sClientErr)
 			},
 		},
 		"expect to pass when updating a ClusterRole and no k8s error occurs": {
 			input: input{
 				currentClusterRole: validClusterRole,
-				createClusterRole:  false,
+				reuseClusterRole:   true,
 				newClusterRoleYAML: newClusterRoleYAML,
 				appLabel:           appLabel,
 			},
@@ -1249,7 +1269,7 @@ func TestPutClusterRole(t *testing.T) {
 				patchBytes, _ := args[2].([]byte)
 				patchType, _ := args[3].(types.PatchType)
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchClusterRoleByLabel(appLabel, patchBytesMatcher,
+				mockKubeClient.EXPECT().PatchClusterRoleByLabelAndName(appLabel, clusterRoleName, patchBytesMatcher,
 					patchType).Return(nil)
 			},
 		},
@@ -1267,10 +1287,10 @@ func TestPutClusterRole(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				currentClusterRole, createClusterRole, newClusterRoleYAML, appLabel := test.input.currentClusterRole,
-					test.input.createClusterRole, test.input.newClusterRoleYAML, test.input.appLabel
+				currentClusterRole, reuseClusterRole, newClusterRoleYAML, appLabel := test.input.currentClusterRole,
+					test.input.reuseClusterRole, test.input.newClusterRoleYAML, test.input.appLabel
 
-				if !createClusterRole {
+				if reuseClusterRole {
 					if patchBytes, err = k8sclient.GenericPatch(currentClusterRole,
 						[]byte(newClusterRoleYAML)); err != nil {
 						t.Fatal(err)
@@ -1286,7 +1306,7 @@ func TestPutClusterRole(t *testing.T) {
 				extendedK8sClient := &K8sClient{mockKubeClient}
 
 				// make the call
-				err = extendedK8sClient.PutClusterRole(currentClusterRole, createClusterRole, newClusterRoleYAML,
+				err = extendedK8sClient.PutClusterRole(currentClusterRole, reuseClusterRole, newClusterRoleYAML,
 					appLabel)
 
 				assert.Equal(t, expectedErr, err)
@@ -1301,15 +1321,16 @@ func TestDeleteTridentClusterRole(t *testing.T) {
 	var undeletedClusterRoles []string
 
 	getClusterRoleErr := fmt.Errorf("unable to get list of cluster roles")
-	clusterRoleName := "clusterRoleName"
+	clusterRoleNames := getRBACResourceNames()
 	appLabel := "appLabel"
 
-	unwantedClusterRoles = []rbacv1.ClusterRole{
-		{
+	for _, clusterRoleName := range clusterRoleNames {
+		unwantedClusterRole := rbacv1.ClusterRole{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: clusterRoleName,
 			},
-		},
+		}
+		unwantedClusterRoles = append(unwantedClusterRoles, unwantedClusterRole)
 	}
 
 	for _, clusterRole := range unwantedClusterRoles {
@@ -1317,8 +1338,8 @@ func TestDeleteTridentClusterRole(t *testing.T) {
 	}
 
 	type input struct {
-		clusterRoleName string
-		appLabel        string
+		clusterRoleNames []string
+		appLabel         string
 	}
 
 	tests := map[string]struct {
@@ -1328,8 +1349,8 @@ func TestDeleteTridentClusterRole(t *testing.T) {
 	}{
 		"expect to fail when GetClusterRolesByLabel fails": {
 			input: input{
-				clusterRoleName: clusterRoleName,
-				appLabel:        appLabel,
+				clusterRoleNames: clusterRoleNames,
+				appLabel:         appLabel,
 			},
 			output: getClusterRoleErr,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
@@ -1338,37 +1359,43 @@ func TestDeleteTridentClusterRole(t *testing.T) {
 		},
 		"expect to pass when GetClusterRolesByLabel returns no cluster role bindings": {
 			input: input{
-				clusterRoleName: clusterRoleName,
-				appLabel:        appLabel,
+				clusterRoleNames: clusterRoleNames,
+				appLabel:         appLabel,
 			},
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetClusterRolesByLabel(appLabel).Return(emptyClusterRoleList, nil)
-				mockK8sClient.EXPECT().DeleteClusterRole(clusterRoleName).Return(nil)
+				for _, name := range clusterRoleNames {
+					mockK8sClient.EXPECT().DeleteClusterRole(name).Return(nil)
+				}
 			},
 		},
 		"expect to fail when GetClusterRolesByLabel succeeds but RemoveMultipleClusterRoles fails": {
 			input: input{
-				clusterRoleName: clusterRoleName,
-				appLabel:        appLabel,
+				clusterRoleNames: clusterRoleNames,
+				appLabel:         appLabel,
 			},
 			output: fmt.Errorf("unable to delete cluster role(s): %v", undeletedClusterRoles),
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetClusterRolesByLabel(appLabel).Return(unwantedClusterRoles, nil)
-				mockK8sClient.EXPECT().DeleteClusterRole(clusterRoleName).Return(fmt.Errorf("")).
-					MaxTimes(len(unwantedClusterRoles))
+				for _, name := range clusterRoleNames {
+					mockK8sClient.EXPECT().DeleteClusterRole(name).Return(fmt.Errorf("")).
+						MaxTimes(len(unwantedClusterRoles))
+				}
 			},
 		},
 		"expect to pass when GetClusterRolesByLabel succeeds and RemoveMultipleClusterRoles succeeds": {
 			input: input{
-				clusterRoleName: clusterRoleName,
-				appLabel:        appLabel,
+				clusterRoleNames: clusterRoleNames,
+				appLabel:         appLabel,
 			},
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetClusterRolesByLabel(appLabel).Return(unwantedClusterRoles, nil)
-				mockK8sClient.EXPECT().DeleteClusterRole(clusterRoleName).Return(nil).
-					MaxTimes(len(unwantedClusterRoles))
+				for _, name := range clusterRoleNames {
+					mockK8sClient.EXPECT().DeleteClusterRole(name).Return(nil).
+						MaxTimes(len(unwantedClusterRoles))
+				}
 			},
 		},
 	}
@@ -1384,8 +1411,8 @@ func TestDeleteTridentClusterRole(t *testing.T) {
 				test.mocks(mockKubeClient)
 				extendedK8sClient := &K8sClient{mockKubeClient}
 
-				clusterRoleName, appLabel := test.input.clusterRoleName, test.input.appLabel
-				err := extendedK8sClient.DeleteTridentClusterRole(clusterRoleName, appLabel)
+				clusterRoleNames, appLabel := test.input.clusterRoleNames, test.input.appLabel
+				err := extendedK8sClient.DeleteTridentClusterRole(clusterRoleNames, appLabel)
 				assert.Equal(t, test.output, err)
 			},
 		)
@@ -1474,44 +1501,54 @@ func TestRemoveMultipleClusterRoles(t *testing.T) {
 
 func TestGetClusterRoleBindingInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
-	var label, name, invalidName, namespace string
-	var validClusterRoleBinding, invalidClusterRoleBinding rbacv1.ClusterRoleBinding
-	var unwantedClusterRoleBindings, combinationClusterRoleBindings, emptyClusterRoleBindings []rbacv1.ClusterRoleBinding
+	var label, invalidName, namespace string
+	var invalidClusterRoleBinding rbacv1.ClusterRoleBinding
+	var validClusterRoleBindings, unwantedClusterRoleBindings, combinationClusterRoleBindings, emptyClusterRoleBindings []rbacv1.ClusterRoleBinding
+
+	// initialize expected map variables
+	expValidClusterRoleBindingsMap := make(map[string]*rbacv1.ClusterRoleBinding)
+	expReuseClusterRoleBindingsMap := make(map[string]bool)
 
 	label = "tridentCSILabel"
-	name = getClusterRoleBindingName(true) // could be anything
+	clusterRoleBindingNames := getRBACResourceNames() // could be anything
 	namespace = "default"
 	invalidName = ""
 
-	validClusterRoleBinding = rbacv1.ClusterRoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
+	for _, name := range clusterRoleBindingNames {
+		validClusterRoleBinding := rbacv1.ClusterRoleBinding{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+			},
+		}
+		validClusterRoleBindings = append(validClusterRoleBindings, validClusterRoleBinding)
+		expValidClusterRoleBindingsMap[name] = &validClusterRoleBinding
+		expReuseClusterRoleBindingsMap[name] = true
 	}
+
 	invalidClusterRoleBinding = rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      invalidName,
 			Namespace: namespace,
 		},
 	}
+
 	unwantedClusterRoleBindings = []rbacv1.ClusterRoleBinding{invalidClusterRoleBinding, invalidClusterRoleBinding}
-	combinationClusterRoleBindings = append([]rbacv1.ClusterRoleBinding{validClusterRoleBinding},
-		append(combinationClusterRoleBindings,
-			unwantedClusterRoleBindings...)...)
+	combinationClusterRoleBindings = append(combinationClusterRoleBindings, validClusterRoleBindings...)
+	combinationClusterRoleBindings = append(combinationClusterRoleBindings, unwantedClusterRoleBindings...)
 
 	// setup input and output test types for easy use
 	type input struct {
-		name         string
+		names        []string
 		label        string
 		shouldUpdate bool
 	}
 
 	type output struct {
-		currentClusterRoleBinding   *rbacv1.ClusterRoleBinding
-		unwantedClusterRoleBindings []rbacv1.ClusterRoleBinding
-		createClusterRoleBinding    bool
-		err                         error
+		currentClusterRoleBindingMap map[string]*rbacv1.ClusterRoleBinding
+		unwantedClusterRoleBindings  []rbacv1.ClusterRoleBinding
+		reuseClusterRoleBindingMap   map[string]bool
+		err                          error
 	}
 
 	// setup values for the test table with input, expected output, and mocks
@@ -1524,14 +1561,14 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 		"expect to fail with k8s error": {
 			input: input{
 				label:        label,
-				name:         name,
+				names:        clusterRoleBindingNames,
 				shouldUpdate: true,
 			},
 			output: output{
-				currentClusterRoleBinding:   nil,
-				unwantedClusterRoleBindings: nil,
-				createClusterRoleBinding:    true,
-				err:                         fmt.Errorf("unable to get list of cluster role bindings"),
+				currentClusterRoleBindingMap: make(map[string]*rbacv1.ClusterRoleBinding),
+				unwantedClusterRoleBindings:  nil,
+				reuseClusterRoleBindingMap:   make(map[string]bool),
+				err:                          fmt.Errorf("unable to get list of cluster role bindings"),
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
@@ -1542,33 +1579,35 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 		"expect to pass with no cluster role binding found and no k8s error": {
 			input: input{
 				label:        label,
-				name:         invalidName,
+				names:        []string{invalidName},
 				shouldUpdate: false,
 			},
 			output: output{
-				currentClusterRoleBinding:   nil,
-				unwantedClusterRoleBindings: nil,
-				createClusterRoleBinding:    true,
-				err:                         nil,
+				currentClusterRoleBindingMap: make(map[string]*rbacv1.ClusterRoleBinding),
+				unwantedClusterRoleBindings:  nil,
+				reuseClusterRoleBindingMap:   make(map[string]bool),
+				err:                          nil,
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
 				// args[0] = label, args[1] = name, args[2] = shouldUpdate
 				mockKubeClient.EXPECT().GetClusterRoleBindingsByLabel(args[0]).Return(emptyClusterRoleBindings, nil)
-				mockKubeClient.EXPECT().DeleteClusterRoleBinding(args[1]).Return(nil)
+				for _, arg := range args[1].([]string) {
+					mockKubeClient.EXPECT().DeleteClusterRoleBinding(arg).Return(nil)
+				}
 			},
 		},
 		"expect to pass with valid current cluster role binding found and no k8s error": {
 			input: input{
 				label:        label,
-				name:         name,
+				names:        clusterRoleBindingNames,
 				shouldUpdate: false,
 			},
 			output: output{
-				currentClusterRoleBinding:   &validClusterRoleBinding,
-				unwantedClusterRoleBindings: unwantedClusterRoleBindings,
-				createClusterRoleBinding:    false,
-				err:                         nil,
+				currentClusterRoleBindingMap: expValidClusterRoleBindingsMap,
+				unwantedClusterRoleBindings:  unwantedClusterRoleBindings,
+				reuseClusterRoleBindingMap:   expReuseClusterRoleBindingsMap,
+				err:                          nil,
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
@@ -1586,26 +1625,29 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				label, name, shouldUpdate := test.input.label, test.input.name, test.input.shouldUpdate
+				label, roleBindingNames, shouldUpdate := test.input.label, test.input.names, test.input.shouldUpdate
 
 				// extract the output variables from the test case definition
-				expectedCurrentClusterRoleBinding, expectedUnwantedClusterRoleBindings,
-					expectedCreateClusterRoleBindings,
-					expectedErr := test.output.currentClusterRoleBinding, test.output.unwantedClusterRoleBindings,
-					test.output.createClusterRoleBinding, test.output.err
+				expectedCurrentClusterRoleBindingMap, expectedUnwantedClusterRoleBindings,
+					expectedReuseClusterRoleBindingsMap,
+					expectedErr := test.output.currentClusterRoleBindingMap, test.output.unwantedClusterRoleBindings,
+					test.output.reuseClusterRoleBindingMap, test.output.err
 
 				// mock out the k8s client calls needed to test this
 				// args[0] = label, args[1] = name, args[2] = shouldUpdate
-				test.mocks(mockKubeClient, label, name, shouldUpdate)
+				test.mocks(mockKubeClient, label, roleBindingNames, shouldUpdate)
 				extendedK8sClient := &K8sClient{mockKubeClient}
-				currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding,
-					err := extendedK8sClient.GetClusterRoleBindingInformation(name,
+				currentClusterRoleBindingMap, unwantedClusterRoleBindings, reuseClusterRoleBindingMap,
+					err := extendedK8sClient.GetClusterRoleBindingInformation(roleBindingNames,
 					label, shouldUpdate)
 
-				assert.EqualValues(t, expectedCurrentClusterRoleBinding, currentClusterRoleBinding)
-				assert.EqualValues(t, expectedUnwantedClusterRoleBindings, unwantedClusterRoleBindings)
+				assert.True(t, cmp.Equal(expectedCurrentClusterRoleBindingMap, currentClusterRoleBindingMap),
+					cmp.Diff(expectedCurrentClusterRoleBindingMap, currentClusterRoleBindingMap))
+				assert.True(t, cmp.Equal(expectedUnwantedClusterRoleBindings, unwantedClusterRoleBindings),
+					cmp.Diff(expectedUnwantedClusterRoleBindings, unwantedClusterRoleBindings))
 				assert.Equal(t, len(expectedUnwantedClusterRoleBindings), len(unwantedClusterRoleBindings))
-				assert.Equal(t, expectedCreateClusterRoleBindings, createClusterRoleBinding)
+				assert.True(t, cmp.Equal(expectedReuseClusterRoleBindingsMap, reuseClusterRoleBindingMap),
+					cmp.Diff(expectedReuseClusterRoleBindingsMap, reuseClusterRoleBindingMap))
 				assert.Equal(t, expectedErr, err)
 			},
 		)
@@ -1624,8 +1666,7 @@ func TestPutClusterRoleBinding(t *testing.T) {
 	appLabel := TridentCSILabel
 	newClusterRoleYAML := k8sclient.GetClusterRoleBindingYAML(
 		"namespace",
-		"",
-		clusterRoleBindingName,
+		clusterRoleBindingName, "",
 		make(map[string]string),
 		make(map[string]string),
 		true,
@@ -1635,7 +1676,7 @@ func TestPutClusterRoleBinding(t *testing.T) {
 	// defining a custom input type makes testing different cases easier
 	type input struct {
 		currentClusterRoleBinding *rbacv1.ClusterRoleBinding
-		createClusterRoleBinding  bool
+		reuseClusterRoleBinding   bool
 		newClusterRoleBindingYAML string
 		appLabel                  string
 		patchBytes                []byte
@@ -1651,8 +1692,8 @@ func TestPutClusterRoleBinding(t *testing.T) {
 	}{
 		"expect to pass when creating a ClusterRole and no k8s error occurs": {
 			input: input{
-				currentClusterRoleBinding: nil,
-				createClusterRoleBinding:  true,
+				currentClusterRoleBinding: &rbacv1.ClusterRoleBinding{},
+				reuseClusterRoleBinding:   false,
 				newClusterRoleBindingYAML: newClusterRoleYAML,
 				appLabel:                  appLabel,
 			},
@@ -1665,8 +1706,8 @@ func TestPutClusterRoleBinding(t *testing.T) {
 		},
 		"expect to fail when creating a ClusterRole and a k8s error occurs": {
 			input: input{
-				currentClusterRoleBinding: nil,
-				createClusterRoleBinding:  true,
+				currentClusterRoleBinding: &rbacv1.ClusterRoleBinding{},
+				reuseClusterRoleBinding:   false,
 				newClusterRoleBindingYAML: newClusterRoleYAML,
 				appLabel:                  appLabel,
 			},
@@ -1680,7 +1721,7 @@ func TestPutClusterRoleBinding(t *testing.T) {
 		"expect to fail when updating a ClusterRole and a k8s error occurs": {
 			input: input{
 				currentClusterRoleBinding: validClusterRoleBinding,
-				createClusterRoleBinding:  false,
+				reuseClusterRoleBinding:   true,
 				newClusterRoleBindingYAML: newClusterRoleYAML,
 				appLabel:                  appLabel,
 			},
@@ -1691,14 +1732,14 @@ func TestPutClusterRoleBinding(t *testing.T) {
 				patchBytes, _ := args[2].([]byte)
 				patchType, _ := args[3].(types.PatchType)
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchClusterRoleBindingByLabel(appLabel, patchBytesMatcher,
-					patchType).Return(k8sClientErr)
+				mockKubeClient.EXPECT().PatchClusterRoleBindingByLabelAndName(appLabel, clusterRoleBindingName,
+					patchBytesMatcher, patchType).Return(k8sClientErr)
 			},
 		},
 		"expect to pass when updating a ClusterRoleBinding and no k8s error occurs": {
 			input: input{
 				currentClusterRoleBinding: validClusterRoleBinding,
-				createClusterRoleBinding:  false,
+				reuseClusterRoleBinding:   true,
 				newClusterRoleBindingYAML: newClusterRoleYAML,
 				appLabel:                  appLabel,
 			},
@@ -1709,8 +1750,8 @@ func TestPutClusterRoleBinding(t *testing.T) {
 				patchBytes, _ := args[2].([]byte)
 				patchType, _ := args[3].(types.PatchType)
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchClusterRoleBindingByLabel(appLabel, patchBytesMatcher,
-					patchType).Return(nil)
+				mockKubeClient.EXPECT().PatchClusterRoleBindingByLabelAndName(appLabel, clusterRoleBindingName,
+					patchBytesMatcher, patchType).Return(nil)
 			},
 		},
 	}
@@ -1727,10 +1768,10 @@ func TestPutClusterRoleBinding(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				currentClusterRoleBinding, createClusterRoleBinding, newClusterRoleBindingYAML, appLabel := test.input.currentClusterRoleBinding,
-					test.input.createClusterRoleBinding, test.input.newClusterRoleBindingYAML, test.input.appLabel
+				currentClusterRoleBinding, reuseClusterRoleBinding, newClusterRoleBindingYAML, appLabel := test.input.currentClusterRoleBinding,
+					test.input.reuseClusterRoleBinding, test.input.newClusterRoleBindingYAML, test.input.appLabel
 
-				if !createClusterRoleBinding {
+				if reuseClusterRoleBinding {
 					if patchBytes, err = k8sclient.GenericPatch(currentClusterRoleBinding,
 						[]byte(newClusterRoleBindingYAML)); err != nil {
 						t.Fatal(err)
@@ -1747,7 +1788,7 @@ func TestPutClusterRoleBinding(t *testing.T) {
 
 				// make the call
 				err = extendedK8sClient.PutClusterRoleBinding(currentClusterRoleBinding,
-					createClusterRoleBinding, newClusterRoleBindingYAML, appLabel)
+					reuseClusterRoleBinding, newClusterRoleBindingYAML, appLabel)
 
 				assert.Equal(t, expectedErr, err)
 			},
@@ -1761,15 +1802,16 @@ func TestDeleteTridentClusterRoleBinding(t *testing.T) {
 	var undeletedClusterRoleBindings []string
 
 	getClusterRoleBindingsErr := fmt.Errorf("unable to get list of cluster role bindings")
-	clusterRoleBindingName := "clusterRoleBindingName"
+	clusterRoleBindingNames := getRBACResourceNames()
 	appLabel := "appLabel"
 
-	unwantedClusterRoleBindings = []rbacv1.ClusterRoleBinding{
-		{
+	for _, clusterRoleBindingName := range clusterRoleBindingNames {
+		unwantedClusterRoleBinding := rbacv1.ClusterRoleBinding{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: clusterRoleBindingName,
 			},
-		},
+		}
+		unwantedClusterRoleBindings = append(unwantedClusterRoleBindings, unwantedClusterRoleBinding)
 	}
 
 	for _, clusterRoleBinding := range unwantedClusterRoleBindings {
@@ -1777,8 +1819,8 @@ func TestDeleteTridentClusterRoleBinding(t *testing.T) {
 	}
 
 	type input struct {
-		clusterRoleBindingName string
-		appLabel               string
+		clusterRoleBindingNames []string
+		appLabel                string
 	}
 
 	tests := map[string]struct {
@@ -1788,8 +1830,8 @@ func TestDeleteTridentClusterRoleBinding(t *testing.T) {
 	}{
 		"expect to fail when GetClusterRoleBindingsByLabel fails": {
 			input: input{
-				clusterRoleBindingName: clusterRoleBindingName,
-				appLabel:               appLabel,
+				clusterRoleBindingNames: clusterRoleBindingNames,
+				appLabel:                appLabel,
 			},
 			output: getClusterRoleBindingsErr,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
@@ -1798,37 +1840,43 @@ func TestDeleteTridentClusterRoleBinding(t *testing.T) {
 		},
 		"expect to pass when GetClusterRoleBindingsByLabel returns no cluster role bindings": {
 			input: input{
-				clusterRoleBindingName: clusterRoleBindingName,
-				appLabel:               appLabel,
+				clusterRoleBindingNames: clusterRoleBindingNames,
+				appLabel:                appLabel,
 			},
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetClusterRoleBindingsByLabel(appLabel).Return(emptyClusterRoleBindingList, nil)
-				mockK8sClient.EXPECT().DeleteClusterRoleBinding(clusterRoleBindingName).Return(nil)
+				for _, name := range clusterRoleBindingNames {
+					mockK8sClient.EXPECT().DeleteClusterRoleBinding(name).Return(nil)
+				}
 			},
 		},
 		"expect to fail when GetClusterRoleBindingsByLabel succeeds but RemoveMultipleClusterRoleBindings fails": {
 			input: input{
-				clusterRoleBindingName: clusterRoleBindingName,
-				appLabel:               appLabel,
+				clusterRoleBindingNames: clusterRoleBindingNames,
+				appLabel:                appLabel,
 			},
 			output: fmt.Errorf("unable to delete cluster role binding(s): %v", undeletedClusterRoleBindings),
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetClusterRoleBindingsByLabel(appLabel).Return(unwantedClusterRoleBindings, nil)
-				mockK8sClient.EXPECT().DeleteClusterRoleBinding(clusterRoleBindingName).Return(fmt.Errorf("")).
-					MaxTimes(len(unwantedClusterRoleBindings))
+				for _, name := range clusterRoleBindingNames {
+					mockK8sClient.EXPECT().DeleteClusterRoleBinding(name).Return(fmt.Errorf("")).
+						MaxTimes(len(unwantedClusterRoleBindings))
+				}
 			},
 		},
 		"expect to pass when GetClusterRoleBindingsByLabel succeeds and RemoveMultipleClusterRoleBindings succeeds": {
 			input: input{
-				clusterRoleBindingName: clusterRoleBindingName,
-				appLabel:               appLabel,
+				clusterRoleBindingNames: clusterRoleBindingNames,
+				appLabel:                appLabel,
 			},
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetClusterRoleBindingsByLabel(appLabel).Return(unwantedClusterRoleBindings, nil)
-				mockK8sClient.EXPECT().DeleteClusterRoleBinding(clusterRoleBindingName).Return(nil).
-					MaxTimes(len(unwantedClusterRoleBindings))
+				for _, name := range clusterRoleBindingNames {
+					mockK8sClient.EXPECT().DeleteClusterRoleBinding(name).Return(nil).
+						MaxTimes(len(unwantedClusterRoleBindings))
+				}
 			},
 		},
 	}
@@ -1844,8 +1892,8 @@ func TestDeleteTridentClusterRoleBinding(t *testing.T) {
 				test.mocks(mockKubeClient)
 				extendedK8sClient := &K8sClient{mockKubeClient}
 
-				clusterRoleBindingName, appLabel := test.input.clusterRoleBindingName, test.input.appLabel
-				err := extendedK8sClient.DeleteTridentClusterRoleBinding(clusterRoleBindingName, appLabel)
+				clusterRoleBindingNames, appLabel := test.input.clusterRoleBindingNames, test.input.appLabel
+				err := extendedK8sClient.DeleteTridentClusterRoleBinding(clusterRoleBindingNames, appLabel)
 				assert.Equal(t, test.output, err)
 			},
 		)
@@ -4790,36 +4838,39 @@ func TestRemoveMultipleServices(t *testing.T) {
 
 func TestGetServiceAccountInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
-	var label, name, invalidName, namespace string
-	var serviceAccountSecretNames []string
-	var serviceAccountsSecrets []corev1.ObjectReference
-	var validServiceAccount, invalidServiceAccount corev1.ServiceAccount
+	var label, invalidName, namespace string
+	var validServiceAccounts []corev1.ServiceAccount
+	var invalidServiceAccount corev1.ServiceAccount
 	var unwantedServiceAccounts, combinationServiceAccounts, emptyServiceAccounts []corev1.ServiceAccount
 
+	expCurrentServiceAccountMap := make(map[string]*corev1.ServiceAccount)
+	expServiceAccountSecretNamesMap := make(map[string][]string)
+	expReuseServiceAccountMap := make(map[string]bool)
+
 	label = "tridentCSILabel"
-	name = getServiceAccountName(true) // could be anything
+	serviceAccountNames := getRBACResourceNames()
 	namespace = "default"
 	invalidName = ""
 
-	serviceAccountsSecrets = []corev1.ObjectReference{
-		{
-			Name: getProtocolSecretName() + "-one",
-		},
-		{
-			Name: getProtocolSecretName() + "-one",
-		},
-	}
-
-	for _, secret := range serviceAccountsSecrets {
-		serviceAccountSecretNames = append(serviceAccountSecretNames, secret.Name)
-	}
-
-	validServiceAccount = corev1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Secrets: serviceAccountsSecrets,
+	for _, name := range serviceAccountNames {
+		validServiceAccount := corev1.ServiceAccount{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+			},
+			Secrets: []corev1.ObjectReference{
+				{
+					Name: name + "-one",
+				},
+				{
+					Name: name + "-two",
+				},
+			},
+		}
+		validServiceAccounts = append(validServiceAccounts, validServiceAccount)
+		expCurrentServiceAccountMap[name] = &validServiceAccount
+		expServiceAccountSecretNamesMap[name] = []string{name + "-one", name + "-two"}
+		expReuseServiceAccountMap[name] = true
 	}
 
 	invalidServiceAccount = corev1.ServiceAccount{
@@ -4830,24 +4881,23 @@ func TestGetServiceAccountInformation(t *testing.T) {
 	}
 
 	unwantedServiceAccounts = []corev1.ServiceAccount{invalidServiceAccount, invalidServiceAccount}
-
-	combinationServiceAccounts = append([]corev1.ServiceAccount{validServiceAccount}, append(combinationServiceAccounts,
-		unwantedServiceAccounts...)...)
+	combinationServiceAccounts = append(combinationServiceAccounts, unwantedServiceAccounts...)
+	combinationServiceAccounts = append(combinationServiceAccounts, validServiceAccounts...)
 
 	// setup input and output test types for easy use
 	type input struct {
 		label        string
-		name         string
+		names        []string
 		namespace    string
 		shouldUpdate bool
 	}
 
 	type output struct {
-		currentServiceAccount     *corev1.ServiceAccount
-		unwantedServiceAccounts   []corev1.ServiceAccount
-		serviceAccountSecretNames []string
-		createServiceAccount      bool
-		err                       error
+		currentServiceAccountMap     map[string]*corev1.ServiceAccount
+		unwantedServiceAccounts      []corev1.ServiceAccount
+		serviceAccountSecretNamesMap map[string][]string
+		reuseServiceAccountMap       map[string]bool
+		err                          error
 	}
 
 	// setup values for the test table with input, expected output, and mocks
@@ -4860,15 +4910,16 @@ func TestGetServiceAccountInformation(t *testing.T) {
 		"expect to fail with k8s error": {
 			input: input{
 				label:        label,
-				name:         name,
+				names:        serviceAccountNames,
 				namespace:    namespace,
 				shouldUpdate: true,
 			},
 			output: output{
-				currentServiceAccount:   nil,
-				unwantedServiceAccounts: nil,
-				createServiceAccount:    false,
-				err:                     fmt.Errorf("unable to get list of service accounts"),
+				currentServiceAccountMap:     make(map[string]*corev1.ServiceAccount),
+				unwantedServiceAccounts:      nil,
+				serviceAccountSecretNamesMap: make(map[string][]string),
+				reuseServiceAccountMap:       make(map[string]bool),
+				err:                          fmt.Errorf("unable to get list of service accounts"),
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
@@ -4879,35 +4930,38 @@ func TestGetServiceAccountInformation(t *testing.T) {
 		"expect to pass with no service accounts found and no k8s error": {
 			input: input{
 				label:        label,
-				name:         invalidName,
+				names:        []string{invalidName},
 				namespace:    namespace,
 				shouldUpdate: false,
 			},
 			output: output{
-				currentServiceAccount:   nil,
-				unwantedServiceAccounts: nil,
-				createServiceAccount:    true,
-				err:                     nil,
+				currentServiceAccountMap:     make(map[string]*corev1.ServiceAccount),
+				unwantedServiceAccounts:      nil,
+				serviceAccountSecretNamesMap: make(map[string][]string),
+				reuseServiceAccountMap:       make(map[string]bool),
+				err:                          nil,
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
 				mockKubeClient.EXPECT().GetServiceAccountsByLabel(args[0], false).Return(emptyServiceAccounts, nil)
-				mockKubeClient.EXPECT().DeleteServiceAccount(args[1], args[2], false).Return(nil)
+				for _, arg := range (args[1]).([]string) {
+					mockKubeClient.EXPECT().DeleteServiceAccount(arg, args[2], args[3]).Return(nil)
+				}
 			},
 		},
 		"expect to pass with valid current service accounts found and no k8s error": {
 			input: input{
 				label:        label,
-				name:         name,
+				names:        serviceAccountNames,
 				namespace:    namespace,
 				shouldUpdate: false,
 			},
 			output: output{
-				currentServiceAccount:     &validServiceAccount,
-				unwantedServiceAccounts:   unwantedServiceAccounts,
-				serviceAccountSecretNames: serviceAccountSecretNames,
-				createServiceAccount:      false,
-				err:                       nil,
+				currentServiceAccountMap:     expCurrentServiceAccountMap,
+				unwantedServiceAccounts:      unwantedServiceAccounts,
+				serviceAccountSecretNamesMap: expServiceAccountSecretNamesMap,
+				reuseServiceAccountMap:       expReuseServiceAccountMap,
+				err:                          nil,
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
@@ -4925,29 +4979,32 @@ func TestGetServiceAccountInformation(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				label, name, namespace, shouldUpdate := test.input.label, test.input.name,
+				label, accountNames, namespace, shouldUpdate := test.input.label, test.input.names,
 					test.input.namespace, test.input.shouldUpdate
 
 				// extract the output variables from the test case definition
-				expectedCurrentServiceAccount, expectedUnwantedServiceAccounts,
-					expectedServiceAccountSecretNames, expectedCreateServiceAccount,
-					expectedErr := test.output.currentServiceAccount, test.output.unwantedServiceAccounts,
-					test.output.serviceAccountSecretNames, test.output.createServiceAccount, test.output.err
+				expectedCurrentServiceAccountMap, expectedUnwantedServiceAccounts,
+					expectedServiceAccountSecretNamesMap, expectedReuseServiceAccountMap,
+					expectedErr := test.output.currentServiceAccountMap, test.output.unwantedServiceAccounts,
+					test.output.serviceAccountSecretNamesMap, test.output.reuseServiceAccountMap, test.output.err
 
 				// mock out the k8s client calls needed to test this
 				// args[0] = label, args[1] = name, args[2] = namespace, args[3] = shouldUpdate
-				test.mocks(mockKubeClient, label, name, namespace, shouldUpdate)
+				test.mocks(mockKubeClient, label, accountNames, namespace, shouldUpdate)
 				extendedK8sClient := &K8sClient{mockKubeClient}
-				currentServiceAccount, unwantedServiceAccounts, serviceAccountSecretNames, createServiceAccount,
-					err := extendedK8sClient.GetServiceAccountInformation(name,
+				currentServiceAccountMap, unwantedServiceAccounts, serviceAccountSecretNamesMap, reuseServiceAccountMap,
+					err := extendedK8sClient.GetServiceAccountInformation(accountNames,
 					label, namespace, shouldUpdate)
 
-				assert.EqualValues(t, expectedCurrentServiceAccount, currentServiceAccount)
-				assert.EqualValues(t, expectedUnwantedServiceAccounts, unwantedServiceAccounts)
+				assert.True(t, cmp.Equal(expectedCurrentServiceAccountMap, currentServiceAccountMap),
+					cmp.Diff(expectedCurrentServiceAccountMap, currentServiceAccountMap))
+				assert.True(t, cmp.Equal(expectedUnwantedServiceAccounts, unwantedServiceAccounts),
+					cmp.Diff(expectedUnwantedServiceAccounts, unwantedServiceAccounts))
 				assert.Equal(t, len(expectedUnwantedServiceAccounts), len(unwantedServiceAccounts))
-				assert.EqualValues(t, expectedServiceAccountSecretNames, serviceAccountSecretNames)
-				assert.Equal(t, len(expectedServiceAccountSecretNames), len(serviceAccountSecretNames))
-				assert.Equal(t, expectedCreateServiceAccount, createServiceAccount)
+				assert.True(t, cmp.Equal(expectedServiceAccountSecretNamesMap, serviceAccountSecretNamesMap),
+					cmp.Diff(expectedServiceAccountSecretNamesMap, serviceAccountSecretNamesMap))
+				assert.Equal(t, len(expectedServiceAccountSecretNamesMap), len(serviceAccountSecretNamesMap))
+				assert.Equal(t, expectedReuseServiceAccountMap, reuseServiceAccountMap)
 				assert.Equal(t, expectedErr, err)
 			},
 		)
@@ -4973,7 +5030,7 @@ func TestPutServiceAccount(t *testing.T) {
 	// defining a custom input type makes testing different cases easier
 	type input struct {
 		currentServiceAccount *corev1.ServiceAccount
-		createServiceAccount  bool
+		reuseServiceAccount   bool
 		newServiceAccountYAML string
 		appLabel              string
 	}
@@ -4992,8 +5049,8 @@ func TestPutServiceAccount(t *testing.T) {
 	}{
 		"expect to pass when creating a service account and no k8s error occurs": {
 			input: input{
-				currentServiceAccount: nil,
-				createServiceAccount:  true,
+				currentServiceAccount: &corev1.ServiceAccount{},
+				reuseServiceAccount:   false,
 				newServiceAccountYAML: newServiceAccountYAML,
 				appLabel:              appLabel,
 			},
@@ -5009,8 +5066,8 @@ func TestPutServiceAccount(t *testing.T) {
 		},
 		"expect to fail when creating a service account and a k8s error occurs": {
 			input: input{
-				currentServiceAccount: nil,
-				createServiceAccount:  true,
+				currentServiceAccount: &corev1.ServiceAccount{},
+				reuseServiceAccount:   false,
 				newServiceAccountYAML: newServiceAccountYAML,
 				appLabel:              appLabel,
 			},
@@ -5027,7 +5084,7 @@ func TestPutServiceAccount(t *testing.T) {
 		"expect to pass when updating a service account and no k8s error occurs": {
 			input: input{
 				currentServiceAccount: serviceAccount,
-				createServiceAccount:  false,
+				reuseServiceAccount:   true,
 				newServiceAccountYAML: newServiceAccountYAML,
 				appLabel:              appLabel,
 			},
@@ -5042,14 +5099,14 @@ func TestPutServiceAccount(t *testing.T) {
 				patchType, _ := args[3].(types.PatchType)
 				// this ensures that the PatchServiceByLabel is called with the expected patchBytes
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchServiceAccountByLabel(appLabel, patchBytesMatcher,
-					patchType).Return(nil)
+				mockKubeClient.EXPECT().PatchServiceAccountByLabelAndName(appLabel, serviceAccountName,
+					patchBytesMatcher, patchType).Return(nil)
 			},
 		},
 		"expect to fail when updating a service account and a k8s error occurs": {
 			input: input{
 				currentServiceAccount: serviceAccount,
-				createServiceAccount:  false,
+				reuseServiceAccount:   true,
 				newServiceAccountYAML: newServiceAccountYAML,
 				appLabel:              appLabel,
 			},
@@ -5064,8 +5121,8 @@ func TestPutServiceAccount(t *testing.T) {
 				patchType, _ := args[3].(types.PatchType)
 				// this ensures that the PatchServiceByLabel is called with the expected patchBytes
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchServiceAccountByLabel(appLabel, patchBytesMatcher,
-					patchType).Return(k8sClientErr)
+				mockKubeClient.EXPECT().PatchServiceAccountByLabelAndName(appLabel, serviceAccountName,
+					patchBytesMatcher, patchType).Return(k8sClientErr)
 			},
 		},
 	}
@@ -5082,11 +5139,11 @@ func TestPutServiceAccount(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				currentServiceAccount, createServiceAccount,
-					newServiceAccountYAML, appLabel := test.input.currentServiceAccount, test.input.createServiceAccount,
+				currentServiceAccount, reuseServiceAccount,
+					newServiceAccountYAML, appLabel := test.input.currentServiceAccount, test.input.reuseServiceAccount,
 					test.input.newServiceAccountYAML, test.input.appLabel
 
-				if !createServiceAccount {
+				if reuseServiceAccount {
 					if patchBytes, err = k8sclient.GenericPatch(currentServiceAccount,
 						[]byte(newServiceAccountYAML)); err != nil {
 						t.Fatal(err)
@@ -5106,7 +5163,7 @@ func TestPutServiceAccount(t *testing.T) {
 
 				// make the call
 				newServiceAccount, err := extendedK8sClient.PutServiceAccount(currentServiceAccount,
-					createServiceAccount, newServiceAccountYAML, appLabel)
+					reuseServiceAccount, newServiceAccountYAML, appLabel)
 
 				assert.Equal(t, expectedServiceAccount, newServiceAccount)
 				assert.Equal(t, expectedErr, err)
@@ -5121,17 +5178,18 @@ func TestDeleteTridentServiceAccount(t *testing.T) {
 	var undeletedServiceAccounts []string
 
 	getServiceAccountsErr := fmt.Errorf("unable to get list of service accounts")
-	serviceAccountName := "serviceAccountName"
+	serviceAccountNames := getRBACResourceNames()
 	appLabel := "appLabel"
 	namespace := "namespace"
 
-	unwantedServiceAccounts = []corev1.ServiceAccount{
-		{
+	for _, serviceAccountName := range serviceAccountNames {
+		unwantedServiceAccount := corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      serviceAccountName,
 				Namespace: namespace,
 			},
-		},
+		}
+		unwantedServiceAccounts = append(unwantedServiceAccounts, unwantedServiceAccount)
 	}
 
 	for _, serviceAccount := range unwantedServiceAccounts {
@@ -5140,9 +5198,9 @@ func TestDeleteTridentServiceAccount(t *testing.T) {
 	}
 
 	type input struct {
-		serviceAccountName string
-		appLabel           string
-		namespace          string
+		serviceAccountNames []string
+		appLabel            string
+		namespace           string
 	}
 
 	tests := map[string]struct {
@@ -5152,9 +5210,9 @@ func TestDeleteTridentServiceAccount(t *testing.T) {
 	}{
 		"expect to fail when GetServiceAccountsByLabel fails": {
 			input: input{
-				serviceAccountName: serviceAccountName,
-				appLabel:           appLabel,
-				namespace:          namespace,
+				serviceAccountNames: serviceAccountNames,
+				appLabel:            appLabel,
+				namespace:           namespace,
 			},
 			output: getServiceAccountsErr,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
@@ -5163,42 +5221,48 @@ func TestDeleteTridentServiceAccount(t *testing.T) {
 		},
 		"expect to pass when GetServiceAccountsByLabel returns no secrets": {
 			input: input{
-				serviceAccountName: serviceAccountName,
-				appLabel:           appLabel,
-				namespace:          namespace,
+				serviceAccountNames: serviceAccountNames,
+				appLabel:            appLabel,
+				namespace:           namespace,
 			},
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetServiceAccountsByLabel(appLabel, false).Return(emptyServiceAccountList, nil)
-				mockK8sClient.EXPECT().DeleteServiceAccount(serviceAccountName, namespace, false).Return(nil)
+				for _, name := range serviceAccountNames {
+					mockK8sClient.EXPECT().DeleteServiceAccount(name, namespace, false).Return(nil)
+				}
 			},
 		},
 		"expect to fail when GetServiceAccountsByLabel succeeds but RemoveMultipleServiceAccounts fails": {
 			input: input{
-				serviceAccountName: serviceAccountName,
-				appLabel:           appLabel,
-				namespace:          namespace,
+				serviceAccountNames: serviceAccountNames,
+				appLabel:            appLabel,
+				namespace:           namespace,
 			},
 			output: fmt.Errorf("unable to delete service account(s): %v", undeletedServiceAccounts),
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetServiceAccountsByLabel(appLabel, false).Return(unwantedServiceAccounts, nil)
-				mockK8sClient.EXPECT().DeleteServiceAccount(serviceAccountName,
-					namespace, true).Return(fmt.Errorf("")).
-					MaxTimes(len(unwantedServiceAccounts))
+				for _, name := range serviceAccountNames {
+					mockK8sClient.EXPECT().DeleteServiceAccount(name,
+						namespace, true).Return(fmt.Errorf("")).
+						MaxTimes(len(unwantedServiceAccounts))
+				}
 			},
 		},
 		"expect to pass when GetServiceAccountsByLabel succeeds and RemoveMultipleServiceAccounts succeeds": {
 			input: input{
-				serviceAccountName: serviceAccountName,
-				appLabel:           appLabel,
-				namespace:          namespace,
+				serviceAccountNames: serviceAccountNames,
+				appLabel:            appLabel,
+				namespace:           namespace,
 			},
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetServiceAccountsByLabel(appLabel, false).Return(unwantedServiceAccounts, nil)
-				mockK8sClient.EXPECT().DeleteServiceAccount(serviceAccountName,
-					namespace, true).Return(nil).
-					MaxTimes(len(unwantedServiceAccounts))
+				for _, name := range serviceAccountNames {
+					mockK8sClient.EXPECT().DeleteServiceAccount(name,
+						namespace, true).Return(nil).
+						MaxTimes(len(unwantedServiceAccounts))
+				}
 			},
 		},
 	}
@@ -5214,8 +5278,8 @@ func TestDeleteTridentServiceAccount(t *testing.T) {
 				test.mocks(mockKubeClient)
 				extendedK8sClient := &K8sClient{mockKubeClient}
 
-				secretName, appLabel, namespace := test.input.serviceAccountName, test.input.appLabel, test.input.namespace
-				err := extendedK8sClient.DeleteTridentServiceAccount(secretName, appLabel, namespace)
+				serviceAccountNames, appLabel, namespace := test.input.serviceAccountNames, test.input.appLabel, test.input.namespace
+				err := extendedK8sClient.DeleteTridentServiceAccount(serviceAccountNames, appLabel, namespace)
 				assert.Equal(t, test.output, err)
 			},
 		)
@@ -5311,27 +5375,34 @@ func TestRemoveMultipleServiceAccounts(t *testing.T) {
 
 func TestGetTridentOpenShiftSCCInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
-	var name, username string
-	var currentOpenShiftSCCJSON []byte
+	var names, usernames []string
 
-	name = getOpenShiftSCCName() // could be anything
-	username = getOpenShiftSCCUserName()
+	names = getRBACResourceNames()
+	usernames = getRBACResourceNames()
 
-	currentOpenShiftSCCJSON = []byte{
-		116, 114, 105, 100, 101, 110, 116,
+	expCurrentOpenShiftSCCJSONMap := make(map[string][]byte)
+	expReuseOpenShiftSCCMap := make(map[string]bool)
+	expRemoveExistingSCCMap := make(map[string]bool)
+
+	for idx := 0; idx < len(names); idx++ {
+		expCurrentOpenShiftSCCJSONMap[names[idx]] = []byte(k8sclient.GetOpenShiftSCCYAML(names[idx], usernames[idx],
+			"default", nil, nil))
+		expReuseOpenShiftSCCMap[names[idx]] = true
+		expRemoveExistingSCCMap[names[idx]] = true
 	}
+
 	// setup input and output test types for easy use
 	type input struct {
-		name         string
-		username     string
+		names        []string
+		usernames    []string
 		shouldUpdate bool
 	}
 
 	type output struct {
-		currentOpenShiftSCCJSON []byte
-		createOpenShiftSCC      bool
-		removeExistingSCC       bool
-		err                     error
+		currentOpenShiftSCCJSONMap map[string][]byte
+		reuseOpenShiftSCCMap       map[string]bool
+		removeExistingSCCMap       map[string]bool
+		err                        error
 	}
 
 	// setup values for the test table with input, expected output, and mocks
@@ -5343,79 +5414,90 @@ func TestGetTridentOpenShiftSCCInformation(t *testing.T) {
 	}{
 		"expect to fail with k8s error": {
 			input: input{
-				name:         name,
-				username:     username,
+				names:        names,
+				usernames:    usernames,
 				shouldUpdate: true,
 			},
 			output: output{
-				currentOpenShiftSCCJSON: nil,
-				createOpenShiftSCC:      true,
-				removeExistingSCC:       false,
-				err:                     fmt.Errorf("unable to get OpenShift SCC for Trident"),
+				currentOpenShiftSCCJSONMap: make(map[string][]byte),
+				reuseOpenShiftSCCMap:       make(map[string]bool),
+				removeExistingSCCMap:       make(map[string]bool),
+				err:                        fmt.Errorf("unable to get OpenShift SCC for Trident"),
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
-				mockKubeClient.EXPECT().GetOpenShiftSCCByName(args[0], args[1]).Return(false, false, []byte{},
+				names, _ := args[0].([]string)
+				usernames, _ := args[1].([]string)
+				mockKubeClient.EXPECT().GetOpenShiftSCCByName(usernames[0], names[0]).Return(false, false, []byte{},
 					fmt.Errorf(""))
 			},
 		},
 		"expect to pass with no openshift scc found, no k8s error, and an scc user does not exist": {
 			input: input{
-				name:         name,
-				username:     username,
+				names:        names,
+				usernames:    usernames,
 				shouldUpdate: true,
 			},
 			output: output{
-				currentOpenShiftSCCJSON: nil,
-				createOpenShiftSCC:      true,
-				// this should be true in this case
-				removeExistingSCC: true,
-				err:               nil,
+				currentOpenShiftSCCJSONMap: make(map[string][]byte),
+				reuseOpenShiftSCCMap:       make(map[string]bool),
+				removeExistingSCCMap:       expRemoveExistingSCCMap,
+				err:                        nil,
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
 				// SCCExist, SCCUserExist, jsonData, err
 				// when SCCUserExist = false, removeExistingSCC = true
-				mockKubeClient.EXPECT().GetOpenShiftSCCByName(args[0], args[1]).Return(
-					true, false, currentOpenShiftSCCJSON, nil)
+				names, _ := args[0].([]string)
+				usernames, _ := args[1].([]string)
+				for idx := 0; idx < len(names); idx++ {
+					mockKubeClient.EXPECT().GetOpenShiftSCCByName(usernames[idx], names[idx]).Return(
+						true, false, expCurrentOpenShiftSCCJSONMap[names[idx]], nil)
+				}
 			},
 		},
 		"expect to pass with no openshift scc found, no k8s error, and a it should update": {
 			input: input{
-				name:         name,
-				username:     username,
+				names:        names,
+				usernames:    usernames,
 				shouldUpdate: true,
 			},
 			output: output{
-				currentOpenShiftSCCJSON: nil,
-				createOpenShiftSCC:      true,
-				removeExistingSCC:       true,
-				err:                     nil,
+				currentOpenShiftSCCJSONMap: make(map[string][]byte),
+				reuseOpenShiftSCCMap:       make(map[string]bool),
+				removeExistingSCCMap:       expRemoveExistingSCCMap,
+				err:                        nil,
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
-				// SCCExist, SCCUserExist, jsonData, err
-				mockKubeClient.EXPECT().GetOpenShiftSCCByName(args[0], args[1]).Return(
-					true, true, currentOpenShiftSCCJSON, nil)
+				names, _ := args[0].([]string)
+				usernames, _ := args[1].([]string)
+				for idx := 0; idx < len(names); idx++ {
+					mockKubeClient.EXPECT().GetOpenShiftSCCByName(usernames[idx], names[idx]).Return(
+						true, true, expCurrentOpenShiftSCCJSONMap[names[idx]], nil)
+				}
 			},
 		},
 		"expect to pass with valid current services found and no k8s error": {
 			input: input{
-				name:         name,
-				username:     username,
+				names:        names,
+				usernames:    usernames,
 				shouldUpdate: false,
 			},
 			output: output{
-				currentOpenShiftSCCJSON: currentOpenShiftSCCJSON,
-				createOpenShiftSCC:      false,
-				removeExistingSCC:       false,
-				err:                     nil,
+				currentOpenShiftSCCJSONMap: expCurrentOpenShiftSCCJSONMap,
+				reuseOpenShiftSCCMap:       expReuseOpenShiftSCCMap,
+				removeExistingSCCMap:       make(map[string]bool),
+				err:                        nil,
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
-				// when SCCExist & SCCUserExist are true, currentOpenShiftSCCJSON is assigned jsonData
-				mockKubeClient.EXPECT().GetOpenShiftSCCByName(args[0], args[1]).Return(
-					true, true, currentOpenShiftSCCJSON, nil)
+				names, _ := args[0].([]string)
+				usernames, _ := args[1].([]string)
+				for idx := 0; idx < len(names); idx++ {
+					mockKubeClient.EXPECT().GetOpenShiftSCCByName(usernames[idx], names[idx]).Return(
+						true, true, expCurrentOpenShiftSCCJSONMap[names[idx]], nil)
+				}
 			},
 		},
 	}
@@ -5428,26 +5510,29 @@ func TestGetTridentOpenShiftSCCInformation(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				name, username, shouldUpdate := test.input.name, test.input.username,
+				names, usernames, shouldUpdate := test.input.names, test.input.usernames,
 					test.input.shouldUpdate
 
 				// extract the output variables from the test case definition
-				expectedOpenShiftSCCJSON, expectedCreateOpenShiftSCC, expectedRemoveExistingSCC,
-					expectedErr := test.output.currentOpenShiftSCCJSON, test.output.createOpenShiftSCC,
-					test.output.removeExistingSCC, test.output.err
+				expectedOpenShiftSCCJSONMap, expectedReuseOpenShiftSCCMap, expectedRemoveExistingSCCMap,
+					expectedErr := test.output.currentOpenShiftSCCJSONMap, test.output.reuseOpenShiftSCCMap,
+					test.output.removeExistingSCCMap, test.output.err
 
 				// mock out the k8s client calls needed to test this
 				// args[0] = label, args[1] = name, args[2] = namespace, args[3] = shouldUpdate
-				test.mocks(mockKubeClient, username, name)
+				test.mocks(mockKubeClient, usernames, names)
 
 				extendedK8sClient := &K8sClient{mockKubeClient}
-				currentOpenShiftSCCJSON, createOpenShiftSCC, removeExistingSCC,
-					err := extendedK8sClient.GetTridentOpenShiftSCCInformation(username, name,
+				currentOpenShiftSCCJSONMap, reuseOpenShiftSCCMap, removeExistingSCCMap,
+					err := extendedK8sClient.GetTridentOpenShiftSCCInformation(names, usernames,
 					shouldUpdate)
 
-				assert.EqualValues(t, expectedOpenShiftSCCJSON, currentOpenShiftSCCJSON)
-				assert.EqualValues(t, expectedCreateOpenShiftSCC, createOpenShiftSCC)
-				assert.EqualValues(t, expectedRemoveExistingSCC, removeExistingSCC)
+				assert.True(t, cmp.Equal(expectedOpenShiftSCCJSONMap, currentOpenShiftSCCJSONMap),
+					cmp.Diff(expectedOpenShiftSCCJSONMap, currentOpenShiftSCCJSONMap))
+				assert.True(t, cmp.Equal(expectedReuseOpenShiftSCCMap, reuseOpenShiftSCCMap),
+					cmp.Diff(expectedReuseOpenShiftSCCMap, reuseOpenShiftSCCMap))
+				assert.True(t, cmp.Equal(expectedRemoveExistingSCCMap, removeExistingSCCMap),
+					cmp.Diff(expectedRemoveExistingSCCMap, removeExistingSCCMap))
 				assert.Equal(t, expectedErr, err)
 			},
 		)
@@ -5737,7 +5822,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 	// defining a custom input type makes testing different cases easier
 	type input struct {
 		currentOpenShiftSCCJSON []byte
-		createOpenShiftSCC      bool
+		reuseOpenShiftSCC       bool
 		newOpenShiftSCCYAML     string
 	}
 
@@ -5753,7 +5838,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 			" OpenShiftSCC": {
 			input: input{
 				currentOpenShiftSCCJSON: []byte{},
-				createOpenShiftSCC:      true,
+				reuseOpenShiftSCC:       false,
 				newOpenShiftSCCYAML:     newOpenShiftSCCYAML,
 			},
 			output: nil,
@@ -5769,7 +5854,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 			" OpenShiftSCCC": {
 			input: input{
 				currentOpenShiftSCCJSON: []byte{},
-				createOpenShiftSCC:      true,
+				reuseOpenShiftSCC:       false,
 				newOpenShiftSCCYAML:     newOpenShiftSCCYAML,
 			},
 			output: nil,
@@ -5785,7 +5870,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 		"expect to pass when creating OpenShift SCCs and no k8s error occurs": {
 			input: input{
 				currentOpenShiftSCCJSON: []byte{},
-				createOpenShiftSCC:      true,
+				reuseOpenShiftSCC:       false,
 				newOpenShiftSCCYAML:     newOpenShiftSCCYAML,
 			},
 			output: nil,
@@ -5801,7 +5886,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 		"expect to fail when creating OpenShift SCCs and a k8s error occurs": {
 			input: input{
 				currentOpenShiftSCCJSON: []byte{},
-				createOpenShiftSCC:      true,
+				reuseOpenShiftSCC:       false,
 				newOpenShiftSCCYAML:     newOpenShiftSCCYAML,
 			},
 			output: fmt.Errorf("could not create OpenShift SCC; %v", k8sClientErr),
@@ -5817,7 +5902,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 		"expect to pass when updating OpenShift SCCs and no k8s error occurs": {
 			input: input{
 				currentOpenShiftSCCJSON: currentOpenShiftSCCJSON,
-				createOpenShiftSCC:      false,
+				reuseOpenShiftSCC:       true,
 				newOpenShiftSCCYAML:     newOpenShiftSCCYAML,
 			},
 			output: nil,
@@ -5836,7 +5921,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 		"expect to fail when updating OpenShift SCCs and a k8s error occurs": {
 			input: input{
 				currentOpenShiftSCCJSON: currentOpenShiftSCCJSON,
-				createOpenShiftSCC:      false,
+				reuseOpenShiftSCC:       true,
 				newOpenShiftSCCYAML:     newOpenShiftSCCYAML,
 			},
 			output: fmt.Errorf("could not patch Trident OpenShift SCC; %v", k8sClientErr),
@@ -5868,10 +5953,10 @@ func TestPutOpenShiftSCC(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				currentOpenShiftSCCJSON, createOpenShiftSCC, newOpenShiftSCCYAML := test.input.currentOpenShiftSCCJSON,
-					test.input.createOpenShiftSCC, test.input.newOpenShiftSCCYAML
+				currentOpenShiftSCCJSON, reuseOpenShiftSCC, newOpenShiftSCCYAML := test.input.currentOpenShiftSCCJSON,
+					test.input.reuseOpenShiftSCC, test.input.newOpenShiftSCCYAML
 
-				if !createOpenShiftSCC {
+				if reuseOpenShiftSCC {
 					// Convert new object from YAML to JSON format
 					modifiedJSON, err := yaml.YAMLToJSON([]byte(newOpenShiftSCCYAML))
 					if err != nil {
@@ -5892,7 +5977,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 				extendedK8sClient := &K8sClient{mockKubeClient}
 
 				// make the call
-				err = extendedK8sClient.PutOpenShiftSCC(currentOpenShiftSCCJSON, createOpenShiftSCC,
+				err = extendedK8sClient.PutOpenShiftSCC(currentOpenShiftSCCJSON, reuseOpenShiftSCC,
 					newOpenShiftSCCYAML)
 
 				assert.Equal(t, expectedErr, err)
@@ -5903,16 +5988,16 @@ func TestPutOpenShiftSCC(t *testing.T) {
 
 func TestDeleteOpenShiftSCC(t *testing.T) {
 	// arrange variables for the tests
-	openShiftSCCName := "trident"
-	openShiftSCCUserName := "trident"
+	openShiftSCCNames := []string{"trident"}
+	openShiftSCCUserNames := []string{"trident"}
 	appLabel := "trident"
 	getOpenShiftSCCByNameErr := fmt.Errorf("unable to get OpenShift SCC for Trident")
 	deleteObjectByYAMLErr := fmt.Errorf("couldn't delete object by yaml")
 
 	type input struct {
-		username string
-		name     string
-		label    string
+		usernames []string
+		names     []string
+		label     string
 	}
 
 	tests := map[string]struct {
@@ -5922,43 +6007,49 @@ func TestDeleteOpenShiftSCC(t *testing.T) {
 	}{
 		"expect to fail when GetOpenShiftSCCByName fails": {
 			input: input{
-				username: openShiftSCCUserName,
-				name:     openShiftSCCName,
-				label:    appLabel,
+				usernames: openShiftSCCUserNames,
+				names:     openShiftSCCNames,
+				label:     appLabel,
 			},
 			output: getOpenShiftSCCByNameErr,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-				mockK8sClient.EXPECT().GetOpenShiftSCCByName(openShiftSCCUserName,
-					openShiftSCCName).Return(false, false, []byte{}, fmt.Errorf(""))
+				openShiftQueryYAML := k8sclient.GetOpenShiftSCCQueryYAML(getOpenShiftSCCName())
+				mockK8sClient.EXPECT().DeleteObjectByYAML(openShiftQueryYAML, true).Return(nil)
+				mockK8sClient.EXPECT().GetOpenShiftSCCByName(
+					openShiftSCCUserNames[0], openShiftSCCUserNames[0]).Return(false, false, []byte{}, fmt.Errorf(""))
 			},
 		},
 		"expect to fail when GetOpenShiftSCCByName succeeds but DeleteObjectByYAML fails": {
 			input: input{
-				username: openShiftSCCUserName,
-				name:     openShiftSCCName,
-				label:    appLabel,
+				usernames: openShiftSCCUserNames,
+				names:     openShiftSCCNames,
+				label:     appLabel,
 			},
 			output: deleteObjectByYAMLErr,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-				mockK8sClient.EXPECT().GetOpenShiftSCCByName(openShiftSCCUserName, openShiftSCCName).Return(true,
+				openShiftQueryYAML := k8sclient.GetOpenShiftSCCQueryYAML(getOpenShiftSCCName())
+				mockK8sClient.EXPECT().DeleteObjectByYAML(openShiftQueryYAML, true).Return(nil)
+				mockK8sClient.EXPECT().GetOpenShiftSCCByName(openShiftSCCNames[0], openShiftSCCNames[0]).Return(true,
 					false, []byte{}, nil)
 
-				openShiftQueryYAML := k8sclient.GetOpenShiftSCCQueryYAML(openShiftSCCName)
+				openShiftQueryYAML = k8sclient.GetOpenShiftSCCQueryYAML(openShiftSCCNames[0])
 				mockK8sClient.EXPECT().DeleteObjectByYAML(openShiftQueryYAML, true).Return(deleteObjectByYAMLErr)
 			},
 		},
 		"expect to fail when GetOpenShiftSCCByName succeeds and RemoveTridentUserFromOpenShiftSCC is called": {
 			input: input{
-				username: openShiftSCCUserName,
-				name:     openShiftSCCName,
-				label:    appLabel,
+				usernames: openShiftSCCUserNames,
+				names:     openShiftSCCNames,
+				label:     appLabel,
 			},
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-				mockK8sClient.EXPECT().GetOpenShiftSCCByName(openShiftSCCUserName, openShiftSCCName).Return(true,
+				openShiftQueryYAML := k8sclient.GetOpenShiftSCCQueryYAML(getOpenShiftSCCName())
+				mockK8sClient.EXPECT().DeleteObjectByYAML(openShiftQueryYAML, true).Return(nil)
+				mockK8sClient.EXPECT().GetOpenShiftSCCByName(openShiftSCCNames[0], openShiftSCCNames[0]).Return(true,
 					false, []byte{}, nil)
 
-				openShiftQueryYAML := k8sclient.GetOpenShiftSCCQueryYAML(openShiftSCCName)
+				openShiftQueryYAML = k8sclient.GetOpenShiftSCCQueryYAML(openShiftSCCNames[0])
 				mockK8sClient.EXPECT().DeleteObjectByYAML(openShiftQueryYAML, true).Return(nil)
 
 				// values have to hard-coded here for the mock calls as they are hard-coded in the function
@@ -5984,8 +6075,8 @@ func TestDeleteOpenShiftSCC(t *testing.T) {
 				test.mocks(mockKubeClient)
 				extendedK8sClient := &K8sClient{mockKubeClient}
 
-				username, name, label := test.input.username, test.input.name, test.input.label
-				err := extendedK8sClient.DeleteOpenShiftSCC(username, name, label)
+				usernames, names, label := test.input.usernames, test.input.names, test.input.label
+				err := extendedK8sClient.DeleteOpenShiftSCC(usernames, names, label)
 				assert.Equal(t, test.output, err)
 			},
 		)

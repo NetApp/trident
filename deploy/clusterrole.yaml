@@ -273,6 +273,7 @@ rules:
       - services
       - serviceaccounts
     verbs:
+      - get
       - list
       - create
   - apiGroups:
@@ -280,12 +281,25 @@ rules:
     resources:
       - pods/exec
       - services
+    verbs:
+      - delete
+      - update
+      - patch
+    resourceNames:
+      - trident-csi
+      - trident
+  - apiGroups:
+      - ""
+    resources:
       - serviceaccounts
     verbs:
       - delete
       - update
       - patch
     resourceNames:
+      - trident-csi-controller
+      - trident-csi-linux-node
+      - trident-csi-windows-node
       - trident-csi
       - trident
   - apiGroups:
@@ -308,6 +322,9 @@ rules:
       - update
       - patch
     resourceNames:
+      - trident-csi-controller
+      - trident-csi-linux-node
+      - trident-csi-windows-node
       - trident-csi
       - trident
   - apiGroups:
@@ -340,6 +357,9 @@ rules:
     resources:
       - securitycontextconstraints
     resourceNames:
+      - trident-csi-controller
+      - trident-csi-linux-node
+      - trident-csi-windows-node
       - trident
     verbs:
       - delete

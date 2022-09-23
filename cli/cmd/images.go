@@ -146,6 +146,7 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 		Version:                 semVersion,
 		TopologyEnabled:         false,
 		HTTPRequestTimeout:      tridentconfig.HTTPTimeoutString,
+		ServiceAccountName:      getControllerRBACResourceName(true),
 	}
 	// Get Deployment and Daemonset YAML and collect the names of the container images Trident needs to run.
 	yaml := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
@@ -162,6 +163,7 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 		Debug:                false,
 		Version:              semVersion,
 		HTTPRequestTimeout:   tridentconfig.HTTPTimeoutString,
+		ServiceAccountName:   getNodeRBACResourceName(false),
 	}
 	// trident image here is an empty string because we are already going to get it from the deployment yaml
 	yaml += k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)

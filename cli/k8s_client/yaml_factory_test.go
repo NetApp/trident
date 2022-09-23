@@ -41,7 +41,10 @@ const (
 	CRUID           = "uid"
 )
 
-var Secrets = []string{"thisisasecret1", "thisisasecret2"}
+var (
+	Secrets      = []string{"thisisasecret1", "thisisasecret2"}
+	SubjectNames = []string{"name1", "name2"}
+)
 
 // TestYAML simple validation of the YAML
 func TestYAML(t *testing.T) {
@@ -99,8 +102,8 @@ func TestYAMLFactory(t *testing.T) {
 		GetServiceAccountYAML(Name, Secrets, labels, ownerRef),
 		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false),
 		GetClusterRoleYAML(FlavorOpenshift, Name, labels, ownerRef, true),
-		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, ownerRef, false),
-		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, labels, ownerRef, true),
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, ownerRef, false),
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, labels, ownerRef, true),
 		GetCSIDeploymentYAML(deploymentArgs),
 		GetCSIServiceYAML(Name, labels, ownerRef),
 		GetSecretYAML(Name, Namespace, labels, ownerRef, nil, nil),
@@ -121,10 +124,10 @@ func TestAPIVersion(t *testing.T) {
 		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, true):                          "rbac.authorization.k8s.io/v1",
 		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, false):                   "authorization.openshift.io/v1",
 		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, true):                    "rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, nil, nil, false):       "rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, nil, nil, true):        "rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, nil, false): "authorization.openshift.io/v1",
-		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, nil, true):  "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, nil, nil, false):       "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, nil, nil, true):        "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, nil, false): "authorization.openshift.io/v1",
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, nil, true):  "rbac.authorization.k8s.io/v1",
 	}
 
 	for result, value := range yamlsOutputs {

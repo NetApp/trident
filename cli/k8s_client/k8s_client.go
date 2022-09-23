@@ -1340,6 +1340,25 @@ func (k *KubeClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []by
 	return nil
 }
 
+// GetServiceAccountByLabelAndName returns a service account object matching the specified label and name
+func (k *KubeClient) GetServiceAccountByLabelAndName(label, serviceAccountName string, allNamespaces bool) (
+	*v1.ServiceAccount, error,
+) {
+	serviceAccounts, err := k.GetServiceAccountsByLabel(label, allNamespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	var serviceAccount *v1.ServiceAccount
+
+	for i := range serviceAccounts {
+		if serviceAccounts[i].Name == serviceAccountName {
+			serviceAccount = &serviceAccounts[i]
+		}
+	}
+	return serviceAccount, nil
+}
+
 // GetServiceAccountByLabel returns a service account object matching the specified label if it is unique
 func (k *KubeClient) GetServiceAccountByLabel(label string, allNamespaces bool) (*v1.ServiceAccount, error) {
 	serviceAccounts, err := k.GetServiceAccountsByLabel(label, allNamespaces)
@@ -1499,6 +1518,30 @@ func (k *KubeClient) deleteServiceAccountForeground(name, namespace string) erro
 	return nil
 }
 
+// PatchServiceAccountByLabelAndName patches a Service Account object matching the specified label
+// and name in the namespace of the client.
+func (k *KubeClient) PatchServiceAccountByLabelAndName(label, serviceAccountName string, patchBytes []byte,
+	patchType types.PatchType,
+) error {
+	serviceAccount, err := k.GetServiceAccountByLabelAndName(label, serviceAccountName, false)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Patch(ctx(), serviceAccount.Name,
+		patchType, patchBytes, patchOpts); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":          label,
+		"serviceAccount": serviceAccount.Name,
+		"namespace":      k.namespace,
+	}).Debug("Patched Kubernetes Service Account.")
+
+	return nil
+}
+
 // PatchServiceAccountByLabel patches a Service Account object matching the specified label
 // in the namespace of the client.
 func (k *KubeClient) PatchServiceAccountByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
@@ -1519,6 +1562,23 @@ func (k *KubeClient) PatchServiceAccountByLabel(label string, patchBytes []byte,
 	}).Debug("Patched Kubernetes Service Account.")
 
 	return nil
+}
+
+// GetClusterRoleByLabelAndName returns a cluster role object matching the specified label and name
+func (k *KubeClient) GetClusterRoleByLabelAndName(label, clusterRoleName string) (*v13.ClusterRole, error) {
+	clusterRoles, err := k.GetClusterRolesByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	var clusterRole *v13.ClusterRole
+
+	for i := range clusterRoles {
+		if clusterRoles[i].Name == clusterRoleName {
+			clusterRole = &clusterRoles[i]
+		}
+	}
+	return clusterRole, nil
 }
 
 // GetClusterRoleByLabel returns a cluster role object matching the specified label if it is unique
@@ -1603,6 +1663,29 @@ func (k *KubeClient) DeleteClusterRole(name string) error {
 	return nil
 }
 
+// PatchClusterRoleByLabelAndName patches a Cluster Role object matching the specified label
+// and name in the namespace of the client.
+func (k *KubeClient) PatchClusterRoleByLabelAndName(label, clusterRoleName string, patchBytes []byte,
+	patchType types.PatchType,
+) error {
+	clusterRole, err := k.GetClusterRoleByLabelAndName(label, clusterRoleName)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.RbacV1().ClusterRoles().Patch(ctx(), clusterRole.Name,
+		patchType, patchBytes, patchOpts); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":       label,
+		"clusterRole": clusterRole.Name,
+	}).Debug("Patched Kubernetes cluster role.")
+
+	return nil
+}
+
 // PatchClusterRoleByLabel patches a Cluster Role object matching the specified label
 // in the namespace of the client.
 func (k *KubeClient) PatchClusterRoleByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
@@ -1622,6 +1705,25 @@ func (k *KubeClient) PatchClusterRoleByLabel(label string, patchBytes []byte, pa
 	}).Debug("Patched Kubernetes cluster role.")
 
 	return nil
+}
+
+// GetClusterRoleBindingByLabelAndName returns a cluster role binding object matching the specified label and name
+func (k *KubeClient) GetClusterRoleBindingByLabelAndName(label, clusterRoleBindingName string) (
+	*v13.ClusterRoleBinding, error,
+) {
+	clusterRoleBindings, err := k.GetClusterRoleBindingsByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	var clusterRoleBinding *v13.ClusterRoleBinding
+
+	for i := range clusterRoleBindings {
+		if clusterRoleBindings[i].Name == clusterRoleBindingName {
+			clusterRoleBinding = &clusterRoleBindings[i]
+		}
+	}
+	return clusterRoleBinding, nil
 }
 
 // GetClusterRoleBindingByLabel returns a cluster role binding object matching the specified label if it is unique
@@ -1703,6 +1805,29 @@ func (k *KubeClient) DeleteClusterRoleBinding(name string) error {
 	log.WithFields(log.Fields{
 		"clusterRoleBinding": name,
 	}).Debug("Deleted Kubernetes cluster role binding.")
+
+	return nil
+}
+
+// PatchClusterRoleBindingByLabelAndName patches a Cluster Role binding object matching the specified label
+// and name in the namespace of the client.
+func (k *KubeClient) PatchClusterRoleBindingByLabelAndName(label, clusterRoleBindingName string, patchBytes []byte,
+	patchType types.PatchType,
+) error {
+	clusterRoleBinding, err := k.GetClusterRoleBindingByLabelAndName(label, clusterRoleBindingName)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.RbacV1().ClusterRoleBindings().Patch(ctx(), clusterRoleBinding.Name,
+		patchType, patchBytes, patchOpts); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":              label,
+		"clusterRoleBinding": clusterRoleBinding.Name,
+	}).Debug("Patched Kubernetes cluster role binding.")
 
 	return nil
 }
@@ -2655,7 +2780,6 @@ func (k *KubeClient) GetOpenShiftSCCByName(user, scc string) (bool, bool, []byte
 			for _, userIntf := range usersSlice {
 				if user, ok := userIntf.(string); ok && user == sccUser {
 					log.WithField("sccUser", sccUser).Debug("SCC User found.")
-
 					SCCUserExist = true
 					break
 				}

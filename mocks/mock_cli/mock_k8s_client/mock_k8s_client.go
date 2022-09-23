@@ -1019,6 +1019,21 @@ func (mr *MockKubernetesClientMockRecorder) GetClusterRoleBindingByLabel(arg0 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleBindingByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetClusterRoleBindingByLabel), arg0)
 }
 
+// GetClusterRoleBindingByLabelAndName mocks base method.
+func (m *MockKubernetesClient) GetClusterRoleBindingByLabelAndName(arg0, arg1 string) (*v11.ClusterRoleBinding, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetClusterRoleBindingByLabelAndName", arg0, arg1)
+	ret0, _ := ret[0].(*v11.ClusterRoleBinding)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetClusterRoleBindingByLabelAndName indicates an expected call of GetClusterRoleBindingByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) GetClusterRoleBindingByLabelAndName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleBindingByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).GetClusterRoleBindingByLabelAndName), arg0, arg1)
+}
+
 // GetClusterRoleBindingsByLabel mocks base method.
 func (m *MockKubernetesClient) GetClusterRoleBindingsByLabel(arg0 string) ([]v11.ClusterRoleBinding, error) {
 	m.ctrl.T.Helper()
@@ -1047,6 +1062,21 @@ func (m *MockKubernetesClient) GetClusterRoleByLabel(arg0 string) (*v11.ClusterR
 func (mr *MockKubernetesClientMockRecorder) GetClusterRoleByLabel(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetClusterRoleByLabel), arg0)
+}
+
+// GetClusterRoleByLabelAndName mocks base method.
+func (m *MockKubernetesClient) GetClusterRoleByLabelAndName(arg0, arg1 string) (*v11.ClusterRole, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetClusterRoleByLabelAndName", arg0, arg1)
+	ret0, _ := ret[0].(*v11.ClusterRole)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetClusterRoleByLabelAndName indicates an expected call of GetClusterRoleByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) GetClusterRoleByLabelAndName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).GetClusterRoleByLabelAndName), arg0, arg1)
 }
 
 // GetClusterRolesByLabel mocks base method.
@@ -1426,6 +1456,21 @@ func (mr *MockKubernetesClientMockRecorder) GetServiceAccountByLabel(arg0, arg1 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceAccountByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetServiceAccountByLabel), arg0, arg1)
 }
 
+// GetServiceAccountByLabelAndName mocks base method.
+func (m *MockKubernetesClient) GetServiceAccountByLabelAndName(arg0, arg1 string, arg2 bool) (*v10.ServiceAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetServiceAccountByLabelAndName", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*v10.ServiceAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetServiceAccountByLabelAndName indicates an expected call of GetServiceAccountByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) GetServiceAccountByLabelAndName(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceAccountByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).GetServiceAccountByLabelAndName), arg0, arg1, arg2)
+}
+
 // GetServiceAccountsByLabel mocks base method.
 func (m *MockKubernetesClient) GetServiceAccountsByLabel(arg0 string, arg1 bool) ([]v10.ServiceAccount, error) {
 	m.ctrl.T.Helper()
@@ -1586,6 +1631,20 @@ func (mr *MockKubernetesClientMockRecorder) PatchClusterRoleBindingByLabel(arg0,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleBindingByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchClusterRoleBindingByLabel), arg0, arg1, arg2)
 }
 
+// PatchClusterRoleBindingByLabelAndName mocks base method.
+func (m *MockKubernetesClient) PatchClusterRoleBindingByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchClusterRoleBindingByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchClusterRoleBindingByLabelAndName indicates an expected call of PatchClusterRoleBindingByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) PatchClusterRoleBindingByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleBindingByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).PatchClusterRoleBindingByLabelAndName), arg0, arg1, arg2, arg3)
+}
+
 // PatchClusterRoleByLabel mocks base method.
 func (m *MockKubernetesClient) PatchClusterRoleByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()
@@ -1598,6 +1657,20 @@ func (m *MockKubernetesClient) PatchClusterRoleByLabel(arg0 string, arg1 []byte,
 func (mr *MockKubernetesClientMockRecorder) PatchClusterRoleByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchClusterRoleByLabel), arg0, arg1, arg2)
+}
+
+// PatchClusterRoleByLabelAndName mocks base method.
+func (m *MockKubernetesClient) PatchClusterRoleByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchClusterRoleByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchClusterRoleByLabelAndName indicates an expected call of PatchClusterRoleByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) PatchClusterRoleByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).PatchClusterRoleByLabelAndName), arg0, arg1, arg2, arg3)
 }
 
 // PatchDaemonSetByLabel mocks base method.
@@ -1738,6 +1811,20 @@ func (m *MockKubernetesClient) PatchServiceAccountByLabel(arg0 string, arg1 []by
 func (mr *MockKubernetesClientMockRecorder) PatchServiceAccountByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchServiceAccountByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchServiceAccountByLabel), arg0, arg1, arg2)
+}
+
+// PatchServiceAccountByLabelAndName mocks base method.
+func (m *MockKubernetesClient) PatchServiceAccountByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchServiceAccountByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchServiceAccountByLabelAndName indicates an expected call of PatchServiceAccountByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) PatchServiceAccountByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchServiceAccountByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).PatchServiceAccountByLabelAndName), arg0, arg1, arg2, arg3)
 }
 
 // PatchServiceByLabel mocks base method.

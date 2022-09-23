@@ -8,6 +8,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/golang/mock/gomock"
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -175,4 +176,18 @@ func TestCreateOrPatchCRD(t *testing.T) {
 	mockK8sClient.EXPECT().PutCustomResourceDefinition(&crd, crdName, false, crdYAML).Return(nil)
 	expectedErr = installer.CreateOrPatchCRD(crdName, crdYAML, true)
 	assert.Nil(t, expectedErr, "expected nil error")
+}
+
+func Test_getAppLabelForResource(t *testing.T) {
+	labelMap, labelValue := getAppLabelForResource(getControllerRBACResourceName(true))
+	assert.True(t, cmp.Equal(labelMap, map[string]string{TridentAppLabelKey: TridentCSILabelValue}))
+	assert.Equal(t, labelValue, TridentCSILabel)
+
+	labelMap, labelValue = getAppLabelForResource(getNodeRBACResourceName(true))
+	assert.True(t, cmp.Equal(labelMap, map[string]string{TridentAppLabelKey: TridentNodeLabelValue}))
+	assert.Equal(t, labelValue, TridentNodeLabel)
+
+	labelMap, labelValue = getAppLabelForResource(getNodeRBACResourceName(false))
+	assert.True(t, cmp.Equal(labelMap, map[string]string{TridentAppLabelKey: TridentNodeLabelValue}))
+	assert.Equal(t, labelValue, TridentNodeLabel)
 }

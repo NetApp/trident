@@ -188,7 +188,7 @@ func (k *K8sClient) GetCSIDriverInformation(csiDriverName, appLabel string, shou
 				// Found a CSIDriver named csi.trident.netapp.io
 				log.WithField("TridentCSIDriver", csiDriverName).Infof("A Trident CSI driver found by label.")
 
-				// allocate new memory for currentCSIDriver to avoid unintentional reassignments due to reuse of the
+				// Allocate new memory for currentCSIDriver to avoid unintentional reassignments due to reuse of the
 				// csiDriver variable across iterations
 				currentCSIDriver = &storagev1.CSIDriver{}
 				*currentCSIDriver = csiDriver
@@ -314,69 +314,71 @@ func (k *K8sClient) RemoveMultipleCSIDriverCRs(unwantedCSIDriverCRs []storagev1.
 }
 
 // GetClusterRoleInformation gets the Cluster Role info.
-func (k *K8sClient) GetClusterRoleInformation(clusterRoleName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRole,
-	[]rbacv1.ClusterRole, bool, error,
+func (k *K8sClient) GetClusterRoleInformation(clusterRoleNames []string, appLabel string, shouldUpdate bool) (
+	map[string]*rbacv1.ClusterRole, []rbacv1.ClusterRole, map[string]bool, error,
 ) {
-	createClusterRole := true
+	currentClusterRoleMap := make(map[string]*rbacv1.ClusterRole)
+	reuseClusterRoleMap := make(map[string]bool)
 	var currentClusterRole *rbacv1.ClusterRole
 	var unwantedClusterRoles []rbacv1.ClusterRole
 
 	if clusterRoles, err := k.GetClusterRolesByLabel(appLabel); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of cluster roles by label.")
-		return nil, nil, true, fmt.Errorf("unable to get list of cluster roles")
+		return currentClusterRoleMap, unwantedClusterRoles, reuseClusterRoleMap,
+			fmt.Errorf("unable to get list of cluster roles")
 	} else if len(clusterRoles) == 0 {
 		log.Info("Trident cluster role not found.")
 
 		log.Debug("Deleting unlabeled Trident cluster role by name as it can cause issues during installation.")
-		if err = k.DeleteClusterRole(clusterRoleName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident cluster role")
+		for _, clusterRoleName := range clusterRoleNames {
+			if err = k.DeleteClusterRole(clusterRoleName); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident cluster role")
+				}
+			} else {
+				log.WithField("ClusterRole", clusterRoleName).Info(
+					"Deleted unlabeled Trident cluster role; replacing it with a labeled Trident cluster role.")
 			}
-		} else {
-			log.WithField("ClusterRole", clusterRoleName).Info(
-				"Deleted unlabeled Trident cluster role; replacing it with a labeled Trident cluster role.")
 		}
 	} else if shouldUpdate {
 		unwantedClusterRoles = clusterRoles
 	} else {
 		// Rules:
-		// 1. If there is no cluster role named trident-csi and one or many other cluster roles
+		// 1. If there is no cluster role with any of the allowed cluster role names and one or many other cluster roles
 		//    exist that matches the label then remove all the cluster roles.
-		// 2. If there is a cluster role named trident-csi  and one or many other cluster roles
+		// 2. If there is a cluster role with any of the allowed cluster role names and one or many other cluster roles
 		//    exist that matches the label then remove all other cluster roles.
 		for _, clusterRole := range clusterRoles {
-			if clusterRole.Name == clusterRoleName {
-				// Found a cluster role named trident/trident-csi
-				log.WithField("clusterRole", clusterRoleName).Infof("A Trident cluster role found by label.")
+			// Found a cluster role matching one of the allowed names
+			if utils.SliceContainsString(clusterRoleNames, clusterRole.Name) {
+				log.WithField("clusterRole", clusterRole.Name).Infof("A Trident cluster role found by label.")
 
-				// allocate new memory for currentClusterRole to avoid unintentional reassignments due to reuse of the
+				// Allocate new memory for currentClusterRole to avoid unintentional reassignments due to reuse of the
 				// clusterRole variable across iterations
 				currentClusterRole = &rbacv1.ClusterRole{}
 				*currentClusterRole = clusterRole
-				createClusterRole = false
+				currentClusterRoleMap[clusterRole.Name] = currentClusterRole
+				reuseClusterRoleMap[clusterRole.Name] = true
 			} else {
 				log.WithField("clusterRole", clusterRole.Name).Errorf("A cluster role was found by label "+
-					"but does not meet name '%s' requirement, marking it for deletion.", clusterRoleName)
+					"but does not meet name '%s' requirement, marking it for deletion.", clusterRole.Name)
 
 				unwantedClusterRoles = append(unwantedClusterRoles, clusterRole)
 			}
 		}
 	}
 
-	return currentClusterRole, unwantedClusterRoles, createClusterRole, nil
+	return currentClusterRoleMap, unwantedClusterRoles, reuseClusterRoleMap, nil
 }
 
 // PutClusterRole creates or updates a Cluster Role associated with Trident.
 func (k *K8sClient) PutClusterRole(
-	currentClusterRole *rbacv1.ClusterRole, createClusterRole bool, newClusterRoleYAML, appLabel string,
+	currentClusterRole *rbacv1.ClusterRole, reuseClusterRole bool, newClusterRoleYAML, appLabel string,
 ) error {
-	clusterRoleName := getClusterRoleName(true)
-	logFields := log.Fields{
-		"clusterRole": clusterRoleName,
-	}
+	var clusterRoleName string
 
-	if createClusterRole {
-		log.WithFields(logFields).Debug("Creating cluster role.")
+	if !reuseClusterRole {
+		log.Debug("Creating cluster role.")
 
 		if err := k.CreateObjectByYAML(newClusterRoleYAML); err != nil {
 			return fmt.Errorf("could not create cluster role; %v", err)
@@ -384,6 +386,12 @@ func (k *K8sClient) PutClusterRole(
 
 		log.Info("Created cluster role.")
 	} else {
+		if currentClusterRole != nil {
+			clusterRoleName = currentClusterRole.Name
+		}
+		logFields := log.Fields{
+			"clusterRole": clusterRoleName,
+		}
 		log.WithFields(logFields).Debug("Patching Trident Cluster role.")
 
 		// Identify the deltas
@@ -395,7 +403,7 @@ func (k *K8sClient) PutClusterRole(
 
 		// Apply the patch to the current Cluster Role
 		patchType := types.MergePatchType
-		if err = k.PatchClusterRoleByLabel(appLabel, patchBytes, patchType); err != nil {
+		if err = k.PatchClusterRoleByLabelAndName(appLabel, clusterRoleName, patchBytes, patchType); err != nil {
 			return fmt.Errorf("could not patch Trident Cluster role; %v", err)
 		}
 
@@ -405,8 +413,8 @@ func (k *K8sClient) PutClusterRole(
 	return nil
 }
 
-// DeleteTridentClusterRole deletes a Cluster Role associated with Trident.
-func (k *K8sClient) DeleteTridentClusterRole(clusterRoleName, appLabel string) error {
+// DeleteTridentClusterRole deletes Cluster Role(s) associated with Trident.
+func (k *K8sClient) DeleteTridentClusterRole(clusterRoleNames []string, appLabel string) error {
 	// Delete cluster role
 	if clusterRoles, err := k.GetClusterRolesByLabel(appLabel); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of cluster roles by label.")
@@ -419,22 +427,22 @@ func (k *K8sClient) DeleteTridentClusterRole(clusterRoleName, appLabel string) e
 
 		log.Debug("Deleting unlabeled Trident cluster role by name as it may have been created outside of the Trident" +
 			" Operator.")
-		if err = k.DeleteClusterRole(clusterRoleName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident cluster role.")
+		for _, clusterRoleName := range clusterRoleNames {
+			if err = k.DeleteClusterRole(clusterRoleName); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident cluster role.")
+				}
+			} else {
+				log.WithField("Cluster Role", clusterRoleName).Info(
+					"Deleted unlabeled Trident cluster role.")
 			}
-		} else {
-			log.WithField("Cluster Role", clusterRoleName).Info(
-				"Deleted unlabeled Trident cluster role.")
 		}
 	} else {
-		if len(clusterRoles) == 1 {
+		for idx := range clusterRoles {
 			log.WithFields(log.Fields{
-				"clusterRole": clusterRoles[0].Name,
-				"namespace":   clusterRoles[0].Namespace,
-			}).Info("Trident Cluster role found by label.")
-		} else {
-			log.WithField("label", appLabel).Warnf("Multiple Cluster roles found matching label; removing all.")
+				"clusterRole": clusterRoles[idx].Name,
+				"namespace":   clusterRoles[idx].Namespace,
+			}).Debug("Trident Cluster role found by label.")
 		}
 
 		if err = k.RemoveMultipleClusterRoles(clusterRoles); err != nil {
@@ -477,73 +485,75 @@ func (k *K8sClient) RemoveMultipleClusterRoles(unwantedClusterRoles []rbacv1.Clu
 
 // GetClusterRoleBindingInformation gets the info on a Cluster Role Binding associated with Trident.
 func (k *K8sClient) GetClusterRoleBindingInformation(
-	clusterRoleBindingName, appLabel string, shouldUpdate bool,
-) (*rbacv1.ClusterRoleBinding,
-	[]rbacv1.ClusterRoleBinding, bool, error,
+	clusterRoleBindingNames []string, appLabel string, shouldUpdate bool,
+) (map[string]*rbacv1.ClusterRoleBinding,
+	[]rbacv1.ClusterRoleBinding, map[string]bool, error,
 ) {
-	createClusterRoleBinding := true
+	reuseClusterRoleBindingMap := make(map[string]bool)
+	currentClusterRoleBindingMap := make(map[string]*rbacv1.ClusterRoleBinding)
 	var currentClusterRoleBinding *rbacv1.ClusterRoleBinding
 	var unwantedClusterRoleBindings []rbacv1.ClusterRoleBinding
 
 	if clusterRoleBindings, err := k.GetClusterRoleBindingsByLabel(appLabel); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of cluster role bindings by label.")
-		return nil, nil, true, fmt.Errorf("unable to get list of cluster role bindings")
+		return currentClusterRoleBindingMap, unwantedClusterRoleBindings, reuseClusterRoleBindingMap,
+			fmt.Errorf("unable to get list of cluster role bindings")
 	} else if len(clusterRoleBindings) == 0 {
 		log.Info("Trident cluster role binding not found.")
 
 		log.Debug("Deleting unlabeled Trident cluster role binding by name as it can cause issues during installation.")
-		if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident cluster role binding.")
+		for _, clusterRoleBindingName := range clusterRoleBindingNames {
+			if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident cluster role binding.")
+				}
+			} else {
+				log.WithField("Cluster Role Binding", clusterRoleBindingName).Info(
+					"Deleted unlabeled Trident cluster role binding; replacing it with a labeled Trident cluster role" +
+						" binding.")
 			}
-		} else {
-			log.WithField("Cluster Role Binding", clusterRoleBindingName).Info(
-				"Deleted unlabeled Trident cluster role binding; replacing it with a labeled Trident cluster role" +
-					" binding.")
 		}
 	} else if shouldUpdate {
 		unwantedClusterRoleBindings = clusterRoleBindings
 	} else {
 		// Rules:
-		// 1. If there is no cluster role binding named trident/trident-csi and one or many other cluster role bindings
+		// 1. If there is no cluster role binding with any of the allowed names and one or many other cluster role bindings
 		//    exist that matches the label then remove all the cluster role bindings.
-		// 2. If there is a cluster role binding named trident/trident-csi and one or many other cluster role bindings
+		// 2. If there is a cluster role binding with any of the allowed names and one or many other cluster role bindings
 		//    exist that matches the label then remove all other cluster role bindings.
 		for _, clusterRoleBinding := range clusterRoleBindings {
-			if clusterRoleBinding.Name == clusterRoleBindingName {
-				// Found a cluster role binding named trident/trident-csi
-				log.WithField("clusterRoleBinding", clusterRoleBindingName).Infof(
+			if utils.SliceContainsString(clusterRoleBindingNames, clusterRoleBinding.Name) {
+				// Found a cluster role binding matching one of the allowed names
+				log.WithField("clusterRoleBinding", clusterRoleBinding.Name).Infof(
 					"A Trident Cluster role binding was found by label.")
 
-				// allocate new memory for currentClusterRoleBinding to avoid unintentional reassignments due to reuse of the
+				// Allocate new memory for currentClusterRoleBinding to avoid unintentional reassignments due to reuse of the
 				// clusterRoleBinding variable across iterations
 				currentClusterRoleBinding = &rbacv1.ClusterRoleBinding{}
 				*currentClusterRoleBinding = clusterRoleBinding
-				createClusterRoleBinding = false
+				currentClusterRoleBindingMap[clusterRoleBinding.Name] = currentClusterRoleBinding
+				reuseClusterRoleBindingMap[clusterRoleBinding.Name] = true
 			} else {
 				log.WithField("clusterRoleBinding", clusterRoleBinding.Name).Errorf(
 					"A cluster role binding was found by label "+
-						"but does not meet name '%s' requirement, marking it for deletion.", clusterRoleBindingName)
+						"but does not meet name '%s' requirement, marking it for deletion.", clusterRoleBinding.Name)
 
 				unwantedClusterRoleBindings = append(unwantedClusterRoleBindings, clusterRoleBinding)
 			}
 		}
 	}
-	return currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding, nil
+	return currentClusterRoleBindingMap, unwantedClusterRoleBindings, reuseClusterRoleBindingMap, nil
 }
 
 // PutClusterRoleBinding creates or updates a Cluster Role Binding associated with Trident.
 func (k *K8sClient) PutClusterRoleBinding(
-	currentClusterRoleBinding *rbacv1.ClusterRoleBinding, createClusterRoleBinding bool,
+	currentClusterRoleBinding *rbacv1.ClusterRoleBinding, reuseClusterRoleBinding bool,
 	newClusterRoleBindingYAML, appLabel string,
 ) error {
-	clusterRoleBindingName := getClusterRoleBindingName(true)
-	logFields := log.Fields{
-		"clusterRoleBinding": clusterRoleBindingName,
-	}
+	var clusterRoleBindingName string
 
-	if createClusterRoleBinding {
-		log.WithFields(logFields).Debug("Creating cluster role binding.")
+	if !reuseClusterRoleBinding {
+		log.Debug("Creating cluster role binding.")
 
 		if err := k.CreateObjectByYAML(newClusterRoleBindingYAML); err != nil {
 			return fmt.Errorf("could not create cluster role binding; %v", err)
@@ -551,6 +561,13 @@ func (k *K8sClient) PutClusterRoleBinding(
 
 		log.Info("Created cluster role binding.")
 	} else {
+		if currentClusterRoleBinding != nil {
+			clusterRoleBindingName = currentClusterRoleBinding.Name
+		}
+
+		logFields := log.Fields{
+			"clusterRoleBinding": clusterRoleBindingName,
+		}
 		log.WithFields(logFields).Debug("Patching Trident Cluster role binding.")
 
 		// Identify the deltas
@@ -562,7 +579,7 @@ func (k *K8sClient) PutClusterRoleBinding(
 
 		// Apply the patch to the current Cluster Role Binding
 		patchType := types.MergePatchType
-		if err = k.PatchClusterRoleBindingByLabel(appLabel, patchBytes, patchType); err != nil {
+		if err = k.PatchClusterRoleBindingByLabelAndName(appLabel, clusterRoleBindingName, patchBytes, patchType); err != nil {
 			return fmt.Errorf("could not patch cluster role binding; %v", err)
 		}
 
@@ -572,8 +589,8 @@ func (k *K8sClient) PutClusterRoleBinding(
 	return nil
 }
 
-// DeleteTridentClusterRoleBinding deletes a Cluster Role Binding associated with Trident.
-func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingName, appLabel string) error {
+// DeleteTridentClusterRoleBinding deletes Cluster Role Binding(s) associated with Trident.
+func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingNames []string, appLabel string) error {
 	// Delete cluster role binding
 	if clusterRoleBindings, err := k.GetClusterRoleBindingsByLabel(appLabel); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of cluster role bindings by label.")
@@ -586,23 +603,22 @@ func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingName, appL
 
 		log.Debug("Deleting unlabeled Trident cluster role binding by name as it may have been created outside of the" +
 			" Trident Operator.")
-		if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident cluster role binding.")
+		for _, clusterRoleBindingName := range clusterRoleBindingNames {
+			if err := k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident cluster role binding.")
+				}
+			} else {
+				log.WithField("Cluster Role Binding", clusterRoleBindingName).Info(
+					"Deleted unlabeled Trident cluster role binding.")
 			}
-		} else {
-			log.WithField("Cluster Role Binding", clusterRoleBindingName).Info(
-				"Deleted unlabeled Trident cluster role binding.")
 		}
 	} else {
-		if len(clusterRoleBindings) == 1 {
+		for idx := range clusterRoleBindings {
 			log.WithFields(log.Fields{
-				"clusterRoleBinding": clusterRoleBindings[0].Name,
-				"namespace":          clusterRoleBindings[0].Namespace,
-			}).Info("Trident Cluster role binding found by label.")
-		} else {
-			log.WithField("label", appLabel).Warnf("Multiple Cluster role bindings found matching label; removing" +
-				" all.")
+				"clusterRoleBinding": clusterRoleBindings[idx].Name,
+				"namespace":          clusterRoleBindings[idx].Namespace,
+			}).Debug("Trident Cluster role binding found by label.")
 		}
 
 		if err = k.RemoveMultipleClusterRoleBindings(clusterRoleBindings); err != nil {
@@ -676,7 +692,7 @@ func (k *K8sClient) GetResourceQuotaInformation(
 					"namespace":     resourcequota.Namespace,
 				}).Info("A Trident resource quota was found by label.")
 
-				// allocate new memory for currentResourceQuota to avoid unintentional reassignments due to reuse of the
+				// Allocate new memory for currentResourceQuota to avoid unintentional reassignments due to reuse of the
 				// resourcequota variable across iterations
 				currentResourceQuota = &corev1.ResourceQuota{}
 				*currentResourceQuota = resourcequota
@@ -992,7 +1008,7 @@ func (k *K8sClient) GetDeploymentInformation(deploymentName, appLabel, namespace
 					"namespace":  deployment.Namespace,
 				}).Infof("A Trident deployment was found by label")
 
-				// allocate new memory for currentDeployment to avoid unintentional reassignments due to reuse of the
+				// Allocate new memory for currentDeployment to avoid unintentional reassignments due to reuse of the
 				// deployment variable across iterations
 				currentDeployment = &appsv1.Deployment{}
 				*currentDeployment = deployment
@@ -1634,41 +1650,47 @@ func (k *K8sClient) RemoveMultipleServices(unwantedServices []corev1.Service) er
 // GetServiceAccountInformation identifies the Operator-based Trident Service Account info and any unwanted
 // Service Accounts.
 func (k *K8sClient) GetServiceAccountInformation(
-	serviceAccountName, appLabel, namespace string, shouldUpdate bool,
-) (*corev1.ServiceAccount,
-	[]corev1.ServiceAccount, []string, bool, error,
+	serviceAccountNames []string, appLabel, namespace string, shouldUpdate bool,
+) (map[string]*corev1.ServiceAccount,
+	[]corev1.ServiceAccount, map[string][]string, map[string]bool, error,
 ) {
-	createServiceAccount := true
+	secretsMap := make(map[string][]string)
+	reuseServiceAccountMap := make(map[string]bool)
+	currentServiceAccountMap := make(map[string]*corev1.ServiceAccount)
 	var currentServiceAccount *corev1.ServiceAccount
 	var unwantedServiceAccounts []corev1.ServiceAccount
-	var serviceAccountSecretNames []string
 
 	if serviceAccounts, err := k.GetServiceAccountsByLabel(appLabel, false); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of service accounts by label.")
-		return nil, nil, nil, false, fmt.Errorf("unable to get list of service accounts")
+		return currentServiceAccountMap, unwantedServiceAccounts, secretsMap, reuseServiceAccountMap,
+			fmt.Errorf("unable to get list of service accounts")
 	} else if len(serviceAccounts) == 0 {
 		log.Info("Trident service account not found.")
 
 		log.Debug("Deleting unlabeled Trident service account by name as it can cause issues during installation.")
-		if err = k.DeleteServiceAccount(serviceAccountName, namespace, false); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident service account.")
+		for _, accountName := range serviceAccountNames {
+			if err = k.DeleteServiceAccount(accountName, namespace, false); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident service account.")
+				}
+			} else {
+				log.WithField("Service Account", accountName).Info(
+					"Deleted Trident service account; replacing it with a labeled Trident service account.")
 			}
-		} else {
-			log.WithField("Service Account", serviceAccountName).Info(
-				"Deleted Trident service account; replacing it with a labeled Trident service account.")
 		}
 	} else if shouldUpdate {
 		unwantedServiceAccounts = serviceAccounts
 	} else {
 		// Rules:
-		// 1. If there are no service accounts named trident-csi and one or many other service accounts
-		//    exist that matches the label then remove all the service accounts.
-		// 2. If there is a service accounts named trident-csi and one or many other service accounts
-		//    exist that matches the label then remove all other service accounts.
+		// 1. If there are no service accounts named trident-csi-controller/trident-csi-linux-node
+		//    or trident-csi-windows-node and one or many other service accounts exist that matches
+		//    the label then remove all the service accounts.
+		// 2. If there is a service accounts named trident-csi-controller/trident-csi-linux-node
+		//    and one or many other service account exist that matches the label then remove all
+		// other service accounts.
 		for _, serviceAccount := range serviceAccounts {
-			if serviceAccount.Name == serviceAccountName {
-				// Found a service account named trident-csi in the same namespace
+			if utils.SliceContainsString(serviceAccountNames, serviceAccount.Name) {
+				// Found a service account matching one of the valid names in the same namespace
 				log.WithFields(log.Fields{
 					"serviceAccount": serviceAccount.Name,
 					"namespace":      serviceAccount.Namespace,
@@ -1678,39 +1700,36 @@ func (k *K8sClient) GetServiceAccountInformation(
 				// serviceAccount variable across iterations
 				currentServiceAccount = &corev1.ServiceAccount{}
 				*currentServiceAccount = serviceAccount
-				createServiceAccount = false
+				currentServiceAccountMap[serviceAccount.Name] = currentServiceAccount
+				reuseServiceAccountMap[serviceAccount.Name] = true
 
 				for _, serviceAccountSecret := range serviceAccount.Secrets {
-					serviceAccountSecretNames = append(serviceAccountSecretNames, serviceAccountSecret.Name)
+					secretsMap[serviceAccount.Name] = append(secretsMap[serviceAccount.Name], serviceAccountSecret.Name)
 				}
 			} else {
 				log.WithField("serviceAccount", serviceAccount.Name).
 					Errorf("A Service account was found by label "+
-						"but does not meet name '%s' requirement, marking it for deletion.", serviceAccountName)
+						"but does not meet name '%s' requirement, marking it for deletion.", serviceAccount.Name)
 
 				unwantedServiceAccounts = append(unwantedServiceAccounts, serviceAccount)
 			}
 		}
 	}
 
-	return currentServiceAccount, unwantedServiceAccounts, serviceAccountSecretNames, createServiceAccount, nil
+	return currentServiceAccountMap, unwantedServiceAccounts, secretsMap, reuseServiceAccountMap, nil
 }
 
 // PutServiceAccount creates or updates a Service Account associated with Trident.
 func (k *K8sClient) PutServiceAccount(
-	currentServiceAccount *corev1.ServiceAccount, createServiceAccount bool, newServiceAccountYAML, appLabel string,
+	currentServiceAccount *corev1.ServiceAccount, reuseServiceAccount bool, newServiceAccountYAML, appLabel string,
 ) (bool,
 	error,
 ) {
+	var serviceAccountName string
 	newServiceAccount := false
-	serviceAccountName := getServiceAccountName(true)
-	logFields := log.Fields{
-		"serviceAccount": serviceAccountName,
-		"namespace":      k.Namespace(),
-	}
 
-	if createServiceAccount {
-		log.WithFields(logFields).Debug("Creating Trident service account.")
+	if !reuseServiceAccount {
+		log.Debug("Creating Trident service account.")
 
 		if err := k.CreateObjectByYAML(newServiceAccountYAML); err != nil {
 			return false, fmt.Errorf("could not create service account; %v", err)
@@ -1720,6 +1739,14 @@ func (k *K8sClient) PutServiceAccount(
 
 		log.Info("Created service account.")
 	} else {
+		if currentServiceAccount != nil {
+			serviceAccountName = currentServiceAccount.Name
+		}
+
+		logFields := log.Fields{
+			"serviceAccount": serviceAccountName,
+			"namespace":      k.Namespace(),
+		}
 		log.WithFields(logFields).Debug("Patching Trident Service account.")
 
 		// Identify the deltas
@@ -1731,7 +1758,7 @@ func (k *K8sClient) PutServiceAccount(
 
 		// Apply the patch to the current Service Account
 		patchType := types.MergePatchType
-		if err = k.PatchServiceAccountByLabel(appLabel, patchBytes, patchType); err != nil {
+		if err = k.PatchServiceAccountByLabelAndName(appLabel, serviceAccountName, patchBytes, patchType); err != nil {
 			return false, fmt.Errorf("could not patch service account; %v", err)
 		}
 
@@ -1742,7 +1769,7 @@ func (k *K8sClient) PutServiceAccount(
 }
 
 // DeleteTridentServiceAccount deletes an Operator-based Service Account associated with Trident.
-func (k *K8sClient) DeleteTridentServiceAccount(serviceAccountName, appLabel, namespace string) error {
+func (k *K8sClient) DeleteTridentServiceAccount(serviceAccountNames []string, appLabel, namespace string) error {
 	// Delete service account
 	if serviceAccounts, err := k.GetServiceAccountsByLabel(appLabel, false); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of Service accounts by label.")
@@ -1755,23 +1782,23 @@ func (k *K8sClient) DeleteTridentServiceAccount(serviceAccountName, appLabel, na
 
 		log.Debug("Deleting unlabeled Trident service account by name as it may have been created outside of the" +
 			" Trident Operator.")
-		if err = k.DeleteServiceAccount(serviceAccountName, namespace, false); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident service account.")
+		for _, serviceAccountName := range serviceAccountNames {
+			if err = k.DeleteServiceAccount(serviceAccountName, namespace, false); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident service account.")
+				}
+			} else {
+				log.WithField("Service Account", serviceAccountName).Info(
+					"Deleted unlabeled Trident service account.")
 			}
-		} else {
-			log.WithField("Service Account", serviceAccountName).Info(
-				"Deleted unlabeled Trident service account.")
 		}
 
 	} else {
-		if len(serviceAccounts) == 1 {
+		for idx := range serviceAccounts {
 			log.WithFields(log.Fields{
-				"serviceAccount": serviceAccounts[0].Name,
-				"namespace":      serviceAccounts[0].Namespace,
-			}).Info("Trident Service accounts found by label.")
-		} else {
-			log.WithField("label", appLabel).Warnf("Multiple Service accounts found matching label; removing all.")
+				"serviceAccount": serviceAccounts[idx].Name,
+				"namespace":      serviceAccounts[idx].Namespace,
+			}).Debug("Trident Service accounts found by label.")
 		}
 
 		if err = k.RemoveMultipleServiceAccounts(serviceAccounts); err != nil {
@@ -1822,47 +1849,45 @@ func (k *K8sClient) RemoveMultipleServiceAccounts(unwantedServiceAccounts []core
 // GetTridentOpenShiftSCCInformation gets OpenShiftSCC info with a supplied name,
 // username and determines if new OpenShiftSCC should be created
 func (k *K8sClient) GetTridentOpenShiftSCCInformation(
-	openShiftSCCName, openShiftSCCUserName string, shouldUpdate bool,
-) ([]byte,
-	bool, bool, error,
+	openShiftSCCNames, openShiftSCCUserNames []string, shouldUpdate bool,
+) (map[string][]byte,
+	map[string]bool, map[string]bool, error,
 ) {
-	createOpenShiftSCC := true
-	removeExistingSCC := false
-	var currentOpenShiftSCCJSON []byte
+	reuseOpenShiftSCCMap := make(map[string]bool)
+	removeExistingSCCMap := make(map[string]bool)
+	currentOpenShiftSCCJSONMap := make(map[string][]byte)
 
-	logFields := log.Fields{
-		"sccUserName": openShiftSCCUserName,
-		"sccName":     openShiftSCCName,
+	for idx := 0; idx < len(openShiftSCCNames); idx++ {
+		logFields := log.Fields{"sccUserName": openShiftSCCUserNames[idx], "sccName": openShiftSCCNames[idx]}
+		if SCCExist, SCCUserExist, jsonData, err := k.GetOpenShiftSCCByName(openShiftSCCUserNames[idx],
+			openShiftSCCNames[idx]); err != nil {
+			log.WithFields(logFields).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
+			return currentOpenShiftSCCJSONMap, reuseOpenShiftSCCMap, removeExistingSCCMap, fmt.Errorf("unable to get OpenShift SCC for Trident")
+		} else if !SCCExist {
+			log.WithFields(logFields).Info("Trident OpenShift SCC not found.")
+		} else if !SCCUserExist {
+			log.WithFields(logFields).Info("Trident OpenShift SCC found, but SCC user does not exist.")
+			removeExistingSCCMap[openShiftSCCNames[idx]] = true
+		} else if shouldUpdate {
+			removeExistingSCCMap[openShiftSCCNames[idx]] = true
+		} else {
+			currentOpenShiftSCCJSONMap[openShiftSCCNames[idx]] = jsonData
+			reuseOpenShiftSCCMap[openShiftSCCNames[idx]] = true
+		}
 	}
 
-	if SCCExist, SCCUserExist, jsonData, err := k.GetOpenShiftSCCByName(openShiftSCCUserName,
-		openShiftSCCName); err != nil {
-		log.WithFields(logFields).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
-		return nil, createOpenShiftSCC, removeExistingSCC, fmt.Errorf("unable to get OpenShift SCC for Trident")
-	} else if !SCCExist {
-		log.WithFields(logFields).Info("Trident OpenShift SCC not found.")
-	} else if !SCCUserExist {
-		log.WithFields(logFields).Info("Trident OpenShift SCC found, but SCC user does not exist.")
-		removeExistingSCC = true
-	} else if shouldUpdate {
-		removeExistingSCC = true
-	} else {
-		currentOpenShiftSCCJSON = jsonData
-		createOpenShiftSCC = false
-	}
-
-	return currentOpenShiftSCCJSON, createOpenShiftSCC, removeExistingSCC, nil
+	return currentOpenShiftSCCJSONMap, reuseOpenShiftSCCMap, removeExistingSCCMap, nil
 }
 
 // PutOpenShiftSCC creates or updates OpenShiftSCCs associated with Trident.
 func (k *K8sClient) PutOpenShiftSCC(
 	currentOpenShiftSCCJSON []byte,
-	createOpenShiftSCC bool, newOpenShiftSCCYAML string,
+	reuseOpenShiftSCC bool, newOpenShiftSCCYAML string,
 ) error {
 	openShiftSCCOldUserName := "trident-csi"
 	openShiftSCCOldName := "privileged"
 
-	if createOpenShiftSCC {
+	if !reuseOpenShiftSCC {
 		log.Debug("Creating Trident OpenShiftSCCs.")
 
 		// Remove trident user from built-in SCC from previous installation
@@ -1903,36 +1928,42 @@ func (k *K8sClient) PutOpenShiftSCC(
 
 // DeleteOpenShiftSCC deletes an Operator-based OpenShiftSCC associated with Trident.
 func (k *K8sClient) DeleteOpenShiftSCC(
-	openShiftSCCUserName, openShiftSCCName,
+	openShiftSCCUserNames, openShiftSCCNames []string,
 	appLabelValue string,
 ) error {
 	var removeExistingSCC bool
 	var logFields log.Fields
 	var err error
 
-	logFields = log.Fields{
-		"sccUserName": openShiftSCCUserName,
-		"sccName":     openShiftSCCName,
-		"label":       appLabelValue,
+	// deleting trident SCC if present
+	if err = k.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCQueryYAML(getOpenShiftSCCName()), true); err != nil {
+		return err
 	}
 
-	// Delete OpenShift SCC
-	if SCCExist, SCCUserExist, _, err := k.GetOpenShiftSCCByName(openShiftSCCUserName, openShiftSCCName); err != nil {
-		log.WithFields(logFields).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
-		return fmt.Errorf("unable to get OpenShift SCC for Trident")
-	} else if !SCCExist {
-		log.WithFields(logFields).Info("Trident OpenShift SCC not found.")
-	} else if !SCCUserExist {
-		log.WithFields(logFields).Info("Trident OpenShift SCC found, but SCC user does not exist.")
-		removeExistingSCC = true
-	} else {
-		log.WithFields(logFields).Info("Trident OpenShift SCC and the SCC user found by label.")
-		removeExistingSCC = true
-	}
+	for idx := 0; idx < len(openShiftSCCNames); idx++ {
+		logFields = log.Fields{
+			"sccUserName": openShiftSCCUserNames[idx],
+			"sccName":     openShiftSCCNames[idx],
+			"label":       appLabelValue,
+		}
+		// Delete OpenShift SCC
+		if SCCExist, SCCUserExist, _, err := k.GetOpenShiftSCCByName(openShiftSCCUserNames[idx], openShiftSCCNames[idx]); err != nil {
+			log.WithFields(logFields).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
+			return fmt.Errorf("unable to get OpenShift SCC for Trident")
+		} else if !SCCExist {
+			log.WithFields(logFields).Info("Trident OpenShift SCC not found.")
+		} else if !SCCUserExist {
+			log.WithFields(logFields).Info("Trident OpenShift SCC found, but SCC user does not exist.")
+			removeExistingSCC = true
+		} else {
+			log.WithFields(logFields).Info("Trident OpenShift SCC and the SCC user found by label.")
+			removeExistingSCC = true
+		}
 
-	if removeExistingSCC {
-		if err = k.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCQueryYAML(openShiftSCCName), true); err != nil {
-			return err
+		if removeExistingSCC {
+			if err = k.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCQueryYAML(openShiftSCCNames[idx]), true); err != nil {
+				return err
+			}
 		}
 	}
 

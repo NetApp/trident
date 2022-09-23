@@ -47,23 +47,23 @@ type ExtendedK8sClient interface {
 	DeleteCSIDriverCR(csiDriverName, appLabel string) error
 	RemoveMultipleCSIDriverCRs(unwantedCSIDriverCRs []storagev1.CSIDriver) error
 
-	GetClusterRoleInformation(clusterRoleName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRole,
-		[]rbacv1.ClusterRole, bool, error)
+	GetClusterRoleInformation(clusterRoleNames []string, appLabel string, shouldUpdate bool) (
+		map[string]*rbacv1.ClusterRole, []rbacv1.ClusterRole, map[string]bool, error)
 	PutClusterRole(
 		currentClusterRole *rbacv1.ClusterRole, createClusterRole bool, newClusterRoleYAML, appLabel string,
 	) error
-	DeleteTridentClusterRole(clusterRoleName, appLabel string) error
+	DeleteTridentClusterRole(clusterRoleNames []string, appLabel string) error
 	RemoveMultipleClusterRoles(unwantedClusterRoles []rbacv1.ClusterRole) error
 
 	GetClusterRoleBindingInformation(
-		clusterRoleBindingName, appLabel string, shouldUpdate bool,
-	) (*rbacv1.ClusterRoleBinding,
-		[]rbacv1.ClusterRoleBinding, bool, error)
+		clusterRoleBindingNames []string, appLabel string, shouldUpdate bool,
+	) (map[string]*rbacv1.ClusterRoleBinding,
+		[]rbacv1.ClusterRoleBinding, map[string]bool, error)
 	PutClusterRoleBinding(
 		currentClusterRoleBinding *rbacv1.ClusterRoleBinding, createClusterRoleBinding bool,
 		newClusterRoleBindingYAML, appLabel string,
 	) error
-	DeleteTridentClusterRoleBinding(clusterRoleBindingName, appLabel string) error
+	DeleteTridentClusterRoleBinding(clusterRoleBindingNames []string, appLabel string) error
 	RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings []rbacv1.ClusterRoleBinding) error
 
 	GetResourceQuotaInformation(resourceQuotaName, appLabel, namespace string) (*corev1.ResourceQuota,
@@ -107,24 +107,24 @@ type ExtendedK8sClient interface {
 	RemoveMultipleServices(unwantedServices []corev1.Service) error
 
 	GetServiceAccountInformation(
-		serviceAccountName, appLabel, namespace string, shouldUpdate bool,
-	) (*corev1.ServiceAccount,
-		[]corev1.ServiceAccount, []string, bool, error)
+		serviceAccountNames []string, appLabel, namespace string, shouldUpdate bool,
+	) (map[string]*corev1.ServiceAccount,
+		[]corev1.ServiceAccount, map[string][]string, map[string]bool, error)
 	PutServiceAccount(
 		currentServiceAccount *corev1.ServiceAccount, createServiceAccount bool, newServiceAccountYAML, appLabel string,
 	) (bool,
 		error)
-	DeleteTridentServiceAccount(serviceAccountName, appLabel, namespace string) error
+	DeleteTridentServiceAccount(serviceAccountNames []string, appLabel, namespace string) error
 	RemoveMultipleServiceAccounts(unwantedServiceAccounts []corev1.ServiceAccount) error
 
-	GetTridentOpenShiftSCCInformation(openShiftSCCName, openShiftSCCUserName string, shouldUpdate bool) ([]byte, bool,
-		bool, error)
+	GetTridentOpenShiftSCCInformation(openShiftSCCNames, openShiftSCCUserNames []string, shouldUpdate bool) (map[string][]byte,
+		map[string]bool, map[string]bool, error)
 	PutOpenShiftSCC(
 		currentOpenShiftSCCJSON []byte,
 		createOpenShiftSCC bool, newOpenShiftSCCYAML string,
 	) error
 	DeleteOpenShiftSCC(
-		openShiftSCCUserName, openShiftSCCName,
+		openShiftSCCUserNames, openShiftSCCNames []string,
 		appLabelValue string,
 	) error
 
