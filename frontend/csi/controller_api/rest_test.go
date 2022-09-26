@@ -92,6 +92,11 @@ func mockResourceNotFound(w http.ResponseWriter, r *http.Request) {
 	createResponse(w, "", sc)
 }
 
+func mockInvalidResponse(w http.ResponseWriter, r *http.Request) {
+	sc := http.StatusNotFound
+	createResponse(w, "xyz", sc)
+}
+
 func mockDeleteNode(w http.ResponseWriter, r *http.Request) {
 	str := strings.Split(strings.TrimSpace(r.URL.Path), "/")
 	name := str[4]
@@ -143,28 +148,72 @@ func mockGetChap(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func mockInvokeAPIInternalError(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write([]byte("500 - Something bad happened!"))
+}
+
+func mockIOUtilError(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Length", "50")
+	w.Write([]byte("500 - Something bad happened!"))
+}
+
+func mockGetNodeNegative(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode("xyz\n}")
+}
+
 func TestInvokeAPI(t *testing.T) {
 	controllerRestClient := ControllerRestClient{}
 	s := "{\"id\":\" uuid\"}"
 	ctx = context.Background()
-	server := getHttpServer(config.NodeURL, mockGetNodeResponse)
-	controllerRestClient.url = server.URL
-	response, _, err := controllerRestClient.InvokeAPI(ctx, []byte(s), "GET", "/trident/v1/node?id=1", true, true)
-	server.Close()
-	assert.NoError(t, err)
-	assert.Equal(t, http.StatusOK, response.StatusCode)
+	tests := []struct {
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		httpStatus      int
+		isErrorExpected bool
+	}{
+		{mockFunction: mockGetNodeResponse, httpStatus: http.StatusOK, isErrorExpected: false},
+		{mockFunction: mockResourceNotFound, httpStatus: http.StatusNotFound, isErrorExpected: false},
+		{mockFunction: mockInvalidResponse, httpStatus: http.StatusNotFound, isErrorExpected: false},
+		{mockFunction: mockInvokeAPIInternalError, isErrorExpected: true},
+		{mockFunction: mockIOUtilError, isErrorExpected: true},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("CreateNode: %d", i), func(t *testing.T) {
+			server := getHttpServer(config.NodeURL, test.mockFunction)
+			controllerRestClient.url = server.URL
+			response, _, err := controllerRestClient.InvokeAPI(ctx, []byte(s), "GET", "/trident/v1/node?id=1", true, true)
+			server.Close()
+			if test.isErrorExpected {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			if response != nil {
+				assert.Equal(t, test.httpStatus, response.StatusCode)
+			}
+		})
+	}
 }
 
-func TestInvokeAPIResponseResourceNotFound(t *testing.T) {
+func TestInvokeAPIInvalidInput(t *testing.T) {
 	controllerRestClient := ControllerRestClient{}
-	s := "{\"id\":\" uuid\"}"
+	s := "name\":\" VSM\"}"
 	ctx = context.Background()
-	server := getHttpServer("/trident/v1/notFound", mockResourceNotFound)
-	controllerRestClient.url = server.URL
-	response, _, err := controllerRestClient.InvokeAPI(ctx, []byte(s), "GET", "/trident/v1/notFound", true, true)
-	server.Close()
-	assert.NoError(t, err)
-	assert.Equal(t, http.StatusNotFound, response.StatusCode)
+	tests := []struct {
+		ctx             context.Context
+		isErrorExpected bool
+	}{
+		{ctx: ctx, isErrorExpected: false},
+		{ctx: nil, isErrorExpected: false},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("CreateNode: %d", i), func(t *testing.T) {
+			_, _, err := controllerRestClient.InvokeAPI(test.ctx, []byte(s), "GET", "/trident/v1/node?id=1", true, true)
+			assert.Error(t, err)
+		})
+	}
 }
 
 func TestCreateNode(t *testing.T) {
@@ -225,6 +274,7 @@ func TestGetNode(t *testing.T) {
 	}{
 		{mockFunction: mockGetNodeResponse, isErrorExpected: false},
 		{mockFunction: mockResourceNotFound, isErrorExpected: true},
+		{mockFunction: mockGetNodeNegative, isErrorExpected: true},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("GetNode: %d", i), func(t *testing.T) {
@@ -338,25 +388,30 @@ func TestCreateTLSRestClient(t *testing.T) {
 
 	fileHandler, e := os.Create("data.txt")
 	assert.NoError(t, e)
-
-	server := getHttpServer("/trident/v1/chap/volume/xyz", mockGetChap)
-	controllerRestClient.url = server.URL
-	_, err := CreateTLSRestClient(controllerRestClient.url, fileHandler.Name(), certFile, keyFile)
-	server.Close()
-	assert.NoError(t, err)
+	tests := []struct {
+		caFileName      string
+		certFileName    string
+		keyfileName     string
+		isErrorExpected bool
+	}{
+		{caFileName: fileHandler.Name(), certFileName: certFile, keyfileName: keyFile, isErrorExpected: false},
+		{caFileName: "", certFileName: certFile, keyfileName: keyFile, isErrorExpected: false},
+		{caFileName: fileHandler.Name(), certFileName: fileHandler.Name(), keyfileName: fileHandler.Name(), isErrorExpected: true},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("CreateNode: %d", i), func(t *testing.T) {
+			server := getHttpServer("/trident/v1/chap/volume/xyz", mockGetChap)
+			controllerRestClient.url = server.URL
+			_, err := CreateTLSRestClient(controllerRestClient.url, test.caFileName, test.certFileName, test.keyfileName)
+			server.Close()
+			if test.isErrorExpected {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 	fileHandler.Close()
 	e = os.Remove("data.txt")
 	assert.NoError(t, e)
-}
-
-func TestCreateTLSRestClientEmptyFile(t *testing.T) {
-	controllerRestClient := ControllerRestClient{}
-	certFile := os.Getenv("CERT")
-	keyFile := os.Getenv("KEY")
-
-	server := getHttpServer("/trident/v1/chap/volume/xyz", mockGetChap)
-	controllerRestClient.url = server.URL
-	_, err := CreateTLSRestClient(controllerRestClient.url, "", certFile, keyFile)
-	server.Close()
-	assert.NoError(t, err)
 }
