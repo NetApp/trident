@@ -28,7 +28,6 @@ const (
 	tridentDeviceInfoPath         = "/var/lib/trident/tracking"
 	lockID                        = "csi_node_server"
 	volumePublishInfoFilename     = "volumePublishInfo.json"
-	nodePrepBreadcrumbFilename    = "nodePrepInfo.json"
 	AttachISCSIVolumeTimeoutShort = 15 * time.Second
 	iSCSINodeUnstageMaxDuration   = 15 * time.Second
 )
@@ -422,7 +421,8 @@ func (p *Plugin) nodeExpandVolume(
 
 	switch protocol {
 	case tridentconfig.File:
-		return status.Error(codes.InvalidArgument, "NFS does not need to explicitly expand the filesystem")
+		Logc(ctx).WithField("volumeId", volumeId).Info("Filesystem expansion check is not required.")
+		return nil
 	case tridentconfig.Block:
 		if fsType, err = utils.VerifyFilesystemSupport(publishInfo.FilesystemType); err != nil {
 			break
@@ -788,7 +788,7 @@ func (p *Plugin) nodeStageSMBVolume(
 		return nil, err
 	}
 
-	deviceFilePath, err = utils.GetDeviceFilePath(ctx, req.StagingTargetPath, req.VolumeId)
+	deviceFilePath, err = utils.GetDeviceFilePath(ctx, stagingTargetPath, req.VolumeId)
 	if err != nil {
 		return nil, err
 	}

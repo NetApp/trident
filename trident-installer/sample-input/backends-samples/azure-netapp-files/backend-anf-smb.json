@@ -1,0 +1,12 @@
+{
+	"version": 1,
+	"storageDriverName": "azure-netapp-files",
+	"subscriptionID": "12abc678-4774-fake-a1b2-a7abcde39312",
+	"tenantID": "a7abcde3-edc1-fake-b111-a7abcde356cf",
+	"clientID": "abcde356-bf8e-fake-c111-abcde35613aa",
+	"clientSecret": "rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU",
+	"location": "eastus",
+	"serviceLevel": "Premium",
+	"nasType": "smb"
+}
+

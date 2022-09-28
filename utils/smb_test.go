@@ -1,3 +1,5 @@
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 //go:build !windows
 
 package utils

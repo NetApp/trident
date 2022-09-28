@@ -21,11 +21,11 @@ func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
 }
 
 // GetDeviceFilePath returns the staging path for volume.
-func GetDeviceFilePath(ctx context.Context, path, volumeId string) (string, error) {
+func GetDeviceFilePath(ctx context.Context, _, volumeId string) (string, error) {
 	Logc(ctx).Debug(">>>> filesystem_windows.GetDeviceFilePath")
 	defer Logc(ctx).Debug("<<<< filesystem_windows.GetDeviceFilePath")
 
-	path = "\\var\\lib\\trident\\tracking" + "\\" + volumeId
+	path := "\\var\\lib\\trident\\tracking" + "\\" + volumeId
 
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(path, os.ModePerm)
