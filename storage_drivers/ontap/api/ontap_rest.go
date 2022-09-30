@@ -1136,7 +1136,7 @@ func (c RestClient) createVolumeByStyle(
 	// If destination aggregate is NAE enabled, new volume will be aggregate encrypted
 	// else it will be volume encrypted as per Ontap's default behaviour.
 	if encrypt != nil {
-		volumeInfo.Encryption = &models.VolumeEncryption{Enabled: *encrypt}
+		volumeInfo.Encryption = &models.VolumeEncryption{Enabled: encrypt}
 	}
 
 	if qosPolicyGroup.Kind != InvalidQosPolicyGroupKind {
@@ -1286,7 +1286,7 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) 
 		volumes = append(volumes, &Volume{
 			Name:           volume.Name,
 			Aggregates:     aggregates,
-			Encrypt:        ToBoolPointer(volume.Encryption.Enabled),
+			Encrypt:        volume.Encryption.Enabled,
 			TieringPolicy:  tieringPolicy,
 			SnapshotDir:    snapshotDirAccessEnabled,
 			SpaceReserve:   volume.Guarantee.Type,

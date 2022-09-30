@@ -46,7 +46,8 @@ func NewTokenCollectionGetOK() *TokenCollectionGetOK {
 	return &TokenCollectionGetOK{}
 }
 
-/* TokenCollectionGetOK describes a response with status code 200, with default header values.
+/*
+TokenCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type TokenCollectionGetOK struct {
 	Payload *models.TokenResponse
 }
 
+// IsSuccess returns true when this token collection get o k response has a 2xx status code
+func (o *TokenCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this token collection get o k response has a 3xx status code
+func (o *TokenCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this token collection get o k response has a 4xx status code
+func (o *TokenCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this token collection get o k response has a 5xx status code
+func (o *TokenCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this token collection get o k response a status code equal to that given
+func (o *TokenCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *TokenCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] tokenCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *TokenCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] tokenCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *TokenCollectionGetOK) GetPayload() *models.TokenResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewTokenCollectionGetDefault(code int) *TokenCollectionGetDefault {
 	}
 }
 
-/* TokenCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+TokenCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *TokenCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this token collection get default response has a 2xx status code
+func (o *TokenCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this token collection get default response has a 3xx status code
+func (o *TokenCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this token collection get default response has a 4xx status code
+func (o *TokenCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this token collection get default response has a 5xx status code
+func (o *TokenCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this token collection get default response a status code equal to that given
+func (o *TokenCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TokenCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] token_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *TokenCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/file/clone/tokens][%d] token_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *TokenCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -17,7 +17,6 @@ import (
 // MccipPort Port configuration specification.
 // l3_config information is only needed when configuring a MetroCluster IP for use in a layer 3 network.
 //
-//
 // swagger:model mccip_port
 type MccipPort struct {
 

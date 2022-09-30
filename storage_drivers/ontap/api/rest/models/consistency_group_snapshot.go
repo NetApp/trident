@@ -356,7 +356,6 @@ func (m *ConsistencyGroupSnapshot) UnmarshalBinary(b []byte) error {
 
 // ConsistencyGroupSnapshotConsistencyGroup The consistency group of the Snapshot copy.
 //
-//
 // swagger:model ConsistencyGroupSnapshotConsistencyGroup
 type ConsistencyGroupSnapshotConsistencyGroup struct {
 

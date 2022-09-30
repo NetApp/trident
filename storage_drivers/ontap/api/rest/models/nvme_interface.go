@@ -19,7 +19,6 @@ import (
 // NvmeInterface NVMe interfaces are network interfaces configured to support an NVMe over Fabrics (NVMe-oF) protocol. The NVMe interfaces are Fibre Channel interfaces supporting an NVMe-oF data protocol. Regardless of the underlying physical and data protocol, NVMe interfaces are treated equally for host-side application configuration. This endpoint provides a consolidated view of all NVMe interfaces for the purpose of configuring host-side applications.<br/>
 // NVMe interfaces must be created using the protocol-specific endpoints for Fibre Channel interfaces. See [`POST /network/fc/interfaces`](#/networking/fc_interface_create). After creation, the interfaces are available via this interface.
 //
-//
 // swagger:model nvme_interface
 type NvmeInterface struct {
 
@@ -490,7 +489,6 @@ func (m *NvmeInterface) UnmarshalBinary(b []byte) error {
 // NvmeInterfaceFcInterface The attributes specific to a Fibre Channel-based NVMe interface.<br/>
 // This is populated when `interface_type` is _fc_interface_.
 //
-//
 // swagger:model NvmeInterfaceFcInterface
 type NvmeInterfaceFcInterface struct {
 
@@ -743,7 +741,6 @@ func (m *NvmeInterfaceFcInterfaceLinks) UnmarshalBinary(b []byte) error {
 
 // NvmeInterfaceFcInterfacePort An FC port is the physical port of an FC adapter on a cluster node that can be connected to an FC network.
 //
-//
 // swagger:model NvmeInterfaceFcInterfacePort
 type NvmeInterfaceFcInterfacePort struct {
 
@@ -968,7 +965,6 @@ func (m *NvmeInterfaceFcInterfacePortLinks) UnmarshalBinary(b []byte) error {
 
 // NvmeInterfaceFcInterfacePortNode The node on which the FC port is located.
 //
-//
 // swagger:model NvmeInterfaceFcInterfacePortNode
 type NvmeInterfaceFcInterfacePortNode struct {
 
@@ -1008,7 +1004,6 @@ func (m *NvmeInterfaceFcInterfacePortNode) UnmarshalBinary(b []byte) error {
 
 // NvmeInterfaceIPInterface The attributes specific to an IP-based NVMe interface.<br/>
 // This is populated when `interface_type` is _ip_interface_.
-//
 //
 // swagger:model NvmeInterfaceIPInterface
 type NvmeInterfaceIPInterface struct {

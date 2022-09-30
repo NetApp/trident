@@ -53,10 +53,12 @@ func NewFcInterfaceCollectionGetParamsWithHTTPClient(client *http.Client) *FcInt
 	}
 }
 
-/* FcInterfaceCollectionGetParams contains all the parameters to send to the API endpoint
-   for the fc interface collection get operation.
+/*
+FcInterfaceCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fc interface collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type FcInterfaceCollectionGetParams struct {
 

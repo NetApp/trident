@@ -46,14 +46,44 @@ func NewClusterNtpKeysDeleteOK() *ClusterNtpKeysDeleteOK {
 	return &ClusterNtpKeysDeleteOK{}
 }
 
-/* ClusterNtpKeysDeleteOK describes a response with status code 200, with default header values.
+/*
+ClusterNtpKeysDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ClusterNtpKeysDeleteOK struct {
 }
 
+// IsSuccess returns true when this cluster ntp keys delete o k response has a 2xx status code
+func (o *ClusterNtpKeysDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ntp keys delete o k response has a 3xx status code
+func (o *ClusterNtpKeysDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ntp keys delete o k response has a 4xx status code
+func (o *ClusterNtpKeysDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ntp keys delete o k response has a 5xx status code
+func (o *ClusterNtpKeysDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ntp keys delete o k response a status code equal to that given
+func (o *ClusterNtpKeysDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterNtpKeysDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] clusterNtpKeysDeleteOK ", 200)
+}
+
+func (o *ClusterNtpKeysDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] clusterNtpKeysDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewClusterNtpKeysDeleteDefault(code int) *ClusterNtpKeysDeleteDefault {
 	}
 }
 
-/* ClusterNtpKeysDeleteDefault describes a response with status code -1, with default header values.
+/*
+	ClusterNtpKeysDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2097186 | The key cannot be deleted because it is being used by an NTP server. |
-
 */
 type ClusterNtpKeysDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *ClusterNtpKeysDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ntp keys delete default response has a 2xx status code
+func (o *ClusterNtpKeysDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ntp keys delete default response has a 3xx status code
+func (o *ClusterNtpKeysDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ntp keys delete default response has a 4xx status code
+func (o *ClusterNtpKeysDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ntp keys delete default response has a 5xx status code
+func (o *ClusterNtpKeysDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ntp keys delete default response a status code equal to that given
+func (o *ClusterNtpKeysDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNtpKeysDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNtpKeysDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNtpKeysDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewVolumeDeleteParamsWithHTTPClient(client *http.Client) *VolumeDeleteParam
 	}
 }
 
-/* VolumeDeleteParams contains all the parameters to send to the API endpoint
-   for the volume delete operation.
+/*
+VolumeDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the volume delete operation.
+
+	Typically these are written to a http.Request.
 */
 type VolumeDeleteParams struct {
 

@@ -46,14 +46,44 @@ func NewNfsModifyOK() *NfsModifyOK {
 	return &NfsModifyOK{}
 }
 
-/* NfsModifyOK describes a response with status code 200, with default header values.
+/*
+NfsModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NfsModifyOK struct {
 }
 
+// IsSuccess returns true when this nfs modify o k response has a 2xx status code
+func (o *NfsModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nfs modify o k response has a 3xx status code
+func (o *NfsModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nfs modify o k response has a 4xx status code
+func (o *NfsModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nfs modify o k response has a 5xx status code
+func (o *NfsModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nfs modify o k response a status code equal to that given
+func (o *NfsModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NfsModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfsModifyOK ", 200)
+}
+
+func (o *NfsModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfsModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewNfsModifyDefault(code int) *NfsModifyDefault {
 	}
 }
 
-/* NfsModifyDefault describes a response with status code -1, with default header values.
+/*
+	NfsModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 3276916    | Vserver is not running |
@@ -80,7 +112,6 @@ func NewNfsModifyDefault(code int) *NfsModifyDefault {
 | 3277088    | Attempting to increase the number of bits used for NFSv3 FSIDs and File IDs from 32 to 64 on Vserver. This could result in older client software no longer working with the volumes owned by Vserver  |
 | 3277090    | Attempting to disallow multiple FSIDs per mount point on Vserver. Since this Vserver currently uses 32-bit NFSv3 FSIDs and File IDs, this could result in collisions between different File IDs and is not recommended |
 | 3277099    | Domain name contains invalid characters or its too short. Allowed characters are: alphabetical characters (A-Za-z), numeric characters (0-9), minus sign (-), and the period (.). The first character must be alphabetical or numeric, last character must not be a minus sign or a period. Minimum supported length: 2 characters, maximum of 256 characters |
-
 */
 type NfsModifyDefault struct {
 	_statusCode int
@@ -93,9 +124,39 @@ func (o *NfsModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nfs modify default response has a 2xx status code
+func (o *NfsModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nfs modify default response has a 3xx status code
+func (o *NfsModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nfs modify default response has a 4xx status code
+func (o *NfsModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nfs modify default response has a 5xx status code
+func (o *NfsModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nfs modify default response a status code equal to that given
+func (o *NfsModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NfsModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfs_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NfsModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/nfs/services/{svm.uuid}][%d] nfs_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NfsModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

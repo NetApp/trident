@@ -52,10 +52,12 @@ func NewS3PolicyDeleteParamsWithHTTPClient(client *http.Client) *S3PolicyDeleteP
 	}
 }
 
-/* S3PolicyDeleteParams contains all the parameters to send to the API endpoint
-   for the s3 policy delete operation.
+/*
+S3PolicyDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 policy delete operation.
+
+	Typically these are written to a http.Request.
 */
 type S3PolicyDeleteParams struct {
 

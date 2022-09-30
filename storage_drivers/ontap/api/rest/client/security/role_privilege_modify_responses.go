@@ -46,14 +46,44 @@ func NewRolePrivilegeModifyOK() *RolePrivilegeModifyOK {
 	return &RolePrivilegeModifyOK{}
 }
 
-/* RolePrivilegeModifyOK describes a response with status code 200, with default header values.
+/*
+RolePrivilegeModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type RolePrivilegeModifyOK struct {
 }
 
+// IsSuccess returns true when this role privilege modify o k response has a 2xx status code
+func (o *RolePrivilegeModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this role privilege modify o k response has a 3xx status code
+func (o *RolePrivilegeModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this role privilege modify o k response has a 4xx status code
+func (o *RolePrivilegeModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this role privilege modify o k response has a 5xx status code
+func (o *RolePrivilegeModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this role privilege modify o k response a status code equal to that given
+func (o *RolePrivilegeModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *RolePrivilegeModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeModifyOK ", 200)
+}
+
+func (o *RolePrivilegeModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeModifyOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewRolePrivilegeModifyDefault(code int) *RolePrivilegeModifyDefault {
 	}
 }
 
-/* RolePrivilegeModifyDefault describes a response with status code -1, with default header values.
+/*
+RolePrivilegeModifyDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *RolePrivilegeModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this role privilege modify default response has a 2xx status code
+func (o *RolePrivilegeModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this role privilege modify default response has a 3xx status code
+func (o *RolePrivilegeModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this role privilege modify default response has a 4xx status code
+func (o *RolePrivilegeModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this role privilege modify default response has a 5xx status code
+func (o *RolePrivilegeModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this role privilege modify default response a status code equal to that given
+func (o *RolePrivilegeModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *RolePrivilegeModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *RolePrivilegeModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *RolePrivilegeModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

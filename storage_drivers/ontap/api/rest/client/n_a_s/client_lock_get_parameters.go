@@ -53,10 +53,12 @@ func NewClientLockGetParamsWithHTTPClient(client *http.Client) *ClientLockGetPar
 	}
 }
 
-/* ClientLockGetParams contains all the parameters to send to the API endpoint
-   for the client lock get operation.
+/*
+ClientLockGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the client lock get operation.
+
+	Typically these are written to a http.Request.
 */
 type ClientLockGetParams struct {
 

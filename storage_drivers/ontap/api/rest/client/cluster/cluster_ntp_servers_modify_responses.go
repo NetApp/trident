@@ -46,7 +46,8 @@ func NewClusterNtpServersModifyAccepted() *ClusterNtpServersModifyAccepted {
 	return &ClusterNtpServersModifyAccepted{}
 }
 
-/* ClusterNtpServersModifyAccepted describes a response with status code 202, with default header values.
+/*
+ClusterNtpServersModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type ClusterNtpServersModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cluster ntp servers modify accepted response has a 2xx status code
+func (o *ClusterNtpServersModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ntp servers modify accepted response has a 3xx status code
+func (o *ClusterNtpServersModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ntp servers modify accepted response has a 4xx status code
+func (o *ClusterNtpServersModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ntp servers modify accepted response has a 5xx status code
+func (o *ClusterNtpServersModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ntp servers modify accepted response a status code equal to that given
+func (o *ClusterNtpServersModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ClusterNtpServersModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] clusterNtpServersModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ClusterNtpServersModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] clusterNtpServersModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ClusterNtpServersModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewClusterNtpServersModifyDefault(code int) *ClusterNtpServersModifyDefault
 	}
 }
 
-/* ClusterNtpServersModifyDefault describes a response with status code -1, with default header values.
+/*
+	ClusterNtpServersModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2097163 | NTP server address was invalid. |
@@ -100,7 +133,6 @@ func NewClusterNtpServersModifyDefault(code int) *ClusterNtpServersModifyDefault
 | 2097188 | An invalid key identifier was provided. Identifiers must be in the range from 1 to 65535. |
 | 2097193 | An unknown key was provided. |
 | 2097194 | The field \"authentication_enabled\" cannot be false when the field NTP key is given. |
-
 */
 type ClusterNtpServersModifyDefault struct {
 	_statusCode int
@@ -113,9 +145,39 @@ func (o *ClusterNtpServersModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ntp servers modify default response has a 2xx status code
+func (o *ClusterNtpServersModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ntp servers modify default response has a 3xx status code
+func (o *ClusterNtpServersModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ntp servers modify default response has a 4xx status code
+func (o *ClusterNtpServersModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ntp servers modify default response has a 5xx status code
+func (o *ClusterNtpServersModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ntp servers modify default response a status code equal to that given
+func (o *ClusterNtpServersModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNtpServersModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNtpServersModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNtpServersModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

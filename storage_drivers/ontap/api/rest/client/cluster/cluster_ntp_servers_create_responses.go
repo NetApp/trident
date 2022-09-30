@@ -46,7 +46,8 @@ func NewClusterNtpServersCreateAccepted() *ClusterNtpServersCreateAccepted {
 	return &ClusterNtpServersCreateAccepted{}
 }
 
-/* ClusterNtpServersCreateAccepted describes a response with status code 202, with default header values.
+/*
+ClusterNtpServersCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type ClusterNtpServersCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cluster ntp servers create accepted response has a 2xx status code
+func (o *ClusterNtpServersCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ntp servers create accepted response has a 3xx status code
+func (o *ClusterNtpServersCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ntp servers create accepted response has a 4xx status code
+func (o *ClusterNtpServersCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ntp servers create accepted response has a 5xx status code
+func (o *ClusterNtpServersCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ntp servers create accepted response a status code equal to that given
+func (o *ClusterNtpServersCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ClusterNtpServersCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /cluster/ntp/servers][%d] clusterNtpServersCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ClusterNtpServersCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /cluster/ntp/servers][%d] clusterNtpServersCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ClusterNtpServersCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewClusterNtpServersCreateDefault(code int) *ClusterNtpServersCreateDefault
 	}
 }
 
-/* ClusterNtpServersCreateDefault describes a response with status code -1, with default header values.
+/*
+	ClusterNtpServersCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2097163 | NTP server IPv4 address was invalid. |
@@ -99,7 +132,6 @@ func NewClusterNtpServersCreateDefault(code int) *ClusterNtpServersCreateDefault
 | 2097183 | NTP symmetric key authentication cannot be used for a node not in a cluster. |
 | 2097185 | NTP key authentication failed for the provided key. |
 | 2097193 | An unknown NTP key was provided. |
-
 */
 type ClusterNtpServersCreateDefault struct {
 	_statusCode int
@@ -112,9 +144,39 @@ func (o *ClusterNtpServersCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ntp servers create default response has a 2xx status code
+func (o *ClusterNtpServersCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ntp servers create default response has a 3xx status code
+func (o *ClusterNtpServersCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ntp servers create default response has a 4xx status code
+func (o *ClusterNtpServersCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ntp servers create default response has a 5xx status code
+func (o *ClusterNtpServersCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ntp servers create default response a status code equal to that given
+func (o *ClusterNtpServersCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNtpServersCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /cluster/ntp/servers][%d] cluster_ntp_servers_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNtpServersCreateDefault) String() string {
+	return fmt.Sprintf("[POST /cluster/ntp/servers][%d] cluster_ntp_servers_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNtpServersCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewIgroupNestedDeleteOK() *IgroupNestedDeleteOK {
 	return &IgroupNestedDeleteOK{}
 }
 
-/* IgroupNestedDeleteOK describes a response with status code 200, with default header values.
+/*
+IgroupNestedDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IgroupNestedDeleteOK struct {
 }
 
+// IsSuccess returns true when this igroup nested delete o k response has a 2xx status code
+func (o *IgroupNestedDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup nested delete o k response has a 3xx status code
+func (o *IgroupNestedDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup nested delete o k response has a 4xx status code
+func (o *IgroupNestedDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup nested delete o k response has a 5xx status code
+func (o *IgroupNestedDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup nested delete o k response a status code equal to that given
+func (o *IgroupNestedDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IgroupNestedDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroupNestedDeleteOK ", 200)
+}
+
+func (o *IgroupNestedDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroupNestedDeleteOK ", 200)
 }
 
@@ -69,15 +99,16 @@ func NewIgroupNestedDeleteDefault(code int) *IgroupNestedDeleteDefault {
 	}
 }
 
-/* IgroupNestedDeleteDefault describes a response with status code -1, with default header values.
+/*
+	IgroupNestedDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1254213 | The initiator group is mapped to one or more LUNs and `allow_delete_while_mapped` has not been specified. |
 | 5374738 | The child initiator group is not owned by the parent initiator group. |
 | 5374852 | The initiator group specified in the URI does not exist. |
-
 */
 type IgroupNestedDeleteDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *IgroupNestedDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup nested delete default response has a 2xx status code
+func (o *IgroupNestedDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup nested delete default response has a 3xx status code
+func (o *IgroupNestedDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup nested delete default response has a 4xx status code
+func (o *IgroupNestedDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup nested delete default response has a 5xx status code
+func (o *IgroupNestedDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup nested delete default response a status code equal to that given
+func (o *IgroupNestedDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupNestedDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroup_nested_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupNestedDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroup_nested_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupNestedDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewKerberosRealmDeleteOK() *KerberosRealmDeleteOK {
 	return &KerberosRealmDeleteOK{}
 }
 
-/* KerberosRealmDeleteOK describes a response with status code 200, with default header values.
+/*
+KerberosRealmDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type KerberosRealmDeleteOK struct {
 }
 
+// IsSuccess returns true when this kerberos realm delete o k response has a 2xx status code
+func (o *KerberosRealmDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this kerberos realm delete o k response has a 3xx status code
+func (o *KerberosRealmDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this kerberos realm delete o k response has a 4xx status code
+func (o *KerberosRealmDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this kerberos realm delete o k response has a 5xx status code
+func (o *KerberosRealmDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this kerberos realm delete o k response a status code equal to that given
+func (o *KerberosRealmDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *KerberosRealmDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmDeleteOK ", 200)
+}
+
+func (o *KerberosRealmDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewKerberosRealmDeleteDefault(code int) *KerberosRealmDeleteDefault {
 	}
 }
 
-/* KerberosRealmDeleteDefault describes a response with status code -1, with default header values.
+/*
+	KerberosRealmDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error codes | Description |
 | ----------- | ----------- |
 | 1966125     | Failed to remove hosts entry.|
@@ -81,7 +113,6 @@ func NewKerberosRealmDeleteDefault(code int) *KerberosRealmDeleteDefault {
 | 3276942     | Service principal name is invalid. It must of the format:"nfs/<LIF-FQDN>@REALM\\\"|
 | 3276976     | "realm" is a required input|
 | 3276998     | Only the data Vservers can own NFS Kerberos realms.|
-
 */
 type KerberosRealmDeleteDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *KerberosRealmDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this kerberos realm delete default response has a 2xx status code
+func (o *KerberosRealmDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this kerberos realm delete default response has a 3xx status code
+func (o *KerberosRealmDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this kerberos realm delete default response has a 4xx status code
+func (o *KerberosRealmDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this kerberos realm delete default response has a 5xx status code
+func (o *KerberosRealmDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this kerberos realm delete default response a status code equal to that given
+func (o *KerberosRealmDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *KerberosRealmDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *KerberosRealmDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *KerberosRealmDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

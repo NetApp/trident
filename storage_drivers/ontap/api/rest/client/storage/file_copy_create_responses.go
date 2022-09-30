@@ -46,7 +46,8 @@ func NewFileCopyCreateAccepted() *FileCopyCreateAccepted {
 	return &FileCopyCreateAccepted{}
 }
 
-/* FileCopyCreateAccepted describes a response with status code 202, with default header values.
+/*
+FileCopyCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type FileCopyCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this file copy create accepted response has a 2xx status code
+func (o *FileCopyCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file copy create accepted response has a 3xx status code
+func (o *FileCopyCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file copy create accepted response has a 4xx status code
+func (o *FileCopyCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file copy create accepted response has a 5xx status code
+func (o *FileCopyCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file copy create accepted response a status code equal to that given
+func (o *FileCopyCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *FileCopyCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/file/copy][%d] fileCopyCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *FileCopyCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/file/copy][%d] fileCopyCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *FileCopyCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewFileCopyCreateDefault(code int) *FileCopyCreateDefault {
 	}
 }
 
-/* FileCopyCreateDefault describes a response with status code -1, with default header values.
+/*
+	FileCopyCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 7012352 | File locations are inconsistent. All files must be on the same volume. |
@@ -104,7 +137,6 @@ func NewFileCopyCreateDefault(code int) *FileCopyCreateDefault {
 | 7012377 | Cannot start a file copy operation on the volume because an active volume conversion is in progress. |
 | 13107223 | Operation not supported for FlexGroup volumes or FlexGroup constituents. |
 | 196608143 | Cannot start operation. The volume is undergoing a secure purge operation. |
-
 */
 type FileCopyCreateDefault struct {
 	_statusCode int
@@ -117,9 +149,39 @@ func (o *FileCopyCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file copy create default response has a 2xx status code
+func (o *FileCopyCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file copy create default response has a 3xx status code
+func (o *FileCopyCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file copy create default response has a 4xx status code
+func (o *FileCopyCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file copy create default response has a 5xx status code
+func (o *FileCopyCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file copy create default response a status code equal to that given
+func (o *FileCopyCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileCopyCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/file/copy][%d] file_copy_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileCopyCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/file/copy][%d] file_copy_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileCopyCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

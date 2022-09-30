@@ -53,10 +53,12 @@ func NewUnixGroupCollectionGetParamsWithHTTPClient(client *http.Client) *UnixGro
 	}
 }
 
-/* UnixGroupCollectionGetParams contains all the parameters to send to the API endpoint
-   for the unix group collection get operation.
+/*
+UnixGroupCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the unix group collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type UnixGroupCollectionGetParams struct {
 

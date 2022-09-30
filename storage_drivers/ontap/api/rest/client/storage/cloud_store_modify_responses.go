@@ -46,7 +46,8 @@ func NewCloudStoreModifyAccepted() *CloudStoreModifyAccepted {
 	return &CloudStoreModifyAccepted{}
 }
 
-/* CloudStoreModifyAccepted describes a response with status code 202, with default header values.
+/*
+CloudStoreModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type CloudStoreModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cloud store modify accepted response has a 2xx status code
+func (o *CloudStoreModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cloud store modify accepted response has a 3xx status code
+func (o *CloudStoreModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cloud store modify accepted response has a 4xx status code
+func (o *CloudStoreModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cloud store modify accepted response has a 5xx status code
+func (o *CloudStoreModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cloud store modify accepted response a status code equal to that given
+func (o *CloudStoreModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *CloudStoreModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *CloudStoreModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *CloudStoreModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCloudStoreModifyDefault(code int) *CloudStoreModifyDefault {
 	}
 }
 
-/* CloudStoreModifyDefault describes a response with status code -1, with default header values.
+/*
+CloudStoreModifyDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CloudStoreModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cloud store modify default response has a 2xx status code
+func (o *CloudStoreModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cloud store modify default response has a 3xx status code
+func (o *CloudStoreModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cloud store modify default response has a 4xx status code
+func (o *CloudStoreModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cloud store modify default response has a 5xx status code
+func (o *CloudStoreModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cloud store modify default response a status code equal to that given
+func (o *CloudStoreModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CloudStoreModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloud_store_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CloudStoreModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloud_store_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CloudStoreModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewSvmPeerPermissionInstanceGetParamsWithHTTPClient(client *http.Client) *S
 	}
 }
 
-/* SvmPeerPermissionInstanceGetParams contains all the parameters to send to the API endpoint
-   for the svm peer permission instance get operation.
+/*
+SvmPeerPermissionInstanceGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm peer permission instance get operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmPeerPermissionInstanceGetParams struct {
 

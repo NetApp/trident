@@ -53,10 +53,12 @@ func NewSoftwareUploadParamsWithHTTPClient(client *http.Client) *SoftwareUploadP
 	}
 }
 
-/* SoftwareUploadParams contains all the parameters to send to the API endpoint
-   for the software upload operation.
+/*
+SoftwareUploadParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the software upload operation.
+
+	Typically these are written to a http.Request.
 */
 type SoftwareUploadParams struct {
 

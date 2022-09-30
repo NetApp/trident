@@ -46,7 +46,8 @@ func NewIgroupInitiatorCreateCreated() *IgroupInitiatorCreateCreated {
 	return &IgroupInitiatorCreateCreated{}
 }
 
-/* IgroupInitiatorCreateCreated describes a response with status code 201, with default header values.
+/*
+IgroupInitiatorCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type IgroupInitiatorCreateCreated struct {
 	Payload *models.IgroupInitiatorResponse
 }
 
+// IsSuccess returns true when this igroup initiator create created response has a 2xx status code
+func (o *IgroupInitiatorCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup initiator create created response has a 3xx status code
+func (o *IgroupInitiatorCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup initiator create created response has a 4xx status code
+func (o *IgroupInitiatorCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup initiator create created response has a 5xx status code
+func (o *IgroupInitiatorCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup initiator create created response a status code equal to that given
+func (o *IgroupInitiatorCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *IgroupInitiatorCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroupInitiatorCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *IgroupInitiatorCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroupInitiatorCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *IgroupInitiatorCreateCreated) GetPayload() *models.IgroupInitiatorResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewIgroupInitiatorCreateDefault(code int) *IgroupInitiatorCreateDefault {
 	}
 }
 
-/* IgroupInitiatorCreateDefault describes a response with status code -1, with default header values.
+/*
+	IgroupInitiatorCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1254193 | Adding an initiator would cause the initiator to be mapped to the same LUN more than once. |
@@ -101,7 +134,6 @@ func NewIgroupInitiatorCreateDefault(code int) *IgroupInitiatorCreateDefault {
 | 5374734 | An initiator is already in another initiator group with a conflicting operating system type. |
 | 5374852 | The initiator group specified in the URI does not exist. |
 | 5374917 | Multiple matching initiators have been supplied with conflicting comments. |
-
 */
 type IgroupInitiatorCreateDefault struct {
 	_statusCode int
@@ -114,9 +146,39 @@ func (o *IgroupInitiatorCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup initiator create default response has a 2xx status code
+func (o *IgroupInitiatorCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup initiator create default response has a 3xx status code
+func (o *IgroupInitiatorCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup initiator create default response has a 4xx status code
+func (o *IgroupInitiatorCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup initiator create default response has a 5xx status code
+func (o *IgroupInitiatorCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup initiator create default response a status code equal to that given
+func (o *IgroupInitiatorCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupInitiatorCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroup_initiator_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupInitiatorCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroup_initiator_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupInitiatorCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

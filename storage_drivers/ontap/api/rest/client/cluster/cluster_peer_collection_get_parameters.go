@@ -53,10 +53,12 @@ func NewClusterPeerCollectionGetParamsWithHTTPClient(client *http.Client) *Clust
 	}
 }
 
-/* ClusterPeerCollectionGetParams contains all the parameters to send to the API endpoint
-   for the cluster peer collection get operation.
+/*
+ClusterPeerCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster peer collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterPeerCollectionGetParams struct {
 

@@ -53,10 +53,12 @@ func NewKeyManagerConfigGetParamsWithHTTPClient(client *http.Client) *KeyManager
 	}
 }
 
-/* KeyManagerConfigGetParams contains all the parameters to send to the API endpoint
-   for the key manager config get operation.
+/*
+KeyManagerConfigGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the key manager config get operation.
+
+	Typically these are written to a http.Request.
 */
 type KeyManagerConfigGetParams struct {
 

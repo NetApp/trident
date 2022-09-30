@@ -46,14 +46,44 @@ func NewExportRuleModifyOK() *ExportRuleModifyOK {
 	return &ExportRuleModifyOK{}
 }
 
-/* ExportRuleModifyOK describes a response with status code 200, with default header values.
+/*
+ExportRuleModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ExportRuleModifyOK struct {
 }
 
+// IsSuccess returns true when this export rule modify o k response has a 2xx status code
+func (o *ExportRuleModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this export rule modify o k response has a 3xx status code
+func (o *ExportRuleModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this export rule modify o k response has a 4xx status code
+func (o *ExportRuleModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this export rule modify o k response has a 5xx status code
+func (o *ExportRuleModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this export rule modify o k response a status code equal to that given
+func (o *ExportRuleModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ExportRuleModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleModifyOK ", 200)
+}
+
+func (o *ExportRuleModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] exportRuleModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewExportRuleModifyDefault(code int) *ExportRuleModifyDefault {
 	}
 }
 
-/* ExportRuleModifyDefault describes a response with status code -1, with default header values.
+/*
+	ExportRuleModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1703954    | Export policy does not exist |
@@ -91,7 +123,6 @@ func NewExportRuleModifyDefault(code int) *ExportRuleModifyDefault {
 | 1704065    | Clientmatch domain name too long |
 | 3277000    | Upgrade all nodes to Data ONTAP 9.0.0 or above to use krb5p as a security flavor in export-policy rules |
 | 3277083    | User ID is not valid. Enter a value for User ID from 0 to 4294967295 |
-
 */
 type ExportRuleModifyDefault struct {
 	_statusCode int
@@ -104,9 +135,39 @@ func (o *ExportRuleModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this export rule modify default response has a 2xx status code
+func (o *ExportRuleModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this export rule modify default response has a 3xx status code
+func (o *ExportRuleModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this export rule modify default response has a 4xx status code
+func (o *ExportRuleModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this export rule modify default response has a 5xx status code
+func (o *ExportRuleModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this export rule modify default response a status code equal to that given
+func (o *ExportRuleModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ExportRuleModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ExportRuleModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/nfs/export-policies/{policy.id}/rules/{index}][%d] export_rule_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ExportRuleModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

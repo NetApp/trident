@@ -200,13 +200,13 @@ type ClientService interface {
 }
 
 /*
-  CapacityPoolCollectionGet Retrieves a collection of capacity pools.
+	CapacityPoolCollectionGet Retrieves a collection of capacity pools.
+
 ### Learn more
 * [`DOC /cluster/licensing/capacity-pools`](#docs-cluster-cluster_licensing_capacity-pools)
 ### Related ONTAP commands
 * `system license show-status`
 * `system license show`
-
 */
 func (a *Client) CapacityPoolCollectionGet(params *CapacityPoolCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CapacityPoolCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -244,13 +244,13 @@ func (a *Client) CapacityPoolCollectionGet(params *CapacityPoolCollectionGetPara
 }
 
 /*
-  CapacityPoolGet Retrieves information about the capacity pool.
+	CapacityPoolGet Retrieves information about the capacity pool.
+
 ### Learn more
 * [`DOC /cluster/licensing/capacity-pools`](#docs-cluster-cluster_licensing_capacity-pools)
 ### Related ONTAP commands
 * `system license show-status`
 * `system license show`
-
 */
 func (a *Client) CapacityPoolGet(params *CapacityPoolGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CapacityPoolGetOK, error) {
 	// TODO: Validate the params before sending
@@ -288,13 +288,13 @@ func (a *Client) CapacityPoolGet(params *CapacityPoolGetParams, authInfo runtime
 }
 
 /*
-  ChassisCollectionGet Retrieves a collection of chassis.
+	ChassisCollectionGet Retrieves a collection of chassis.
+
 ### Related ONTAP commands
 * `system chassis show`
 * `system chassis fru show`
 ### Learn more
 * [`DOC /cluster/chassis`](#docs-cluster-cluster_chassis)
-
 */
 func (a *Client) ChassisCollectionGet(params *ChassisCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ChassisCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -332,13 +332,13 @@ func (a *Client) ChassisCollectionGet(params *ChassisCollectionGetParams, authIn
 }
 
 /*
-  ChassisGet Retrieves a specific chassis.
+	ChassisGet Retrieves a specific chassis.
+
 ### Related ONTAP commands
 * `system chassis show`
 * `system chassis fru show`
 ### Learn more
 * [`DOC /cluster/chassis`](#docs-cluster-cluster_chassis)
-
 */
 func (a *Client) ChassisGet(params *ChassisGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ChassisGetOK, error) {
 	// TODO: Validate the params before sending
@@ -376,7 +376,7 @@ func (a *Client) ChassisGet(params *ChassisGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  ClusterCollectionPerformanceMetricsGet Retrieves historical performance metrics for the cluster.
+ClusterCollectionPerformanceMetricsGet Retrieves historical performance metrics for the cluster.
 */
 func (a *Client) ClusterCollectionPerformanceMetricsGet(params *ClusterCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterCollectionPerformanceMetricsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -414,7 +414,8 @@ func (a *Client) ClusterCollectionPerformanceMetricsGet(params *ClusterCollectio
 }
 
 /*
-  ClusterCreate Creates a cluster.
+	ClusterCreate Creates a cluster.
+
 ### Required properties
 * `name`
 * `password`
@@ -431,7 +432,6 @@ func (a *Client) ClusterCollectionPerformanceMetricsGet(params *ClusterCollectio
 * `timezone`
 ### Learn more
 * [`DOC /cluster`](#docs-cluster-cluster)
-
 */
 func (a *Client) ClusterCreate(params *ClusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -469,7 +469,7 @@ func (a *Client) ClusterCreate(params *ClusterCreateParams, authInfo runtime.Cli
 }
 
 /*
-  ClusterGet Retrieves the cluster configuration.
+ClusterGet Retrieves the cluster configuration.
 */
 func (a *Client) ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterGetOK, error) {
 	// TODO: Validate the params before sending
@@ -507,7 +507,8 @@ func (a *Client) ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  ClusterModify Updates the cluster configuration after the cluster is created.
+	ClusterModify Updates the cluster configuration after the cluster is created.
+
 ### Related ONTAP commands
 * `cluster identity modify`
 * `system node modify`
@@ -515,7 +516,6 @@ func (a *Client) ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAut
 * `vserver services name-service dns modify`
 * `timezone`
 * `security ssl modify`
-
 */
 func (a *Client) ClusterModify(params *ClusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -553,13 +553,13 @@ func (a *Client) ClusterModify(params *ClusterModifyParams, authInfo runtime.Cli
 }
 
 /*
-  ClusterNtpKeysCollectionGet Retrieves the collection of NTP symmetric authentication keys known by ONTAP that
+	ClusterNtpKeysCollectionGet Retrieves the collection of NTP symmetric authentication keys known by ONTAP that
+
 are uniquely indexed by an identifier.
 ### Related ONTAP commands
 * `cluster time-service ntp key show`
 ### Learn more
 * [`DOC /cluster/ntp/keys`](#docs-cluster-cluster_ntp_keys)
-
 */
 func (a *Client) ClusterNtpKeysCollectionGet(params *ClusterNtpKeysCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -597,7 +597,8 @@ func (a *Client) ClusterNtpKeysCollectionGet(params *ClusterNtpKeysCollectionGet
 }
 
 /*
-  ClusterNtpKeysCreate Creates an NTP symmetric authentication key entry including the type of key
+	ClusterNtpKeysCreate Creates an NTP symmetric authentication key entry including the type of key
+
 using an unused identifier or index number (ID).
 ### Required properties
 * `id` - Shared symmetric key number (ID).
@@ -607,7 +608,6 @@ using an unused identifier or index number (ID).
 * `cluster time-service ntp key create`
 ### Learn more
 * [`DOC /cluster/ntp/keys`](#docs-cluster-cluster_ntp_keys)
-
 */
 func (a *Client) ClusterNtpKeysCreate(params *ClusterNtpKeysCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -645,12 +645,12 @@ func (a *Client) ClusterNtpKeysCreate(params *ClusterNtpKeysCreateParams, authIn
 }
 
 /*
-  ClusterNtpKeysDelete Deletes an NTP key.
+	ClusterNtpKeysDelete Deletes an NTP key.
+
 ### Related ONTAP commands
 * `cluster time-service ntp key delete`
 ### Learn more
 * [`DOC /cluster/ntp/keys`](#docs-cluster-cluster_ntp_keys)
-
 */
 func (a *Client) ClusterNtpKeysDelete(params *ClusterNtpKeysDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -688,12 +688,12 @@ func (a *Client) ClusterNtpKeysDelete(params *ClusterNtpKeysDeleteParams, authIn
 }
 
 /*
-  ClusterNtpKeysGet Retrieves the details of a specific NTP symmetric authentication key by numeric identifier or index (ID).
+	ClusterNtpKeysGet Retrieves the details of a specific NTP symmetric authentication key by numeric identifier or index (ID).
+
 ### Related ONTAP commands
 * `cluster time-service ntp key show`
 ### Learn more
 * [`DOC /cluster/ntp/keys`](#docs-cluster-cluster_ntp_keys)
-
 */
 func (a *Client) ClusterNtpKeysGet(params *ClusterNtpKeysGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysGetOK, error) {
 	// TODO: Validate the params before sending
@@ -731,7 +731,8 @@ func (a *Client) ClusterNtpKeysGet(params *ClusterNtpKeysGetParams, authInfo run
 }
 
 /*
-  ClusterNtpKeysModify Updates the details of a specific NTP symmetric authentication key by numeric
+	ClusterNtpKeysModify Updates the details of a specific NTP symmetric authentication key by numeric
+
 identifier or index (ID).
 ### Required properties
 * `digest_type` - Shared private key cryptographic hash type.
@@ -740,7 +741,6 @@ identifier or index (ID).
 * `cluster time-service ntp key modify`
 ### Learn more
 * [`DOC /cluster/ntp/keys`](#docs-cluster-cluster_ntp_keys)
-
 */
 func (a *Client) ClusterNtpKeysModify(params *ClusterNtpKeysModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpKeysModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -778,12 +778,12 @@ func (a *Client) ClusterNtpKeysModify(params *ClusterNtpKeysModifyParams, authIn
 }
 
 /*
-  ClusterNtpServersCollectionGet Retrieves the collection of external NTP time servers ONTAP uses for time adjustment and correction.
+	ClusterNtpServersCollectionGet Retrieves the collection of external NTP time servers ONTAP uses for time adjustment and correction.
+
 ### Related ONTAP commands
 * `cluster time-service ntp server show`
 ### Learn more
 * [`DOC /cluster/ntp/servers`](#docs-cluster-cluster_ntp_servers)
-
 */
 func (a *Client) ClusterNtpServersCollectionGet(params *ClusterNtpServersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -821,7 +821,8 @@ func (a *Client) ClusterNtpServersCollectionGet(params *ClusterNtpServersCollect
 }
 
 /*
-  ClusterNtpServersCreate Validates the provided external NTP time server for usage and configures ONTAP so that all nodes in the cluster use it.
+	ClusterNtpServersCreate Validates the provided external NTP time server for usage and configures ONTAP so that all nodes in the cluster use it.
+
 The required fields are:
 * `server`
 ### Default property values
@@ -834,7 +835,6 @@ If the key is provided in POST, `authentication_enabled` is set to `true` by def
 * `cluster time-service ntp server create`
 ### Learn more
 * [`DOC /cluster/ntp/servers`](#docs-cluster-cluster_ntp_servers)
-
 */
 func (a *Client) ClusterNtpServersCreate(params *ClusterNtpServersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -872,12 +872,12 @@ func (a *Client) ClusterNtpServersCreate(params *ClusterNtpServersCreateParams, 
 }
 
 /*
-  ClusterNtpServersDelete Deletes an external NTP server used by ONTAP.
+	ClusterNtpServersDelete Deletes an external NTP server used by ONTAP.
+
 ### Related ONTAP commands
 * `cluster time-service ntp server delete`
 ### Learn more
 * [`DOC /cluster/ntp/servers`](#docs-cluster-cluster_ntp_servers)
-
 */
 func (a *Client) ClusterNtpServersDelete(params *ClusterNtpServersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -915,12 +915,12 @@ func (a *Client) ClusterNtpServersDelete(params *ClusterNtpServersDeleteParams, 
 }
 
 /*
-  ClusterNtpServersGet Retrieves the configuration of an external NTP server used by ONTAP.
+	ClusterNtpServersGet Retrieves the configuration of an external NTP server used by ONTAP.
+
 ### Related ONTAP commands
 * `cluster time-service ntp server show`
 ### Learn more
 * [`DOC /cluster/ntp/servers`](#docs-cluster-cluster_ntp_servers)
-
 */
 func (a *Client) ClusterNtpServersGet(params *ClusterNtpServersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersGetOK, error) {
 	// TODO: Validate the params before sending
@@ -958,7 +958,8 @@ func (a *Client) ClusterNtpServersGet(params *ClusterNtpServersGetParams, authIn
 }
 
 /*
-  ClusterNtpServersModify Updates the configuration of an NTP server used by the ONTAP cluster after validation.
+	ClusterNtpServersModify Updates the configuration of an NTP server used by the ONTAP cluster after validation.
+
 Patchable fields are:
 * `version`
 * `key.id`
@@ -970,7 +971,6 @@ If `authentication_enabled` is modified to `true`, you must provide an NTP key I
 * `cluster time-service ntp server modify`
 ### Learn more
 * [`DOC /cluster/ntp/servers`](#docs-cluster-cluster_ntp_servers)
-
 */
 func (a *Client) ClusterNtpServersModify(params *ClusterNtpServersModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNtpServersModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1008,7 +1008,7 @@ func (a *Client) ClusterNtpServersModify(params *ClusterNtpServersModifyParams, 
 }
 
 /*
-  ClusterPeerCollectionGet Retrieves the collection of cluster peers.
+ClusterPeerCollectionGet Retrieves the collection of cluster peers.
 */
 func (a *Client) ClusterPeerCollectionGet(params *ClusterPeerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1046,7 +1046,8 @@ func (a *Client) ClusterPeerCollectionGet(params *ClusterPeerCollectionGetParams
 }
 
 /*
-  ClusterPeerCreate Creates a peering relationship and, optionally, the IP interfaces it will use. There are two methods used to create a peering relationship:
+	ClusterPeerCreate Creates a peering relationship and, optionally, the IP interfaces it will use. There are two methods used to create a peering relationship:
+
 * Provide a remote IP address - Used when creating a new cluster peer relationship with a specific remote cluster. This requires at least one remote intercluster IP address from the remote cluster.
 * Do not provide a remote IP address - Used when the remote IP address is not provided and when the storage system is ready to accept peering requests from foreign clusters.
 ### Required properties
@@ -1073,7 +1074,6 @@ As with creating a cluster peer through the CLI, the combinations of options mus
 * An IPspace name or UUID (OK)
 * A passphrase, peer IP address, and any proposed encryption protocol (OK)
 * A non empty list of initial allowed SVM peer names or UUIDs. (OK)
-
 */
 func (a *Client) ClusterPeerCreate(params *ClusterPeerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1111,7 +1111,7 @@ func (a *Client) ClusterPeerCreate(params *ClusterPeerCreateParams, authInfo run
 }
 
 /*
-  ClusterPeerDelete Deletes a cluster peer.
+ClusterPeerDelete Deletes a cluster peer.
 */
 func (a *Client) ClusterPeerDelete(params *ClusterPeerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1149,7 +1149,7 @@ func (a *Client) ClusterPeerDelete(params *ClusterPeerDeleteParams, authInfo run
 }
 
 /*
-  ClusterPeerGet Retrieves a specific cluster peer instance.
+ClusterPeerGet Retrieves a specific cluster peer instance.
 */
 func (a *Client) ClusterPeerGet(params *ClusterPeerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1187,7 +1187,7 @@ func (a *Client) ClusterPeerGet(params *ClusterPeerGetParams, authInfo runtime.C
 }
 
 /*
-  ClusterPeerModify Updates a cluster peer instance.
+ClusterPeerModify Updates a cluster peer instance.
 */
 func (a *Client) ClusterPeerModify(params *ClusterPeerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1225,7 +1225,7 @@ func (a *Client) ClusterPeerModify(params *ClusterPeerModifyParams, authInfo run
 }
 
 /*
-  CounterRowCollectionGet Returns a collection of counter rows.
+CounterRowCollectionGet Returns a collection of counter rows.
 */
 func (a *Client) CounterRowCollectionGet(params *CounterRowCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterRowCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1263,7 +1263,7 @@ func (a *Client) CounterRowCollectionGet(params *CounterRowCollectionGetParams, 
 }
 
 /*
-  CounterRowGet Returns a single counter row.
+CounterRowGet Returns a single counter row.
 */
 func (a *Client) CounterRowGet(params *CounterRowGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterRowGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1301,8 +1301,7 @@ func (a *Client) CounterRowGet(params *CounterRowGetParams, authInfo runtime.Cli
 }
 
 /*
-  CounterTableCollectionGet Returns a collection of counter tables and their schema definitions.
-
+CounterTableCollectionGet Returns a collection of counter tables and their schema definitions.
 */
 func (a *Client) CounterTableCollectionGet(params *CounterTableCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterTableCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1340,8 +1339,7 @@ func (a *Client) CounterTableCollectionGet(params *CounterTableCollectionGetPara
 }
 
 /*
-  CounterTableGet Returns the information about a single counter table.
-
+CounterTableGet Returns the information about a single counter table.
 */
 func (a *Client) CounterTableGet(params *CounterTableGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterTableGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1379,10 +1377,10 @@ func (a *Client) CounterTableGet(params *CounterTableGetParams, authInfo runtime
 }
 
 /*
-  FirmwareHistoryCollectionGet Retrieves the history details for firmware update requests.
+	FirmwareHistoryCollectionGet Retrieves the history details for firmware update requests.
+
 ### Learn more
 * [`DOC /cluster/firmware/history`](#docs-cluster-cluster_firmware_history)
-
 */
 func (a *Client) FirmwareHistoryCollectionGet(params *FirmwareHistoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FirmwareHistoryCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1420,7 +1418,7 @@ func (a *Client) FirmwareHistoryCollectionGet(params *FirmwareHistoryCollectionG
 }
 
 /*
-  JobCollectionGet Retrieves a list of recently running asynchronous jobs. After a job transitions to a failure or success state, it is deleted after a default time of 300 seconds.
+JobCollectionGet Retrieves a list of recently running asynchronous jobs. After a job transitions to a failure or success state, it is deleted after a default time of 300 seconds.
 */
 func (a *Client) JobCollectionGet(params *JobCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1458,7 +1456,7 @@ func (a *Client) JobCollectionGet(params *JobCollectionGetParams, authInfo runti
 }
 
 /*
-  JobGet Retrieves the details of a specific asynchronous job. After a job transitions to a failure or success state, it is deleted after a default time of 300 seconds.
+JobGet Retrieves the details of a specific asynchronous job. After a job transitions to a failure or success state, it is deleted after a default time of 300 seconds.
 */
 func (a *Client) JobGet(params *JobGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1496,7 +1494,7 @@ func (a *Client) JobGet(params *JobGetParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-  JobModify Updates the state of a specific asynchronous job.
+JobModify Updates the state of a specific asynchronous job.
 */
 func (a *Client) JobModify(params *JobModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1534,12 +1532,12 @@ func (a *Client) JobModify(params *JobModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  LicenseCreate Installs one or more feature licenses.
+	LicenseCreate Installs one or more feature licenses.
+
 ### Required properties
 * `keys` - Array containing a list of NLF or 28-character license keys.
 ### Related ONTAP commands
 * `system license add`
-
 */
 func (a *Client) LicenseCreate(params *LicenseCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1577,10 +1575,10 @@ func (a *Client) LicenseCreate(params *LicenseCreateParams, authInfo runtime.Cli
 }
 
 /*
-  LicenseDelete Deletes a license.
+	LicenseDelete Deletes a license.
+
 ### Related ONTAP commands
 * `system license delete`
-
 */
 func (a *Client) LicenseDelete(params *LicenseDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1618,13 +1616,13 @@ func (a *Client) LicenseDelete(params *LicenseDeleteParams, authInfo runtime.Cli
 }
 
 /*
-  LicenseGet Retrieves a specific license package.
+	LicenseGet Retrieves a specific license package.
+
 ####
 **Note:** By default, the GET method only returns licensed packages. You must provide the following query "state=unlicensed" to retrieve unlicensed packages.
 ### Related ONTAP commands
 * `system license show`
 * `system license show-status`
-
 */
 func (a *Client) LicenseGet(params *LicenseGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1662,12 +1660,12 @@ func (a *Client) LicenseGet(params *LicenseGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  LicenseManagerCollectionGet Retrieves a collection of license managers.
+	LicenseManagerCollectionGet Retrieves a collection of license managers.
+
 ### Learn more
 * [`DOC /cluster/licensing/license-managers`](#docs-cluster-cluster_licensing_license-managers)
 ### Related ONTAP commands
 * `system license license-manager show`
-
 */
 func (a *Client) LicenseManagerCollectionGet(params *LicenseManagerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1705,12 +1703,12 @@ func (a *Client) LicenseManagerCollectionGet(params *LicenseManagerCollectionGet
 }
 
 /*
-  LicenseManagerGet Retrieves information about the license manager.
+	LicenseManagerGet Retrieves information about the license manager.
+
 ### Learn more
 * [`DOC /cluster/licensing/license-managers`](#docs-cluster-cluster_licensing_license-managers)
 ### Related ONTAP commands
 * `system license license-manager show`
-
 */
 func (a *Client) LicenseManagerGet(params *LicenseManagerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1748,12 +1746,12 @@ func (a *Client) LicenseManagerGet(params *LicenseManagerGetParams, authInfo run
 }
 
 /*
-  LicenseManagerModify Updates the license manager configuration.
+	LicenseManagerModify Updates the license manager configuration.
+
 ### Learn more
 * [`DOC /cluster/licensing/license-managers`](#docs-cluster-cluster_licensing_license-managers)
 ### Related ONTAP commands
 * `system license license-manager modify`
-
 */
 func (a *Client) LicenseManagerModify(params *LicenseManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1791,14 +1789,14 @@ func (a *Client) LicenseManagerModify(params *LicenseManagerModifyParams, authIn
 }
 
 /*
-  LicensesGet Retrieves a collection of license packages.
+	LicensesGet Retrieves a collection of license packages.
+
 ####
 **Note:** By default, the GET method only returns licensed packages. You must provide the following query "state=unlicensed" to retrieve unlicensed packages.
 **Note:** Starting with ONTAP 9.11.1, the GET method no longer returns the Base license record.
 ### Related ONTAP commands
 * `system license show-status`
 * `system license show`
-
 */
 func (a *Client) LicensesGet(params *LicensesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicensesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1836,7 +1834,7 @@ func (a *Client) LicensesGet(params *LicensesGetParams, authInfo runtime.ClientA
 }
 
 /*
-  MediatorCollectionGet Retrieves mediators configured in the cluster.
+MediatorCollectionGet Retrieves mediators configured in the cluster.
 */
 func (a *Client) MediatorCollectionGet(params *MediatorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1874,7 +1872,7 @@ func (a *Client) MediatorCollectionGet(params *MediatorCollectionGetParams, auth
 }
 
 /*
-  MediatorCreate Creates and connect a mediator.
+MediatorCreate Creates and connect a mediator.
 */
 func (a *Client) MediatorCreate(params *MediatorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1912,7 +1910,7 @@ func (a *Client) MediatorCreate(params *MediatorCreateParams, authInfo runtime.C
 }
 
 /*
-  MediatorDelete Deletes the mediator.
+MediatorDelete Deletes the mediator.
 */
 func (a *Client) MediatorDelete(params *MediatorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1950,7 +1948,7 @@ func (a *Client) MediatorDelete(params *MediatorDeleteParams, authInfo runtime.C
 }
 
 /*
-  MediatorGet Retrieves the mediator state and configuration.
+MediatorGet Retrieves the mediator state and configuration.
 */
 func (a *Client) MediatorGet(params *MediatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1988,7 +1986,8 @@ func (a *Client) MediatorGet(params *MediatorGetParams, authInfo runtime.ClientA
 }
 
 /*
-  MetroclusterCreate Sets up a MetroCluster.
+	MetroclusterCreate Sets up a MetroCluster.
+
 ### Required properties
 * `partner_cluster.name`
 * `dr_pairs`
@@ -2005,7 +2004,6 @@ func (a *Client) MediatorGet(params *MediatorGetParams, authInfo runtime.ClientA
 * `storage aggregate create`
 * `storage aggregate mirror`
 * `metrocluster configure`
-
 */
 func (a *Client) MetroclusterCreate(params *MetroclusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2043,8 +2041,7 @@ func (a *Client) MetroclusterCreate(params *MetroclusterCreateParams, authInfo r
 }
 
 /*
-  MetroclusterDiagnosticsCreate Start a MetroCluster diagnostic operation or set up a schedule for the diagnostics to be run periodically.
-
+MetroclusterDiagnosticsCreate Start a MetroCluster diagnostic operation or set up a schedule for the diagnostics to be run periodically.
 */
 func (a *Client) MetroclusterDiagnosticsCreate(params *MetroclusterDiagnosticsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2082,8 +2079,7 @@ func (a *Client) MetroclusterDiagnosticsCreate(params *MetroclusterDiagnosticsCr
 }
 
 /*
-  MetroclusterDiagnosticsGet Retrieves the results of a completed diagnostic operation for the MetroCluster configuration.
-
+MetroclusterDiagnosticsGet Retrieves the results of a completed diagnostic operation for the MetroCluster configuration.
 */
 func (a *Client) MetroclusterDiagnosticsGet(params *MetroclusterDiagnosticsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2121,8 +2117,7 @@ func (a *Client) MetroclusterDiagnosticsGet(params *MetroclusterDiagnosticsGetPa
 }
 
 /*
-  MetroclusterDrGroupCollectionGet Retrieves all the DR group in the MetroCluster over IP configuration.
-
+MetroclusterDrGroupCollectionGet Retrieves all the DR group in the MetroCluster over IP configuration.
 */
 func (a *Client) MetroclusterDrGroupCollectionGet(params *MetroclusterDrGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2160,7 +2155,8 @@ func (a *Client) MetroclusterDrGroupCollectionGet(params *MetroclusterDrGroupCol
 }
 
 /*
-  MetroclusterDrGroupCreate Creates a new DR group in the MetroCluster over IP configuration.
+	MetroclusterDrGroupCreate Creates a new DR group in the MetroCluster over IP configuration.
+
 ### Required properties
 * `partner_cluster.name`
 * `dr_pairs`
@@ -2170,7 +2166,6 @@ func (a *Client) MetroclusterDrGroupCollectionGet(params *MetroclusterDrGroupCol
 * [`DOC /cluster/metrocluster/dr-groups`](#docs-cluster-cluster_metrocluster_dr-groups)
 ### Related ONTAP commands
 * `metrocluster configuration-settings dr-group create`
-
 */
 func (a *Client) MetroclusterDrGroupCreate(params *MetroclusterDrGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2208,8 +2203,7 @@ func (a *Client) MetroclusterDrGroupCreate(params *MetroclusterDrGroupCreatePara
 }
 
 /*
-  MetroclusterDrGroupDelete Remove the DR group from the current MetroCluster over IP configuration specified by the DR group id.
-
+MetroclusterDrGroupDelete Remove the DR group from the current MetroCluster over IP configuration specified by the DR group id.
 */
 func (a *Client) MetroclusterDrGroupDelete(params *MetroclusterDrGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2247,8 +2241,7 @@ func (a *Client) MetroclusterDrGroupDelete(params *MetroclusterDrGroupDeletePara
 }
 
 /*
-  MetroclusterDrGroupGet Retrieves the DR group information specified by the DR group id.
-
+MetroclusterDrGroupGet Retrieves the DR group information specified by the DR group id.
 */
 func (a *Client) MetroclusterDrGroupGet(params *MetroclusterDrGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2286,7 +2279,8 @@ func (a *Client) MetroclusterDrGroupGet(params *MetroclusterDrGroupGetParams, au
 }
 
 /*
-  MetroclusterGet Retrieves MetroCluster status and configuration details.
+	MetroclusterGet Retrieves MetroCluster status and configuration details.
+
 ### Related ONTAP commands * `metrocluster show` * `metrocluster node show`
 */
 func (a *Client) MetroclusterGet(params *MetroclusterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterGetOK, error) {
@@ -2325,12 +2319,12 @@ func (a *Client) MetroclusterGet(params *MetroclusterGetParams, authInfo runtime
 }
 
 /*
-  MetroclusterInterconnectCollectionGet Retrieves a list of interconnect adapter information for nodes in the MetroCluster.
+	MetroclusterInterconnectCollectionGet Retrieves a list of interconnect adapter information for nodes in the MetroCluster.
+
 ### Related ONTAP Commands
 * `metrocluster interconnect show`
 ### Learn more
 * [`DOC /cluster/metrocluster/interconnects`](#docs-cluster-cluster_metrocluster_interconnects)
-
 */
 func (a *Client) MetroclusterInterconnectCollectionGet(params *MetroclusterInterconnectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2368,10 +2362,10 @@ func (a *Client) MetroclusterInterconnectCollectionGet(params *MetroclusterInter
 }
 
 /*
-  MetroclusterInterconnectGet Retrieves information about a MetroCluster Interconnect for a specific partner type and adapter.
+	MetroclusterInterconnectGet Retrieves information about a MetroCluster Interconnect for a specific partner type and adapter.
+
 ### Related ONTAP Commands
 * `metrocluster interconnect show`
-
 */
 func (a *Client) MetroclusterInterconnectGet(params *MetroclusterInterconnectGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2409,7 +2403,8 @@ func (a *Client) MetroclusterInterconnectGet(params *MetroclusterInterconnectGet
 }
 
 /*
-  MetroclusterInterconnectModify Updates a MetroCluster interconnect interface.
+	MetroclusterInterconnectModify Updates a MetroCluster interconnect interface.
+
 ### Related ONTAP commands * `metrocluster configuration-settings interface modify`
 */
 func (a *Client) MetroclusterInterconnectModify(params *MetroclusterInterconnectModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectModifyAccepted, error) {
@@ -2448,7 +2443,8 @@ func (a *Client) MetroclusterInterconnectModify(params *MetroclusterInterconnect
 }
 
 /*
-  MetroclusterModify Initiates a switchover or switchback operation.
+	MetroclusterModify Initiates a switchover or switchback operation.
+
 ### Related ONTAP commands * `metrocluster switchover` * `metrocluster switchback`
 */
 func (a *Client) MetroclusterModify(params *MetroclusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterModifyAccepted, error) {
@@ -2487,12 +2483,12 @@ func (a *Client) MetroclusterModify(params *MetroclusterModifyParams, authInfo r
 }
 
 /*
-  MetroclusterNodeCollectionGet Retrieves MetroCluster nodes and their configurations.
+	MetroclusterNodeCollectionGet Retrieves MetroCluster nodes and their configurations.
+
 ### Related ONTAP Commands
 * `metrocluster node show`
 ### Learn more
 * [`DOC /cluster/metrocluster/nodes`](#docs-cluster-cluster_metrocluster_nodes)
-
 */
 func (a *Client) MetroclusterNodeCollectionGet(params *MetroclusterNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterNodeCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2530,10 +2526,10 @@ func (a *Client) MetroclusterNodeCollectionGet(params *MetroclusterNodeCollectio
 }
 
 /*
-  MetroclusterNodeGet Retrieves the node configuration in the MetroCluster.
+	MetroclusterNodeGet Retrieves the node configuration in the MetroCluster.
+
 ### Related ONTAP Commands
 * `metrocluster node show`
-
 */
 func (a *Client) MetroclusterNodeGet(params *MetroclusterNodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterNodeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2571,12 +2567,12 @@ func (a *Client) MetroclusterNodeGet(params *MetroclusterNodeGetParams, authInfo
 }
 
 /*
-  MetroclusterOperationCollectionGet Retrieves the list of MetroCluster operations on the local cluster.
+	MetroclusterOperationCollectionGet Retrieves the list of MetroCluster operations on the local cluster.
+
 ### Related ONTAP Commands
 * `metrocluster operation history show`
 ### Learn more
 * [`DOC /cluster/metrocluster/operations`](#docs-cluster-cluster_metrocluster_operations)
-
 */
 func (a *Client) MetroclusterOperationCollectionGet(params *MetroclusterOperationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterOperationCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2614,10 +2610,10 @@ func (a *Client) MetroclusterOperationCollectionGet(params *MetroclusterOperatio
 }
 
 /*
-  MetroclusterOperationGet Retrieves information about a specific MetroCluster operation.
+	MetroclusterOperationGet Retrieves information about a specific MetroCluster operation.
+
 ### Related ONTAP Commands
 * `metrocluster operation show`
-
 */
 func (a *Client) MetroclusterOperationGet(params *MetroclusterOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterOperationGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2655,7 +2651,7 @@ func (a *Client) MetroclusterOperationGet(params *MetroclusterOperationGetParams
 }
 
 /*
-  MetroclusterSvmCollectionGet Retrieves configuration information for all pairs of SVMs in MetroCluster. REST /api/cluster/metrocluster/svms/?
+MetroclusterSvmCollectionGet Retrieves configuration information for all pairs of SVMs in MetroCluster. REST /api/cluster/metrocluster/svms/?
 */
 func (a *Client) MetroclusterSvmCollectionGet(params *MetroclusterSvmCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterSvmCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2693,7 +2689,7 @@ func (a *Client) MetroclusterSvmCollectionGet(params *MetroclusterSvmCollectionG
 }
 
 /*
-  MetroclusterSvmGet Retrieves configuration information for an SVM in a MetroCluster relationship.
+MetroclusterSvmGet Retrieves configuration information for an SVM in a MetroCluster relationship.
 */
 func (a *Client) MetroclusterSvmGet(params *MetroclusterSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterSvmGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2731,7 +2727,8 @@ func (a *Client) MetroclusterSvmGet(params *MetroclusterSvmGetParams, authInfo r
 }
 
 /*
-  NodeDelete Deletes a node from the cluster.
+	NodeDelete Deletes a node from the cluster.
+
 Note that before deleting a node from the cluster, you must shut down all of the node's shared resources, such as virtual interfaces to clients. If any of the node's shared resources are still active, the command fails.
 ### Optional parameters:
 * `force` - Forcibly removes a node that is down and cannot be brought online to remove its shared resources. This flag is set to "false" by default.
@@ -2739,7 +2736,6 @@ Note that before deleting a node from the cluster, you must shut down all of the
 * `cluster remove-node`
 ### Learn more
 * [`DOC /cluster/nodes`](#docs-cluster-cluster_nodes)
-
 */
 func (a *Client) NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2777,7 +2773,8 @@ func (a *Client) NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAut
 }
 
 /*
-  NodeGet Retrieves information for the node.
+	NodeGet Retrieves information for the node.
+
 ### Related ONTAP commands
 * `cluster add-node-status`
 * `cluster date show`
@@ -2795,7 +2792,6 @@ func (a *Client) NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAut
 * `version`
 * `system service-processor api-service show`
 * `system service-processor network auto-configuration show`
-
 */
 func (a *Client) NodeGet(params *NodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2833,7 +2829,7 @@ func (a *Client) NodeGet(params *NodeGetParams, authInfo runtime.ClientAuthInfoW
 }
 
 /*
-  NodeMetricsCollectionGet Retrieves historical performance metrics for a node.
+NodeMetricsCollectionGet Retrieves historical performance metrics for a node.
 */
 func (a *Client) NodeMetricsCollectionGet(params *NodeMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeMetricsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2871,7 +2867,8 @@ func (a *Client) NodeMetricsCollectionGet(params *NodeMetricsCollectionGetParams
 }
 
 /*
-  NodeModify Updates the node information or performs shutdown/reboot actions on a node.
+	NodeModify Updates the node information or performs shutdown/reboot actions on a node.
+
 ### Related ONTAP commands
 * `cluster ha modify`
 * `storage failover modify`
@@ -2884,7 +2881,6 @@ func (a *Client) NodeMetricsCollectionGet(params *NodeMetricsCollectionGetParams
 * `system service-processor image modify`
 * `system service-processor network auto-configuration enable`
 * `system service-processor network auto-configuration disable`
-
 */
 func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2922,7 +2918,8 @@ func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAut
 }
 
 /*
-  NodesCreate Adds a node or nodes to the cluster.
+	NodesCreate Adds a node or nodes to the cluster.
+
 ### Required properties
 * `cluster_interface.ip.address`
 ### Related ONTAP commands
@@ -2931,7 +2928,6 @@ func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAut
 * `storage aggregate auto-provision`
 * `system node modify`
 * `system service-processor network modify`
-
 */
 func (a *Client) NodesCreate(params *NodesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodesCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2969,14 +2965,14 @@ func (a *Client) NodesCreate(params *NodesCreateParams, authInfo runtime.ClientA
 }
 
 /*
-  NodesGet Retrieves the nodes in the cluster.
+	NodesGet Retrieves the nodes in the cluster.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
 * `system node show`
-
 */
 func (a *Client) NodesGet(params *NodesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3014,7 +3010,7 @@ func (a *Client) NodesGet(params *NodesGetParams, authInfo runtime.ClientAuthInf
 }
 
 /*
-  ScheduleCollectionGet Retrieves a schedule.
+ScheduleCollectionGet Retrieves a schedule.
 */
 func (a *Client) ScheduleCollectionGet(params *ScheduleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3052,11 +3048,11 @@ func (a *Client) ScheduleCollectionGet(params *ScheduleCollectionGetParams, auth
 }
 
 /*
-  ScheduleCreate Creates a schedule.
+	ScheduleCreate Creates a schedule.
+
 ### Required Fields
 * name - Name of the job schedule.
 You must provide a minutes field for a cron schedule and an interval field for an interval schedule. Do not provide both a cron field and an interval field.
-
 */
 func (a *Client) ScheduleCreate(params *ScheduleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3094,7 +3090,7 @@ func (a *Client) ScheduleCreate(params *ScheduleCreateParams, authInfo runtime.C
 }
 
 /*
-  ScheduleDelete Deletes a schedule.
+ScheduleDelete Deletes a schedule.
 */
 func (a *Client) ScheduleDelete(params *ScheduleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3132,7 +3128,7 @@ func (a *Client) ScheduleDelete(params *ScheduleDeleteParams, authInfo runtime.C
 }
 
 /*
-  ScheduleGet Retrieves a schedule.
+ScheduleGet Retrieves a schedule.
 */
 func (a *Client) ScheduleGet(params *ScheduleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3170,7 +3166,7 @@ func (a *Client) ScheduleGet(params *ScheduleGetParams, authInfo runtime.ClientA
 }
 
 /*
-  ScheduleModify Updates a schedule. Note that you cannot modify a cron field of an interval schedule, or the interval field of a cron schedule.
+ScheduleModify Updates a schedule. Note that you cannot modify a cron field of an interval schedule, or the interval field of a cron schedule.
 */
 func (a *Client) ScheduleModify(params *ScheduleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3208,7 +3204,7 @@ func (a *Client) ScheduleModify(params *ScheduleModifyParams, authInfo runtime.C
 }
 
 /*
-  SensorsCollectionGet Retrieve Environment Sensors
+SensorsCollectionGet Retrieve Environment Sensors
 */
 func (a *Client) SensorsCollectionGet(params *SensorsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SensorsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3246,7 +3242,7 @@ func (a *Client) SensorsCollectionGet(params *SensorsCollectionGetParams, authIn
 }
 
 /*
-  SensorsGet Retrieve Environment Sensors
+SensorsGet Retrieve Environment Sensors
 */
 func (a *Client) SensorsGet(params *SensorsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SensorsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3284,12 +3280,12 @@ func (a *Client) SensorsGet(params *SensorsGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  SoftwareDownloadGet Retrieves the software or firmware download status.
+	SoftwareDownloadGet Retrieves the software or firmware download status.
+
 ### Related ONTAP commands
 * `cluster image package check-download-progress`
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
-
 */
 func (a *Client) SoftwareDownloadGet(params *SoftwareDownloadGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareDownloadGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3327,14 +3323,14 @@ func (a *Client) SoftwareDownloadGet(params *SoftwareDownloadGetParams, authInfo
 }
 
 /*
-  SoftwareGet Retrieves the software profile of a cluster.
+	SoftwareGet Retrieves the software profile of a cluster.
+
 ### Related ONTAP commands
 * `cluster image show`
 * `cluster image show-update-progress`
 * `system node image package show`
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
-
 */
 func (a *Client) SoftwareGet(params *SoftwareGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3372,12 +3368,12 @@ func (a *Client) SoftwareGet(params *SoftwareGetParams, authInfo runtime.ClientA
 }
 
 /*
-  SoftwareHistoryCollectionGet Retrieves the history details for software installation requests.
+	SoftwareHistoryCollectionGet Retrieves the history details for software installation requests.
+
 ### Related ONTAP commands
 * `cluster image show-update-history`
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
-
 */
 func (a *Client) SoftwareHistoryCollectionGet(params *SoftwareHistoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareHistoryCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3415,10 +3411,12 @@ func (a *Client) SoftwareHistoryCollectionGet(params *SoftwareHistoryCollectionG
 }
 
 /*
-  SoftwareModify Updates the cluster software version.
+	SoftwareModify Updates the cluster software version.
+
 Important note:
-  * Setting 'version' triggers the package installation.
-  * To validate the package for installation but not perform the installation, use the `validate_only` field on the request.
+  - Setting 'version' triggers the package installation.
+  - To validate the package for installation but not perform the installation, use the `validate_only` field on the request.
+
 ### Required properties
 * `version` - Software version to be installed on the cluster.
 ### Recommended optional parameters
@@ -3437,7 +3435,6 @@ Important note:
 * `cluster image cancel-update`
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
-
 */
 func (a *Client) SoftwareModify(params *SoftwareModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3475,7 +3472,8 @@ func (a *Client) SoftwareModify(params *SoftwareModifyParams, authInfo runtime.C
 }
 
 /*
-  SoftwarePackageCreate Downloads a software or firmware package from the server.
+	SoftwarePackageCreate Downloads a software or firmware package from the server.
+
 ### Required properties
 * `url` - URL location of the software package
 ### Recommended optional parameters
@@ -3485,7 +3483,6 @@ func (a *Client) SoftwareModify(params *SoftwareModifyParams, authInfo runtime.C
 * `cluster image package get`
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
-
 */
 func (a *Client) SoftwarePackageCreate(params *SoftwarePackageCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3523,12 +3520,12 @@ func (a *Client) SoftwarePackageCreate(params *SoftwarePackageCreateParams, auth
 }
 
 /*
-  SoftwarePackageDelete Deletes a software package from the cluster. The delete operation fails if the package is currently installed.
+	SoftwarePackageDelete Deletes a software package from the cluster. The delete operation fails if the package is currently installed.
+
 ### Related ONTAP commands
 * `cluster image package delete`
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
-
 */
 func (a *Client) SoftwarePackageDelete(params *SoftwarePackageDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3566,12 +3563,12 @@ func (a *Client) SoftwarePackageDelete(params *SoftwarePackageDeleteParams, auth
 }
 
 /*
-  SoftwarePackageGet Retrieves the software package information.
+	SoftwarePackageGet Retrieves the software package information.
+
 ### Related ONTAP commands
 * `cluster image package show-repository`
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
-
 */
 func (a *Client) SoftwarePackageGet(params *SoftwarePackageGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3609,12 +3606,12 @@ func (a *Client) SoftwarePackageGet(params *SoftwarePackageGetParams, authInfo r
 }
 
 /*
-  SoftwarePackagesCollectionGet Retrieves the software packages for a cluster.
+	SoftwarePackagesCollectionGet Retrieves the software packages for a cluster.
+
 ### Related ONTAP commands
 * `cluster image package show-repository`
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
-
 */
 func (a *Client) SoftwarePackagesCollectionGet(params *SoftwarePackagesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackagesCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3652,12 +3649,12 @@ func (a *Client) SoftwarePackagesCollectionGet(params *SoftwarePackagesCollectio
 }
 
 /*
-  SoftwareUpload Uploads a software or firmware package located on the local filesystem.
+	SoftwareUpload Uploads a software or firmware package located on the local filesystem.
+
 ### Related ONTAP commands
 * `cluster image package get`
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
-
 */
 func (a *Client) SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareUploadAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3695,7 +3692,7 @@ func (a *Client) SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.C
 }
 
 /*
-  WebGet Retrieves the web services configuration.
+WebGet Retrieves the web services configuration.
 */
 func (a *Client) WebGet(params *WebGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3733,10 +3730,10 @@ func (a *Client) WebGet(params *WebGetParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-  WebModify Updates the web services configuration.
+	WebModify Updates the web services configuration.
+
 ### Related ONTAP commands
 * `system services web modify`
-
 */
 func (a *Client) WebModify(params *WebModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebModifyOK, *WebModifyAccepted, error) {
 	// TODO: Validate the params before sending

@@ -46,14 +46,44 @@ func NewEmsFilterDeleteOK() *EmsFilterDeleteOK {
 	return &EmsFilterDeleteOK{}
 }
 
-/* EmsFilterDeleteOK describes a response with status code 200, with default header values.
+/*
+EmsFilterDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type EmsFilterDeleteOK struct {
 }
 
+// IsSuccess returns true when this ems filter delete o k response has a 2xx status code
+func (o *EmsFilterDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems filter delete o k response has a 3xx status code
+func (o *EmsFilterDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems filter delete o k response has a 4xx status code
+func (o *EmsFilterDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems filter delete o k response has a 5xx status code
+func (o *EmsFilterDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems filter delete o k response a status code equal to that given
+func (o *EmsFilterDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EmsFilterDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] emsFilterDeleteOK ", 200)
+}
+
+func (o *EmsFilterDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] emsFilterDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewEmsFilterDeleteDefault(code int) *EmsFilterDeleteDefault {
 	}
 }
 
-/* EmsFilterDeleteDefault describes a response with status code -1, with default header values.
+/*
+	EmsFilterDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 983113     | Default filters cannot be modified or removed |
-
 */
 type EmsFilterDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *EmsFilterDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems filter delete default response has a 2xx status code
+func (o *EmsFilterDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems filter delete default response has a 3xx status code
+func (o *EmsFilterDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems filter delete default response has a 4xx status code
+func (o *EmsFilterDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems filter delete default response has a 5xx status code
+func (o *EmsFilterDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems filter delete default response a status code equal to that given
+func (o *EmsFilterDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsFilterDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] ems_filter_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsFilterDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}][%d] ems_filter_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsFilterDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

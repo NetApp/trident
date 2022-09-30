@@ -46,7 +46,8 @@ func NewEmsFilterRuleGetOK() *EmsFilterRuleGetOK {
 	return &EmsFilterRuleGetOK{}
 }
 
-/* EmsFilterRuleGetOK describes a response with status code 200, with default header values.
+/*
+EmsFilterRuleGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type EmsFilterRuleGetOK struct {
 	Payload *models.EmsFilterRule
 }
 
+// IsSuccess returns true when this ems filter rule get o k response has a 2xx status code
+func (o *EmsFilterRuleGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems filter rule get o k response has a 3xx status code
+func (o *EmsFilterRuleGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems filter rule get o k response has a 4xx status code
+func (o *EmsFilterRuleGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems filter rule get o k response has a 5xx status code
+func (o *EmsFilterRuleGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems filter rule get o k response a status code equal to that given
+func (o *EmsFilterRuleGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EmsFilterRuleGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/ems/filters/{name}/rules/{index}][%d] emsFilterRuleGetOK  %+v", 200, o.Payload)
 }
+
+func (o *EmsFilterRuleGetOK) String() string {
+	return fmt.Sprintf("[GET /support/ems/filters/{name}/rules/{index}][%d] emsFilterRuleGetOK  %+v", 200, o.Payload)
+}
+
 func (o *EmsFilterRuleGetOK) GetPayload() *models.EmsFilterRule {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewEmsFilterRuleGetDefault(code int) *EmsFilterRuleGetDefault {
 	}
 }
 
-/* EmsFilterRuleGetDefault describes a response with status code -1, with default header values.
+/*
+EmsFilterRuleGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *EmsFilterRuleGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems filter rule get default response has a 2xx status code
+func (o *EmsFilterRuleGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems filter rule get default response has a 3xx status code
+func (o *EmsFilterRuleGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems filter rule get default response has a 4xx status code
+func (o *EmsFilterRuleGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems filter rule get default response has a 5xx status code
+func (o *EmsFilterRuleGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems filter rule get default response a status code equal to that given
+func (o *EmsFilterRuleGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsFilterRuleGetDefault) Error() string {
 	return fmt.Sprintf("[GET /support/ems/filters/{name}/rules/{index}][%d] ems_filter_rule_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsFilterRuleGetDefault) String() string {
+	return fmt.Sprintf("[GET /support/ems/filters/{name}/rules/{index}][%d] ems_filter_rule_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsFilterRuleGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

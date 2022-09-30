@@ -53,10 +53,12 @@ func NewPerformanceS3MetricCollectionGetParamsWithHTTPClient(client *http.Client
 	}
 }
 
-/* PerformanceS3MetricCollectionGetParams contains all the parameters to send to the API endpoint
-   for the performance s3 metric collection get operation.
+/*
+PerformanceS3MetricCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the performance s3 metric collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type PerformanceS3MetricCollectionGetParams struct {
 

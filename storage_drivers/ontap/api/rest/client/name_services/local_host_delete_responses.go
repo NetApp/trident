@@ -46,14 +46,44 @@ func NewLocalHostDeleteOK() *LocalHostDeleteOK {
 	return &LocalHostDeleteOK{}
 }
 
-/* LocalHostDeleteOK describes a response with status code 200, with default header values.
+/*
+LocalHostDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LocalHostDeleteOK struct {
 }
 
+// IsSuccess returns true when this local host delete o k response has a 2xx status code
+func (o *LocalHostDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local host delete o k response has a 3xx status code
+func (o *LocalHostDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local host delete o k response has a 4xx status code
+func (o *LocalHostDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local host delete o k response has a 5xx status code
+func (o *LocalHostDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local host delete o k response a status code equal to that given
+func (o *LocalHostDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LocalHostDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /name-services/local-hosts/{owner.uuid}/{address}][%d] localHostDeleteOK ", 200)
+}
+
+func (o *LocalHostDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /name-services/local-hosts/{owner.uuid}/{address}][%d] localHostDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewLocalHostDeleteDefault(code int) *LocalHostDeleteDefault {
 	}
 }
 
-/* LocalHostDeleteDefault describes a response with status code -1, with default header values.
+/*
+	LocalHostDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
-
 */
 type LocalHostDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *LocalHostDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this local host delete default response has a 2xx status code
+func (o *LocalHostDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this local host delete default response has a 3xx status code
+func (o *LocalHostDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this local host delete default response has a 4xx status code
+func (o *LocalHostDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this local host delete default response has a 5xx status code
+func (o *LocalHostDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this local host delete default response a status code equal to that given
+func (o *LocalHostDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LocalHostDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /name-services/local-hosts/{owner.uuid}/{address}][%d] local_host_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LocalHostDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /name-services/local-hosts/{owner.uuid}/{address}][%d] local_host_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LocalHostDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

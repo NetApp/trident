@@ -54,10 +54,12 @@ func NewIscsiServiceModifyParamsWithHTTPClient(client *http.Client) *IscsiServic
 	}
 }
 
-/* IscsiServiceModifyParams contains all the parameters to send to the API endpoint
-   for the iscsi service modify operation.
+/*
+IscsiServiceModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the iscsi service modify operation.
+
+	Typically these are written to a http.Request.
 */
 type IscsiServiceModifyParams struct {
 

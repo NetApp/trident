@@ -46,14 +46,44 @@ func NewVolumeEfficiencyPolicyCreateCreated() *VolumeEfficiencyPolicyCreateCreat
 	return &VolumeEfficiencyPolicyCreateCreated{}
 }
 
-/* VolumeEfficiencyPolicyCreateCreated describes a response with status code 201, with default header values.
+/*
+VolumeEfficiencyPolicyCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type VolumeEfficiencyPolicyCreateCreated struct {
 }
 
+// IsSuccess returns true when this volume efficiency policy create created response has a 2xx status code
+func (o *VolumeEfficiencyPolicyCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume efficiency policy create created response has a 3xx status code
+func (o *VolumeEfficiencyPolicyCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume efficiency policy create created response has a 4xx status code
+func (o *VolumeEfficiencyPolicyCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume efficiency policy create created response has a 5xx status code
+func (o *VolumeEfficiencyPolicyCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume efficiency policy create created response a status code equal to that given
+func (o *VolumeEfficiencyPolicyCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *VolumeEfficiencyPolicyCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volumeEfficiencyPolicyCreateCreated ", 201)
+}
+
+func (o *VolumeEfficiencyPolicyCreateCreated) String() string {
 	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volumeEfficiencyPolicyCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewVolumeEfficiencyPolicyCreateDefault(code int) *VolumeEfficiencyPolicyCre
 	}
 }
 
-/* VolumeEfficiencyPolicyCreateDefault describes a response with status code -1, with default header values.
+/*
+	VolumeEfficiencyPolicyCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 |  6881341   | Specified schedule not found. |
@@ -87,7 +119,6 @@ func NewVolumeEfficiencyPolicyCreateDefault(code int) *VolumeEfficiencyPolicyCre
 |  6881475   | Duration is not valid. |
 |  6881476   | Duration cannot be less than 1 hour. |
 |  6881477   | Duration cannot be more than 999 hours. |
-
 */
 type VolumeEfficiencyPolicyCreateDefault struct {
 	_statusCode int
@@ -100,9 +131,39 @@ func (o *VolumeEfficiencyPolicyCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this volume efficiency policy create default response has a 2xx status code
+func (o *VolumeEfficiencyPolicyCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this volume efficiency policy create default response has a 3xx status code
+func (o *VolumeEfficiencyPolicyCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this volume efficiency policy create default response has a 4xx status code
+func (o *VolumeEfficiencyPolicyCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this volume efficiency policy create default response has a 5xx status code
+func (o *VolumeEfficiencyPolicyCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this volume efficiency policy create default response a status code equal to that given
+func (o *VolumeEfficiencyPolicyCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VolumeEfficiencyPolicyCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volume_efficiency_policy_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VolumeEfficiencyPolicyCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/volume-efficiency-policies][%d] volume_efficiency_policy_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VolumeEfficiencyPolicyCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

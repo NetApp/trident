@@ -52,7 +52,8 @@ func NewStoragePoolCreateCreated() *StoragePoolCreateCreated {
 	return &StoragePoolCreateCreated{}
 }
 
-/* StoragePoolCreateCreated describes a response with status code 201, with default header values.
+/*
+StoragePoolCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -60,9 +61,39 @@ type StoragePoolCreateCreated struct {
 	Payload *models.StoragePoolResponse
 }
 
+// IsSuccess returns true when this storage pool create created response has a 2xx status code
+func (o *StoragePoolCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this storage pool create created response has a 3xx status code
+func (o *StoragePoolCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this storage pool create created response has a 4xx status code
+func (o *StoragePoolCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this storage pool create created response has a 5xx status code
+func (o *StoragePoolCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this storage pool create created response a status code equal to that given
+func (o *StoragePoolCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *StoragePoolCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *StoragePoolCreateCreated) String() string {
+	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *StoragePoolCreateCreated) GetPayload() *models.StoragePoolResponse {
 	return o.Payload
 }
@@ -84,7 +115,8 @@ func NewStoragePoolCreateAccepted() *StoragePoolCreateAccepted {
 	return &StoragePoolCreateAccepted{}
 }
 
-/* StoragePoolCreateAccepted describes a response with status code 202, with default header values.
+/*
+StoragePoolCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -92,9 +124,39 @@ type StoragePoolCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this storage pool create accepted response has a 2xx status code
+func (o *StoragePoolCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this storage pool create accepted response has a 3xx status code
+func (o *StoragePoolCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this storage pool create accepted response has a 4xx status code
+func (o *StoragePoolCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this storage pool create accepted response has a 5xx status code
+func (o *StoragePoolCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this storage pool create accepted response a status code equal to that given
+func (o *StoragePoolCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *StoragePoolCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *StoragePoolCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/pools][%d] storagePoolCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *StoragePoolCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -118,9 +180,11 @@ func NewStoragePoolCreateDefault(code int) *StoragePoolCreateDefault {
 	}
 }
 
-/* StoragePoolCreateDefault describes a response with status code -1, with default header values.
+/*
+	StoragePoolCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 11206666 | Storage pool is unhealthy. |
@@ -158,7 +222,6 @@ func NewStoragePoolCreateDefault(code int) *StoragePoolCreateDefault {
 | 11208705 | Disk is a data center SSD, which cannot be used in storage pools. |
 | 11208706 | Disk is a SSD-ZNS, which cannot be used in storage pools. |
 | 11215756 | Missing a required field for POST request. |
-
 */
 type StoragePoolCreateDefault struct {
 	_statusCode int
@@ -171,9 +234,39 @@ func (o *StoragePoolCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this storage pool create default response has a 2xx status code
+func (o *StoragePoolCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this storage pool create default response has a 3xx status code
+func (o *StoragePoolCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this storage pool create default response has a 4xx status code
+func (o *StoragePoolCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this storage pool create default response has a 5xx status code
+func (o *StoragePoolCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this storage pool create default response a status code equal to that given
+func (o *StoragePoolCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *StoragePoolCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/pools][%d] storage_pool_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *StoragePoolCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/pools][%d] storage_pool_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *StoragePoolCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

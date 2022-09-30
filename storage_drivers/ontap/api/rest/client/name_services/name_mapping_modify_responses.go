@@ -43,14 +43,44 @@ func NewNameMappingModifyOK() *NameMappingModifyOK {
 	return &NameMappingModifyOK{}
 }
 
-/* NameMappingModifyOK describes a response with status code 200, with default header values.
+/*
+NameMappingModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NameMappingModifyOK struct {
 }
 
+// IsSuccess returns true when this name mapping modify o k response has a 2xx status code
+func (o *NameMappingModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this name mapping modify o k response has a 3xx status code
+func (o *NameMappingModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this name mapping modify o k response has a 4xx status code
+func (o *NameMappingModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this name mapping modify o k response has a 5xx status code
+func (o *NameMappingModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this name mapping modify o k response a status code equal to that given
+func (o *NameMappingModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NameMappingModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingModifyOK ", 200)
+}
+
+func (o *NameMappingModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingModifyOK ", 200)
 }
 
@@ -66,9 +96,11 @@ func NewNameMappingModifyDefault(code int) *NameMappingModifyDefault {
 	}
 }
 
-/* NameMappingModifyDefault describes a response with status code -1, with default header values.
+/*
+	NameMappingModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65798185   | Failed to resolve the specified hostname |
@@ -76,7 +108,6 @@ func NewNameMappingModifyDefault(code int) *NameMappingModifyDefault {
 |            | Delete and recreate the new entry at the specified position.|
 schema:
 $ref: "#/definitions/error_response"
-
 */
 type NameMappingModifyDefault struct {
 	_statusCode int
@@ -87,7 +118,36 @@ func (o *NameMappingModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this name mapping modify default response has a 2xx status code
+func (o *NameMappingModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this name mapping modify default response has a 3xx status code
+func (o *NameMappingModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this name mapping modify default response has a 4xx status code
+func (o *NameMappingModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this name mapping modify default response has a 5xx status code
+func (o *NameMappingModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this name mapping modify default response a status code equal to that given
+func (o *NameMappingModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NameMappingModifyDefault) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_modify default ", o._statusCode)
+}
+
+func (o *NameMappingModifyDefault) String() string {
 	return fmt.Sprintf("[PATCH /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_modify default ", o._statusCode)
 }
 

@@ -53,10 +53,12 @@ func NewQuotaRuleCollectionGetParamsWithHTTPClient(client *http.Client) *QuotaRu
 	}
 }
 
-/* QuotaRuleCollectionGetParams contains all the parameters to send to the API endpoint
-   for the quota rule collection get operation.
+/*
+QuotaRuleCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the quota rule collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type QuotaRuleCollectionGetParams struct {
 

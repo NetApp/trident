@@ -46,7 +46,8 @@ func NewVscanOnDemandPolicyCollectionGetOK() *VscanOnDemandPolicyCollectionGetOK
 	return &VscanOnDemandPolicyCollectionGetOK{}
 }
 
-/* VscanOnDemandPolicyCollectionGetOK describes a response with status code 200, with default header values.
+/*
+VscanOnDemandPolicyCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type VscanOnDemandPolicyCollectionGetOK struct {
 	Payload *models.VscanOnDemandResponse
 }
 
+// IsSuccess returns true when this vscan on demand policy collection get o k response has a 2xx status code
+func (o *VscanOnDemandPolicyCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan on demand policy collection get o k response has a 3xx status code
+func (o *VscanOnDemandPolicyCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan on demand policy collection get o k response has a 4xx status code
+func (o *VscanOnDemandPolicyCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan on demand policy collection get o k response has a 5xx status code
+func (o *VscanOnDemandPolicyCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan on demand policy collection get o k response a status code equal to that given
+func (o *VscanOnDemandPolicyCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanOnDemandPolicyCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandPolicyCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *VscanOnDemandPolicyCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandPolicyCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *VscanOnDemandPolicyCollectionGetOK) GetPayload() *models.VscanOnDemandResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewVscanOnDemandPolicyCollectionGetDefault(code int) *VscanOnDemandPolicyCo
 	}
 }
 
-/* VscanOnDemandPolicyCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+VscanOnDemandPolicyCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *VscanOnDemandPolicyCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan on demand policy collection get default response has a 2xx status code
+func (o *VscanOnDemandPolicyCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan on demand policy collection get default response has a 3xx status code
+func (o *VscanOnDemandPolicyCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan on demand policy collection get default response has a 4xx status code
+func (o *VscanOnDemandPolicyCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan on demand policy collection get default response has a 5xx status code
+func (o *VscanOnDemandPolicyCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan on demand policy collection get default response a status code equal to that given
+func (o *VscanOnDemandPolicyCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanOnDemandPolicyCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_policy_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanOnDemandPolicyCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_policy_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanOnDemandPolicyCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

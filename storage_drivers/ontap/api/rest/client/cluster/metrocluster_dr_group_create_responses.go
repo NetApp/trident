@@ -46,7 +46,8 @@ func NewMetroclusterDrGroupCreateAccepted() *MetroclusterDrGroupCreateAccepted {
 	return &MetroclusterDrGroupCreateAccepted{}
 }
 
-/* MetroclusterDrGroupCreateAccepted describes a response with status code 202, with default header values.
+/*
+MetroclusterDrGroupCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type MetroclusterDrGroupCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this metrocluster dr group create accepted response has a 2xx status code
+func (o *MetroclusterDrGroupCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster dr group create accepted response has a 3xx status code
+func (o *MetroclusterDrGroupCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster dr group create accepted response has a 4xx status code
+func (o *MetroclusterDrGroupCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster dr group create accepted response has a 5xx status code
+func (o *MetroclusterDrGroupCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster dr group create accepted response a status code equal to that given
+func (o *MetroclusterDrGroupCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *MetroclusterDrGroupCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *MetroclusterDrGroupCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *MetroclusterDrGroupCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewMetroclusterDrGroupCreateDefault(code int) *MetroclusterDrGroupCreateDef
 	}
 }
 
-/* MetroclusterDrGroupCreateDefault describes a response with status code -1, with default header values.
+/*
+	MetroclusterDrGroupCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
@@ -95,7 +128,6 @@ func NewMetroclusterDrGroupCreateDefault(code int) *MetroclusterDrGroupCreateDef
 | 2432846 | Configuring MetroCluster and DR mirroring |
 | 2432857 | Adding new MetroCluster DR Group |
 | 2432858 | MetroCluster DR Group setup done |
-
 */
 type MetroclusterDrGroupCreateDefault struct {
 	_statusCode int
@@ -108,9 +140,39 @@ func (o *MetroclusterDrGroupCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster dr group create default response has a 2xx status code
+func (o *MetroclusterDrGroupCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster dr group create default response has a 3xx status code
+func (o *MetroclusterDrGroupCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster dr group create default response has a 4xx status code
+func (o *MetroclusterDrGroupCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster dr group create default response has a 5xx status code
+func (o *MetroclusterDrGroupCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster dr group create default response a status code equal to that given
+func (o *MetroclusterDrGroupCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterDrGroupCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MetroclusterDrGroupCreateDefault) String() string {
+	return fmt.Sprintf("[POST /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MetroclusterDrGroupCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

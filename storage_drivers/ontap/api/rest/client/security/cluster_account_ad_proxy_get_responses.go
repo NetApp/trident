@@ -46,7 +46,8 @@ func NewClusterAccountAdProxyGetOK() *ClusterAccountAdProxyGetOK {
 	return &ClusterAccountAdProxyGetOK{}
 }
 
-/* ClusterAccountAdProxyGetOK describes a response with status code 200, with default header values.
+/*
+ClusterAccountAdProxyGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ClusterAccountAdProxyGetOK struct {
 	Payload *models.ClusterAdProxy
 }
 
+// IsSuccess returns true when this cluster account ad proxy get o k response has a 2xx status code
+func (o *ClusterAccountAdProxyGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster account ad proxy get o k response has a 3xx status code
+func (o *ClusterAccountAdProxyGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster account ad proxy get o k response has a 4xx status code
+func (o *ClusterAccountAdProxyGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster account ad proxy get o k response has a 5xx status code
+func (o *ClusterAccountAdProxyGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster account ad proxy get o k response a status code equal to that given
+func (o *ClusterAccountAdProxyGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterAccountAdProxyGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ClusterAccountAdProxyGetOK) String() string {
+	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ClusterAccountAdProxyGetOK) GetPayload() *models.ClusterAdProxy {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewClusterAccountAdProxyGetDefault(code int) *ClusterAccountAdProxyGetDefau
 	}
 }
 
-/* ClusterAccountAdProxyGetDefault describes a response with status code -1, with default header values.
+/*
+ClusterAccountAdProxyGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ClusterAccountAdProxyGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster account ad proxy get default response has a 2xx status code
+func (o *ClusterAccountAdProxyGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster account ad proxy get default response has a 3xx status code
+func (o *ClusterAccountAdProxyGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster account ad proxy get default response has a 4xx status code
+func (o *ClusterAccountAdProxyGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster account ad proxy get default response has a 5xx status code
+func (o *ClusterAccountAdProxyGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster account ad proxy get default response a status code equal to that given
+func (o *ClusterAccountAdProxyGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterAccountAdProxyGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterAccountAdProxyGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterAccountAdProxyGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

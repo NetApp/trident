@@ -52,10 +52,12 @@ func NewIPServicePolicyDeleteParamsWithHTTPClient(client *http.Client) *IPServic
 	}
 }
 
-/* IPServicePolicyDeleteParams contains all the parameters to send to the API endpoint
-   for the ip service policy delete operation.
+/*
+IPServicePolicyDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ip service policy delete operation.
+
+	Typically these are written to a http.Request.
 */
 type IPServicePolicyDeleteParams struct {
 

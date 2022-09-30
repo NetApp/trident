@@ -53,10 +53,12 @@ func NewSnapmirrorRelationshipDeleteParamsWithHTTPClient(client *http.Client) *S
 	}
 }
 
-/* SnapmirrorRelationshipDeleteParams contains all the parameters to send to the API endpoint
-   for the snapmirror relationship delete operation.
+/*
+SnapmirrorRelationshipDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snapmirror relationship delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SnapmirrorRelationshipDeleteParams struct {
 

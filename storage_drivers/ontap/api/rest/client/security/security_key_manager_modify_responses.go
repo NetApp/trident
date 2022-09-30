@@ -46,14 +46,44 @@ func NewSecurityKeyManagerModifyOK() *SecurityKeyManagerModifyOK {
 	return &SecurityKeyManagerModifyOK{}
 }
 
-/* SecurityKeyManagerModifyOK describes a response with status code 200, with default header values.
+/*
+SecurityKeyManagerModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SecurityKeyManagerModifyOK struct {
 }
 
+// IsSuccess returns true when this security key manager modify o k response has a 2xx status code
+func (o *SecurityKeyManagerModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager modify o k response has a 3xx status code
+func (o *SecurityKeyManagerModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager modify o k response has a 4xx status code
+func (o *SecurityKeyManagerModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager modify o k response has a 5xx status code
+func (o *SecurityKeyManagerModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager modify o k response a status code equal to that given
+func (o *SecurityKeyManagerModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityKeyManagerModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] securityKeyManagerModifyOK ", 200)
+}
+
+func (o *SecurityKeyManagerModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] securityKeyManagerModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewSecurityKeyManagerModifyDefault(code int) *SecurityKeyManagerModifyDefau
 	}
 }
 
-/* SecurityKeyManagerModifyDefault describes a response with status code -1, with default header values.
+/*
+	SecurityKeyManagerModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65536139 | The existing passphrase value provided does not match the configured passphrase. |
@@ -91,7 +123,6 @@ func NewSecurityKeyManagerModifyDefault(code int) *SecurityKeyManagerModifyDefau
 | 66060338 | Failed to establish secure connection for a key management server due to incorrect server_ca certificates. |
 | 66060339 | Failed to establish secure connection for a key management server due to incorrect client certificates. |
 | 66060340 | Failed to establish secure connection for a key management server due to Cryptsoft error. |
-
 */
 type SecurityKeyManagerModifyDefault struct {
 	_statusCode int
@@ -104,9 +135,39 @@ func (o *SecurityKeyManagerModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security key manager modify default response has a 2xx status code
+func (o *SecurityKeyManagerModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security key manager modify default response has a 3xx status code
+func (o *SecurityKeyManagerModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security key manager modify default response has a 4xx status code
+func (o *SecurityKeyManagerModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security key manager modify default response has a 5xx status code
+func (o *SecurityKeyManagerModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security key manager modify default response a status code equal to that given
+func (o *SecurityKeyManagerModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityKeyManagerModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] security_key_manager_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityKeyManagerModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}][%d] security_key_manager_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityKeyManagerModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

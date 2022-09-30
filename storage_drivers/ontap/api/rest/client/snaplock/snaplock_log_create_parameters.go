@@ -55,10 +55,12 @@ func NewSnaplockLogCreateParamsWithHTTPClient(client *http.Client) *SnaplockLogC
 	}
 }
 
-/* SnaplockLogCreateParams contains all the parameters to send to the API endpoint
-   for the snaplock log create operation.
+/*
+SnaplockLogCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock log create operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockLogCreateParams struct {
 

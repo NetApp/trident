@@ -46,7 +46,8 @@ func NewCifsSessionCollectionGetOK() *CifsSessionCollectionGetOK {
 	return &CifsSessionCollectionGetOK{}
 }
 
-/* CifsSessionCollectionGetOK describes a response with status code 200, with default header values.
+/*
+CifsSessionCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsSessionCollectionGetOK struct {
 	Payload *models.CifsSessionResponse
 }
 
+// IsSuccess returns true when this cifs session collection get o k response has a 2xx status code
+func (o *CifsSessionCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs session collection get o k response has a 3xx status code
+func (o *CifsSessionCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs session collection get o k response has a 4xx status code
+func (o *CifsSessionCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs session collection get o k response has a 5xx status code
+func (o *CifsSessionCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs session collection get o k response a status code equal to that given
+func (o *CifsSessionCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsSessionCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifsSessionCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsSessionCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifsSessionCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsSessionCollectionGetOK) GetPayload() *models.CifsSessionResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsSessionCollectionGetDefault(code int) *CifsSessionCollectionGetDefau
 	}
 }
 
-/* CifsSessionCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+CifsSessionCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsSessionCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs session collection get default response has a 2xx status code
+func (o *CifsSessionCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs session collection get default response has a 3xx status code
+func (o *CifsSessionCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs session collection get default response has a 4xx status code
+func (o *CifsSessionCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs session collection get default response has a 5xx status code
+func (o *CifsSessionCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs session collection get default response a status code equal to that given
+func (o *CifsSessionCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsSessionCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifs_session_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsSessionCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/sessions][%d] cifs_session_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsSessionCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

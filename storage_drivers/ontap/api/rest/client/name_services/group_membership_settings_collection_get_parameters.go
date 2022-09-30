@@ -53,10 +53,12 @@ func NewGroupMembershipSettingsCollectionGetParamsWithHTTPClient(client *http.Cl
 	}
 }
 
-/* GroupMembershipSettingsCollectionGetParams contains all the parameters to send to the API endpoint
-   for the group membership settings collection get operation.
+/*
+GroupMembershipSettingsCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the group membership settings collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type GroupMembershipSettingsCollectionGetParams struct {
 

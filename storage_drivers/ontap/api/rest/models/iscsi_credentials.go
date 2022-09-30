@@ -310,7 +310,6 @@ func (m *IscsiCredentials) UnmarshalBinary(b []byte) error {
 
 // IscsiCredentialsChap Challenge-Handshake Authentication Protocol (CHAP) credentials.
 //
-//
 // swagger:model IscsiCredentialsChap
 type IscsiCredentialsChap struct {
 
@@ -439,7 +438,6 @@ func (m *IscsiCredentialsChap) UnmarshalBinary(b []byte) error {
 
 // IscsiCredentialsChapInbound Inbound CHAP credentials.
 //
-//
 // swagger:model IscsiCredentialsChapInbound
 type IscsiCredentialsChapInbound struct {
 
@@ -527,7 +525,6 @@ func (m *IscsiCredentialsChapInbound) UnmarshalBinary(b []byte) error {
 // IscsiCredentialsChapOutbound Output CHAP credentials.</br>
 // To clear previously set outbound CHAP credentials, set property `chap.outbound.user` to an empty string in PATCH.
 //
-//
 // swagger:model IscsiCredentialsChapOutbound
 type IscsiCredentialsChapOutbound struct {
 
@@ -614,7 +611,6 @@ func (m *IscsiCredentialsChapOutbound) UnmarshalBinary(b []byte) error {
 }
 
 // IscsiCredentialsInitiatorAddress Initiator address ranges.
-//
 //
 // swagger:model IscsiCredentialsInitiatorAddress
 type IscsiCredentialsInitiatorAddress struct {

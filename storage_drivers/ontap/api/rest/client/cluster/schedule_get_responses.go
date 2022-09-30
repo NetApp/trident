@@ -46,7 +46,8 @@ func NewScheduleGetOK() *ScheduleGetOK {
 	return &ScheduleGetOK{}
 }
 
-/* ScheduleGetOK describes a response with status code 200, with default header values.
+/*
+ScheduleGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ScheduleGetOK struct {
 	Payload *models.Schedule
 }
 
+// IsSuccess returns true when this schedule get o k response has a 2xx status code
+func (o *ScheduleGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this schedule get o k response has a 3xx status code
+func (o *ScheduleGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this schedule get o k response has a 4xx status code
+func (o *ScheduleGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this schedule get o k response has a 5xx status code
+func (o *ScheduleGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this schedule get o k response a status code equal to that given
+func (o *ScheduleGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ScheduleGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/schedules/{uuid}][%d] scheduleGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ScheduleGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/schedules/{uuid}][%d] scheduleGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ScheduleGetOK) GetPayload() *models.Schedule {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewScheduleGetDefault(code int) *ScheduleGetDefault {
 	}
 }
 
-/* ScheduleGetDefault describes a response with status code -1, with default header values.
+/*
+ScheduleGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ScheduleGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this schedule get default response has a 2xx status code
+func (o *ScheduleGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this schedule get default response has a 3xx status code
+func (o *ScheduleGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this schedule get default response has a 4xx status code
+func (o *ScheduleGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this schedule get default response has a 5xx status code
+func (o *ScheduleGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this schedule get default response a status code equal to that given
+func (o *ScheduleGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ScheduleGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/schedules/{uuid}][%d] schedule_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ScheduleGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/schedules/{uuid}][%d] schedule_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ScheduleGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

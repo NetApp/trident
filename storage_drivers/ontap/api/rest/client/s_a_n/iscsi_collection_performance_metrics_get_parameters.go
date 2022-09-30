@@ -53,10 +53,12 @@ func NewIscsiCollectionPerformanceMetricsGetParamsWithHTTPClient(client *http.Cl
 	}
 }
 
-/* IscsiCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
-   for the iscsi collection performance metrics get operation.
+/*
+IscsiCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the iscsi collection performance metrics get operation.
+
+	Typically these are written to a http.Request.
 */
 type IscsiCollectionPerformanceMetricsGetParams struct {
 

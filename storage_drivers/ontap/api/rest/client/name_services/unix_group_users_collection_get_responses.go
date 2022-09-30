@@ -46,7 +46,8 @@ func NewUnixGroupUsersCollectionGetOK() *UnixGroupUsersCollectionGetOK {
 	return &UnixGroupUsersCollectionGetOK{}
 }
 
-/* UnixGroupUsersCollectionGetOK describes a response with status code 200, with default header values.
+/*
+UnixGroupUsersCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type UnixGroupUsersCollectionGetOK struct {
 	Payload *models.UnixGroupUsersResponse
 }
 
+// IsSuccess returns true when this unix group users collection get o k response has a 2xx status code
+func (o *UnixGroupUsersCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix group users collection get o k response has a 3xx status code
+func (o *UnixGroupUsersCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix group users collection get o k response has a 4xx status code
+func (o *UnixGroupUsersCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix group users collection get o k response has a 5xx status code
+func (o *UnixGroupUsersCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix group users collection get o k response a status code equal to that given
+func (o *UnixGroupUsersCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixGroupUsersCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unixGroupUsersCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *UnixGroupUsersCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unixGroupUsersCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *UnixGroupUsersCollectionGetOK) GetPayload() *models.UnixGroupUsersResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewUnixGroupUsersCollectionGetDefault(code int) *UnixGroupUsersCollectionGe
 	}
 }
 
-/* UnixGroupUsersCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+UnixGroupUsersCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *UnixGroupUsersCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix group users collection get default response has a 2xx status code
+func (o *UnixGroupUsersCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix group users collection get default response has a 3xx status code
+func (o *UnixGroupUsersCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix group users collection get default response has a 4xx status code
+func (o *UnixGroupUsersCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix group users collection get default response has a 5xx status code
+func (o *UnixGroupUsersCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix group users collection get default response a status code equal to that given
+func (o *UnixGroupUsersCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixGroupUsersCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unix_group_users_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixGroupUsersCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unix_group_users_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixGroupUsersCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -52,10 +52,12 @@ func NewIpsecPolicyDeleteParamsWithHTTPClient(client *http.Client) *IpsecPolicyD
 	}
 }
 
-/* IpsecPolicyDeleteParams contains all the parameters to send to the API endpoint
-   for the ipsec policy delete operation.
+/*
+IpsecPolicyDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ipsec policy delete operation.
+
+	Typically these are written to a http.Request.
 */
 type IpsecPolicyDeleteParams struct {
 

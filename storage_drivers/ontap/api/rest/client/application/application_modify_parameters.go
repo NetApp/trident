@@ -55,10 +55,12 @@ func NewApplicationModifyParamsWithHTTPClient(client *http.Client) *ApplicationM
 	}
 }
 
-/* ApplicationModifyParams contains all the parameters to send to the API endpoint
-   for the application modify operation.
+/*
+ApplicationModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the application modify operation.
+
+	Typically these are written to a http.Request.
 */
 type ApplicationModifyParams struct {
 

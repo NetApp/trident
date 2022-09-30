@@ -46,7 +46,8 @@ func NewIpsecCaCertificateCreateCreated() *IpsecCaCertificateCreateCreated {
 	return &IpsecCaCertificateCreateCreated{}
 }
 
-/* IpsecCaCertificateCreateCreated describes a response with status code 201, with default header values.
+/*
+IpsecCaCertificateCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type IpsecCaCertificateCreateCreated struct {
 	Payload *models.IpsecCaCertificateResponse
 }
 
+// IsSuccess returns true when this ipsec ca certificate create created response has a 2xx status code
+func (o *IpsecCaCertificateCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipsec ca certificate create created response has a 3xx status code
+func (o *IpsecCaCertificateCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipsec ca certificate create created response has a 4xx status code
+func (o *IpsecCaCertificateCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipsec ca certificate create created response has a 5xx status code
+func (o *IpsecCaCertificateCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipsec ca certificate create created response a status code equal to that given
+func (o *IpsecCaCertificateCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *IpsecCaCertificateCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsecCaCertificateCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *IpsecCaCertificateCreateCreated) String() string {
+	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsecCaCertificateCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *IpsecCaCertificateCreateCreated) GetPayload() *models.IpsecCaCertificateResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewIpsecCaCertificateCreateDefault(code int) *IpsecCaCertificateCreateDefau
 	}
 }
 
-/* IpsecCaCertificateCreateDefault describes a response with status code -1, with default header values.
+/*
+	IpsecCaCertificateCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 66257296 | CA certificate is not installed. |
-
 */
 type IpsecCaCertificateCreateDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *IpsecCaCertificateCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ipsec ca certificate create default response has a 2xx status code
+func (o *IpsecCaCertificateCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipsec ca certificate create default response has a 3xx status code
+func (o *IpsecCaCertificateCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipsec ca certificate create default response has a 4xx status code
+func (o *IpsecCaCertificateCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipsec ca certificate create default response has a 5xx status code
+func (o *IpsecCaCertificateCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipsec ca certificate create default response a status code equal to that given
+func (o *IpsecCaCertificateCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IpsecCaCertificateCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsec_ca_certificate_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IpsecCaCertificateCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/ipsec/ca-certificates][%d] ipsec_ca_certificate_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IpsecCaCertificateCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

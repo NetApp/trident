@@ -53,10 +53,12 @@ func NewAutoUpdateInfoGetParamsWithHTTPClient(client *http.Client) *AutoUpdateIn
 	}
 }
 
-/* AutoUpdateInfoGetParams contains all the parameters to send to the API endpoint
-   for the auto update info get operation.
+/*
+AutoUpdateInfoGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the auto update info get operation.
+
+	Typically these are written to a http.Request.
 */
 type AutoUpdateInfoGetParams struct {
 

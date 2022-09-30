@@ -53,10 +53,12 @@ func NewCloudTargetDeleteParamsWithHTTPClient(client *http.Client) *CloudTargetD
 	}
 }
 
-/* CloudTargetDeleteParams contains all the parameters to send to the API endpoint
-   for the cloud target delete operation.
+/*
+CloudTargetDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cloud target delete operation.
+
+	Typically these are written to a http.Request.
 */
 type CloudTargetDeleteParams struct {
 

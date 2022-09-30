@@ -46,7 +46,8 @@ func NewSplitStatusGetOK() *SplitStatusGetOK {
 	return &SplitStatusGetOK{}
 }
 
-/* SplitStatusGetOK describes a response with status code 200, with default header values.
+/*
+SplitStatusGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SplitStatusGetOK struct {
 	Payload *models.SplitStatus
 }
 
+// IsSuccess returns true when this split status get o k response has a 2xx status code
+func (o *SplitStatusGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this split status get o k response has a 3xx status code
+func (o *SplitStatusGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this split status get o k response has a 4xx status code
+func (o *SplitStatusGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this split status get o k response has a 5xx status code
+func (o *SplitStatusGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this split status get o k response a status code equal to that given
+func (o *SplitStatusGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SplitStatusGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/file/clone/split-status/{volume.uuid}][%d] splitStatusGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SplitStatusGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/file/clone/split-status/{volume.uuid}][%d] splitStatusGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SplitStatusGetOK) GetPayload() *models.SplitStatus {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSplitStatusGetDefault(code int) *SplitStatusGetDefault {
 	}
 }
 
-/* SplitStatusGetDefault describes a response with status code -1, with default header values.
+/*
+SplitStatusGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SplitStatusGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this split status get default response has a 2xx status code
+func (o *SplitStatusGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this split status get default response has a 3xx status code
+func (o *SplitStatusGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this split status get default response has a 4xx status code
+func (o *SplitStatusGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this split status get default response has a 5xx status code
+func (o *SplitStatusGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this split status get default response a status code equal to that given
+func (o *SplitStatusGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SplitStatusGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/file/clone/split-status/{volume.uuid}][%d] split_status_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SplitStatusGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/file/clone/split-status/{volume.uuid}][%d] split_status_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SplitStatusGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

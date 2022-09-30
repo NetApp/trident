@@ -46,7 +46,8 @@ func NewDNSCreateCreated() *DNSCreateCreated {
 	return &DNSCreateCreated{}
 }
 
-/* DNSCreateCreated describes a response with status code 201, with default header values.
+/*
+DNSCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type DNSCreateCreated struct {
 	Payload *models.DNSResponse
 }
 
+// IsSuccess returns true when this dns create created response has a 2xx status code
+func (o *DNSCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this dns create created response has a 3xx status code
+func (o *DNSCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this dns create created response has a 4xx status code
+func (o *DNSCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this dns create created response has a 5xx status code
+func (o *DNSCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this dns create created response a status code equal to that given
+func (o *DNSCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *DNSCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /name-services/dns][%d] dnsCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *DNSCreateCreated) String() string {
+	return fmt.Sprintf("[POST /name-services/dns][%d] dnsCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *DNSCreateCreated) GetPayload() *models.DNSResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewDNSCreateDefault(code int) *DNSCreateDefault {
 	}
 }
 
-/* DNSCreateDefault describes a response with status code -1, with default header values.
+/*
+	DNSCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name |
@@ -100,7 +133,6 @@ func NewDNSCreateDefault(code int) *DNSCreateDefault {
 | 9240607    | One of the FQDN labels is too long. Maximum supported length is 63 characters |
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
-
 */
 type DNSCreateDefault struct {
 	_statusCode int
@@ -113,9 +145,39 @@ func (o *DNSCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this dns create default response has a 2xx status code
+func (o *DNSCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this dns create default response has a 3xx status code
+func (o *DNSCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this dns create default response has a 4xx status code
+func (o *DNSCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this dns create default response has a 5xx status code
+func (o *DNSCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this dns create default response a status code equal to that given
+func (o *DNSCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *DNSCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /name-services/dns][%d] dns_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *DNSCreateDefault) String() string {
+	return fmt.Sprintf("[POST /name-services/dns][%d] dns_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *DNSCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

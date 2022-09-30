@@ -46,7 +46,8 @@ func NewCounterRowCollectionGetOK() *CounterRowCollectionGetOK {
 	return &CounterRowCollectionGetOK{}
 }
 
-/* CounterRowCollectionGetOK describes a response with status code 200, with default header values.
+/*
+CounterRowCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CounterRowCollectionGetOK struct {
 	Payload *models.CounterRowResponse
 }
 
+// IsSuccess returns true when this counter row collection get o k response has a 2xx status code
+func (o *CounterRowCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this counter row collection get o k response has a 3xx status code
+func (o *CounterRowCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this counter row collection get o k response has a 4xx status code
+func (o *CounterRowCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this counter row collection get o k response has a 5xx status code
+func (o *CounterRowCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this counter row collection get o k response a status code equal to that given
+func (o *CounterRowCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CounterRowCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counterRowCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CounterRowCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counterRowCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CounterRowCollectionGetOK) GetPayload() *models.CounterRowResponse {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewCounterRowCollectionGetDefault(code int) *CounterRowCollectionGetDefault
 	}
 }
 
-/* CounterRowCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	CounterRowCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 8585320 | Table requested is not found |
 | 8586228 | Invalid counter name request. |
 | 8586229 | Invalid counter property request. |
-
 */
 type CounterRowCollectionGetDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *CounterRowCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this counter row collection get default response has a 2xx status code
+func (o *CounterRowCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this counter row collection get default response has a 3xx status code
+func (o *CounterRowCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this counter row collection get default response has a 4xx status code
+func (o *CounterRowCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this counter row collection get default response has a 5xx status code
+func (o *CounterRowCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this counter row collection get default response a status code equal to that given
+func (o *CounterRowCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CounterRowCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counter_row_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CounterRowCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows][%d] counter_row_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CounterRowCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

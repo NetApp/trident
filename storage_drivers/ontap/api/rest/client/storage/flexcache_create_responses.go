@@ -46,7 +46,8 @@ func NewFlexcacheCreateAccepted() *FlexcacheCreateAccepted {
 	return &FlexcacheCreateAccepted{}
 }
 
-/* FlexcacheCreateAccepted describes a response with status code 202, with default header values.
+/*
+FlexcacheCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type FlexcacheCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this flexcache create accepted response has a 2xx status code
+func (o *FlexcacheCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this flexcache create accepted response has a 3xx status code
+func (o *FlexcacheCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this flexcache create accepted response has a 4xx status code
+func (o *FlexcacheCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this flexcache create accepted response has a 5xx status code
+func (o *FlexcacheCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this flexcache create accepted response a status code equal to that given
+func (o *FlexcacheCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *FlexcacheCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcacheCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *FlexcacheCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcacheCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *FlexcacheCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewFlexcacheCreateDefault(code int) *FlexcacheCreateDefault {
 	}
 }
 
-/* FlexcacheCreateDefault describes a response with status code -1, with default header values.
+/*
+	FlexcacheCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 66846870   | Either the SVM name or origin volume name is missing |
@@ -101,7 +134,6 @@ func NewFlexcacheCreateDefault(code int) *FlexcacheCreateDefault {
 | 66846812   | The specified junction path is under a FlexCache volume |
 | 66846834   | FlexCache encryption requires a cluster version of 9.6 or higher |
 | 66846835   | A volume encryption license is not found |
-
 */
 type FlexcacheCreateDefault struct {
 	_statusCode int
@@ -114,9 +146,39 @@ func (o *FlexcacheCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this flexcache create default response has a 2xx status code
+func (o *FlexcacheCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this flexcache create default response has a 3xx status code
+func (o *FlexcacheCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this flexcache create default response has a 4xx status code
+func (o *FlexcacheCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this flexcache create default response has a 5xx status code
+func (o *FlexcacheCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this flexcache create default response a status code equal to that given
+func (o *FlexcacheCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FlexcacheCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcache_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FlexcacheCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/flexcache/flexcaches][%d] flexcache_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FlexcacheCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

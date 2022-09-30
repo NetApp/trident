@@ -46,7 +46,8 @@ func NewGcpKmsCreateCreated() *GcpKmsCreateCreated {
 	return &GcpKmsCreateCreated{}
 }
 
-/* GcpKmsCreateCreated describes a response with status code 201, with default header values.
+/*
+GcpKmsCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type GcpKmsCreateCreated struct {
 	Payload *models.GcpKmsResponse
 }
 
+// IsSuccess returns true when this gcp kms create created response has a 2xx status code
+func (o *GcpKmsCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this gcp kms create created response has a 3xx status code
+func (o *GcpKmsCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this gcp kms create created response has a 4xx status code
+func (o *GcpKmsCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this gcp kms create created response has a 5xx status code
+func (o *GcpKmsCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this gcp kms create created response a status code equal to that given
+func (o *GcpKmsCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *GcpKmsCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /security/gcp-kms][%d] gcpKmsCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *GcpKmsCreateCreated) String() string {
+	return fmt.Sprintf("[POST /security/gcp-kms][%d] gcpKmsCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *GcpKmsCreateCreated) GetPayload() *models.GcpKmsResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewGcpKmsCreateDefault(code int) *GcpKmsCreateDefault {
 	}
 }
 
-/* GcpKmsCreateDefault describes a response with status code -1, with default header values.
+/*
+	GcpKmsCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65537703 | The Google Cloud Key Management Service is not supported for the admin Vserver. |
@@ -91,7 +124,6 @@ func NewGcpKmsCreateDefault(code int) *GcpKmsCreateDefault {
 | 65537713 | Internal Error. Failed to store the application credentials. |
 | 65537719 | Failed to enable the Google Cloud Key Management Service for SVM <svm-name> because invalid application credentials were provided. |
 | 65537720 | Failed to configure Google Cloud Key Management Service for SVM <svm-name> because a key manager has already been configured for this SVM. Use the REST API GET method \"/api/security/key-managers\" to view all of the configured key managers. |
-
 */
 type GcpKmsCreateDefault struct {
 	_statusCode int
@@ -104,9 +136,39 @@ func (o *GcpKmsCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this gcp kms create default response has a 2xx status code
+func (o *GcpKmsCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this gcp kms create default response has a 3xx status code
+func (o *GcpKmsCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this gcp kms create default response has a 4xx status code
+func (o *GcpKmsCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this gcp kms create default response has a 5xx status code
+func (o *GcpKmsCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this gcp kms create default response a status code equal to that given
+func (o *GcpKmsCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GcpKmsCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/gcp-kms][%d] gcp_kms_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GcpKmsCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/gcp-kms][%d] gcp_kms_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GcpKmsCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

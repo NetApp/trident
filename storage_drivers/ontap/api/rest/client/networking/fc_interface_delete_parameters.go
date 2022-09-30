@@ -52,10 +52,12 @@ func NewFcInterfaceDeleteParamsWithHTTPClient(client *http.Client) *FcInterfaceD
 	}
 }
 
-/* FcInterfaceDeleteParams contains all the parameters to send to the API endpoint
-   for the fc interface delete operation.
+/*
+FcInterfaceDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fc interface delete operation.
+
+	Typically these are written to a http.Request.
 */
 type FcInterfaceDeleteParams struct {
 

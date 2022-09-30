@@ -55,10 +55,12 @@ func NewClusterModifyParamsWithHTTPClient(client *http.Client) *ClusterModifyPar
 	}
 }
 
-/* ClusterModifyParams contains all the parameters to send to the API endpoint
-   for the cluster modify operation.
+/*
+ClusterModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster modify operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterModifyParams struct {
 

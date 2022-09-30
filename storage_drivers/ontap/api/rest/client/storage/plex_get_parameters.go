@@ -53,10 +53,12 @@ func NewPlexGetParamsWithHTTPClient(client *http.Client) *PlexGetParams {
 	}
 }
 
-/* PlexGetParams contains all the parameters to send to the API endpoint
-   for the plex get operation.
+/*
+PlexGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the plex get operation.
+
+	Typically these are written to a http.Request.
 */
 type PlexGetParams struct {
 

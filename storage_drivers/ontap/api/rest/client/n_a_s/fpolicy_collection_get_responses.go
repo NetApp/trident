@@ -46,7 +46,8 @@ func NewFpolicyCollectionGetOK() *FpolicyCollectionGetOK {
 	return &FpolicyCollectionGetOK{}
 }
 
-/* FpolicyCollectionGetOK describes a response with status code 200, with default header values.
+/*
+FpolicyCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FpolicyCollectionGetOK struct {
 	Payload *models.FpolicyResponse
 }
 
+// IsSuccess returns true when this fpolicy collection get o k response has a 2xx status code
+func (o *FpolicyCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fpolicy collection get o k response has a 3xx status code
+func (o *FpolicyCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fpolicy collection get o k response has a 4xx status code
+func (o *FpolicyCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fpolicy collection get o k response has a 5xx status code
+func (o *FpolicyCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fpolicy collection get o k response a status code equal to that given
+func (o *FpolicyCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FpolicyCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/fpolicy][%d] fpolicyCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FpolicyCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/fpolicy][%d] fpolicyCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FpolicyCollectionGetOK) GetPayload() *models.FpolicyResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFpolicyCollectionGetDefault(code int) *FpolicyCollectionGetDefault {
 	}
 }
 
-/* FpolicyCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+FpolicyCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FpolicyCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fpolicy collection get default response has a 2xx status code
+func (o *FpolicyCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fpolicy collection get default response has a 3xx status code
+func (o *FpolicyCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fpolicy collection get default response has a 4xx status code
+func (o *FpolicyCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fpolicy collection get default response has a 5xx status code
+func (o *FpolicyCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fpolicy collection get default response a status code equal to that given
+func (o *FpolicyCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FpolicyCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/fpolicy][%d] fpolicy_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FpolicyCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/fpolicy][%d] fpolicy_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FpolicyCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

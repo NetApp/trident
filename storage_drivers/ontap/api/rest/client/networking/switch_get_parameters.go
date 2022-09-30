@@ -53,10 +53,12 @@ func NewSwitchGetParamsWithHTTPClient(client *http.Client) *SwitchGetParams {
 	}
 }
 
-/* SwitchGetParams contains all the parameters to send to the API endpoint
-   for the switch get operation.
+/*
+SwitchGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the switch get operation.
+
+	Typically these are written to a http.Request.
 */
 type SwitchGetParams struct {
 

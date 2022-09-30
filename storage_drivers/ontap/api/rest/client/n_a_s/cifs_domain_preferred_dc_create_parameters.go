@@ -55,10 +55,12 @@ func NewCifsDomainPreferredDcCreateParamsWithHTTPClient(client *http.Client) *Ci
 	}
 }
 
-/* CifsDomainPreferredDcCreateParams contains all the parameters to send to the API endpoint
-   for the cifs domain preferred dc create operation.
+/*
+CifsDomainPreferredDcCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs domain preferred dc create operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsDomainPreferredDcCreateParams struct {
 

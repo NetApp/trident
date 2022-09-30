@@ -52,10 +52,12 @@ func NewIpspaceDeleteParamsWithHTTPClient(client *http.Client) *IpspaceDeletePar
 	}
 }
 
-/* IpspaceDeleteParams contains all the parameters to send to the API endpoint
-   for the ipspace delete operation.
+/*
+IpspaceDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ipspace delete operation.
+
+	Typically these are written to a http.Request.
 */
 type IpspaceDeleteParams struct {
 

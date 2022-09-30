@@ -46,14 +46,44 @@ func NewMultiAdminVerifyRuleModifyOK() *MultiAdminVerifyRuleModifyOK {
 	return &MultiAdminVerifyRuleModifyOK{}
 }
 
-/* MultiAdminVerifyRuleModifyOK describes a response with status code 200, with default header values.
+/*
+MultiAdminVerifyRuleModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type MultiAdminVerifyRuleModifyOK struct {
 }
 
+// IsSuccess returns true when this multi admin verify rule modify o k response has a 2xx status code
+func (o *MultiAdminVerifyRuleModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this multi admin verify rule modify o k response has a 3xx status code
+func (o *MultiAdminVerifyRuleModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this multi admin verify rule modify o k response has a 4xx status code
+func (o *MultiAdminVerifyRuleModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this multi admin verify rule modify o k response has a 5xx status code
+func (o *MultiAdminVerifyRuleModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this multi admin verify rule modify o k response a status code equal to that given
+func (o *MultiAdminVerifyRuleModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MultiAdminVerifyRuleModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multiAdminVerifyRuleModifyOK ", 200)
+}
+
+func (o *MultiAdminVerifyRuleModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multiAdminVerifyRuleModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewMultiAdminVerifyRuleModifyDefault(code int) *MultiAdminVerifyRuleModifyD
 	}
 }
 
-/* MultiAdminVerifyRuleModifyDefault describes a response with status code -1, with default header values.
+/*
+	MultiAdminVerifyRuleModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262310 | System rules cannot be deleted or have their query modified. |
@@ -79,7 +111,6 @@ func NewMultiAdminVerifyRuleModifyDefault(code int) *MultiAdminVerifyRuleModifyD
 | 262312 | Number of required approvers must be less than the total number of unique approvers in the approval-groups. |
 | 262313 | Number of unique approvers in the approval-groups must be greater than the number of required approvers. |
 | 262316 | Value must be in the range one second to two weeks. |
-
 */
 type MultiAdminVerifyRuleModifyDefault struct {
 	_statusCode int
@@ -92,9 +123,39 @@ func (o *MultiAdminVerifyRuleModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this multi admin verify rule modify default response has a 2xx status code
+func (o *MultiAdminVerifyRuleModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this multi admin verify rule modify default response has a 3xx status code
+func (o *MultiAdminVerifyRuleModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this multi admin verify rule modify default response has a 4xx status code
+func (o *MultiAdminVerifyRuleModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this multi admin verify rule modify default response has a 5xx status code
+func (o *MultiAdminVerifyRuleModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this multi admin verify rule modify default response a status code equal to that given
+func (o *MultiAdminVerifyRuleModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MultiAdminVerifyRuleModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multi_admin_verify_rule_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MultiAdminVerifyRuleModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/rules/{owner.uuid}/{operation}][%d] multi_admin_verify_rule_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MultiAdminVerifyRuleModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

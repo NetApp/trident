@@ -46,14 +46,44 @@ func NewStoragePortModifyOK() *StoragePortModifyOK {
 	return &StoragePortModifyOK{}
 }
 
-/* StoragePortModifyOK describes a response with status code 200, with default header values.
+/*
+StoragePortModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type StoragePortModifyOK struct {
 }
 
+// IsSuccess returns true when this storage port modify o k response has a 2xx status code
+func (o *StoragePortModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this storage port modify o k response has a 3xx status code
+func (o *StoragePortModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this storage port modify o k response has a 4xx status code
+func (o *StoragePortModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this storage port modify o k response has a 5xx status code
+func (o *StoragePortModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this storage port modify o k response a status code equal to that given
+func (o *StoragePortModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *StoragePortModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storagePortModifyOK ", 200)
+}
+
+func (o *StoragePortModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storagePortModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewStoragePortModifyDefault(code int) *StoragePortModifyDefault {
 	}
 }
 
-/* StoragePortModifyDefault describes a response with status code -1, with default header values.
+/*
+	StoragePortModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 17891328 | Port operation \"<operation>\" failed on port \"<name>\". This might indicate a hardware error, an illegal request, or an aborted command. |
@@ -94,7 +126,6 @@ func NewStoragePortModifyDefault(code int) *StoragePortModifyDefault {
 | 17891354 | Unable to disable port \"<port>\" because it is in network mode. |
 | 17891355 | Port operation \"<operation>\" failed on port \"<name>\" because it is not supported on dedicated ports. |
 | 17891356 | Unable to <operation> port \"<port>\" when setting mode to \"<mode>\". |
-
 */
 type StoragePortModifyDefault struct {
 	_statusCode int
@@ -107,9 +138,39 @@ func (o *StoragePortModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this storage port modify default response has a 2xx status code
+func (o *StoragePortModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this storage port modify default response has a 3xx status code
+func (o *StoragePortModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this storage port modify default response has a 4xx status code
+func (o *StoragePortModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this storage port modify default response has a 5xx status code
+func (o *StoragePortModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this storage port modify default response a status code equal to that given
+func (o *StoragePortModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *StoragePortModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storage_port_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *StoragePortModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/ports/{node.uuid}/{name}][%d] storage_port_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *StoragePortModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

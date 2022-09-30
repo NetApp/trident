@@ -53,10 +53,12 @@ func NewSnaplockRetentionOperationCollectionGetParamsWithHTTPClient(client *http
 	}
 }
 
-/* SnaplockRetentionOperationCollectionGetParams contains all the parameters to send to the API endpoint
-   for the snaplock retention operation collection get operation.
+/*
+SnaplockRetentionOperationCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock retention operation collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockRetentionOperationCollectionGetParams struct {
 

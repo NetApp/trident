@@ -55,10 +55,12 @@ func NewNvmeSubsystemCreateParamsWithHTTPClient(client *http.Client) *NvmeSubsys
 	}
 }
 
-/* NvmeSubsystemCreateParams contains all the parameters to send to the API endpoint
-   for the nvme subsystem create operation.
+/*
+NvmeSubsystemCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme subsystem create operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeSubsystemCreateParams struct {
 

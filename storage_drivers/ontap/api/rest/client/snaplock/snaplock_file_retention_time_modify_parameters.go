@@ -54,10 +54,12 @@ func NewSnaplockFileRetentionTimeModifyParamsWithHTTPClient(client *http.Client)
 	}
 }
 
-/* SnaplockFileRetentionTimeModifyParams contains all the parameters to send to the API endpoint
-   for the snaplock file retention time modify operation.
+/*
+SnaplockFileRetentionTimeModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock file retention time modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockFileRetentionTimeModifyParams struct {
 

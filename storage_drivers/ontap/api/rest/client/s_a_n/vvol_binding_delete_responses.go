@@ -46,14 +46,44 @@ func NewVvolBindingDeleteOK() *VvolBindingDeleteOK {
 	return &VvolBindingDeleteOK{}
 }
 
-/* VvolBindingDeleteOK describes a response with status code 200, with default header values.
+/*
+VvolBindingDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type VvolBindingDeleteOK struct {
 }
 
+// IsSuccess returns true when this vvol binding delete o k response has a 2xx status code
+func (o *VvolBindingDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vvol binding delete o k response has a 3xx status code
+func (o *VvolBindingDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vvol binding delete o k response has a 4xx status code
+func (o *VvolBindingDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vvol binding delete o k response has a 5xx status code
+func (o *VvolBindingDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vvol binding delete o k response a status code equal to that given
+func (o *VvolBindingDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VvolBindingDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvolBindingDeleteOK ", 200)
+}
+
+func (o *VvolBindingDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvolBindingDeleteOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewVvolBindingDeleteDefault(code int) *VvolBindingDeleteDefault {
 	}
 }
 
-/* VvolBindingDeleteDefault describes a response with status code -1, with default header values.
+/*
+	VvolBindingDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374875 | The vVol binding was not found because the protocol endpoint or vVol LUN was not found. Use to the `target` property of the error object to differentiate between the protocol endpoint LUN and the vVol LUN. |
 | 5374926 | The vVol binding was not found. |
-
 */
 type VvolBindingDeleteDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *VvolBindingDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vvol binding delete default response has a 2xx status code
+func (o *VvolBindingDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vvol binding delete default response has a 3xx status code
+func (o *VvolBindingDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vvol binding delete default response has a 4xx status code
+func (o *VvolBindingDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vvol binding delete default response has a 5xx status code
+func (o *VvolBindingDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vvol binding delete default response a status code equal to that given
+func (o *VvolBindingDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VvolBindingDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvol_binding_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VvolBindingDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}][%d] vvol_binding_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VvolBindingDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

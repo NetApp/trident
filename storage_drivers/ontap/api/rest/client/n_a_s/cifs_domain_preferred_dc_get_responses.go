@@ -46,7 +46,8 @@ func NewCifsDomainPreferredDcGetOK() *CifsDomainPreferredDcGetOK {
 	return &CifsDomainPreferredDcGetOK{}
 }
 
-/* CifsDomainPreferredDcGetOK describes a response with status code 200, with default header values.
+/*
+CifsDomainPreferredDcGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsDomainPreferredDcGetOK struct {
 	Payload *models.CifsDomainPreferredDc
 }
 
+// IsSuccess returns true when this cifs domain preferred dc get o k response has a 2xx status code
+func (o *CifsDomainPreferredDcGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs domain preferred dc get o k response has a 3xx status code
+func (o *CifsDomainPreferredDcGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs domain preferred dc get o k response has a 4xx status code
+func (o *CifsDomainPreferredDcGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs domain preferred dc get o k response has a 5xx status code
+func (o *CifsDomainPreferredDcGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs domain preferred dc get o k response a status code equal to that given
+func (o *CifsDomainPreferredDcGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsDomainPreferredDcGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifsDomainPreferredDcGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsDomainPreferredDcGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifsDomainPreferredDcGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsDomainPreferredDcGetOK) GetPayload() *models.CifsDomainPreferredDc {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsDomainPreferredDcGetDefault(code int) *CifsDomainPreferredDcGetDefau
 	}
 }
 
-/* CifsDomainPreferredDcGetDefault describes a response with status code -1, with default header values.
+/*
+CifsDomainPreferredDcGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsDomainPreferredDcGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs domain preferred dc get default response has a 2xx status code
+func (o *CifsDomainPreferredDcGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs domain preferred dc get default response has a 3xx status code
+func (o *CifsDomainPreferredDcGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs domain preferred dc get default response has a 4xx status code
+func (o *CifsDomainPreferredDcGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs domain preferred dc get default response has a 5xx status code
+func (o *CifsDomainPreferredDcGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs domain preferred dc get default response a status code equal to that given
+func (o *CifsDomainPreferredDcGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsDomainPreferredDcGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifs_domain_preferred_dc_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsDomainPreferredDcGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifs_domain_preferred_dc_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsDomainPreferredDcGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

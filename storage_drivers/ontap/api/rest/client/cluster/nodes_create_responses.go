@@ -46,7 +46,8 @@ func NewNodesCreateAccepted() *NodesCreateAccepted {
 	return &NodesCreateAccepted{}
 }
 
-/* NodesCreateAccepted describes a response with status code 202, with default header values.
+/*
+NodesCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type NodesCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this nodes create accepted response has a 2xx status code
+func (o *NodesCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nodes create accepted response has a 3xx status code
+func (o *NodesCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nodes create accepted response has a 4xx status code
+func (o *NodesCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nodes create accepted response has a 5xx status code
+func (o *NodesCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nodes create accepted response a status code equal to that given
+func (o *NodesCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *NodesCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /cluster/nodes][%d] nodesCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *NodesCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /cluster/nodes][%d] nodesCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *NodesCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewNodesCreateDefault(code int) *NodesCreateDefault {
 	}
 }
 
-/* NodesCreateDefault describes a response with status code -1, with default header values.
+/*
+	NodesCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262245 | The value provided was invalid. |
@@ -92,7 +125,6 @@ func NewNodesCreateDefault(code int) *NodesCreateDefault {
 | 1179818 | The IP address and gateway must be of the same family. |
 | 1179821 | An IP address and subnet mask conflicts with an existing entry. |
 | 131727360 | A node cannot be added to the cluster. This is a generic code, see response message for details. |
-
 */
 type NodesCreateDefault struct {
 	_statusCode int
@@ -105,9 +137,39 @@ func (o *NodesCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nodes create default response has a 2xx status code
+func (o *NodesCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nodes create default response has a 3xx status code
+func (o *NodesCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nodes create default response has a 4xx status code
+func (o *NodesCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nodes create default response has a 5xx status code
+func (o *NodesCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nodes create default response a status code equal to that given
+func (o *NodesCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NodesCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /cluster/nodes][%d] nodes_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NodesCreateDefault) String() string {
+	return fmt.Sprintf("[POST /cluster/nodes][%d] nodes_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NodesCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

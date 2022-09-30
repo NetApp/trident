@@ -46,7 +46,8 @@ func NewFlexcacheDeleteAccepted() *FlexcacheDeleteAccepted {
 	return &FlexcacheDeleteAccepted{}
 }
 
-/* FlexcacheDeleteAccepted describes a response with status code 202, with default header values.
+/*
+FlexcacheDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type FlexcacheDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this flexcache delete accepted response has a 2xx status code
+func (o *FlexcacheDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this flexcache delete accepted response has a 3xx status code
+func (o *FlexcacheDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this flexcache delete accepted response has a 4xx status code
+func (o *FlexcacheDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this flexcache delete accepted response has a 5xx status code
+func (o *FlexcacheDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this flexcache delete accepted response a status code equal to that given
+func (o *FlexcacheDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *FlexcacheDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /storage/flexcache/flexcaches/{uuid}][%d] flexcacheDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *FlexcacheDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /storage/flexcache/flexcaches/{uuid}][%d] flexcacheDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *FlexcacheDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewFlexcacheDeleteDefault(code int) *FlexcacheDeleteDefault {
 	}
 }
 
-/* FlexcacheDeleteDefault describes a response with status code -1, with default header values.
+/*
+	FlexcacheDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 66846879   | The specified volume UUID is not a FlexCache volume |
 | 66846731   | Failed to delete the FlexCache volume |
 | 524546     | Failed to delete the FlexCache volume because the FlexCache volume is not unmounted |
-
 */
 type FlexcacheDeleteDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *FlexcacheDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this flexcache delete default response has a 2xx status code
+func (o *FlexcacheDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this flexcache delete default response has a 3xx status code
+func (o *FlexcacheDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this flexcache delete default response has a 4xx status code
+func (o *FlexcacheDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this flexcache delete default response has a 5xx status code
+func (o *FlexcacheDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this flexcache delete default response a status code equal to that given
+func (o *FlexcacheDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FlexcacheDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/flexcache/flexcaches/{uuid}][%d] flexcache_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FlexcacheDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/flexcache/flexcaches/{uuid}][%d] flexcache_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FlexcacheDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

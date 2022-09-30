@@ -160,7 +160,8 @@ type ClientService interface {
 }
 
 /*
-  DNSCollectionGet Retrieves the DNS configurations of all SVMs.
+	DNSCollectionGet Retrieves the DNS configurations of all SVMs.
+
 Specify 'scope' as 'svm' to retrieve the DNS configuration of all the data SVMs.
 Specify 'scope' as 'cluster' to retrieve the DNS configuration of the cluster.
 ### Advanced properties
@@ -174,7 +175,6 @@ Specify 'scope' as 'cluster' to retrieve the DNS configuration of the cluster.
 * `vserver services name-service dns dynamic-update show`
 ### Learn more
 * [`DOC /name-services/dns`](#docs-name-services-name-services_dns)
-
 */
 func (a *Client) DNSCollectionGet(params *DNSCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -212,7 +212,8 @@ func (a *Client) DNSCollectionGet(params *DNSCollectionGetParams, authInfo runti
 }
 
 /*
-  DNSCreate Creates DNS domain and server configurations for an SVM.<br/>
+	DNSCreate Creates DNS domain and server configurations for an SVM.<br/>
+
 ### Important notes
 - Each SVM can have only one DNS configuration.
 - The domain name and the servers fields cannot be empty.
@@ -233,7 +234,6 @@ func (a *Client) DNSCollectionGet(params *DNSCollectionGetParams, authInfo runti
 - tld_query_enabled
 - skip_config_validation
 - scope
-
 */
 func (a *Client) DNSCreate(params *DNSCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -271,12 +271,12 @@ func (a *Client) DNSCreate(params *DNSCreateParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  DNSDelete Deletes DNS domain configuration of the specified SVM.
+	DNSDelete Deletes DNS domain configuration of the specified SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service dns delete`
 ### Learn more
 * [`DOC /name-services/dns`](#docs-name-services-name-services_dns)
-
 */
 func (a *Client) DNSDelete(params *DNSDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -314,7 +314,8 @@ func (a *Client) DNSDelete(params *DNSDeleteParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  DNSGet Retrieves DNS domain and server configuration of an SVM. By default, both DNS domains and servers are displayed.
+	DNSGet Retrieves DNS domain and server configuration of an SVM. By default, both DNS domains and servers are displayed.
+
 ### Advanced properties
 * 'tld_query_enabled'
 * 'source_address_match'
@@ -326,7 +327,6 @@ func (a *Client) DNSDelete(params *DNSDeleteParams, authInfo runtime.ClientAuthI
 * `vserver services name-service dns dynamic-update show`
 ### Learn more
 * [`DOC /name-services/dns`](#docs-name-services-name-services_dns)
-
 */
 func (a *Client) DNSGet(params *DNSGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSGetOK, error) {
 	// TODO: Validate the params before sending
@@ -364,20 +364,22 @@ func (a *Client) DNSGet(params *DNSGetParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-  DNSModify Updates DNS domain and server configurations of an SVM.
+	DNSModify Updates DNS domain and server configurations of an SVM.
+
 ### Important notes
 - Both DNS domains and servers can be modified.
 - The domains and servers fields cannot be empty.
 - IPv6 must be enabled if IPv6 family addresses are specified for the `servers` field.
 - The DNS server specified using the `servers` field is validated during this operation.<br/>
 The validation fails in the following scenarios:<br/>
-1. The server is not a DNS server.
-2. The server does not exist.
-3. The server is unreachable.<br/>
-- The DNS server validation can be skipped by setting the property "skip_config_validation" to "true".
-- Dynamic DNS configuration can be modified.
-- If both DNS and Dynamic DNS parameters are modified, DNS parameters are updated first followed by Dynamic DNS parameters.
-  If updating Dynamic DNS fails, then the updated DNS configuration is not reverted.
+ 1. The server is not a DNS server.
+ 2. The server does not exist.
+ 3. The server is unreachable.<br/>
+    - The DNS server validation can be skipped by setting the property "skip_config_validation" to "true".
+    - Dynamic DNS configuration can be modified.
+    - If both DNS and Dynamic DNS parameters are modified, DNS parameters are updated first followed by Dynamic DNS parameters.
+    If updating Dynamic DNS fails, then the updated DNS configuration is not reverted.
+
 #### The following parameters are optional:
 - timeout
 - attempts
@@ -393,7 +395,6 @@ The validation fails in the following scenarios:<br/>
 * `vserver services name-service dns dynamic-update modify`
 ### Learn more
 * [`DOC /name-services/dns`](#docs-name-services-name-services_dns)
-
 */
 func (a *Client) DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -431,12 +432,12 @@ func (a *Client) DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  GlobalCacheSettingGet Retrieves a global nameservice cache setting.
+	GlobalCacheSettingGet Retrieves a global nameservice cache setting.
+
 ### Related ONTAP commands
 * `vserver services name-service cache settings show`
 ### Learn more
 * [`DOC /name-services/cache/setting`](#docs-name-services-name-services_cache_setting)
-
 */
 func (a *Client) GlobalCacheSettingGet(params *GlobalCacheSettingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GlobalCacheSettingGetOK, error) {
 	// TODO: Validate the params before sending
@@ -474,14 +475,15 @@ func (a *Client) GlobalCacheSettingGet(params *GlobalCacheSettingGetParams, auth
 }
 
 /*
-  GlobalCacheSettingModify Updates a global nameservice cache setting.
+	GlobalCacheSettingModify Updates a global nameservice cache setting.
+
 ### Important notes
   - Both the cache eviction time and remote fetch option can be modified.
+
 ### Related ONTAP commands
 * `vserver services name-service cache settings modify`
 ### Learn more
 * [`DOC /name-services/cache/setting`](#docs-name-services-name-services_cache_setting)
-
 */
 func (a *Client) GlobalCacheSettingModify(params *GlobalCacheSettingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GlobalCacheSettingModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -519,12 +521,12 @@ func (a *Client) GlobalCacheSettingModify(params *GlobalCacheSettingModifyParams
 }
 
 /*
-  GroupMembershipSettingsCollectionGet Retrieves group-membership cache settings.
+	GroupMembershipSettingsCollectionGet Retrieves group-membership cache settings.
+
 ### Related ONTAP commands
 * `vserver services name-service cache group-membership settings show`
 ### Learn more
 * [`DOC /name-services/cache/group-membership/settings`](#docs-name-services-name-services_cache_group-membership_settings)
-
 */
 func (a *Client) GroupMembershipSettingsCollectionGet(params *GroupMembershipSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -562,12 +564,12 @@ func (a *Client) GroupMembershipSettingsCollectionGet(params *GroupMembershipSet
 }
 
 /*
-  GroupMembershipSettingsGet Retrieves a group-membership cache setting for a given SVM.
+	GroupMembershipSettingsGet Retrieves a group-membership cache setting for a given SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service cache group-membership settings show`
 ### Learn more
 * [`DOC /name-services/cache/group-membership/settings`](#docs-name-services-name-services_cache_group-membership_settings)
-
 */
 func (a *Client) GroupMembershipSettingsGet(params *GroupMembershipSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -605,15 +607,16 @@ func (a *Client) GroupMembershipSettingsGet(params *GroupMembershipSettingsGetPa
 }
 
 /*
-  GroupMembershipSettingsModify Updates a group-membership cache setting.
+	GroupMembershipSettingsModify Updates a group-membership cache setting.
+
 ### Important notes
   - svm.uuid field cannot be empty.
   - Returns success in case no values are provided for update.
+
 ### Related ONTAP commands
 * `vserver services name-service cache group-membership settings modify`
 ### Learn more
 * [`DOC /name-services/cache/group-membership/settings`](#docs-name-services-name-services_cache_group-membership_settings)
-
 */
 func (a *Client) GroupMembershipSettingsModify(params *GroupMembershipSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupMembershipSettingsModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -651,11 +654,11 @@ func (a *Client) GroupMembershipSettingsModify(params *GroupMembershipSettingsMo
 }
 
 /*
-  HostRecordGet Retrieves the IP address of the specified hostname.
+	HostRecordGet Retrieves the IP address of the specified hostname.
+
 ### Related ONTAP commands
 * `vserver services name-service getxxbyyy getnameinfo`
 * `vserver services name-service getxxbyyy getaddrinfo`
-
 */
 func (a *Client) HostRecordGet(params *HostRecordGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostRecordGetOK, error) {
 	// TODO: Validate the params before sending
@@ -693,12 +696,12 @@ func (a *Client) HostRecordGet(params *HostRecordGetParams, authInfo runtime.Cli
 }
 
 /*
-  HostsSettingsCollectionGet Retrieves host cache settings.
+	HostsSettingsCollectionGet Retrieves host cache settings.
+
 ### Related ONTAP commands
 * `vserver services name-service cache hosts settings show`
 ### Learn more
 * [`DOC /name-services/cache/host/settings`](#docs-name-services-name-services_cache_host_settings)
-
 */
 func (a *Client) HostsSettingsCollectionGet(params *HostsSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -736,12 +739,12 @@ func (a *Client) HostsSettingsCollectionGet(params *HostsSettingsCollectionGetPa
 }
 
 /*
-  HostsSettingsGet Retrieves a host cache setting for a given SVM.
+	HostsSettingsGet Retrieves a host cache setting for a given SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service cache hosts settings show`
 ### Learn more
 * [`DOC /name-services/cache/host/settings`](#docs-name-services-name-services_cache_host_settings)
-
 */
 func (a *Client) HostsSettingsGet(params *HostsSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -779,15 +782,16 @@ func (a *Client) HostsSettingsGet(params *HostsSettingsGetParams, authInfo runti
 }
 
 /*
-  HostsSettingsModify Updates a host cache setting.
+	HostsSettingsModify Updates a host cache setting.
+
 ### Important notes
   - svm.uuid field cannot be empty.
   - Returns success in case no values are provided for update.
+
 ### Related ONTAP commands
 * `vserver services name-service cache hosts settings modify`
 ### Learn more
 * [`DOC /name-services/cache/host/settings`](#docs-name-services-name-services_cache_host_settings)
-
 */
 func (a *Client) HostsSettingsModify(params *HostsSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostsSettingsModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -825,8 +829,7 @@ func (a *Client) HostsSettingsModify(params *HostsSettingsModifyParams, authInfo
 }
 
 /*
-  LdapCollectionGet Retrieves the LDAP configurations for all SVMs.
-
+LdapCollectionGet Retrieves the LDAP configurations for all SVMs.
 */
 func (a *Client) LdapCollectionGet(params *LdapCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -864,7 +867,8 @@ func (a *Client) LdapCollectionGet(params *LdapCollectionGetParams, authInfo run
 }
 
 /*
-  LdapCreate Creates an LDAP configuration for an SVM.
+	LdapCreate Creates an LDAP configuration for an SVM.
+
 ### Important notes
 * Each SVM can have one LDAP configuration.
 * The LDAP servers and Active Directory domain are mutually exclusive fields. These fields cannot be empty. At any point in time, either the LDAP servers or Active Directory domain must be populated.
@@ -902,7 +906,6 @@ LDAP validation fails in the following scenarios:<br/>
 1. The server does not have LDAP installed.
 2. The server or Active Directory domain is invalid.
 3. The server or Active Directory domain is unreachable.<br/>
-
 */
 func (a *Client) LdapCreate(params *LdapCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -940,8 +943,7 @@ func (a *Client) LdapCreate(params *LdapCreateParams, authInfo runtime.ClientAut
 }
 
 /*
-  LdapDelete Deletes the LDAP configuration of the specified SVM. LDAP can be removed as a source from the ns-switch if LDAP is not used as a source for lookups.
-
+LdapDelete Deletes the LDAP configuration of the specified SVM. LDAP can be removed as a source from the ns-switch if LDAP is not used as a source for lookups.
 */
 func (a *Client) LdapDelete(params *LdapDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -979,8 +981,7 @@ func (a *Client) LdapDelete(params *LdapDeleteParams, authInfo runtime.ClientAut
 }
 
 /*
-  LdapGet Retrieves LDAP configuration for an SVM. All parameters for the LDAP configuration are displayed by default.
-
+LdapGet Retrieves LDAP configuration for an SVM. All parameters for the LDAP configuration are displayed by default.
 */
 func (a *Client) LdapGet(params *LdapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1018,7 +1019,8 @@ func (a *Client) LdapGet(params *LdapGetParams, authInfo runtime.ClientAuthInfoW
 }
 
 /*
-  LdapModify Updates an LDAP configuration of an SVM.
+	LdapModify Updates an LDAP configuration of an SVM.
+
 ### Important notes
 * Both mandatory and optional parameters of the LDAP configuration can be updated.
 * The LDAP servers and Active Directory domain are mutually exclusive fields. These fields cannot be empty. At any point in time, either the LDAP servers or Active Directory domain must be populated.
@@ -1030,7 +1032,6 @@ LDAP validation fails in the following scenarios:<br/>
 1. The server does not have LDAP installed.
 2. The server or Active Directory domain is invalid.
 3. The server or Active Directory domain is unreachable<br/>
-
 */
 func (a *Client) LdapModify(params *LdapModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1068,10 +1069,10 @@ func (a *Client) LdapModify(params *LdapModifyParams, authInfo runtime.ClientAut
 }
 
 /*
-  LdapSchemaCollectionGet Retrieves all the LDAP schemas.
+	LdapSchemaCollectionGet Retrieves all the LDAP schemas.
+
 ### Related ONTAP commands
 * `vserver services name-service ldap client schema show`
-
 */
 func (a *Client) LdapSchemaCollectionGet(params *LdapSchemaCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1109,13 +1110,13 @@ func (a *Client) LdapSchemaCollectionGet(params *LdapSchemaCollectionGetParams, 
 }
 
 /*
-  LdapSchemaCreate Creates an LDAP schema.
+	LdapSchemaCreate Creates an LDAP schema.
+
 ### Important notes
 * To create a new schema, first create a copy of the default schemas provided by ONTAP and then modify the copy accordingly.
 * If no value is specified for the owner.uuid or owner.name fields, the cserver UUID and name are used by default.
 ### Related ONTAP commands
 * `vserver services name-service ldap client schema copy`
-
 */
 func (a *Client) LdapSchemaCreate(params *LdapSchemaCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1153,10 +1154,10 @@ func (a *Client) LdapSchemaCreate(params *LdapSchemaCreateParams, authInfo runti
 }
 
 /*
-  LdapSchemaDelete Deletes an existing schema.
+	LdapSchemaDelete Deletes an existing schema.
+
 ### Related ONTAP commands
 * `vserver services name-service ldap client schema delete`
-
 */
 func (a *Client) LdapSchemaDelete(params *LdapSchemaDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1194,10 +1195,10 @@ func (a *Client) LdapSchemaDelete(params *LdapSchemaDeleteParams, authInfo runti
 }
 
 /*
-  LdapSchemaGet Retrieves LDAP schema details for a given owner and schema.
+	LdapSchemaGet Retrieves LDAP schema details for a given owner and schema.
+
 ### Related ONTAP commands
 * `vserver services name-service ldap client schema show`
-
 */
 func (a *Client) LdapSchemaGet(params *LdapSchemaGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1235,13 +1236,13 @@ func (a *Client) LdapSchemaGet(params *LdapSchemaGetParams, authInfo runtime.Cli
 }
 
 /*
-  LdapSchemaModify Updates LDAP schema details for a given owner and schema.
+	LdapSchemaModify Updates LDAP schema details for a given owner and schema.
+
 ### Important notes
 * The default LDAP schemas provided by ONTAP cannot be modified.
 * LDAP schemas can only be modified by the owner of the schema.
 ### Related ONTAP commands
 * `vserver services name-service ldap client schema modify`
-
 */
 func (a *Client) LdapSchemaModify(params *LdapSchemaModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapSchemaModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1279,12 +1280,12 @@ func (a *Client) LdapSchemaModify(params *LdapSchemaModifyParams, authInfo runti
 }
 
 /*
-  LocalHostCollectionGet Retrieves all IP to hostname mappings for all SVMs of the cluster.
+	LocalHostCollectionGet Retrieves all IP to hostname mappings for all SVMs of the cluster.
+
 ### Related ONTAP commands
 * `vserver services name-service dns hosts show`
 ### Learn more
 * [`DOC /name-services/local-hosts`](#docs-name-services-name-services_local-hosts)
-
 */
 func (a *Client) LocalHostCollectionGet(params *LocalHostCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1322,7 +1323,8 @@ func (a *Client) LocalHostCollectionGet(params *LocalHostCollectionGetParams, au
 }
 
 /*
-  LocalHostCreate Creates a new IP to hostname mapping.
+	LocalHostCreate Creates a new IP to hostname mapping.
+
 ### Required properties
 * `owner.uuid` or `owner.name` - Existing SVM in which to create IP to host mapping.
 * `address` - IPv4/IPv6 address in dotted form.
@@ -1331,7 +1333,6 @@ func (a *Client) LocalHostCollectionGet(params *LocalHostCollectionGetParams, au
 * `vserver services name-service dns hosts create`
 ### Learn more
 * [`DOC /name-services/local-hosts`](#docs-name-services-name-services_local-hosts)
-
 */
 func (a *Client) LocalHostCreate(params *LocalHostCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1369,12 +1370,12 @@ func (a *Client) LocalHostCreate(params *LocalHostCreateParams, authInfo runtime
 }
 
 /*
-  LocalHostDelete Deletes an existing host object.
+	LocalHostDelete Deletes an existing host object.
+
 ### Related ONTAP commands
 * `vserver services name-service dns hosts delete`
 ### Learn more
 * [`DOC /name-services/local-hosts`](#docs-name-services-name-services_local-hosts)
-
 */
 func (a *Client) LocalHostDelete(params *LocalHostDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1412,12 +1413,12 @@ func (a *Client) LocalHostDelete(params *LocalHostDeleteParams, authInfo runtime
 }
 
 /*
-  LocalHostGet For a specified SVM and IP address, returns the corresponding IP to hostname mapping.
+	LocalHostGet For a specified SVM and IP address, returns the corresponding IP to hostname mapping.
+
 ### Related ONTAP commands
 * `vserver services name-service dns hosts show`
 ### Learn more
 * [`DOC /name-services/local-hosts`](#docs-name-services-name-services_local-hosts)
-
 */
 func (a *Client) LocalHostGet(params *LocalHostGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1455,12 +1456,12 @@ func (a *Client) LocalHostGet(params *LocalHostGetParams, authInfo runtime.Clien
 }
 
 /*
-  LocalHostModify For a specified SVM and IP address, modifies the corresponding IP to hostname mapping.
+	LocalHostModify For a specified SVM and IP address, modifies the corresponding IP to hostname mapping.
+
 ### Related ONTAP commands
 * `vserver services name-service dns hosts modify`
 ### Learn more
 * [`DOC /name-services/local-hosts`](#docs-name-services-name-services_local-hosts)
-
 */
 func (a *Client) LocalHostModify(params *LocalHostModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1498,12 +1499,12 @@ func (a *Client) LocalHostModify(params *LocalHostModifyParams, authInfo runtime
 }
 
 /*
-  NameMappingCollectionGet Retrieves the name mapping configuration for all SVMs.
+	NameMappingCollectionGet Retrieves the name mapping configuration for all SVMs.
+
 ### Related ONTAP commands
 * `vserver name-mapping show`
 ### Learn more
 * [`DOC /name-services/name-mappings`](#docs-name-services-name-services_name-mappings)
-
 */
 func (a *Client) NameMappingCollectionGet(params *NameMappingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1541,7 +1542,8 @@ func (a *Client) NameMappingCollectionGet(params *NameMappingCollectionGetParams
 }
 
 /*
-  NameMappingCreate Creates name mappings for an SVM.
+	NameMappingCreate Creates name mappings for an SVM.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the name mapping.
 * `index` - Name mapping's position in the priority list.
@@ -1555,7 +1557,6 @@ func (a *Client) NameMappingCollectionGet(params *NameMappingCollectionGetParams
 * `vserver name-mapping insert`
 ### Learn more
 * [`DOC /name-services/name-mappings`](#docs-name-services-name-services_name-mappings)
-
 */
 func (a *Client) NameMappingCreate(params *NameMappingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1593,12 +1594,12 @@ func (a *Client) NameMappingCreate(params *NameMappingCreateParams, authInfo run
 }
 
 /*
-  NameMappingDelete Deletes the name mapping configuration.
+	NameMappingDelete Deletes the name mapping configuration.
+
 ### Related ONTAP commands
 * `vserver name-mapping delete`
 ### Learn more
 * [`DOC /name-services/name-mappings`](#docs-name-services-name-services_name-mappings)
-
 */
 func (a *Client) NameMappingDelete(params *NameMappingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1636,7 +1637,8 @@ func (a *Client) NameMappingDelete(params *NameMappingDeleteParams, authInfo run
 }
 
 /*
-  NameMappingModify Updates the name mapping configuration of an SVM. The positions can be swapped by providing the `new_index` property.
+	NameMappingModify Updates the name mapping configuration of an SVM. The positions can be swapped by providing the `new_index` property.
+
 Swapping is not allowed for entries that have `client_match` property configured.
 ### Related ONTAP commands
 * `vserver name-mapping insert`
@@ -1644,7 +1646,6 @@ Swapping is not allowed for entries that have `client_match` property configured
 * `vserver name-mapping swap`
 ### Learn more
 * [`DOC /name-services/name-mappings`](#docs-name-services-name-services_name-mappings)
-
 */
 func (a *Client) NameMappingModify(params *NameMappingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1682,12 +1683,12 @@ func (a *Client) NameMappingModify(params *NameMappingModifyParams, authInfo run
 }
 
 /*
-  NameMappingPositionGet Retrieves the name mapping configuration of an SVM.
+	NameMappingPositionGet Retrieves the name mapping configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver name-mapping show`
 ### Learn more
 * [`DOC /name-services/name-mappings`](#docs-name-services-name-services_name-mappings)
-
 */
 func (a *Client) NameMappingPositionGet(params *NameMappingPositionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingPositionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1725,12 +1726,12 @@ func (a *Client) NameMappingPositionGet(params *NameMappingPositionGetParams, au
 }
 
 /*
-  NetgroupFileDelete Deletes the netgroup file for a given SVM.
+	NetgroupFileDelete Deletes the netgroup file for a given SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service netgroup file delete`
 ### Learn more
 * [`DOC /name-services/netgroup-files/{svm.uuid}`](#docs-name-services-name-services_netgroup-files_{svm.uuid})
-
 */
 func (a *Client) NetgroupFileDelete(params *NetgroupFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupFileDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1768,7 +1769,8 @@ func (a *Client) NetgroupFileDelete(params *NetgroupFileDeleteParams, authInfo r
 }
 
 /*
-  NetgroupFileGet Retrieves the netgroup file details for a given SVM if the header is set as "accept: application/json".
+	NetgroupFileGet Retrieves the netgroup file details for a given SVM if the header is set as "accept: application/json".
+
 If the header is set as "accept: multipart/form-data", the raw netgroup file of the given SVM is retrieved.
 ### Important notes
 * For a raw netgroup file, set the header as "accept: multipart/form-data" else "accept: application/json" for netgroup file details.
@@ -1778,7 +1780,6 @@ If the header is set as "accept: multipart/form-data", the raw netgroup file of 
 * `vserver services name-service netgroup file show`
 ### Learn more
 * [`DOC /name-services/netgroup-files/{svm.uuid}`](#docs-name-services-name-services_netgroup-files_{svm.uuid})
-
 */
 func (a *Client) NetgroupFileGet(params *NetgroupFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupFileGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1816,12 +1817,12 @@ func (a *Client) NetgroupFileGet(params *NetgroupFileGetParams, authInfo runtime
 }
 
 /*
-  NetgroupsSettingsCollectionGet Retrieves netgroups cache settings.
+	NetgroupsSettingsCollectionGet Retrieves netgroups cache settings.
+
 ### Related ONTAP commands
 * `vserver services name-service cache netgroups settings show`
 ### Learn more
 * [`DOC /name-services/cache/netgroup/settings`](#docs-name-services-name-services_cache_netgroup_settings)
-
 */
 func (a *Client) NetgroupsSettingsCollectionGet(params *NetgroupsSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1859,12 +1860,12 @@ func (a *Client) NetgroupsSettingsCollectionGet(params *NetgroupsSettingsCollect
 }
 
 /*
-  NetgroupsSettingsGet Retrieves a netgroup cache setting for a given SVM.
+	NetgroupsSettingsGet Retrieves a netgroup cache setting for a given SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service cache netgroups settings show`
 ### Learn more
 * [`DOC /name-services/cache/netgroup/settings`](#docs-name-services-name-services_cache_netgroup_settings)
-
 */
 func (a *Client) NetgroupsSettingsGet(params *NetgroupsSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1902,15 +1903,16 @@ func (a *Client) NetgroupsSettingsGet(params *NetgroupsSettingsGetParams, authIn
 }
 
 /*
-  NetgroupsSettingsModify Updates a netgroup cache setting.
+	NetgroupsSettingsModify Updates a netgroup cache setting.
+
 ### Important notes
   - svm.uuid field cannot be empty.
   - Returns success in case no values are provided for update.
+
 ### Related ONTAP commands
 * `vserver services name-service cache netgroups settings modify`
 ### Learn more
 * [`DOC /name-services/cache/netgroup/settings`](#docs-name-services-name-services_cache_netgroup_settings)
-
 */
 func (a *Client) NetgroupsSettingsModify(params *NetgroupsSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetgroupsSettingsModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1948,14 +1950,14 @@ func (a *Client) NetgroupsSettingsModify(params *NetgroupsSettingsModifyParams, 
 }
 
 /*
-  NisCollectionGet Retrieves NIS domain configurations of all the SVMs. The bound_servers field indicates the successfully bound NIS servers. Lookups and authentications fail if there are no bound servers.
+	NisCollectionGet Retrieves NIS domain configurations of all the SVMs. The bound_servers field indicates the successfully bound NIS servers. Lookups and authentications fail if there are no bound servers.
+
 ### Related ONTAP commands
 * `vserver services name-service nis-domain show`
 * `vserver services name-service nis-domain show-bound`
 * `vserver services name-service nis-domain show-bound-debug`
 ### Learn more
 * [`DOC /name-services/nis`](#docs-name-services-name-services_nis)
-
 */
 func (a *Client) NisCollectionGet(params *NisCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1993,7 +1995,8 @@ func (a *Client) NisCollectionGet(params *NisCollectionGetParams, authInfo runti
 }
 
 /*
-  NisCreate Creates an NIS domain and server confguration for a data SVM.
+	NisCreate Creates an NIS domain and server confguration for a data SVM.
+
 NIS configuration for the cluster is managed via [`/api/security/authentication/cluster/nis`](#docs-security-security_authentication_cluster_nis).<br/>
 ### Important notes
   - Each SVM can have one NIS domain configuration.
@@ -2001,6 +2004,7 @@ NIS configuration for the cluster is managed via [`/api/security/authentication/
   - Both FQDNs and IP addresses are supported for the servers field.
   - IPv6 must be enabled if IPv6 family addresses are specified in the servers field.
   - A maximum of ten NIS servers are supported.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the NIS configuration.
 * `domain` - NIS domain to which the configuration belongs.
@@ -2009,7 +2013,6 @@ NIS configuration for the cluster is managed via [`/api/security/authentication/
 * `vserver services name-service nis-domain create`
 ### Learn more
 * [`DOC /name-services/nis`](#docs-name-services-name-services_nis)
-
 */
 func (a *Client) NisCreate(params *NisCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2047,12 +2050,12 @@ func (a *Client) NisCreate(params *NisCreateParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  NisDelete Deletes the NIS domain configuration of an SVM. NIS can be removed as a source from ns-switch if NIS is not used for lookups.
+	NisDelete Deletes the NIS domain configuration of an SVM. NIS can be removed as a source from ns-switch if NIS is not used for lookups.
+
 ### Related ONTAP commands
 * `vserver services name-service nis-domain delete`
 ### Learn more
 * [`DOC /name-services/nis`](#docs-name-services-name-services_nis)
-
 */
 func (a *Client) NisDelete(params *NisDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2090,14 +2093,14 @@ func (a *Client) NisDelete(params *NisDeleteParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  NisGet Retrieves NIS domain and server configurations of an SVM. Both NIS domain and servers are displayed by default. The bound_servers field indicates the successfully bound NIS servers.
+	NisGet Retrieves NIS domain and server configurations of an SVM. Both NIS domain and servers are displayed by default. The bound_servers field indicates the successfully bound NIS servers.
+
 ### Related ONTAP commands
 * `vserver services name-service nis-domain show`
 * `vserver services name-service nis-domain show-bound`
 * `vserver services name-service nis-domain show-bound-debug`
 ### Learn more
 * [`DOC /name-services/nis`](#docs-name-services-name-services_nis)
-
 */
 func (a *Client) NisGet(params *NisGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2135,18 +2138,19 @@ func (a *Client) NisGet(params *NisGetParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-  NisModify Updates NIS domain and server configuration of an SVM.<br/>
+	NisModify Updates NIS domain and server configuration of an SVM.<br/>
+
 ### Important notes
   - Both NIS domain and servers can be modified.
   - Domains and servers cannot be empty.
   - Both FQDNs and IP addresses are supported for the servers field.
   - If the domain is modified, NIS servers must also be specified.
   - IPv6 must be enabled if IPv6 family addresses are specified for the servers field.
+
 ### Related ONTAP commands
 * `vserver services name-service nis-domain modify`
 ### Learn more
 * [`DOC /name-services/nis`](#docs-name-services-name-services_nis)
-
 */
 func (a *Client) NisModify(params *NisModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2184,12 +2188,12 @@ func (a *Client) NisModify(params *NisModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  UnixGroupCollectionGet Retrieves the UNIX groups for all of the SVMs. UNIX users who are the members of the group are also displayed.
+	UnixGroupCollectionGet Retrieves the UNIX groups for all of the SVMs. UNIX users who are the members of the group are also displayed.
+
 ### Related ONTAP commands
 * `vserver services name-service unix-group show`
 ### Learn more
 * [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
-
 */
 func (a *Client) UnixGroupCollectionGet(params *UnixGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2227,13 +2231,13 @@ func (a *Client) UnixGroupCollectionGet(params *UnixGroupCollectionGetParams, au
 }
 
 /*
-  UnixGroupCreate Creates the local UNIX group configuration for the specified SVM.<br/>
+	UnixGroupCreate Creates the local UNIX group configuration for the specified SVM.<br/>
+
 Group name and group ID are mandatory parameters.
 ### Important notes
 * The default limit for local UNIX groups and group members is 32768.
 ### Learn more
 * [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
-
 */
 func (a *Client) UnixGroupCreate(params *UnixGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2271,12 +2275,12 @@ func (a *Client) UnixGroupCreate(params *UnixGroupCreateParams, authInfo runtime
 }
 
 /*
-  UnixGroupDelete Deletes a UNIX group configuration for the specified SVM.
+	UnixGroupDelete Deletes a UNIX group configuration for the specified SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service unix-group delete`
 ### Learn more
 * [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
-
 */
 func (a *Client) UnixGroupDelete(params *UnixGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2314,13 +2318,13 @@ func (a *Client) UnixGroupDelete(params *UnixGroupDeleteParams, authInfo runtime
 }
 
 /*
-  UnixGroupGet Retrieves UNIX group information for the specified group and SVM. UNIX users who are part of this group
+	UnixGroupGet Retrieves UNIX group information for the specified group and SVM. UNIX users who are part of this group
+
 are also retrieved.
 ### Related ONTAP commands
 * `vserver services name-service unix-group show`
 ### Learn more
 * [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
-
 */
 func (a *Client) UnixGroupGet(params *UnixGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2358,10 +2362,10 @@ func (a *Client) UnixGroupGet(params *UnixGroupGetParams, authInfo runtime.Clien
 }
 
 /*
-  UnixGroupModify Updates the UNIX group information of the specified group in the specified SVM.
+	UnixGroupModify Updates the UNIX group information of the specified group in the specified SVM.
+
 ### Learn more
 * [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
-
 */
 func (a *Client) UnixGroupModify(params *UnixGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2399,12 +2403,12 @@ func (a *Client) UnixGroupModify(params *UnixGroupModifyParams, authInfo runtime
 }
 
 /*
-  UnixGroupSettingsCollectionGet Retrieves unix-group cache settings.
+	UnixGroupSettingsCollectionGet Retrieves unix-group cache settings.
+
 ### Related ONTAP commands
 * `vserver services name-service cache unix-group settings show`
 ### Learn more
 * [`DOC /name-services/cache/unix-group/settings`](#docs-name-services-name-services_cache_unix-group_settings)
-
 */
 func (a *Client) UnixGroupSettingsCollectionGet(params *UnixGroupSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2442,12 +2446,12 @@ func (a *Client) UnixGroupSettingsCollectionGet(params *UnixGroupSettingsCollect
 }
 
 /*
-  UnixGroupSettingsGet Retrieves a unix-group cache setting for a given SVM.
+	UnixGroupSettingsGet Retrieves a unix-group cache setting for a given SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service cache unix-group settings show`
 ### Learn more
 * [`DOC /name-services/cache/unix-group/settings`](#docs-name-services-name-services_cache_unix-group_settings)
-
 */
 func (a *Client) UnixGroupSettingsGet(params *UnixGroupSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2485,15 +2489,16 @@ func (a *Client) UnixGroupSettingsGet(params *UnixGroupSettingsGetParams, authIn
 }
 
 /*
-  UnixGroupSettingsModify Updates unix-group cache settings.
+	UnixGroupSettingsModify Updates unix-group cache settings.
+
 ### Important notes
   - svm.uuid field cannot be empty.
   - Returns success in case no values are provided for update.
+
 ### Related ONTAP commands
 * `vserver services name-service cache unix-group settings modify`
 ### Learn more
 * [`DOC /name-services/cache/unix-group/settings`](#docs-name-services-name-services_cache_unix-group_settings)
-
 */
 func (a *Client) UnixGroupSettingsModify(params *UnixGroupSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupSettingsModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2531,10 +2536,10 @@ func (a *Client) UnixGroupSettingsModify(params *UnixGroupSettingsModifyParams, 
 }
 
 /*
-  UnixGroupUserDelete Deletes a user from the specified UNIX group.
+	UnixGroupUserDelete Deletes a user from the specified UNIX group.
+
 ### Related ONTAP commands
 * `vserver services name-service unix-group deluser`
-
 */
 func (a *Client) UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUserDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2572,10 +2577,10 @@ func (a *Client) UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo
 }
 
 /*
-  UnixGroupUsersCollectionGet Retrieves users for the specified UNIX group and SVM.
+	UnixGroupUsersCollectionGet Retrieves users for the specified UNIX group and SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service unix-group show`
-
 */
 func (a *Client) UnixGroupUsersCollectionGet(params *UnixGroupUsersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2613,7 +2618,8 @@ func (a *Client) UnixGroupUsersCollectionGet(params *UnixGroupUsersCollectionGet
 }
 
 /*
-  UnixGroupUsersCreate Adds users to the specified UNIX group and SVM.
+	UnixGroupUsersCreate Adds users to the specified UNIX group and SVM.
+
 ### Important notes
 - Multiple users can be added in a single call using the "records" parameter.
 - "records" parameter must not be specified when "name" parameter is specified.
@@ -2622,7 +2628,6 @@ func (a *Client) UnixGroupUsersCollectionGet(params *UnixGroupUsersCollectionGet
 ### Related ONTAP commands
 * `vserver services name-service unix-group adduser`
 * `vserver services name-service unix-group addusers`
-
 */
 func (a *Client) UnixGroupUsersCreate(params *UnixGroupUsersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2660,10 +2665,10 @@ func (a *Client) UnixGroupUsersCreate(params *UnixGroupUsersCreateParams, authIn
 }
 
 /*
-  UnixGroupUsersGet Retrieves users for the specified UNIX group and SVM.
+	UnixGroupUsersGet Retrieves users for the specified UNIX group and SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service unix-group show`
-
 */
 func (a *Client) UnixGroupUsersGet(params *UnixGroupUsersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2701,12 +2706,12 @@ func (a *Client) UnixGroupUsersGet(params *UnixGroupUsersGetParams, authInfo run
 }
 
 /*
-  UnixUserCollectionGet Retrieves all of the UNIX users for all of the SVMs.
+	UnixUserCollectionGet Retrieves all of the UNIX users for all of the SVMs.
+
 ### Important notes
 * The current UNIX users count can be retrieved from the num_records field by calling the API with the paramter "return_records=false".
 ### Related ONTAP commands
 * `vserver services name-service unix-user show`
-
 */
 func (a *Client) UnixUserCollectionGet(params *UnixUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2744,10 +2749,10 @@ func (a *Client) UnixUserCollectionGet(params *UnixUserCollectionGetParams, auth
 }
 
 /*
-  UnixUserCreate Creates the local UNIX user configuration for an SVM.<br/>
+	UnixUserCreate Creates the local UNIX user configuration for an SVM.<br/>
+
 ### Important notes
 * The default limit for local UNIX users is 32768.
-
 */
 func (a *Client) UnixUserCreate(params *UnixUserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2785,10 +2790,10 @@ func (a *Client) UnixUserCreate(params *UnixUserCreateParams, authInfo runtime.C
 }
 
 /*
-  UnixUserDelete Deletes a UNIX user configuration for the specified SVM.
+	UnixUserDelete Deletes a UNIX user configuration for the specified SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service unix-user delete`
-
 */
 func (a *Client) UnixUserDelete(params *UnixUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2826,10 +2831,10 @@ func (a *Client) UnixUserDelete(params *UnixUserDeleteParams, authInfo runtime.C
 }
 
 /*
-  UnixUserGet Retrieves UNIX user information for the specified user and SVM.
+	UnixUserGet Retrieves UNIX user information for the specified user and SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service unix-user show`
-
 */
 func (a *Client) UnixUserGet(params *UnixUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2867,8 +2872,7 @@ func (a *Client) UnixUserGet(params *UnixUserGetParams, authInfo runtime.ClientA
 }
 
 /*
-  UnixUserModify Updates UNIX user information for the specified user and SVM.
-
+UnixUserModify Updates UNIX user information for the specified user and SVM.
 */
 func (a *Client) UnixUserModify(params *UnixUserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2906,12 +2910,12 @@ func (a *Client) UnixUserModify(params *UnixUserModifyParams, authInfo runtime.C
 }
 
 /*
-  UnixUserSettingsCollectionGet Retrieves unix-user cache settings.
+	UnixUserSettingsCollectionGet Retrieves unix-user cache settings.
+
 ### Related ONTAP commands
 * `vserver services name-service cache unix-user settings show`
 ### Learn more
 * [`DOC /name-services/cache/unix-user/settings`](#docs-name-services-name-services_cache_unix-user_settings)
-
 */
 func (a *Client) UnixUserSettingsCollectionGet(params *UnixUserSettingsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2949,12 +2953,12 @@ func (a *Client) UnixUserSettingsCollectionGet(params *UnixUserSettingsCollectio
 }
 
 /*
-  UnixUserSettingsGet Retrieves unix-user cache settings for a given SVM.
+	UnixUserSettingsGet Retrieves unix-user cache settings for a given SVM.
+
 ### Related ONTAP commands
 * `vserver services name-service cache unix-user settings show`
 ### Learn more
 * [`DOC /name-services/cache/unix-user/settings`](#docs-name-services-name-services_cache_unix-user_settings)
-
 */
 func (a *Client) UnixUserSettingsGet(params *UnixUserSettingsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2992,15 +2996,16 @@ func (a *Client) UnixUserSettingsGet(params *UnixUserSettingsGetParams, authInfo
 }
 
 /*
-  UnixUserSettingsModify Updates a unix-user cache setting.
+	UnixUserSettingsModify Updates a unix-user cache setting.
+
 ### Important notes
   - svm.uuid field cannot be empty.
   - Returns success in case no values are provided for update.
+
 ### Related ONTAP commands
 * `vserver services name-service cache unix-user settings modify`
 ### Learn more
 * [`DOC /name-services/cache/unix-user/settings`](#docs-name-services-name-services_cache_unix-user_settings)
-
 */
 func (a *Client) UnixUserSettingsModify(params *UnixUserSettingsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserSettingsModifyOK, error) {
 	// TODO: Validate the params before sending

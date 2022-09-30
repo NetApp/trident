@@ -18,7 +18,6 @@ import (
 
 // FcSwitch A Fibre Channel switch.
 //
-//
 // swagger:model fc_switch
 type FcSwitch struct {
 
@@ -360,7 +359,6 @@ func (m *FcSwitch) UnmarshalBinary(b []byte) error {
 
 // FcSwitchCache Properties of Fibre Chanel fabric cache.
 //
-//
 // swagger:model FcSwitchCache
 type FcSwitchCache struct {
 
@@ -476,7 +474,6 @@ func (m *FcSwitchCache) UnmarshalBinary(b []byte) error {
 }
 
 // FcSwitchFabric A reference to a Fibre Channel fabric.
-//
 //
 // swagger:model FcSwitchFabric
 type FcSwitchFabric struct {
@@ -740,7 +737,6 @@ func (m *FcSwitchLinks) UnmarshalBinary(b []byte) error {
 }
 
 // FcSwitchPortsItems0 A Fibre Channel switch port.
-//
 //
 // swagger:model FcSwitchPortsItems0
 type FcSwitchPortsItems0 struct {
@@ -1194,7 +1190,6 @@ func (m *FcSwitchPortsItems0) UnmarshalBinary(b []byte) error {
 }
 
 // FcSwitchPortsItems0AttachedDevice The Fibre Channel (FC) device attached to the FC switch port.
-//
 //
 // swagger:model FcSwitchPortsItems0AttachedDevice
 type FcSwitchPortsItems0AttachedDevice struct {

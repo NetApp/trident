@@ -46,7 +46,8 @@ func NewNvmeSubsystemCreateCreated() *NvmeSubsystemCreateCreated {
 	return &NvmeSubsystemCreateCreated{}
 }
 
-/* NvmeSubsystemCreateCreated describes a response with status code 201, with default header values.
+/*
+NvmeSubsystemCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type NvmeSubsystemCreateCreated struct {
 	Payload *models.NvmeSubsystemResponse
 }
 
+// IsSuccess returns true when this nvme subsystem create created response has a 2xx status code
+func (o *NvmeSubsystemCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme subsystem create created response has a 3xx status code
+func (o *NvmeSubsystemCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme subsystem create created response has a 4xx status code
+func (o *NvmeSubsystemCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme subsystem create created response has a 5xx status code
+func (o *NvmeSubsystemCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme subsystem create created response a status code equal to that given
+func (o *NvmeSubsystemCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *NvmeSubsystemCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvmeSubsystemCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *NvmeSubsystemCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvmeSubsystemCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *NvmeSubsystemCreateCreated) GetPayload() *models.NvmeSubsystemResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewNvmeSubsystemCreateDefault(code int) *NvmeSubsystemCreateDefault {
 	}
 }
 
-/* NvmeSubsystemCreateDefault describes a response with status code -1, with default header values.
+/*
+	NvmeSubsystemCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | The supplied SVM does not exist. |
@@ -101,7 +134,6 @@ func NewNvmeSubsystemCreateDefault(code int) *NvmeSubsystemCreateDefault {
 | 72090030 | A partial success occured while adding multiple NVMe subsystem hosts to an NVMe subsystem. |
 | 72090035 | Passing NVMe subsystem host NQNs on NVMe subsystem POST requires an effective cluster version of 9.7 or later. |
 | 72090036 | The `hosts.nqn` NVMe subsystem property must contain unique values. |
-
 */
 type NvmeSubsystemCreateDefault struct {
 	_statusCode int
@@ -114,9 +146,39 @@ func (o *NvmeSubsystemCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme subsystem create default response has a 2xx status code
+func (o *NvmeSubsystemCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme subsystem create default response has a 3xx status code
+func (o *NvmeSubsystemCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme subsystem create default response has a 4xx status code
+func (o *NvmeSubsystemCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme subsystem create default response has a 5xx status code
+func (o *NvmeSubsystemCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme subsystem create default response a status code equal to that given
+func (o *NvmeSubsystemCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeSubsystemCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvme_subsystem_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeSubsystemCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/nvme/subsystems][%d] nvme_subsystem_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeSubsystemCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

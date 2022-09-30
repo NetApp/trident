@@ -53,10 +53,12 @@ func NewUnixUserSettingsGetParamsWithHTTPClient(client *http.Client) *UnixUserSe
 	}
 }
 
-/* UnixUserSettingsGetParams contains all the parameters to send to the API endpoint
-   for the unix user settings get operation.
+/*
+UnixUserSettingsGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the unix user settings get operation.
+
+	Typically these are written to a http.Request.
 */
 type UnixUserSettingsGetParams struct {
 

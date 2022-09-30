@@ -53,10 +53,12 @@ func NewS3GroupGetParamsWithHTTPClient(client *http.Client) *S3GroupGetParams {
 	}
 }
 
-/* S3GroupGetParams contains all the parameters to send to the API endpoint
-   for the s3 group get operation.
+/*
+S3GroupGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 group get operation.
+
+	Typically these are written to a http.Request.
 */
 type S3GroupGetParams struct {
 

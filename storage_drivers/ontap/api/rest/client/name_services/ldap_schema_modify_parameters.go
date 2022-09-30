@@ -54,10 +54,12 @@ func NewLdapSchemaModifyParamsWithHTTPClient(client *http.Client) *LdapSchemaMod
 	}
 }
 
-/* LdapSchemaModifyParams contains all the parameters to send to the API endpoint
-   for the ldap schema modify operation.
+/*
+LdapSchemaModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ldap schema modify operation.
+
+	Typically these are written to a http.Request.
 */
 type LdapSchemaModifyParams struct {
 

@@ -52,10 +52,12 @@ func NewVscanOnAccessDeleteParamsWithHTTPClient(client *http.Client) *VscanOnAcc
 	}
 }
 
-/* VscanOnAccessDeleteParams contains all the parameters to send to the API endpoint
-   for the vscan on access delete operation.
+/*
+VscanOnAccessDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vscan on access delete operation.
+
+	Typically these are written to a http.Request.
 */
 type VscanOnAccessDeleteParams struct {
 

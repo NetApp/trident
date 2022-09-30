@@ -53,10 +53,12 @@ func NewPortsetDeleteParamsWithHTTPClient(client *http.Client) *PortsetDeletePar
 	}
 }
 
-/* PortsetDeleteParams contains all the parameters to send to the API endpoint
-   for the portset delete operation.
+/*
+PortsetDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the portset delete operation.
+
+	Typically these are written to a http.Request.
 */
 type PortsetDeleteParams struct {
 

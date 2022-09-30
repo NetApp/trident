@@ -55,10 +55,12 @@ func NewExportPolicyModifyParamsWithHTTPClient(client *http.Client) *ExportPolic
 	}
 }
 
-/* ExportPolicyModifyParams contains all the parameters to send to the API endpoint
-   for the export policy modify operation.
+/*
+ExportPolicyModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the export policy modify operation.
+
+	Typically these are written to a http.Request.
 */
 type ExportPolicyModifyParams struct {
 

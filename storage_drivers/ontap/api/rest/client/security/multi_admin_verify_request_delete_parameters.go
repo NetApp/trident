@@ -52,10 +52,12 @@ func NewMultiAdminVerifyRequestDeleteParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* MultiAdminVerifyRequestDeleteParams contains all the parameters to send to the API endpoint
-   for the multi admin verify request delete operation.
+/*
+MultiAdminVerifyRequestDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the multi admin verify request delete operation.
+
+	Typically these are written to a http.Request.
 */
 type MultiAdminVerifyRequestDeleteParams struct {
 

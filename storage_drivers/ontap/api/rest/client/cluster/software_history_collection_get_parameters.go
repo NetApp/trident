@@ -53,10 +53,12 @@ func NewSoftwareHistoryCollectionGetParamsWithHTTPClient(client *http.Client) *S
 	}
 }
 
-/* SoftwareHistoryCollectionGetParams contains all the parameters to send to the API endpoint
-   for the software history collection get operation.
+/*
+SoftwareHistoryCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the software history collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type SoftwareHistoryCollectionGetParams struct {
 

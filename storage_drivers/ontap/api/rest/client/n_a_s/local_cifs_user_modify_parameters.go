@@ -54,10 +54,12 @@ func NewLocalCifsUserModifyParamsWithHTTPClient(client *http.Client) *LocalCifsU
 	}
 }
 
-/* LocalCifsUserModifyParams contains all the parameters to send to the API endpoint
-   for the local cifs user modify operation.
+/*
+LocalCifsUserModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the local cifs user modify operation.
+
+	Typically these are written to a http.Request.
 */
 type LocalCifsUserModifyParams struct {
 

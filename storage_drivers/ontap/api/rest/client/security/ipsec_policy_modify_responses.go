@@ -46,14 +46,44 @@ func NewIpsecPolicyModifyOK() *IpsecPolicyModifyOK {
 	return &IpsecPolicyModifyOK{}
 }
 
-/* IpsecPolicyModifyOK describes a response with status code 200, with default header values.
+/*
+IpsecPolicyModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IpsecPolicyModifyOK struct {
 }
 
+// IsSuccess returns true when this ipsec policy modify o k response has a 2xx status code
+func (o *IpsecPolicyModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipsec policy modify o k response has a 3xx status code
+func (o *IpsecPolicyModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipsec policy modify o k response has a 4xx status code
+func (o *IpsecPolicyModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipsec policy modify o k response has a 5xx status code
+func (o *IpsecPolicyModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipsec policy modify o k response a status code equal to that given
+func (o *IpsecPolicyModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IpsecPolicyModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsecPolicyModifyOK ", 200)
+}
+
+func (o *IpsecPolicyModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsecPolicyModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewIpsecPolicyModifyDefault(code int) *IpsecPolicyModifyDefault {
 	}
 }
 
-/* IpsecPolicyModifyDefault describes a response with status code -1, with default header values.
+/*
+	IpsecPolicyModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 66257097 | Internal error. Failed to update the IPsec policy. |
@@ -86,7 +118,6 @@ func NewIpsecPolicyModifyDefault(code int) *IpsecPolicyModifyDefault {
 | 66257120 | The subnet selector must be a host address (An IPv4 address with a 32-bit netmask or an IPv6 address with a 128-bit netmask). |
 | 66257139 | Certificate with the specified UUID was not found. |
 | 66257140 | Only certificates with a client or server type are supported. |
-
 */
 type IpsecPolicyModifyDefault struct {
 	_statusCode int
@@ -99,9 +130,39 @@ func (o *IpsecPolicyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ipsec policy modify default response has a 2xx status code
+func (o *IpsecPolicyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipsec policy modify default response has a 3xx status code
+func (o *IpsecPolicyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipsec policy modify default response has a 4xx status code
+func (o *IpsecPolicyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipsec policy modify default response has a 5xx status code
+func (o *IpsecPolicyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipsec policy modify default response a status code equal to that given
+func (o *IpsecPolicyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IpsecPolicyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsec_policy_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IpsecPolicyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/ipsec/policies/{uuid}][%d] ipsec_policy_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IpsecPolicyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

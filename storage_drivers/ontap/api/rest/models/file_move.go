@@ -1068,7 +1068,6 @@ func (m *FileMoveDestinationVolumeLinks) UnmarshalBinary(b []byte) error {
 
 // FileMoveFilesToMove A list of source files along with the destination file they are moved to. If the terminal path component of the destination is a directory, then the source file's basename is replicated in that directory. This is only used for FlexVol volume file move operations.
 //
-//
 // swagger:model FileMoveFilesToMove
 type FileMoveFilesToMove struct {
 

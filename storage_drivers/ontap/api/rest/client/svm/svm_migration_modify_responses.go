@@ -46,7 +46,8 @@ func NewSvmMigrationModifyAccepted() *SvmMigrationModifyAccepted {
 	return &SvmMigrationModifyAccepted{}
 }
 
-/* SvmMigrationModifyAccepted describes a response with status code 202, with default header values.
+/*
+SvmMigrationModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SvmMigrationModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this svm migration modify accepted response has a 2xx status code
+func (o *SvmMigrationModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm migration modify accepted response has a 3xx status code
+func (o *SvmMigrationModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm migration modify accepted response has a 4xx status code
+func (o *SvmMigrationModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm migration modify accepted response has a 5xx status code
+func (o *SvmMigrationModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm migration modify accepted response a status code equal to that given
+func (o *SvmMigrationModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SvmMigrationModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /svm/migrations/{uuid}][%d] svmMigrationModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SvmMigrationModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /svm/migrations/{uuid}][%d] svmMigrationModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SvmMigrationModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewSvmMigrationModifyDefault(code int) *SvmMigrationModifyDefault {
 	}
 }
 
-/* SvmMigrationModifyDefault describes a response with status code -1, with default header values.
+/*
+	SvmMigrationModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 13172783 | Migrate RDB lookup failed |
-
 */
 type SvmMigrationModifyDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *SvmMigrationModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm migration modify default response has a 2xx status code
+func (o *SvmMigrationModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm migration modify default response has a 3xx status code
+func (o *SvmMigrationModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm migration modify default response has a 4xx status code
+func (o *SvmMigrationModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm migration modify default response has a 5xx status code
+func (o *SvmMigrationModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm migration modify default response a status code equal to that given
+func (o *SvmMigrationModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmMigrationModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /svm/migrations/{uuid}][%d] svm_migration_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmMigrationModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /svm/migrations/{uuid}][%d] svm_migration_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmMigrationModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

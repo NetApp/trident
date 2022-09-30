@@ -54,10 +54,12 @@ func NewClusterNisModifyParamsWithHTTPClient(client *http.Client) *ClusterNisMod
 	}
 }
 
-/* ClusterNisModifyParams contains all the parameters to send to the API endpoint
-   for the cluster nis modify operation.
+/*
+ClusterNisModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster nis modify operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterNisModifyParams struct {
 

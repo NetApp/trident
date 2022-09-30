@@ -46,7 +46,8 @@ func NewSnaplockComplianceClockGetOK() *SnaplockComplianceClockGetOK {
 	return &SnaplockComplianceClockGetOK{}
 }
 
-/* SnaplockComplianceClockGetOK describes a response with status code 200, with default header values.
+/*
+SnaplockComplianceClockGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnaplockComplianceClockGetOK struct {
 	Payload *models.SnaplockComplianceClock
 }
 
+// IsSuccess returns true when this snaplock compliance clock get o k response has a 2xx status code
+func (o *SnaplockComplianceClockGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock compliance clock get o k response has a 3xx status code
+func (o *SnaplockComplianceClockGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock compliance clock get o k response has a 4xx status code
+func (o *SnaplockComplianceClockGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock compliance clock get o k response has a 5xx status code
+func (o *SnaplockComplianceClockGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock compliance clock get o k response a status code equal to that given
+func (o *SnaplockComplianceClockGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnaplockComplianceClockGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplockComplianceClockGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnaplockComplianceClockGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplockComplianceClockGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnaplockComplianceClockGetOK) GetPayload() *models.SnaplockComplianceClock {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSnaplockComplianceClockGetDefault(code int) *SnaplockComplianceClockGetD
 	}
 }
 
-/* SnaplockComplianceClockGetDefault describes a response with status code -1, with default header values.
+/*
+SnaplockComplianceClockGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SnaplockComplianceClockGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock compliance clock get default response has a 2xx status code
+func (o *SnaplockComplianceClockGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock compliance clock get default response has a 3xx status code
+func (o *SnaplockComplianceClockGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock compliance clock get default response has a 4xx status code
+func (o *SnaplockComplianceClockGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock compliance clock get default response has a 5xx status code
+func (o *SnaplockComplianceClockGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock compliance clock get default response a status code equal to that given
+func (o *SnaplockComplianceClockGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockComplianceClockGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplock_compliance_clock_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockComplianceClockGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/compliance-clocks/{node.uuid}][%d] snaplock_compliance_clock_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockComplianceClockGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

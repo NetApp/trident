@@ -53,10 +53,12 @@ func NewS3UserGetParamsWithHTTPClient(client *http.Client) *S3UserGetParams {
 	}
 }
 
-/* S3UserGetParams contains all the parameters to send to the API endpoint
-   for the s3 user get operation.
+/*
+S3UserGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 user get operation.
+
+	Typically these are written to a http.Request.
 */
 type S3UserGetParams struct {
 

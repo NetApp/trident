@@ -54,10 +54,12 @@ func NewLocalHostModifyParamsWithHTTPClient(client *http.Client) *LocalHostModif
 	}
 }
 
-/* LocalHostModifyParams contains all the parameters to send to the API endpoint
-   for the local host modify operation.
+/*
+LocalHostModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the local host modify operation.
+
+	Typically these are written to a http.Request.
 */
 type LocalHostModifyParams struct {
 

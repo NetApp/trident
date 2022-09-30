@@ -53,10 +53,12 @@ func NewPublickeyGetParamsWithHTTPClient(client *http.Client) *PublickeyGetParam
 	}
 }
 
-/* PublickeyGetParams contains all the parameters to send to the API endpoint
-   for the publickey get operation.
+/*
+PublickeyGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the publickey get operation.
+
+	Typically these are written to a http.Request.
 */
 type PublickeyGetParams struct {
 

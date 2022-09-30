@@ -53,10 +53,12 @@ func NewMetroclusterDiagnosticsCreateParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* MetroclusterDiagnosticsCreateParams contains all the parameters to send to the API endpoint
-   for the metrocluster diagnostics create operation.
+/*
+MetroclusterDiagnosticsCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the metrocluster diagnostics create operation.
+
+	Typically these are written to a http.Request.
 */
 type MetroclusterDiagnosticsCreateParams struct {
 

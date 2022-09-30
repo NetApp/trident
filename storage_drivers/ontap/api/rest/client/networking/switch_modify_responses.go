@@ -46,7 +46,8 @@ func NewSwitchModifyAccepted() *SwitchModifyAccepted {
 	return &SwitchModifyAccepted{}
 }
 
-/* SwitchModifyAccepted describes a response with status code 202, with default header values.
+/*
+SwitchModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SwitchModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this switch modify accepted response has a 2xx status code
+func (o *SwitchModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this switch modify accepted response has a 3xx status code
+func (o *SwitchModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this switch modify accepted response has a 4xx status code
+func (o *SwitchModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this switch modify accepted response has a 5xx status code
+func (o *SwitchModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this switch modify accepted response a status code equal to that given
+func (o *SwitchModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SwitchModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /network/ethernet/switches/{name}][%d] switchModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SwitchModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /network/ethernet/switches/{name}][%d] switchModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SwitchModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewSwitchModifyDefault(code int) *SwitchModifyDefault {
 	}
 }
 
-/* SwitchModifyDefault describes a response with status code -1, with default header values.
+/*
+	SwitchModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 12517378 | Settings updated, but the IP address \"{address}\" is not reachable. Verify that the address is valid or check the network path. |
 | 12517380 | Settings updated, but the SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid. |
 | 12517382 | Settings updated, but the SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid (i.e., the SNMPv3 user exists in ONTAP and on the remote switch). If the \"snmp.user\" parameter is valid, verify that the SNMPv3 user's credentials are the same both in ONTAP as well as in the remote switch. If a custom engine-id was provided for the SNMPv3 user, ensure it is the same as that of the remote switch. |
-
 */
 type SwitchModifyDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *SwitchModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this switch modify default response has a 2xx status code
+func (o *SwitchModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this switch modify default response has a 3xx status code
+func (o *SwitchModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this switch modify default response has a 4xx status code
+func (o *SwitchModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this switch modify default response has a 5xx status code
+func (o *SwitchModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this switch modify default response a status code equal to that given
+func (o *SwitchModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SwitchModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /network/ethernet/switches/{name}][%d] switch_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SwitchModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /network/ethernet/switches/{name}][%d] switch_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SwitchModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

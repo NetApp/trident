@@ -54,10 +54,12 @@ func NewGroupMembershipSettingsModifyParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* GroupMembershipSettingsModifyParams contains all the parameters to send to the API endpoint
-   for the group membership settings modify operation.
+/*
+GroupMembershipSettingsModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the group membership settings modify operation.
+
+	Typically these are written to a http.Request.
 */
 type GroupMembershipSettingsModifyParams struct {
 

@@ -46,7 +46,8 @@ func NewSecurityCertificateCollectionGetOK() *SecurityCertificateCollectionGetOK
 	return &SecurityCertificateCollectionGetOK{}
 }
 
-/* SecurityCertificateCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SecurityCertificateCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SecurityCertificateCollectionGetOK struct {
 	Payload *models.SecurityCertificateResponse
 }
 
+// IsSuccess returns true when this security certificate collection get o k response has a 2xx status code
+func (o *SecurityCertificateCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security certificate collection get o k response has a 3xx status code
+func (o *SecurityCertificateCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security certificate collection get o k response has a 4xx status code
+func (o *SecurityCertificateCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security certificate collection get o k response has a 5xx status code
+func (o *SecurityCertificateCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security certificate collection get o k response a status code equal to that given
+func (o *SecurityCertificateCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityCertificateCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/certificates][%d] securityCertificateCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SecurityCertificateCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/certificates][%d] securityCertificateCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SecurityCertificateCollectionGetOK) GetPayload() *models.SecurityCertificateResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSecurityCertificateCollectionGetDefault(code int) *SecurityCertificateCo
 	}
 }
 
-/* SecurityCertificateCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+SecurityCertificateCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SecurityCertificateCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security certificate collection get default response has a 2xx status code
+func (o *SecurityCertificateCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security certificate collection get default response has a 3xx status code
+func (o *SecurityCertificateCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security certificate collection get default response has a 4xx status code
+func (o *SecurityCertificateCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security certificate collection get default response has a 5xx status code
+func (o *SecurityCertificateCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security certificate collection get default response a status code equal to that given
+func (o *SecurityCertificateCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityCertificateCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/certificates][%d] security_certificate_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityCertificateCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/certificates][%d] security_certificate_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityCertificateCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

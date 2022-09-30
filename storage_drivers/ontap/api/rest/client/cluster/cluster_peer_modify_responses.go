@@ -46,7 +46,8 @@ func NewClusterPeerModifyOK() *ClusterPeerModifyOK {
 	return &ClusterPeerModifyOK{}
 }
 
-/* ClusterPeerModifyOK describes a response with status code 200, with default header values.
+/*
+ClusterPeerModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ClusterPeerModifyOK struct {
 	Payload *models.ClusterPeerSetupResponse
 }
 
+// IsSuccess returns true when this cluster peer modify o k response has a 2xx status code
+func (o *ClusterPeerModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster peer modify o k response has a 3xx status code
+func (o *ClusterPeerModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster peer modify o k response has a 4xx status code
+func (o *ClusterPeerModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster peer modify o k response has a 5xx status code
+func (o *ClusterPeerModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster peer modify o k response a status code equal to that given
+func (o *ClusterPeerModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterPeerModifyOK) Error() string {
 	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] clusterPeerModifyOK  %+v", 200, o.Payload)
 }
+
+func (o *ClusterPeerModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] clusterPeerModifyOK  %+v", 200, o.Payload)
+}
+
 func (o *ClusterPeerModifyOK) GetPayload() *models.ClusterPeerSetupResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewClusterPeerModifyDefault(code int) *ClusterPeerModifyDefault {
 	}
 }
 
-/* ClusterPeerModifyDefault describes a response with status code -1, with default header values.
+/*
+	ClusterPeerModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4653261 | Error finding IPspace. |
@@ -98,7 +131,6 @@ func NewClusterPeerModifyDefault(code int) *ClusterPeerModifyDefault {
 | 4656084 | Passphrase can only be modified with an authenticated cluster peer relationship. |
 | 4656092 | Cluster peer modify was attempted with a host name that did not resolve to an IPv4 or IPv6 address. |
 | 4656095 | The address family of the specified peer addresses is not valid in this IPspace. Use /api/network/interfaces/ to verify that required LIFs are present and operational on each cluster node. |
-
 */
 type ClusterPeerModifyDefault struct {
 	_statusCode int
@@ -111,9 +143,39 @@ func (o *ClusterPeerModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster peer modify default response has a 2xx status code
+func (o *ClusterPeerModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster peer modify default response has a 3xx status code
+func (o *ClusterPeerModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster peer modify default response has a 4xx status code
+func (o *ClusterPeerModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster peer modify default response has a 5xx status code
+func (o *ClusterPeerModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster peer modify default response a status code equal to that given
+func (o *ClusterPeerModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterPeerModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] cluster_peer_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterPeerModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /cluster/peers/{uuid}][%d] cluster_peer_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterPeerModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

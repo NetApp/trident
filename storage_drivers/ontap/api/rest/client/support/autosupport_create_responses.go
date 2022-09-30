@@ -50,7 +50,8 @@ func NewAutosupportCreateCreated() *AutosupportCreateCreated {
 	return &AutosupportCreateCreated{}
 }
 
-/* AutosupportCreateCreated describes a response with status code 201, with default header values.
+/*
+AutosupportCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -58,9 +59,39 @@ type AutosupportCreateCreated struct {
 	Payload *AutosupportCreateCreatedBody
 }
 
+// IsSuccess returns true when this autosupport create created response has a 2xx status code
+func (o *AutosupportCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this autosupport create created response has a 3xx status code
+func (o *AutosupportCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this autosupport create created response has a 4xx status code
+func (o *AutosupportCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this autosupport create created response has a 5xx status code
+func (o *AutosupportCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this autosupport create created response a status code equal to that given
+func (o *AutosupportCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *AutosupportCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /support/autosupport/messages][%d] autosupportCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *AutosupportCreateCreated) String() string {
+	return fmt.Sprintf("[POST /support/autosupport/messages][%d] autosupportCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *AutosupportCreateCreated) GetPayload() *AutosupportCreateCreatedBody {
 	return o.Payload
 }
@@ -84,14 +115,15 @@ func NewAutosupportCreateDefault(code int) *AutosupportCreateDefault {
 	}
 }
 
-/* AutosupportCreateDefault describes a response with status code -1, with default header values.
+/*
+	AutosupportCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 8650866 | The message parameter is not supported with performance AutoSupports |
 | 53149748 | The destination URI provided for the invoked AutoSupport is invalid |
-
 */
 type AutosupportCreateDefault struct {
 	_statusCode int
@@ -104,9 +136,39 @@ func (o *AutosupportCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this autosupport create default response has a 2xx status code
+func (o *AutosupportCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this autosupport create default response has a 3xx status code
+func (o *AutosupportCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this autosupport create default response has a 4xx status code
+func (o *AutosupportCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this autosupport create default response has a 5xx status code
+func (o *AutosupportCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this autosupport create default response a status code equal to that given
+func (o *AutosupportCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AutosupportCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /support/autosupport/messages][%d] autosupport_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AutosupportCreateDefault) String() string {
+	return fmt.Sprintf("[POST /support/autosupport/messages][%d] autosupport_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AutosupportCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }
@@ -123,7 +185,8 @@ func (o *AutosupportCreateDefault) readResponse(response runtime.ClientResponse,
 	return nil
 }
 
-/*AutosupportCreateCreatedBody List of messages invoked on the node
+/*
+AutosupportCreateCreatedBody List of messages invoked on the node
 swagger:model AutosupportCreateCreatedBody
 */
 type AutosupportCreateCreatedBody struct {
@@ -266,7 +329,8 @@ func (o *AutosupportCreateCreatedBody) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-/*AutosupportCreateCreatedBodyLinks autosupport create created body links
+/*
+AutosupportCreateCreatedBodyLinks autosupport create created body links
 swagger:model AutosupportCreateCreatedBodyLinks
 */
 type AutosupportCreateCreatedBodyLinks struct {
@@ -352,7 +416,8 @@ func (o *AutosupportCreateCreatedBodyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-/*AutosupportCreateCreatedBodyRecordsItems0 autosupport create created body records items0
+/*
+AutosupportCreateCreatedBodyRecordsItems0 autosupport create created body records items0
 swagger:model AutosupportCreateCreatedBodyRecordsItems0
 */
 type AutosupportCreateCreatedBodyRecordsItems0 struct {
@@ -484,7 +549,8 @@ func (o *AutosupportCreateCreatedBodyRecordsItems0) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-/*AutosupportCreateCreatedBodyRecordsItems0Links autosupport create created body records items0 links
+/*
+AutosupportCreateCreatedBodyRecordsItems0Links autosupport create created body records items0 links
 swagger:model AutosupportCreateCreatedBodyRecordsItems0Links
 */
 type AutosupportCreateCreatedBodyRecordsItems0Links struct {
@@ -570,7 +636,8 @@ func (o *AutosupportCreateCreatedBodyRecordsItems0Links) UnmarshalBinary(b []byt
 	return nil
 }
 
-/*AutosupportCreateCreatedBodyRecordsItems0Node autosupport create created body records items0 node
+/*
+AutosupportCreateCreatedBodyRecordsItems0Node autosupport create created body records items0 node
 swagger:model AutosupportCreateCreatedBodyRecordsItems0Node
 */
 type AutosupportCreateCreatedBodyRecordsItems0Node struct {
@@ -664,7 +731,8 @@ func (o *AutosupportCreateCreatedBodyRecordsItems0Node) UnmarshalBinary(b []byte
 	return nil
 }
 
-/*AutosupportCreateCreatedBodyRecordsItems0NodeLinks autosupport create created body records items0 node links
+/*
+AutosupportCreateCreatedBodyRecordsItems0NodeLinks autosupport create created body records items0 node links
 swagger:model AutosupportCreateCreatedBodyRecordsItems0NodeLinks
 */
 type AutosupportCreateCreatedBodyRecordsItems0NodeLinks struct {

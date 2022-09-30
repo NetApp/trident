@@ -46,7 +46,8 @@ func NewLocalCifsGroupMembersGetOK() *LocalCifsGroupMembersGetOK {
 	return &LocalCifsGroupMembersGetOK{}
 }
 
-/* LocalCifsGroupMembersGetOK describes a response with status code 200, with default header values.
+/*
+LocalCifsGroupMembersGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LocalCifsGroupMembersGetOK struct {
 	Payload *models.LocalCifsGroupMembers
 }
 
+// IsSuccess returns true when this local cifs group members get o k response has a 2xx status code
+func (o *LocalCifsGroupMembersGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local cifs group members get o k response has a 3xx status code
+func (o *LocalCifsGroupMembersGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local cifs group members get o k response has a 4xx status code
+func (o *LocalCifsGroupMembersGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local cifs group members get o k response has a 5xx status code
+func (o *LocalCifsGroupMembersGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local cifs group members get o k response a status code equal to that given
+func (o *LocalCifsGroupMembersGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LocalCifsGroupMembersGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] localCifsGroupMembersGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LocalCifsGroupMembersGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] localCifsGroupMembersGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LocalCifsGroupMembersGetOK) GetPayload() *models.LocalCifsGroupMembers {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLocalCifsGroupMembersGetDefault(code int) *LocalCifsGroupMembersGetDefau
 	}
 }
 
-/* LocalCifsGroupMembersGetDefault describes a response with status code -1, with default header values.
+/*
+LocalCifsGroupMembersGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LocalCifsGroupMembersGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this local cifs group members get default response has a 2xx status code
+func (o *LocalCifsGroupMembersGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this local cifs group members get default response has a 3xx status code
+func (o *LocalCifsGroupMembersGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this local cifs group members get default response has a 4xx status code
+func (o *LocalCifsGroupMembersGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this local cifs group members get default response has a 5xx status code
+func (o *LocalCifsGroupMembersGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this local cifs group members get default response a status code equal to that given
+func (o *LocalCifsGroupMembersGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LocalCifsGroupMembersGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] local_cifs_group_members_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LocalCifsGroupMembersGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}][%d] local_cifs_group_members_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LocalCifsGroupMembersGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

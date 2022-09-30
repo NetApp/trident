@@ -46,7 +46,8 @@ func NewAutoUpdateStatusGetOK() *AutoUpdateStatusGetOK {
 	return &AutoUpdateStatusGetOK{}
 }
 
-/* AutoUpdateStatusGetOK describes a response with status code 200, with default header values.
+/*
+AutoUpdateStatusGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AutoUpdateStatusGetOK struct {
 	Payload *models.AutoUpdateStatus
 }
 
+// IsSuccess returns true when this auto update status get o k response has a 2xx status code
+func (o *AutoUpdateStatusGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this auto update status get o k response has a 3xx status code
+func (o *AutoUpdateStatusGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this auto update status get o k response has a 4xx status code
+func (o *AutoUpdateStatusGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this auto update status get o k response has a 5xx status code
+func (o *AutoUpdateStatusGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this auto update status get o k response a status code equal to that given
+func (o *AutoUpdateStatusGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AutoUpdateStatusGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/auto-update/updates/{uuid}][%d] autoUpdateStatusGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AutoUpdateStatusGetOK) String() string {
+	return fmt.Sprintf("[GET /support/auto-update/updates/{uuid}][%d] autoUpdateStatusGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AutoUpdateStatusGetOK) GetPayload() *models.AutoUpdateStatus {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAutoUpdateStatusGetDefault(code int) *AutoUpdateStatusGetDefault {
 	}
 }
 
-/* AutoUpdateStatusGetDefault describes a response with status code -1, with default header values.
+/*
+AutoUpdateStatusGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AutoUpdateStatusGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this auto update status get default response has a 2xx status code
+func (o *AutoUpdateStatusGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this auto update status get default response has a 3xx status code
+func (o *AutoUpdateStatusGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this auto update status get default response has a 4xx status code
+func (o *AutoUpdateStatusGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this auto update status get default response has a 5xx status code
+func (o *AutoUpdateStatusGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this auto update status get default response a status code equal to that given
+func (o *AutoUpdateStatusGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AutoUpdateStatusGetDefault) Error() string {
 	return fmt.Sprintf("[GET /support/auto-update/updates/{uuid}][%d] auto_update_status_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AutoUpdateStatusGetDefault) String() string {
+	return fmt.Sprintf("[GET /support/auto-update/updates/{uuid}][%d] auto_update_status_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AutoUpdateStatusGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

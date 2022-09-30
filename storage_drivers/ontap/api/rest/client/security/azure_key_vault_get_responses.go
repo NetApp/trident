@@ -46,7 +46,8 @@ func NewAzureKeyVaultGetOK() *AzureKeyVaultGetOK {
 	return &AzureKeyVaultGetOK{}
 }
 
-/* AzureKeyVaultGetOK describes a response with status code 200, with default header values.
+/*
+AzureKeyVaultGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AzureKeyVaultGetOK struct {
 	Payload *models.AzureKeyVault
 }
 
+// IsSuccess returns true when this azure key vault get o k response has a 2xx status code
+func (o *AzureKeyVaultGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this azure key vault get o k response has a 3xx status code
+func (o *AzureKeyVaultGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this azure key vault get o k response has a 4xx status code
+func (o *AzureKeyVaultGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this azure key vault get o k response has a 5xx status code
+func (o *AzureKeyVaultGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this azure key vault get o k response a status code equal to that given
+func (o *AzureKeyVaultGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AzureKeyVaultGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azureKeyVaultGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AzureKeyVaultGetOK) String() string {
+	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azureKeyVaultGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AzureKeyVaultGetOK) GetPayload() *models.AzureKeyVault {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAzureKeyVaultGetDefault(code int) *AzureKeyVaultGetDefault {
 	}
 }
 
-/* AzureKeyVaultGetDefault describes a response with status code -1, with default header values.
+/*
+AzureKeyVaultGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AzureKeyVaultGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this azure key vault get default response has a 2xx status code
+func (o *AzureKeyVaultGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this azure key vault get default response has a 3xx status code
+func (o *AzureKeyVaultGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this azure key vault get default response has a 4xx status code
+func (o *AzureKeyVaultGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this azure key vault get default response has a 5xx status code
+func (o *AzureKeyVaultGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this azure key vault get default response a status code equal to that given
+func (o *AzureKeyVaultGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AzureKeyVaultGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azure_key_vault_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AzureKeyVaultGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/azure-key-vaults/{uuid}][%d] azure_key_vault_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AzureKeyVaultGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

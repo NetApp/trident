@@ -17,7 +17,6 @@ import (
 
 // ACLDelete Manages the DACLS or SACLS.
 //
-//
 // swagger:model acl_delete
 type ACLDelete struct {
 

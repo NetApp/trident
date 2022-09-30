@@ -55,10 +55,12 @@ func NewPortsetCreateParamsWithHTTPClient(client *http.Client) *PortsetCreatePar
 	}
 }
 
-/* PortsetCreateParams contains all the parameters to send to the API endpoint
-   for the portset create operation.
+/*
+PortsetCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the portset create operation.
+
+	Typically these are written to a http.Request.
 */
 type PortsetCreateParams struct {
 

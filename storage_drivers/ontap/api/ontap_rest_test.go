@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -128,4 +129,38 @@ func TestExtractErrorResponse(t *testing.T) {
 	assert.NotNil(t, eeResponse)
 	assert.Equal(t, eeResponse.Error.Code, "42", "Unexpected code")
 	assert.Equal(t, eeResponse.Error.Message, "error 42", "Unexpected message")
+}
+
+func TestVolumeEncryption(t *testing.T) {
+	// negative case:  if nil, should not be set
+	veMarshall := models.VolumeEncryption{}
+	bytes, _ := json.MarshalIndent(veMarshall, "", "  ")
+	assert.Equal(t, `{}`, string(bytes))
+	volumeEncrytion := models.VolumeEncryption{}
+	json.Unmarshal(bytes, &volumeEncrytion)
+	assert.Nil(t, volumeEncrytion.Enabled)
+
+	// positive case:  if set to false, should be sent as false (not omitted)
+	veMarshall = models.VolumeEncryption{Enabled: ToBoolPointer(false)}
+	bytes, _ = json.MarshalIndent(veMarshall, "", "  ")
+	assert.Equal(t,
+		`{
+  "enabled": false
+}`,
+		string(bytes))
+	volumeEncrytion = models.VolumeEncryption{}
+	json.Unmarshal(bytes, &volumeEncrytion)
+	assert.False(t, *volumeEncrytion.Enabled)
+
+	// positive case:  if set to true, should be sent as true
+	veMarshall = models.VolumeEncryption{Enabled: ToBoolPointer(true)}
+	bytes, _ = json.MarshalIndent(veMarshall, "", "  ")
+	assert.Equal(t,
+		`{
+  "enabled": true
+}`,
+		string(bytes))
+	volumeEncrytion = models.VolumeEncryption{}
+	json.Unmarshal(bytes, &volumeEncrytion)
+	assert.True(t, *volumeEncrytion.Enabled)
 }

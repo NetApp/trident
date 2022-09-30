@@ -55,10 +55,12 @@ func NewMediatorDeleteParamsWithHTTPClient(client *http.Client) *MediatorDeleteP
 	}
 }
 
-/* MediatorDeleteParams contains all the parameters to send to the API endpoint
-   for the mediator delete operation.
+/*
+MediatorDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the mediator delete operation.
+
+	Typically these are written to a http.Request.
 */
 type MediatorDeleteParams struct {
 

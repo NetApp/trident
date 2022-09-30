@@ -46,7 +46,8 @@ func NewUserGroupPrivilegesGetOK() *UserGroupPrivilegesGetOK {
 	return &UserGroupPrivilegesGetOK{}
 }
 
-/* UserGroupPrivilegesGetOK describes a response with status code 200, with default header values.
+/*
+UserGroupPrivilegesGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type UserGroupPrivilegesGetOK struct {
 	Payload *models.UserGroupPrivileges
 }
 
+// IsSuccess returns true when this user group privileges get o k response has a 2xx status code
+func (o *UserGroupPrivilegesGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this user group privileges get o k response has a 3xx status code
+func (o *UserGroupPrivilegesGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this user group privileges get o k response has a 4xx status code
+func (o *UserGroupPrivilegesGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this user group privileges get o k response has a 5xx status code
+func (o *UserGroupPrivilegesGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this user group privileges get o k response a status code equal to that given
+func (o *UserGroupPrivilegesGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UserGroupPrivilegesGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] userGroupPrivilegesGetOK  %+v", 200, o.Payload)
 }
+
+func (o *UserGroupPrivilegesGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] userGroupPrivilegesGetOK  %+v", 200, o.Payload)
+}
+
 func (o *UserGroupPrivilegesGetOK) GetPayload() *models.UserGroupPrivileges {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewUserGroupPrivilegesGetDefault(code int) *UserGroupPrivilegesGetDefault {
 	}
 }
 
-/* UserGroupPrivilegesGetDefault describes a response with status code -1, with default header values.
+/*
+UserGroupPrivilegesGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *UserGroupPrivilegesGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this user group privileges get default response has a 2xx status code
+func (o *UserGroupPrivilegesGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this user group privileges get default response has a 3xx status code
+func (o *UserGroupPrivilegesGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this user group privileges get default response has a 4xx status code
+func (o *UserGroupPrivilegesGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this user group privileges get default response has a 5xx status code
+func (o *UserGroupPrivilegesGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this user group privileges get default response a status code equal to that given
+func (o *UserGroupPrivilegesGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UserGroupPrivilegesGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] user_group_privileges_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UserGroupPrivilegesGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}][%d] user_group_privileges_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UserGroupPrivilegesGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

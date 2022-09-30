@@ -53,10 +53,12 @@ func NewVscanServerStatusGetParamsWithHTTPClient(client *http.Client) *VscanServ
 	}
 }
 
-/* VscanServerStatusGetParams contains all the parameters to send to the API endpoint
-   for the vscan server status get operation.
+/*
+VscanServerStatusGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vscan server status get operation.
+
+	Typically these are written to a http.Request.
 */
 type VscanServerStatusGetParams struct {
 

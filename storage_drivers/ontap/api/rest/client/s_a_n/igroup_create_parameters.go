@@ -55,10 +55,12 @@ func NewIgroupCreateParamsWithHTTPClient(client *http.Client) *IgroupCreateParam
 	}
 }
 
-/* IgroupCreateParams contains all the parameters to send to the API endpoint
-   for the igroup create operation.
+/*
+IgroupCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the igroup create operation.
+
+	Typically these are written to a http.Request.
 */
 type IgroupCreateParams struct {
 

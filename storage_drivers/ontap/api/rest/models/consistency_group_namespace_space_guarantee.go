@@ -14,7 +14,6 @@ import (
 
 // ConsistencyGroupNamespaceSpaceGuarantee Properties that request and report the space guarantee for the NVMe namespace.
 //
-//
 // swagger:model consistency_group_namespace_space_guarantee
 type ConsistencyGroupNamespaceSpaceGuarantee struct {
 

@@ -53,10 +53,12 @@ func NewEffectivePermissionGetParamsWithHTTPClient(client *http.Client) *Effecti
 	}
 }
 
-/* EffectivePermissionGetParams contains all the parameters to send to the API endpoint
-   for the effective permission get operation.
+/*
+EffectivePermissionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the effective permission get operation.
+
+	Typically these are written to a http.Request.
 */
 type EffectivePermissionGetParams struct {
 

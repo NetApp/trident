@@ -46,14 +46,44 @@ func NewNvmeNamespaceDeleteOK() *NvmeNamespaceDeleteOK {
 	return &NvmeNamespaceDeleteOK{}
 }
 
-/* NvmeNamespaceDeleteOK describes a response with status code 200, with default header values.
+/*
+NvmeNamespaceDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NvmeNamespaceDeleteOK struct {
 }
 
+// IsSuccess returns true when this nvme namespace delete o k response has a 2xx status code
+func (o *NvmeNamespaceDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme namespace delete o k response has a 3xx status code
+func (o *NvmeNamespaceDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme namespace delete o k response has a 4xx status code
+func (o *NvmeNamespaceDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme namespace delete o k response has a 5xx status code
+func (o *NvmeNamespaceDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme namespace delete o k response a status code equal to that given
+func (o *NvmeNamespaceDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeNamespaceDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /storage/namespaces/{uuid}][%d] nvmeNamespaceDeleteOK ", 200)
+}
+
+func (o *NvmeNamespaceDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /storage/namespaces/{uuid}][%d] nvmeNamespaceDeleteOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewNvmeNamespaceDeleteDefault(code int) *NvmeNamespaceDeleteDefault {
 	}
 }
 
-/* NvmeNamespaceDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NvmeNamespaceDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 72090006 | The specified namespace was not found. |
 | 72090007 | The specified namespace was not found. |
 | 72090016 | The namespace's aggregate is offline. The aggregate must be online to modify or remove the namespace. |
 | 72090017 | The namespace's volume is offline. The volume must be online to modify or remove the namespace. |
-
 */
 type NvmeNamespaceDeleteDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *NvmeNamespaceDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme namespace delete default response has a 2xx status code
+func (o *NvmeNamespaceDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme namespace delete default response has a 3xx status code
+func (o *NvmeNamespaceDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme namespace delete default response has a 4xx status code
+func (o *NvmeNamespaceDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme namespace delete default response has a 5xx status code
+func (o *NvmeNamespaceDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme namespace delete default response a status code equal to that given
+func (o *NvmeNamespaceDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeNamespaceDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/namespaces/{uuid}][%d] nvme_namespace_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeNamespaceDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/namespaces/{uuid}][%d] nvme_namespace_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeNamespaceDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewNetgroupsSettingsCollectionGetParamsWithHTTPClient(client *http.Client) 
 	}
 }
 
-/* NetgroupsSettingsCollectionGetParams contains all the parameters to send to the API endpoint
-   for the netgroups settings collection get operation.
+/*
+NetgroupsSettingsCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the netgroups settings collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type NetgroupsSettingsCollectionGetParams struct {
 

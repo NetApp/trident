@@ -53,10 +53,12 @@ func NewKerberosInterfaceCollectionGetParamsWithHTTPClient(client *http.Client) 
 	}
 }
 
-/* KerberosInterfaceCollectionGetParams contains all the parameters to send to the API endpoint
-   for the kerberos interface collection get operation.
+/*
+KerberosInterfaceCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the kerberos interface collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type KerberosInterfaceCollectionGetParams struct {
 

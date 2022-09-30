@@ -46,7 +46,8 @@ func NewClusterLdapGetOK() *ClusterLdapGetOK {
 	return &ClusterLdapGetOK{}
 }
 
-/* ClusterLdapGetOK describes a response with status code 200, with default header values.
+/*
+ClusterLdapGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ClusterLdapGetOK struct {
 	Payload *models.ClusterLdap
 }
 
+// IsSuccess returns true when this cluster ldap get o k response has a 2xx status code
+func (o *ClusterLdapGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ldap get o k response has a 3xx status code
+func (o *ClusterLdapGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ldap get o k response has a 4xx status code
+func (o *ClusterLdapGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ldap get o k response has a 5xx status code
+func (o *ClusterLdapGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ldap get o k response a status code equal to that given
+func (o *ClusterLdapGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterLdapGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] clusterLdapGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ClusterLdapGetOK) String() string {
+	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] clusterLdapGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ClusterLdapGetOK) GetPayload() *models.ClusterLdap {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewClusterLdapGetDefault(code int) *ClusterLdapGetDefault {
 	}
 }
 
-/* ClusterLdapGetDefault describes a response with status code -1, with default header values.
+/*
+ClusterLdapGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ClusterLdapGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ldap get default response has a 2xx status code
+func (o *ClusterLdapGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ldap get default response has a 3xx status code
+func (o *ClusterLdapGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ldap get default response has a 4xx status code
+func (o *ClusterLdapGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ldap get default response has a 5xx status code
+func (o *ClusterLdapGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ldap get default response a status code equal to that given
+func (o *ClusterLdapGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterLdapGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] cluster_ldap_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterLdapGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/authentication/cluster/ldap][%d] cluster_ldap_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterLdapGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

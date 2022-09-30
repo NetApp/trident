@@ -46,7 +46,8 @@ func NewQuotaRuleCreateAccepted() *QuotaRuleCreateAccepted {
 	return &QuotaRuleCreateAccepted{}
 }
 
-/* QuotaRuleCreateAccepted describes a response with status code 202, with default header values.
+/*
+QuotaRuleCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type QuotaRuleCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this quota rule create accepted response has a 2xx status code
+func (o *QuotaRuleCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this quota rule create accepted response has a 3xx status code
+func (o *QuotaRuleCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this quota rule create accepted response has a 4xx status code
+func (o *QuotaRuleCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this quota rule create accepted response has a 5xx status code
+func (o *QuotaRuleCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this quota rule create accepted response a status code equal to that given
+func (o *QuotaRuleCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *QuotaRuleCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/quota/rules][%d] quotaRuleCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *QuotaRuleCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/quota/rules][%d] quotaRuleCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *QuotaRuleCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewQuotaRuleCreateDefault(code int) *QuotaRuleCreateDefault {
 	}
 }
 
-/* QuotaRuleCreateDefault describes a response with status code -1, with default header values.
+/*
+	QuotaRuleCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 917927 | The specified volume was not found. |
@@ -105,7 +138,6 @@ func NewQuotaRuleCreateDefault(code int) *QuotaRuleCreateDefault {
 | 5308573 | Input value is greater than limit for field. |
 | 5308574 | Input value is out of range for field. |
 | 5308575 | Input value is incorrectly larger than listed field. |
-
 */
 type QuotaRuleCreateDefault struct {
 	_statusCode int
@@ -118,9 +150,39 @@ func (o *QuotaRuleCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this quota rule create default response has a 2xx status code
+func (o *QuotaRuleCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this quota rule create default response has a 3xx status code
+func (o *QuotaRuleCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this quota rule create default response has a 4xx status code
+func (o *QuotaRuleCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this quota rule create default response has a 5xx status code
+func (o *QuotaRuleCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this quota rule create default response a status code equal to that given
+func (o *QuotaRuleCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QuotaRuleCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/quota/rules][%d] quota_rule_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QuotaRuleCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/quota/rules][%d] quota_rule_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QuotaRuleCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

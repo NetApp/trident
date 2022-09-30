@@ -46,7 +46,8 @@ func NewSoftwarePackagesCollectionGetOK() *SoftwarePackagesCollectionGetOK {
 	return &SoftwarePackagesCollectionGetOK{}
 }
 
-/* SoftwarePackagesCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SoftwarePackagesCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SoftwarePackagesCollectionGetOK struct {
 	Payload *models.SoftwarePackageResponse
 }
 
+// IsSuccess returns true when this software packages collection get o k response has a 2xx status code
+func (o *SoftwarePackagesCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this software packages collection get o k response has a 3xx status code
+func (o *SoftwarePackagesCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this software packages collection get o k response has a 4xx status code
+func (o *SoftwarePackagesCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this software packages collection get o k response has a 5xx status code
+func (o *SoftwarePackagesCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this software packages collection get o k response a status code equal to that given
+func (o *SoftwarePackagesCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SoftwarePackagesCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/software/packages][%d] softwarePackagesCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SoftwarePackagesCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/software/packages][%d] softwarePackagesCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SoftwarePackagesCollectionGetOK) GetPayload() *models.SoftwarePackageResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSoftwarePackagesCollectionGetDefault(code int) *SoftwarePackagesCollecti
 	}
 }
 
-/* SoftwarePackagesCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+SoftwarePackagesCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SoftwarePackagesCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this software packages collection get default response has a 2xx status code
+func (o *SoftwarePackagesCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this software packages collection get default response has a 3xx status code
+func (o *SoftwarePackagesCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this software packages collection get default response has a 4xx status code
+func (o *SoftwarePackagesCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this software packages collection get default response has a 5xx status code
+func (o *SoftwarePackagesCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this software packages collection get default response a status code equal to that given
+func (o *SoftwarePackagesCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SoftwarePackagesCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/software/packages][%d] software_packages_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SoftwarePackagesCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/software/packages][%d] software_packages_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SoftwarePackagesCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

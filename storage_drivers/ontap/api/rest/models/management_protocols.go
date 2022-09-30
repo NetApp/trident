@@ -14,7 +14,6 @@ import (
 
 // ManagementProtocols Cluster-wide security protocols related information.
 //
-//
 // swagger:model management_protocols
 type ManagementProtocols struct {
 

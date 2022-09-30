@@ -54,10 +54,12 @@ func NewLoginMessagesModifyParamsWithHTTPClient(client *http.Client) *LoginMessa
 	}
 }
 
-/* LoginMessagesModifyParams contains all the parameters to send to the API endpoint
-   for the login messages modify operation.
+/*
+LoginMessagesModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the login messages modify operation.
+
+	Typically these are written to a http.Request.
 */
 type LoginMessagesModifyParams struct {
 

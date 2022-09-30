@@ -53,10 +53,12 @@ func NewMultiAdminVerifyRuleGetParamsWithHTTPClient(client *http.Client) *MultiA
 	}
 }
 
-/* MultiAdminVerifyRuleGetParams contains all the parameters to send to the API endpoint
-   for the multi admin verify rule get operation.
+/*
+MultiAdminVerifyRuleGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the multi admin verify rule get operation.
+
+	Typically these are written to a http.Request.
 */
 type MultiAdminVerifyRuleGetParams struct {
 

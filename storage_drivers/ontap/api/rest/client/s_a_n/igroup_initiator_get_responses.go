@@ -46,7 +46,8 @@ func NewIgroupInitiatorGetOK() *IgroupInitiatorGetOK {
 	return &IgroupInitiatorGetOK{}
 }
 
-/* IgroupInitiatorGetOK describes a response with status code 200, with default header values.
+/*
+IgroupInitiatorGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IgroupInitiatorGetOK struct {
 	Payload *models.IgroupInitiator
 }
 
+// IsSuccess returns true when this igroup initiator get o k response has a 2xx status code
+func (o *IgroupInitiatorGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup initiator get o k response has a 3xx status code
+func (o *IgroupInitiatorGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup initiator get o k response has a 4xx status code
+func (o *IgroupInitiatorGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup initiator get o k response has a 5xx status code
+func (o *IgroupInitiatorGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup initiator get o k response a status code equal to that given
+func (o *IgroupInitiatorGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IgroupInitiatorGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IgroupInitiatorGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IgroupInitiatorGetOK) GetPayload() *models.IgroupInitiator {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewIgroupInitiatorGetDefault(code int) *IgroupInitiatorGetDefault {
 	}
 }
 
-/* IgroupInitiatorGetDefault describes a response with status code -1, with default header values.
+/*
+	IgroupInitiatorGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4 | The initiator is not a member of the initiator group. |
 | 5374852 | The initiator group specified in the URI does not exist. |
-
 */
 type IgroupInitiatorGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *IgroupInitiatorGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup initiator get default response has a 2xx status code
+func (o *IgroupInitiatorGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup initiator get default response has a 3xx status code
+func (o *IgroupInitiatorGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup initiator get default response has a 4xx status code
+func (o *IgroupInitiatorGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup initiator get default response has a 5xx status code
+func (o *IgroupInitiatorGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup initiator get default response a status code equal to that given
+func (o *IgroupInitiatorGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupInitiatorGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupInitiatorGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupInitiatorGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

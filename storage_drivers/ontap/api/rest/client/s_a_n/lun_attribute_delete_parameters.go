@@ -52,10 +52,12 @@ func NewLunAttributeDeleteParamsWithHTTPClient(client *http.Client) *LunAttribut
 	}
 }
 
-/* LunAttributeDeleteParams contains all the parameters to send to the API endpoint
-   for the lun attribute delete operation.
+/*
+LunAttributeDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the lun attribute delete operation.
+
+	Typically these are written to a http.Request.
 */
 type LunAttributeDeleteParams struct {
 

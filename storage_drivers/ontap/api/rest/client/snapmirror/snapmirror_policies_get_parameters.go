@@ -53,10 +53,12 @@ func NewSnapmirrorPoliciesGetParamsWithHTTPClient(client *http.Client) *Snapmirr
 	}
 }
 
-/* SnapmirrorPoliciesGetParams contains all the parameters to send to the API endpoint
-   for the snapmirror policies get operation.
+/*
+SnapmirrorPoliciesGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snapmirror policies get operation.
+
+	Typically these are written to a http.Request.
 */
 type SnapmirrorPoliciesGetParams struct {
 

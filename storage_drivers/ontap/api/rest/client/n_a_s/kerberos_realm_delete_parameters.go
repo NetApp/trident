@@ -52,10 +52,12 @@ func NewKerberosRealmDeleteParamsWithHTTPClient(client *http.Client) *KerberosRe
 	}
 }
 
-/* KerberosRealmDeleteParams contains all the parameters to send to the API endpoint
-   for the kerberos realm delete operation.
+/*
+KerberosRealmDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the kerberos realm delete operation.
+
+	Typically these are written to a http.Request.
 */
 type KerberosRealmDeleteParams struct {
 

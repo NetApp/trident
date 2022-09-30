@@ -46,14 +46,44 @@ func NewEmsApplicationLogsCreateCreated() *EmsApplicationLogsCreateCreated {
 	return &EmsApplicationLogsCreateCreated{}
 }
 
-/* EmsApplicationLogsCreateCreated describes a response with status code 201, with default header values.
+/*
+EmsApplicationLogsCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type EmsApplicationLogsCreateCreated struct {
 }
 
+// IsSuccess returns true when this ems application logs create created response has a 2xx status code
+func (o *EmsApplicationLogsCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems application logs create created response has a 3xx status code
+func (o *EmsApplicationLogsCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems application logs create created response has a 4xx status code
+func (o *EmsApplicationLogsCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems application logs create created response has a 5xx status code
+func (o *EmsApplicationLogsCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems application logs create created response a status code equal to that given
+func (o *EmsApplicationLogsCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *EmsApplicationLogsCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /support/ems/application-logs][%d] emsApplicationLogsCreateCreated ", 201)
+}
+
+func (o *EmsApplicationLogsCreateCreated) String() string {
 	return fmt.Sprintf("[POST /support/ems/application-logs][%d] emsApplicationLogsCreateCreated ", 201)
 }
 
@@ -69,14 +99,15 @@ func NewEmsApplicationLogsCreateDefault(code int) *EmsApplicationLogsCreateDefau
 	}
 }
 
-/* EmsApplicationLogsCreateDefault describes a response with status code -1, with default header values.
+/*
+	EmsApplicationLogsCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 983146 | Invalid value specified for the field "severity". |
 | 983173 | Application log event generation failed. |
-
 */
 type EmsApplicationLogsCreateDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *EmsApplicationLogsCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems application logs create default response has a 2xx status code
+func (o *EmsApplicationLogsCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems application logs create default response has a 3xx status code
+func (o *EmsApplicationLogsCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems application logs create default response has a 4xx status code
+func (o *EmsApplicationLogsCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems application logs create default response has a 5xx status code
+func (o *EmsApplicationLogsCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems application logs create default response a status code equal to that given
+func (o *EmsApplicationLogsCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsApplicationLogsCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /support/ems/application-logs][%d] ems_application_logs_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsApplicationLogsCreateDefault) String() string {
+	return fmt.Sprintf("[POST /support/ems/application-logs][%d] ems_application_logs_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsApplicationLogsCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

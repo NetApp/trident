@@ -52,10 +52,12 @@ func NewNetworkIPBgpPeerGroupDeleteParamsWithHTTPClient(client *http.Client) *Ne
 	}
 }
 
-/* NetworkIPBgpPeerGroupDeleteParams contains all the parameters to send to the API endpoint
-   for the network ip bgp peer group delete operation.
+/*
+NetworkIPBgpPeerGroupDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ip bgp peer group delete operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkIPBgpPeerGroupDeleteParams struct {
 

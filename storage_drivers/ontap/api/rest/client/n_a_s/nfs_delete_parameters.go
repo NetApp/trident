@@ -52,10 +52,12 @@ func NewNfsDeleteParamsWithHTTPClient(client *http.Client) *NfsDeleteParams {
 	}
 }
 
-/* NfsDeleteParams contains all the parameters to send to the API endpoint
-   for the nfs delete operation.
+/*
+NfsDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nfs delete operation.
+
+	Typically these are written to a http.Request.
 */
 type NfsDeleteParams struct {
 

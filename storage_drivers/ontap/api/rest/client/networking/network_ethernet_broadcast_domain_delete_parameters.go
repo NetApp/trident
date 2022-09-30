@@ -52,10 +52,12 @@ func NewNetworkEthernetBroadcastDomainDeleteParamsWithHTTPClient(client *http.Cl
 	}
 }
 
-/* NetworkEthernetBroadcastDomainDeleteParams contains all the parameters to send to the API endpoint
-   for the network ethernet broadcast domain delete operation.
+/*
+NetworkEthernetBroadcastDomainDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ethernet broadcast domain delete operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkEthernetBroadcastDomainDeleteParams struct {
 

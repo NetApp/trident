@@ -55,10 +55,12 @@ func NewAccountCreateParamsWithHTTPClient(client *http.Client) *AccountCreatePar
 	}
 }
 
-/* AccountCreateParams contains all the parameters to send to the API endpoint
-   for the account create operation.
+/*
+AccountCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the account create operation.
+
+	Typically these are written to a http.Request.
 */
 type AccountCreateParams struct {
 

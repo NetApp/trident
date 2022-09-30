@@ -55,10 +55,12 @@ func NewLocalCifsUserCreateParamsWithHTTPClient(client *http.Client) *LocalCifsU
 	}
 }
 
-/* LocalCifsUserCreateParams contains all the parameters to send to the API endpoint
-   for the local cifs user create operation.
+/*
+LocalCifsUserCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the local cifs user create operation.
+
+	Typically these are written to a http.Request.
 */
 type LocalCifsUserCreateParams struct {
 

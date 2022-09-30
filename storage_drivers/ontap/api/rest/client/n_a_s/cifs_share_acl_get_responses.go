@@ -46,7 +46,8 @@ func NewCifsShareACLGetOK() *CifsShareACLGetOK {
 	return &CifsShareACLGetOK{}
 }
 
-/* CifsShareACLGetOK describes a response with status code 200, with default header values.
+/*
+CifsShareACLGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsShareACLGetOK struct {
 	Payload *models.CifsShareACL
 }
 
+// IsSuccess returns true when this cifs share Acl get o k response has a 2xx status code
+func (o *CifsShareACLGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs share Acl get o k response has a 3xx status code
+func (o *CifsShareACLGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs share Acl get o k response has a 4xx status code
+func (o *CifsShareACLGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs share Acl get o k response has a 5xx status code
+func (o *CifsShareACLGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs share Acl get o k response a status code equal to that given
+func (o *CifsShareACLGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsShareACLGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifsShareAclGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsShareACLGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifsShareAclGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsShareACLGetOK) GetPayload() *models.CifsShareACL {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsShareACLGetDefault(code int) *CifsShareACLGetDefault {
 	}
 }
 
-/* CifsShareACLGetDefault describes a response with status code -1, with default header values.
+/*
+CifsShareACLGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsShareACLGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs share acl get default response has a 2xx status code
+func (o *CifsShareACLGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs share acl get default response has a 3xx status code
+func (o *CifsShareACLGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs share acl get default response has a 4xx status code
+func (o *CifsShareACLGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs share acl get default response has a 5xx status code
+func (o *CifsShareACLGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs share acl get default response a status code equal to that given
+func (o *CifsShareACLGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsShareACLGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifs_share_acl_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsShareACLGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifs_share_acl_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsShareACLGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

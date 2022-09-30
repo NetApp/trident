@@ -1196,7 +1196,6 @@ func (m *IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0Interfa
 
 // IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0InterfaceFc An FC interface.
 //
-//
 // swagger:model IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0InterfaceFc
 type IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0InterfaceFc struct {
 
@@ -1884,7 +1883,6 @@ func (m *IgroupInitiatorConnectivityTrackingConnectionsItems0NodeLinks) Unmarsha
 
 // IgroupInitiatorIgroup The initiator group in which the initiator is found.<br/>
 // Note that this does not mean that the initiator cannot also be found in other initiator groups.
-//
 //
 // swagger:model IgroupInitiatorIgroup
 type IgroupInitiatorIgroup struct {

@@ -46,7 +46,8 @@ func NewSwitchCreateAccepted() *SwitchCreateAccepted {
 	return &SwitchCreateAccepted{}
 }
 
-/* SwitchCreateAccepted describes a response with status code 202, with default header values.
+/*
+SwitchCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SwitchCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this switch create accepted response has a 2xx status code
+func (o *SwitchCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this switch create accepted response has a 3xx status code
+func (o *SwitchCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this switch create accepted response has a 4xx status code
+func (o *SwitchCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this switch create accepted response has a 5xx status code
+func (o *SwitchCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this switch create accepted response a status code equal to that given
+func (o *SwitchCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SwitchCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switchCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SwitchCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switchCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SwitchCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSwitchCreateDefault(code int) *SwitchCreateDefault {
 	}
 }
 
-/* SwitchCreateDefault describes a response with status code -1, with default header values.
+/*
+	SwitchCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 12517376 | Model number validation failed. Specify correct model number and try the command again. |
@@ -92,7 +125,6 @@ func NewSwitchCreateDefault(code int) *SwitchCreateDefault {
 | 12517383 | Switch type \"{network}\" is not valid for specified switch model \"{model}\". |
 | 12517384 | SHM is already monitoring a switch with IP address \"{address}\". |
 | 12517385 | Model \"{model}\" is unknown. Use \"OTHER\" if the switch model is not one of the following&#58; {models}. |
-
 */
 type SwitchCreateDefault struct {
 	_statusCode int
@@ -105,9 +137,39 @@ func (o *SwitchCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this switch create default response has a 2xx status code
+func (o *SwitchCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this switch create default response has a 3xx status code
+func (o *SwitchCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this switch create default response has a 4xx status code
+func (o *SwitchCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this switch create default response has a 5xx status code
+func (o *SwitchCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this switch create default response a status code equal to that given
+func (o *SwitchCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SwitchCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switch_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SwitchCreateDefault) String() string {
+	return fmt.Sprintf("[POST /network/ethernet/switches][%d] switch_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SwitchCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

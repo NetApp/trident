@@ -46,7 +46,8 @@ func NewCounterTableCollectionGetOK() *CounterTableCollectionGetOK {
 	return &CounterTableCollectionGetOK{}
 }
 
-/* CounterTableCollectionGetOK describes a response with status code 200, with default header values.
+/*
+CounterTableCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CounterTableCollectionGetOK struct {
 	Payload *models.CounterTableResponse
 }
 
+// IsSuccess returns true when this counter table collection get o k response has a 2xx status code
+func (o *CounterTableCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this counter table collection get o k response has a 3xx status code
+func (o *CounterTableCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this counter table collection get o k response has a 4xx status code
+func (o *CounterTableCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this counter table collection get o k response has a 5xx status code
+func (o *CounterTableCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this counter table collection get o k response a status code equal to that given
+func (o *CounterTableCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CounterTableCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counterTableCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CounterTableCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counterTableCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CounterTableCollectionGetOK) GetPayload() *models.CounterTableResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewCounterTableCollectionGetDefault(code int) *CounterTableCollectionGetDef
 	}
 }
 
-/* CounterTableCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	CounterTableCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 8585368 | The system has not completed it's initialization |
-
 */
 type CounterTableCollectionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *CounterTableCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this counter table collection get default response has a 2xx status code
+func (o *CounterTableCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this counter table collection get default response has a 3xx status code
+func (o *CounterTableCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this counter table collection get default response has a 4xx status code
+func (o *CounterTableCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this counter table collection get default response has a 5xx status code
+func (o *CounterTableCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this counter table collection get default response a status code equal to that given
+func (o *CounterTableCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CounterTableCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counter_table_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CounterTableCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/counter/tables][%d] counter_table_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CounterTableCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewApplicationCollectionGetParamsWithHTTPClient(client *http.Client) *Appli
 	}
 }
 
-/* ApplicationCollectionGetParams contains all the parameters to send to the API endpoint
-   for the application collection get operation.
+/*
+ApplicationCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the application collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type ApplicationCollectionGetParams struct {
 

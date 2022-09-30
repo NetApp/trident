@@ -55,10 +55,12 @@ func NewLunCreateParamsWithHTTPClient(client *http.Client) *LunCreateParams {
 	}
 }
 
-/* LunCreateParams contains all the parameters to send to the API endpoint
-   for the lun create operation.
+/*
+LunCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the lun create operation.
+
+	Typically these are written to a http.Request.
 */
 type LunCreateParams struct {
 

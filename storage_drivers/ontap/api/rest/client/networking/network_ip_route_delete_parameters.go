@@ -52,10 +52,12 @@ func NewNetworkIPRouteDeleteParamsWithHTTPClient(client *http.Client) *NetworkIP
 	}
 }
 
-/* NetworkIPRouteDeleteParams contains all the parameters to send to the API endpoint
-   for the network ip route delete operation.
+/*
+NetworkIPRouteDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ip route delete operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkIPRouteDeleteParams struct {
 

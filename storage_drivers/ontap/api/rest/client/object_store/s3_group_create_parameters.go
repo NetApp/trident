@@ -55,10 +55,12 @@ func NewS3GroupCreateParamsWithHTTPClient(client *http.Client) *S3GroupCreatePar
 	}
 }
 
-/* S3GroupCreateParams contains all the parameters to send to the API endpoint
-   for the s3 group create operation.
+/*
+S3GroupCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 group create operation.
+
+	Typically these are written to a http.Request.
 */
 type S3GroupCreateParams struct {
 

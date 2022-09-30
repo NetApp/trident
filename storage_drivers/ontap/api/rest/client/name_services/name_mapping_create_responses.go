@@ -46,7 +46,8 @@ func NewNameMappingCreateCreated() *NameMappingCreateCreated {
 	return &NameMappingCreateCreated{}
 }
 
-/* NameMappingCreateCreated describes a response with status code 201, with default header values.
+/*
+NameMappingCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type NameMappingCreateCreated struct {
 	Payload *models.NameMappingResponse
 }
 
+// IsSuccess returns true when this name mapping create created response has a 2xx status code
+func (o *NameMappingCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this name mapping create created response has a 3xx status code
+func (o *NameMappingCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this name mapping create created response has a 4xx status code
+func (o *NameMappingCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this name mapping create created response has a 5xx status code
+func (o *NameMappingCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this name mapping create created response a status code equal to that given
+func (o *NameMappingCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *NameMappingCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /name-services/name-mappings][%d] nameMappingCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *NameMappingCreateCreated) String() string {
+	return fmt.Sprintf("[POST /name-services/name-mappings][%d] nameMappingCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *NameMappingCreateCreated) GetPayload() *models.NameMappingResponse {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewNameMappingCreateDefault(code int) *NameMappingCreateDefault {
 	}
 }
 
-/* NameMappingCreateDefault describes a response with status code -1, with default header values.
+/*
+	NameMappingCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65798185   | Failed to resolve the specified hostname   |
 | 65798149   | Invalid index for the name mapping entry   |
 | 2621706    | The specified svm.uuid and svm.name refer to different SVMs   |
-
 */
 type NameMappingCreateDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *NameMappingCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this name mapping create default response has a 2xx status code
+func (o *NameMappingCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this name mapping create default response has a 3xx status code
+func (o *NameMappingCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this name mapping create default response has a 4xx status code
+func (o *NameMappingCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this name mapping create default response has a 5xx status code
+func (o *NameMappingCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this name mapping create default response a status code equal to that given
+func (o *NameMappingCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NameMappingCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /name-services/name-mappings][%d] name_mapping_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NameMappingCreateDefault) String() string {
+	return fmt.Sprintf("[POST /name-services/name-mappings][%d] name_mapping_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NameMappingCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

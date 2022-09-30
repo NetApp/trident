@@ -53,10 +53,12 @@ func NewFileInfoCollectionGetParamsWithHTTPClient(client *http.Client) *FileInfo
 	}
 }
 
-/* FileInfoCollectionGetParams contains all the parameters to send to the API endpoint
-   for the file info collection get operation.
+/*
+FileInfoCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file info collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type FileInfoCollectionGetParams struct {
 

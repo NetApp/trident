@@ -46,14 +46,44 @@ func NewRoleDeleteOK() *RoleDeleteOK {
 	return &RoleDeleteOK{}
 }
 
-/* RoleDeleteOK describes a response with status code 200, with default header values.
+/*
+RoleDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type RoleDeleteOK struct {
 }
 
+// IsSuccess returns true when this role delete o k response has a 2xx status code
+func (o *RoleDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this role delete o k response has a 3xx status code
+func (o *RoleDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this role delete o k response has a 4xx status code
+func (o *RoleDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this role delete o k response has a 5xx status code
+func (o *RoleDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this role delete o k response a status code equal to that given
+func (o *RoleDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *RoleDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] roleDeleteOK ", 200)
+}
+
+func (o *RoleDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] roleDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewRoleDeleteDefault(code int) *RoleDeleteDefault {
 	}
 }
 
-/* RoleDeleteDefault describes a response with status code -1, with default header values.
+/*
+	RoleDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5636169 | Specified URI path is invalid or not supported. Resource-qualified endpoints are not supported. |
@@ -83,7 +115,6 @@ func NewRoleDeleteDefault(code int) *RoleDeleteDefault {
 | 5636186 | Expanded REST roles for granular resource control requires an effective cluster version of 9.10.1 or later. |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434893 | The SVM does not exist. |
-
 */
 type RoleDeleteDefault struct {
 	_statusCode int
@@ -96,9 +127,39 @@ func (o *RoleDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this role delete default response has a 2xx status code
+func (o *RoleDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this role delete default response has a 3xx status code
+func (o *RoleDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this role delete default response has a 4xx status code
+func (o *RoleDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this role delete default response has a 5xx status code
+func (o *RoleDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this role delete default response a status code equal to that given
+func (o *RoleDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *RoleDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] role_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *RoleDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}][%d] role_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *RoleDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

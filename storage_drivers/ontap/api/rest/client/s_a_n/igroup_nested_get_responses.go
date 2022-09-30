@@ -46,7 +46,8 @@ func NewIgroupNestedGetOK() *IgroupNestedGetOK {
 	return &IgroupNestedGetOK{}
 }
 
-/* IgroupNestedGetOK describes a response with status code 200, with default header values.
+/*
+IgroupNestedGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IgroupNestedGetOK struct {
 	Payload *models.IgroupNested
 }
 
+// IsSuccess returns true when this igroup nested get o k response has a 2xx status code
+func (o *IgroupNestedGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup nested get o k response has a 3xx status code
+func (o *IgroupNestedGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup nested get o k response has a 4xx status code
+func (o *IgroupNestedGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup nested get o k response has a 5xx status code
+func (o *IgroupNestedGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup nested get o k response a status code equal to that given
+func (o *IgroupNestedGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IgroupNestedGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroupNestedGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IgroupNestedGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroupNestedGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IgroupNestedGetOK) GetPayload() *models.IgroupNested {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewIgroupNestedGetDefault(code int) *IgroupNestedGetDefault {
 	}
 }
 
-/* IgroupNestedGetDefault describes a response with status code -1, with default header values.
+/*
+	IgroupNestedGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4 | The nested initiator group is not a member of the initiator group. |
 | 5374852 | The parent initiator group specified in the URI does not exist. |
-
 */
 type IgroupNestedGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *IgroupNestedGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup nested get default response has a 2xx status code
+func (o *IgroupNestedGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup nested get default response has a 3xx status code
+func (o *IgroupNestedGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup nested get default response has a 4xx status code
+func (o *IgroupNestedGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup nested get default response has a 5xx status code
+func (o *IgroupNestedGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup nested get default response a status code equal to that given
+func (o *IgroupNestedGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupNestedGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroup_nested_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupNestedGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}][%d] igroup_nested_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupNestedGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

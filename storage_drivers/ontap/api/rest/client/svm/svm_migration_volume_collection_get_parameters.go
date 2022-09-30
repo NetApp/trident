@@ -53,10 +53,12 @@ func NewSvmMigrationVolumeCollectionGetParamsWithHTTPClient(client *http.Client)
 	}
 }
 
-/* SvmMigrationVolumeCollectionGetParams contains all the parameters to send to the API endpoint
-   for the svm migration volume collection get operation.
+/*
+SvmMigrationVolumeCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm migration volume collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmMigrationVolumeCollectionGetParams struct {
 

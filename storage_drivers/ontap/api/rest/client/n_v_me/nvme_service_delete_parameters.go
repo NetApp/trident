@@ -52,10 +52,12 @@ func NewNvmeServiceDeleteParamsWithHTTPClient(client *http.Client) *NvmeServiceD
 	}
 }
 
-/* NvmeServiceDeleteParams contains all the parameters to send to the API endpoint
-   for the nvme service delete operation.
+/*
+NvmeServiceDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme service delete operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeServiceDeleteParams struct {
 

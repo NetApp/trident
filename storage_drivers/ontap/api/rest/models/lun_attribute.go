@@ -17,7 +17,6 @@ import (
 // LunAttribute A name/value pair optionally stored with the LUN. Attributes are available to callers to persist small amounts of application-specific metadata. They are in no way interpreted by ONTAP.<br/>
 // Attribute names and values must be at least one byte and no more than 4091 bytes in length. The sum of the name and value lengths must be no more than 4092 bytes.
 //
-//
 // swagger:model lun_attribute
 type LunAttribute struct {
 
@@ -285,7 +284,6 @@ func (m *LunAttributeLinks) UnmarshalBinary(b []byte) error {
 }
 
 // LunAttributeLun The LUN for which the attribute is set.
-//
 //
 // swagger:model LunAttributeLun
 type LunAttributeLun struct {

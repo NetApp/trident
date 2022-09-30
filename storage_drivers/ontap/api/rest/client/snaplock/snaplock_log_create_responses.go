@@ -46,7 +46,8 @@ func NewSnaplockLogCreateAccepted() *SnaplockLogCreateAccepted {
 	return &SnaplockLogCreateAccepted{}
 }
 
-/* SnaplockLogCreateAccepted describes a response with status code 202, with default header values.
+/*
+SnaplockLogCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SnaplockLogCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this snaplock log create accepted response has a 2xx status code
+func (o *SnaplockLogCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock log create accepted response has a 3xx status code
+func (o *SnaplockLogCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock log create accepted response has a 4xx status code
+func (o *SnaplockLogCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock log create accepted response has a 5xx status code
+func (o *SnaplockLogCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock log create accepted response a status code equal to that given
+func (o *SnaplockLogCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SnaplockLogCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/snaplock/audit-logs][%d] snaplockLogCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SnaplockLogCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/snaplock/audit-logs][%d] snaplockLogCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SnaplockLogCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewSnaplockLogCreateDefault(code int) *SnaplockLogCreateDefault {
 	}
 }
 
-/* SnaplockLogCreateDefault describes a response with status code -1, with default header values.
+/*
+	SnaplockLogCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 14090340    | {field} is a required field  |
 | 14090343    | Invalid Field  |
 | 14090346    | Internal Error. Wait a few minutes, then try the command again  |
-
 */
 type SnaplockLogCreateDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *SnaplockLogCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock log create default response has a 2xx status code
+func (o *SnaplockLogCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock log create default response has a 3xx status code
+func (o *SnaplockLogCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock log create default response has a 4xx status code
+func (o *SnaplockLogCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock log create default response has a 5xx status code
+func (o *SnaplockLogCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock log create default response a status code equal to that given
+func (o *SnaplockLogCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockLogCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/snaplock/audit-logs][%d] snaplock_log_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockLogCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/snaplock/audit-logs][%d] snaplock_log_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockLogCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -16,16 +16,16 @@ import (
 
 // DNSDomains A list of DNS domains.
 // Domain names have the following requirements:
-// * The name must contain only the following characters: A through Z,
-//   a through z, 0 through 9, ".", "-" or "_".
-// * The first character of each label, delimited by ".", must be one
-//   of the following characters: A through Z or a through z or 0
-//   through 9.
-// * The last character of each label, delimited by ".", must be one of
-//   the following characters: A through Z, a through z, or 0 through 9.
-// * The top level domain must contain only the following characters: A
-//   through Z, a through z.
-// * The system reserves the following names:"all", "local", and "localhost".
+//   - The name must contain only the following characters: A through Z,
+//     a through z, 0 through 9, ".", "-" or "_".
+//   - The first character of each label, delimited by ".", must be one
+//     of the following characters: A through Z or a through z or 0
+//     through 9.
+//   - The last character of each label, delimited by ".", must be one of
+//     the following characters: A through Z, a through z, or 0 through 9.
+//   - The top level domain must contain only the following characters: A
+//     through Z, a through z.
+//   - The system reserves the following names:"all", "local", and "localhost".
 //
 // Example: ["example.com","example2.example3.com"]
 //

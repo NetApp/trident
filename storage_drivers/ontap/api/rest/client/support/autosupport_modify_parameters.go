@@ -54,10 +54,12 @@ func NewAutosupportModifyParamsWithHTTPClient(client *http.Client) *AutosupportM
 	}
 }
 
-/* AutosupportModifyParams contains all the parameters to send to the API endpoint
-   for the autosupport modify operation.
+/*
+AutosupportModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the autosupport modify operation.
+
+	Typically these are written to a http.Request.
 */
 type AutosupportModifyParams struct {
 

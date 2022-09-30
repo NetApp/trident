@@ -46,7 +46,8 @@ func NewNvmeSubsystemMapCollectionGetOK() *NvmeSubsystemMapCollectionGetOK {
 	return &NvmeSubsystemMapCollectionGetOK{}
 }
 
-/* NvmeSubsystemMapCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NvmeSubsystemMapCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NvmeSubsystemMapCollectionGetOK struct {
 	Payload *models.NvmeSubsystemMapResponse
 }
 
+// IsSuccess returns true when this nvme subsystem map collection get o k response has a 2xx status code
+func (o *NvmeSubsystemMapCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme subsystem map collection get o k response has a 3xx status code
+func (o *NvmeSubsystemMapCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme subsystem map collection get o k response has a 4xx status code
+func (o *NvmeSubsystemMapCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme subsystem map collection get o k response has a 5xx status code
+func (o *NvmeSubsystemMapCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme subsystem map collection get o k response a status code equal to that given
+func (o *NvmeSubsystemMapCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeSubsystemMapCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NvmeSubsystemMapCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NvmeSubsystemMapCollectionGetOK) GetPayload() *models.NvmeSubsystemMapResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNvmeSubsystemMapCollectionGetDefault(code int) *NvmeSubsystemMapCollecti
 	}
 }
 
-/* NvmeSubsystemMapCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+NvmeSubsystemMapCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NvmeSubsystemMapCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme subsystem map collection get default response has a 2xx status code
+func (o *NvmeSubsystemMapCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme subsystem map collection get default response has a 3xx status code
+func (o *NvmeSubsystemMapCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme subsystem map collection get default response has a 4xx status code
+func (o *NvmeSubsystemMapCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme subsystem map collection get default response has a 5xx status code
+func (o *NvmeSubsystemMapCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme subsystem map collection get default response a status code equal to that given
+func (o *NvmeSubsystemMapCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeSubsystemMapCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeSubsystemMapCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeSubsystemMapCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

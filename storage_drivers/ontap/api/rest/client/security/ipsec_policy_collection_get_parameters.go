@@ -53,10 +53,12 @@ func NewIpsecPolicyCollectionGetParamsWithHTTPClient(client *http.Client) *Ipsec
 	}
 }
 
-/* IpsecPolicyCollectionGetParams contains all the parameters to send to the API endpoint
-   for the ipsec policy collection get operation.
+/*
+IpsecPolicyCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ipsec policy collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type IpsecPolicyCollectionGetParams struct {
 

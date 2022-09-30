@@ -54,10 +54,12 @@ func NewSnapshotPolicyScheduleModifyParamsWithHTTPClient(client *http.Client) *S
 	}
 }
 
-/* SnapshotPolicyScheduleModifyParams contains all the parameters to send to the API endpoint
-   for the snapshot policy schedule modify operation.
+/*
+SnapshotPolicyScheduleModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snapshot policy schedule modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SnapshotPolicyScheduleModifyParams struct {
 

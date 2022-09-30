@@ -53,10 +53,12 @@ func NewShelfGetParamsWithHTTPClient(client *http.Client) *ShelfGetParams {
 	}
 }
 
-/* ShelfGetParams contains all the parameters to send to the API endpoint
-   for the shelf get operation.
+/*
+ShelfGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the shelf get operation.
+
+	Typically these are written to a http.Request.
 */
 type ShelfGetParams struct {
 

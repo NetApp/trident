@@ -46,7 +46,8 @@ func NewMetroclusterDrGroupGetOK() *MetroclusterDrGroupGetOK {
 	return &MetroclusterDrGroupGetOK{}
 }
 
-/* MetroclusterDrGroupGetOK describes a response with status code 200, with default header values.
+/*
+MetroclusterDrGroupGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type MetroclusterDrGroupGetOK struct {
 	Payload *models.MetroclusterDrGroup
 }
 
+// IsSuccess returns true when this metrocluster dr group get o k response has a 2xx status code
+func (o *MetroclusterDrGroupGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster dr group get o k response has a 3xx status code
+func (o *MetroclusterDrGroupGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster dr group get o k response has a 4xx status code
+func (o *MetroclusterDrGroupGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster dr group get o k response has a 5xx status code
+func (o *MetroclusterDrGroupGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster dr group get o k response a status code equal to that given
+func (o *MetroclusterDrGroupGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MetroclusterDrGroupGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metroclusterDrGroupGetOK  %+v", 200, o.Payload)
 }
+
+func (o *MetroclusterDrGroupGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metroclusterDrGroupGetOK  %+v", 200, o.Payload)
+}
+
 func (o *MetroclusterDrGroupGetOK) GetPayload() *models.MetroclusterDrGroup {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewMetroclusterDrGroupGetDefault(code int) *MetroclusterDrGroupGetDefault {
 	}
 }
 
-/* MetroclusterDrGroupGetDefault describes a response with status code -1, with default header values.
+/*
+MetroclusterDrGroupGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *MetroclusterDrGroupGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster dr group get default response has a 2xx status code
+func (o *MetroclusterDrGroupGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster dr group get default response has a 3xx status code
+func (o *MetroclusterDrGroupGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster dr group get default response has a 4xx status code
+func (o *MetroclusterDrGroupGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster dr group get default response has a 5xx status code
+func (o *MetroclusterDrGroupGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster dr group get default response a status code equal to that given
+func (o *MetroclusterDrGroupGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterDrGroupGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metrocluster_dr_group_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MetroclusterDrGroupGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups/{id}][%d] metrocluster_dr_group_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MetroclusterDrGroupGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

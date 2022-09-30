@@ -55,10 +55,12 @@ func NewMultiAdminVerifyRequestCreateParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* MultiAdminVerifyRequestCreateParams contains all the parameters to send to the API endpoint
-   for the multi admin verify request create operation.
+/*
+MultiAdminVerifyRequestCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the multi admin verify request create operation.
+
+	Typically these are written to a http.Request.
 */
 type MultiAdminVerifyRequestCreateParams struct {
 

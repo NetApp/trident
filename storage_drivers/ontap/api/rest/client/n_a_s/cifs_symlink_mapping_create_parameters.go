@@ -55,10 +55,12 @@ func NewCifsSymlinkMappingCreateParamsWithHTTPClient(client *http.Client) *CifsS
 	}
 }
 
-/* CifsSymlinkMappingCreateParams contains all the parameters to send to the API endpoint
-   for the cifs symlink mapping create operation.
+/*
+CifsSymlinkMappingCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs symlink mapping create operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsSymlinkMappingCreateParams struct {
 

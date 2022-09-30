@@ -46,7 +46,8 @@ func NewCifsServiceDeleteAccepted() *CifsServiceDeleteAccepted {
 	return &CifsServiceDeleteAccepted{}
 }
 
-/* CifsServiceDeleteAccepted describes a response with status code 202, with default header values.
+/*
+CifsServiceDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type CifsServiceDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cifs service delete accepted response has a 2xx status code
+func (o *CifsServiceDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs service delete accepted response has a 3xx status code
+func (o *CifsServiceDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs service delete accepted response has a 4xx status code
+func (o *CifsServiceDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs service delete accepted response has a 5xx status code
+func (o *CifsServiceDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs service delete accepted response a status code equal to that given
+func (o *CifsServiceDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *CifsServiceDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/services/{svm.uuid}][%d] cifsServiceDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *CifsServiceDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/services/{svm.uuid}][%d] cifsServiceDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *CifsServiceDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsServiceDeleteDefault(code int) *CifsServiceDeleteDefault {
 	}
 }
 
-/* CifsServiceDeleteDefault describes a response with status code -1, with default header values.
+/*
+CifsServiceDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsServiceDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs service delete default response has a 2xx status code
+func (o *CifsServiceDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs service delete default response has a 3xx status code
+func (o *CifsServiceDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs service delete default response has a 4xx status code
+func (o *CifsServiceDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs service delete default response has a 5xx status code
+func (o *CifsServiceDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs service delete default response a status code equal to that given
+func (o *CifsServiceDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsServiceDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/services/{svm.uuid}][%d] cifs_service_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsServiceDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/services/{svm.uuid}][%d] cifs_service_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsServiceDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

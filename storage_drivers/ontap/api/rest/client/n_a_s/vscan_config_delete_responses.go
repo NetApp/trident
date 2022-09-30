@@ -46,14 +46,44 @@ func NewVscanConfigDeleteOK() *VscanConfigDeleteOK {
 	return &VscanConfigDeleteOK{}
 }
 
-/* VscanConfigDeleteOK describes a response with status code 200, with default header values.
+/*
+VscanConfigDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type VscanConfigDeleteOK struct {
 }
 
+// IsSuccess returns true when this vscan config delete o k response has a 2xx status code
+func (o *VscanConfigDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan config delete o k response has a 3xx status code
+func (o *VscanConfigDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan config delete o k response has a 4xx status code
+func (o *VscanConfigDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan config delete o k response has a 5xx status code
+func (o *VscanConfigDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan config delete o k response a status code equal to that given
+func (o *VscanConfigDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanConfigDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}][%d] vscanConfigDeleteOK ", 200)
+}
+
+func (o *VscanConfigDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}][%d] vscanConfigDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewVscanConfigDeleteDefault(code int) *VscanConfigDeleteDefault {
 	}
 }
 
-/* VscanConfigDeleteDefault describes a response with status code -1, with default header values.
+/*
+	VscanConfigDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 10027259   | A scanner-pool, an On-Access policy, or an On-Demand policy might fail to get deleted due to either a systematic error or some hardware failure. The error code returned details the failure along with the reason for the failure. For example, \"Failed to delete On-Access policy \"sp1\". Reason: \"Failed to delete policy. Reason: policy must be disabled before being deleted.\". Retry the operation.\"
-
 */
 type VscanConfigDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *VscanConfigDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan config delete default response has a 2xx status code
+func (o *VscanConfigDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan config delete default response has a 3xx status code
+func (o *VscanConfigDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan config delete default response has a 4xx status code
+func (o *VscanConfigDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan config delete default response has a 5xx status code
+func (o *VscanConfigDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan config delete default response a status code equal to that given
+func (o *VscanConfigDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanConfigDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}][%d] vscan_config_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanConfigDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}][%d] vscan_config_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanConfigDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

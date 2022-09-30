@@ -46,7 +46,8 @@ func NewSwitchPortCollectionGetOK() *SwitchPortCollectionGetOK {
 	return &SwitchPortCollectionGetOK{}
 }
 
-/* SwitchPortCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SwitchPortCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SwitchPortCollectionGetOK struct {
 	Payload *models.SwitchPortResponse
 }
 
+// IsSuccess returns true when this switch port collection get o k response has a 2xx status code
+func (o *SwitchPortCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this switch port collection get o k response has a 3xx status code
+func (o *SwitchPortCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this switch port collection get o k response has a 4xx status code
+func (o *SwitchPortCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this switch port collection get o k response has a 5xx status code
+func (o *SwitchPortCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this switch port collection get o k response a status code equal to that given
+func (o *SwitchPortCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SwitchPortCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switchPortCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SwitchPortCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switchPortCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SwitchPortCollectionGetOK) GetPayload() *models.SwitchPortResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSwitchPortCollectionGetDefault(code int) *SwitchPortCollectionGetDefault
 	}
 }
 
-/* SwitchPortCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+SwitchPortCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SwitchPortCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this switch port collection get default response has a 2xx status code
+func (o *SwitchPortCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this switch port collection get default response has a 3xx status code
+func (o *SwitchPortCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this switch port collection get default response has a 4xx status code
+func (o *SwitchPortCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this switch port collection get default response has a 5xx status code
+func (o *SwitchPortCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this switch port collection get default response a status code equal to that given
+func (o *SwitchPortCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SwitchPortCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switch_port_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SwitchPortCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ethernet/switch/ports][%d] switch_port_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SwitchPortCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

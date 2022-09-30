@@ -54,10 +54,12 @@ func NewNdmpNodeModifyParamsWithHTTPClient(client *http.Client) *NdmpNodeModifyP
 	}
 }
 
-/* NdmpNodeModifyParams contains all the parameters to send to the API endpoint
-   for the ndmp node modify operation.
+/*
+NdmpNodeModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ndmp node modify operation.
+
+	Typically these are written to a http.Request.
 */
 type NdmpNodeModifyParams struct {
 

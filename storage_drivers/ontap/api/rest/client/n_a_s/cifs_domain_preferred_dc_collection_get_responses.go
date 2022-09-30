@@ -46,7 +46,8 @@ func NewCifsDomainPreferredDcCollectionGetOK() *CifsDomainPreferredDcCollectionG
 	return &CifsDomainPreferredDcCollectionGetOK{}
 }
 
-/* CifsDomainPreferredDcCollectionGetOK describes a response with status code 200, with default header values.
+/*
+CifsDomainPreferredDcCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsDomainPreferredDcCollectionGetOK struct {
 	Payload *models.CifsDomainPreferredDcResponse
 }
 
+// IsSuccess returns true when this cifs domain preferred dc collection get o k response has a 2xx status code
+func (o *CifsDomainPreferredDcCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs domain preferred dc collection get o k response has a 3xx status code
+func (o *CifsDomainPreferredDcCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs domain preferred dc collection get o k response has a 4xx status code
+func (o *CifsDomainPreferredDcCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs domain preferred dc collection get o k response has a 5xx status code
+func (o *CifsDomainPreferredDcCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs domain preferred dc collection get o k response a status code equal to that given
+func (o *CifsDomainPreferredDcCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsDomainPreferredDcCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifsDomainPreferredDcCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsDomainPreferredDcCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifsDomainPreferredDcCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsDomainPreferredDcCollectionGetOK) GetPayload() *models.CifsDomainPreferredDcResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsDomainPreferredDcCollectionGetDefault(code int) *CifsDomainPreferred
 	}
 }
 
-/* CifsDomainPreferredDcCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+CifsDomainPreferredDcCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsDomainPreferredDcCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs domain preferred dc collection get default response has a 2xx status code
+func (o *CifsDomainPreferredDcCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs domain preferred dc collection get default response has a 3xx status code
+func (o *CifsDomainPreferredDcCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs domain preferred dc collection get default response has a 4xx status code
+func (o *CifsDomainPreferredDcCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs domain preferred dc collection get default response has a 5xx status code
+func (o *CifsDomainPreferredDcCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs domain preferred dc collection get default response a status code equal to that given
+func (o *CifsDomainPreferredDcCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsDomainPreferredDcCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifs_domain_preferred_dc_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsDomainPreferredDcCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers][%d] cifs_domain_preferred_dc_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsDomainPreferredDcCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

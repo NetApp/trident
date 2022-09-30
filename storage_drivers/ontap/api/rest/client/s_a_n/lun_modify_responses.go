@@ -46,14 +46,44 @@ func NewLunModifyOK() *LunModifyOK {
 	return &LunModifyOK{}
 }
 
-/* LunModifyOK describes a response with status code 200, with default header values.
+/*
+LunModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LunModifyOK struct {
 }
 
+// IsSuccess returns true when this lun modify o k response has a 2xx status code
+func (o *LunModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun modify o k response has a 3xx status code
+func (o *LunModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun modify o k response has a 4xx status code
+func (o *LunModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun modify o k response has a 5xx status code
+func (o *LunModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun modify o k response a status code equal to that given
+func (o *LunModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LunModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/luns/{uuid}][%d] lunModifyOK ", 200)
+}
+
+func (o *LunModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/luns/{uuid}][%d] lunModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewLunModifyDefault(code int) *LunModifyDefault {
 	}
 }
 
-/* LunModifyDefault describes a response with status code -1, with default header values.
+/*
+	LunModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 917927 | The specified volume was not found. |
@@ -98,7 +130,6 @@ func NewLunModifyDefault(code int) *LunModifyDefault {
 | 5374904 | The destination volume is not online. |
 | 7018919 | A copy or move job exists with the same destination LUN. |
 | 13565952 | The LUN clone request failed. |
-
 */
 type LunModifyDefault struct {
 	_statusCode int
@@ -111,9 +142,39 @@ func (o *LunModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this lun modify default response has a 2xx status code
+func (o *LunModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this lun modify default response has a 3xx status code
+func (o *LunModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this lun modify default response has a 4xx status code
+func (o *LunModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this lun modify default response has a 5xx status code
+func (o *LunModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this lun modify default response a status code equal to that given
+func (o *LunModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LunModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/luns/{uuid}][%d] lun_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LunModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/luns/{uuid}][%d] lun_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LunModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

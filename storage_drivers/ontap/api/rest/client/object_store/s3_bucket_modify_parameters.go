@@ -55,10 +55,12 @@ func NewS3BucketModifyParamsWithHTTPClient(client *http.Client) *S3BucketModifyP
 	}
 }
 
-/* S3BucketModifyParams contains all the parameters to send to the API endpoint
-   for the s3 bucket modify operation.
+/*
+S3BucketModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 bucket modify operation.
+
+	Typically these are written to a http.Request.
 */
 type S3BucketModifyParams struct {
 

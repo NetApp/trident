@@ -52,10 +52,12 @@ func NewNisDeleteParamsWithHTTPClient(client *http.Client) *NisDeleteParams {
 	}
 }
 
-/* NisDeleteParams contains all the parameters to send to the API endpoint
-   for the nis delete operation.
+/*
+NisDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nis delete operation.
+
+	Typically these are written to a http.Request.
 */
 type NisDeleteParams struct {
 

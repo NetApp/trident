@@ -55,10 +55,12 @@ func NewS3GroupModifyParamsWithHTTPClient(client *http.Client) *S3GroupModifyPar
 	}
 }
 
-/* S3GroupModifyParams contains all the parameters to send to the API endpoint
-   for the s3 group modify operation.
+/*
+S3GroupModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 group modify operation.
+
+	Typically these are written to a http.Request.
 */
 type S3GroupModifyParams struct {
 

@@ -52,10 +52,12 @@ func NewClusterPeerDeleteParamsWithHTTPClient(client *http.Client) *ClusterPeerD
 	}
 }
 
-/* ClusterPeerDeleteParams contains all the parameters to send to the API endpoint
-   for the cluster peer delete operation.
+/*
+ClusterPeerDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster peer delete operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterPeerDeleteParams struct {
 

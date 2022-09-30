@@ -53,10 +53,12 @@ func NewNfsClientsMapGetParamsWithHTTPClient(client *http.Client) *NfsClientsMap
 	}
 }
 
-/* NfsClientsMapGetParams contains all the parameters to send to the API endpoint
-   for the nfs clients map get operation.
+/*
+NfsClientsMapGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nfs clients map get operation.
+
+	Typically these are written to a http.Request.
 */
 type NfsClientsMapGetParams struct {
 

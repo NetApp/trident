@@ -55,10 +55,12 @@ func NewClusterNtpKeysCreateParamsWithHTTPClient(client *http.Client) *ClusterNt
 	}
 }
 
-/* ClusterNtpKeysCreateParams contains all the parameters to send to the API endpoint
-   for the cluster ntp keys create operation.
+/*
+ClusterNtpKeysCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster ntp keys create operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterNtpKeysCreateParams struct {
 

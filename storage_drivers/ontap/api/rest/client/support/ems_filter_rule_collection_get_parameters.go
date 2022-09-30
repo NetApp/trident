@@ -53,10 +53,12 @@ func NewEmsFilterRuleCollectionGetParamsWithHTTPClient(client *http.Client) *Ems
 	}
 }
 
-/* EmsFilterRuleCollectionGetParams contains all the parameters to send to the API endpoint
-   for the ems filter rule collection get operation.
+/*
+EmsFilterRuleCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ems filter rule collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type EmsFilterRuleCollectionGetParams struct {
 

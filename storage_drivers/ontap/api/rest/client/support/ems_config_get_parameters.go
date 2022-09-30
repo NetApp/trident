@@ -53,10 +53,12 @@ func NewEmsConfigGetParamsWithHTTPClient(client *http.Client) *EmsConfigGetParam
 	}
 }
 
-/* EmsConfigGetParams contains all the parameters to send to the API endpoint
-   for the ems config get operation.
+/*
+EmsConfigGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ems config get operation.
+
+	Typically these are written to a http.Request.
 */
 type EmsConfigGetParams struct {
 

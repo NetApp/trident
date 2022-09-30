@@ -53,10 +53,12 @@ func NewConsistencyGroupSnapshotCollectionGetParamsWithHTTPClient(client *http.C
 	}
 }
 
-/* ConsistencyGroupSnapshotCollectionGetParams contains all the parameters to send to the API endpoint
-   for the consistency group snapshot collection get operation.
+/*
+ConsistencyGroupSnapshotCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the consistency group snapshot collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type ConsistencyGroupSnapshotCollectionGetParams struct {
 

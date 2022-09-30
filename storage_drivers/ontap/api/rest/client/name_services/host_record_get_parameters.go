@@ -53,10 +53,12 @@ func NewHostRecordGetParamsWithHTTPClient(client *http.Client) *HostRecordGetPar
 	}
 }
 
-/* HostRecordGetParams contains all the parameters to send to the API endpoint
-   for the host record get operation.
+/*
+HostRecordGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the host record get operation.
+
+	Typically these are written to a http.Request.
 */
 type HostRecordGetParams struct {
 

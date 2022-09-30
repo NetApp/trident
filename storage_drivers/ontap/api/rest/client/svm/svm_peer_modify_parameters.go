@@ -55,10 +55,12 @@ func NewSvmPeerModifyParamsWithHTTPClient(client *http.Client) *SvmPeerModifyPar
 	}
 }
 
-/* SvmPeerModifyParams contains all the parameters to send to the API endpoint
-   for the svm peer modify operation.
+/*
+SvmPeerModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm peer modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmPeerModifyParams struct {
 

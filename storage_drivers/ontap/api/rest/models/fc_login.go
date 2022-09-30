@@ -18,7 +18,6 @@ import (
 
 // FcLogin A Fibre Channel (FC) login represents a connection formed by an FC initiator that has successfully logged in to ONTAP. This represents the FC login on which higher-level protocols such as Fibre Channel Protocol and NVMe over Fibre Channel (NVMe/FC) rely.
 //
-//
 // swagger:model fc_login
 type FcLogin struct {
 
@@ -573,7 +572,6 @@ func (m *FcLoginIgroupsItems0Links) UnmarshalBinary(b []byte) error {
 
 // FcLoginInitiator Information about the logged in FC initiator.
 //
-//
 // swagger:model FcLoginInitiator
 type FcLoginInitiator struct {
 
@@ -717,7 +715,6 @@ func (m *FcLoginInitiator) UnmarshalBinary(b []byte) error {
 }
 
 // FcLoginInterface An FC interface.
-//
 //
 // swagger:model FcLoginInterface
 type FcLoginInterface struct {

@@ -46,14 +46,44 @@ func NewSnaplockRetentionPolicyDeleteOK() *SnaplockRetentionPolicyDeleteOK {
 	return &SnaplockRetentionPolicyDeleteOK{}
 }
 
-/* SnaplockRetentionPolicyDeleteOK describes a response with status code 200, with default header values.
+/*
+SnaplockRetentionPolicyDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnaplockRetentionPolicyDeleteOK struct {
 }
 
+// IsSuccess returns true when this snaplock retention policy delete o k response has a 2xx status code
+func (o *SnaplockRetentionPolicyDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock retention policy delete o k response has a 3xx status code
+func (o *SnaplockRetentionPolicyDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock retention policy delete o k response has a 4xx status code
+func (o *SnaplockRetentionPolicyDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock retention policy delete o k response has a 5xx status code
+func (o *SnaplockRetentionPolicyDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock retention policy delete o k response a status code equal to that given
+func (o *SnaplockRetentionPolicyDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnaplockRetentionPolicyDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplockRetentionPolicyDeleteOK ", 200)
+}
+
+func (o *SnaplockRetentionPolicyDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplockRetentionPolicyDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewSnaplockRetentionPolicyDeleteDefault(code int) *SnaplockRetentionPolicyD
 	}
 }
 
-/* SnaplockRetentionPolicyDeleteDefault describes a response with status code -1, with default header values.
+/*
+SnaplockRetentionPolicyDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *SnaplockRetentionPolicyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock retention policy delete default response has a 2xx status code
+func (o *SnaplockRetentionPolicyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock retention policy delete default response has a 3xx status code
+func (o *SnaplockRetentionPolicyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock retention policy delete default response has a 4xx status code
+func (o *SnaplockRetentionPolicyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock retention policy delete default response has a 5xx status code
+func (o *SnaplockRetentionPolicyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock retention policy delete default response a status code equal to that given
+func (o *SnaplockRetentionPolicyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockRetentionPolicyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplock_retention_policy_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockRetentionPolicyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplock_retention_policy_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockRetentionPolicyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

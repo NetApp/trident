@@ -46,7 +46,8 @@ func NewVscanOnDemandCreateCreated() *VscanOnDemandCreateCreated {
 	return &VscanOnDemandCreateCreated{}
 }
 
-/* VscanOnDemandCreateCreated describes a response with status code 201, with default header values.
+/*
+VscanOnDemandCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type VscanOnDemandCreateCreated struct {
 	Payload *models.VscanOnDemandResponse
 }
 
+// IsSuccess returns true when this vscan on demand create created response has a 2xx status code
+func (o *VscanOnDemandCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan on demand create created response has a 3xx status code
+func (o *VscanOnDemandCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan on demand create created response has a 4xx status code
+func (o *VscanOnDemandCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan on demand create created response has a 5xx status code
+func (o *VscanOnDemandCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan on demand create created response a status code equal to that given
+func (o *VscanOnDemandCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *VscanOnDemandCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *VscanOnDemandCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscanOnDemandCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *VscanOnDemandCreateCreated) GetPayload() *models.VscanOnDemandResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewVscanOnDemandCreateDefault(code int) *VscanOnDemandCreateDefault {
 	}
 }
 
-/* VscanOnDemandCreateDefault describes a response with status code -1, with default header values.
+/*
+	VscanOnDemandCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 10027101   | The file size must be in the range 1KB to 1TB |
@@ -99,7 +132,6 @@ func NewVscanOnDemandCreateDefault(code int) *VscanOnDemandCreateDefault {
 | 10027253   | The number of paths specified exceeds the configured maximum number of paths. You cannot specify more than the maximum number of configured paths. |
 | 10027254   | The number of extensions specified exceeds the configured maximum number of extensions. You cannot specify more than the maximum number of configured extensions. |
 | 10027255   | Another policy is already scheduled. Only one policy per SVM is allowed to be scheduled at any one time. Create a policy without specifying a schedule. |
-
 */
 type VscanOnDemandCreateDefault struct {
 	_statusCode int
@@ -112,9 +144,39 @@ func (o *VscanOnDemandCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan on demand create default response has a 2xx status code
+func (o *VscanOnDemandCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan on demand create default response has a 3xx status code
+func (o *VscanOnDemandCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan on demand create default response has a 4xx status code
+func (o *VscanOnDemandCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan on demand create default response has a 5xx status code
+func (o *VscanOnDemandCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan on demand create default response a status code equal to that given
+func (o *VscanOnDemandCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanOnDemandCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanOnDemandCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/on-demand-policies][%d] vscan_on_demand_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanOnDemandCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

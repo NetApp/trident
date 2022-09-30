@@ -53,10 +53,12 @@ func NewEmsDestinationCollectionGetParamsWithHTTPClient(client *http.Client) *Em
 	}
 }
 
-/* EmsDestinationCollectionGetParams contains all the parameters to send to the API endpoint
-   for the ems destination collection get operation.
+/*
+EmsDestinationCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ems destination collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type EmsDestinationCollectionGetParams struct {
 

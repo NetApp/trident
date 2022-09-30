@@ -46,14 +46,44 @@ func NewScheduleModifyOK() *ScheduleModifyOK {
 	return &ScheduleModifyOK{}
 }
 
-/* ScheduleModifyOK describes a response with status code 200, with default header values.
+/*
+ScheduleModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ScheduleModifyOK struct {
 }
 
+// IsSuccess returns true when this schedule modify o k response has a 2xx status code
+func (o *ScheduleModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this schedule modify o k response has a 3xx status code
+func (o *ScheduleModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this schedule modify o k response has a 4xx status code
+func (o *ScheduleModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this schedule modify o k response has a 5xx status code
+func (o *ScheduleModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this schedule modify o k response a status code equal to that given
+func (o *ScheduleModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ScheduleModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] scheduleModifyOK ", 200)
+}
+
+func (o *ScheduleModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] scheduleModifyOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewScheduleModifyDefault(code int) *ScheduleModifyDefault {
 	}
 }
 
-/* ScheduleModifyDefault describes a response with status code -1, with default header values.
+/*
+	ScheduleModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 458788 | The schedule specified is not a valid schedule. |
 | 459760 | The schedule specified is not a valid schedule. |
 | 459761 | Schedule cannot be modified on this cluster because it is replicated from the remote cluster. |
 | 460783 | As this is a MetroCluster configuration and the local cluster is waiting for switchback, changes to non-system schedules are not allowed. |
-
 */
 type ScheduleModifyDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *ScheduleModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this schedule modify default response has a 2xx status code
+func (o *ScheduleModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this schedule modify default response has a 3xx status code
+func (o *ScheduleModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this schedule modify default response has a 4xx status code
+func (o *ScheduleModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this schedule modify default response has a 5xx status code
+func (o *ScheduleModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this schedule modify default response a status code equal to that given
+func (o *ScheduleModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ScheduleModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] schedule_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ScheduleModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /cluster/schedules/{uuid}][%d] schedule_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ScheduleModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

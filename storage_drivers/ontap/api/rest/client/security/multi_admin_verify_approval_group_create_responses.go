@@ -46,7 +46,8 @@ func NewMultiAdminVerifyApprovalGroupCreateCreated() *MultiAdminVerifyApprovalGr
 	return &MultiAdminVerifyApprovalGroupCreateCreated{}
 }
 
-/* MultiAdminVerifyApprovalGroupCreateCreated describes a response with status code 201, with default header values.
+/*
+MultiAdminVerifyApprovalGroupCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type MultiAdminVerifyApprovalGroupCreateCreated struct {
 	Payload *models.MultiAdminVerifyApprovalGroupResponse
 }
 
+// IsSuccess returns true when this multi admin verify approval group create created response has a 2xx status code
+func (o *MultiAdminVerifyApprovalGroupCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this multi admin verify approval group create created response has a 3xx status code
+func (o *MultiAdminVerifyApprovalGroupCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this multi admin verify approval group create created response has a 4xx status code
+func (o *MultiAdminVerifyApprovalGroupCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this multi admin verify approval group create created response has a 5xx status code
+func (o *MultiAdminVerifyApprovalGroupCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this multi admin verify approval group create created response a status code equal to that given
+func (o *MultiAdminVerifyApprovalGroupCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *MultiAdminVerifyApprovalGroupCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multiAdminVerifyApprovalGroupCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *MultiAdminVerifyApprovalGroupCreateCreated) String() string {
+	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multiAdminVerifyApprovalGroupCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *MultiAdminVerifyApprovalGroupCreateCreated) GetPayload() *models.MultiAdminVerifyApprovalGroupResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewMultiAdminVerifyApprovalGroupCreateDefault(code int) *MultiAdminVerifyAp
 	}
 }
 
-/* MultiAdminVerifyApprovalGroupCreateDefault describes a response with status code -1, with default header values.
+/*
+	MultiAdminVerifyApprovalGroupCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262309 | The feature must be enabled first. |
-
 */
 type MultiAdminVerifyApprovalGroupCreateDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *MultiAdminVerifyApprovalGroupCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this multi admin verify approval group create default response has a 2xx status code
+func (o *MultiAdminVerifyApprovalGroupCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this multi admin verify approval group create default response has a 3xx status code
+func (o *MultiAdminVerifyApprovalGroupCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this multi admin verify approval group create default response has a 4xx status code
+func (o *MultiAdminVerifyApprovalGroupCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this multi admin verify approval group create default response has a 5xx status code
+func (o *MultiAdminVerifyApprovalGroupCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this multi admin verify approval group create default response a status code equal to that given
+func (o *MultiAdminVerifyApprovalGroupCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MultiAdminVerifyApprovalGroupCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multi_admin_verify_approval_group_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MultiAdminVerifyApprovalGroupCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/multi-admin-verify/approval-groups][%d] multi_admin_verify_approval_group_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MultiAdminVerifyApprovalGroupCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

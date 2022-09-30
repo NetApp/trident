@@ -53,10 +53,12 @@ func NewNvmeCollectionPerformanceMetricsGetParamsWithHTTPClient(client *http.Cli
 	}
 }
 
-/* NvmeCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
-   for the nvme collection performance metrics get operation.
+/*
+NvmeCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme collection performance metrics get operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeCollectionPerformanceMetricsGetParams struct {
 

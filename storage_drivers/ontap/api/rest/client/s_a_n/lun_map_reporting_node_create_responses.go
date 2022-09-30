@@ -46,7 +46,8 @@ func NewLunMapReportingNodeCreateCreated() *LunMapReportingNodeCreateCreated {
 	return &LunMapReportingNodeCreateCreated{}
 }
 
-/* LunMapReportingNodeCreateCreated describes a response with status code 201, with default header values.
+/*
+LunMapReportingNodeCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type LunMapReportingNodeCreateCreated struct {
 	Payload *models.LunMapReportingNodeResponse
 }
 
+// IsSuccess returns true when this lun map reporting node create created response has a 2xx status code
+func (o *LunMapReportingNodeCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun map reporting node create created response has a 3xx status code
+func (o *LunMapReportingNodeCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun map reporting node create created response has a 4xx status code
+func (o *LunMapReportingNodeCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun map reporting node create created response has a 5xx status code
+func (o *LunMapReportingNodeCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun map reporting node create created response a status code equal to that given
+func (o *LunMapReportingNodeCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *LunMapReportingNodeCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lunMapReportingNodeCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *LunMapReportingNodeCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lunMapReportingNodeCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *LunMapReportingNodeCreateCreated) GetPayload() *models.LunMapReportingNodeResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewLunMapReportingNodeCreateDefault(code int) *LunMapReportingNodeCreateDef
 	}
 }
 
-/* LunMapReportingNodeCreateDefault describes a response with status code -1, with default header values.
+/*
+	LunMapReportingNodeCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374875 | The specified LUN does not exist or is not accessible to the caller. |
@@ -91,7 +124,6 @@ func NewLunMapReportingNodeCreateDefault(code int) *LunMapReportingNodeCreateDef
 | 5374921 | The specified cluster node name and UUID do not refer to the same cluster node. |
 | 5374922 | The specified LUN map does not exist. |
 | 5374923 | A cluster node `uuid` or `name` must be specified to add a reporting node. |
-
 */
 type LunMapReportingNodeCreateDefault struct {
 	_statusCode int
@@ -104,9 +136,39 @@ func (o *LunMapReportingNodeCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this lun map reporting node create default response has a 2xx status code
+func (o *LunMapReportingNodeCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this lun map reporting node create default response has a 3xx status code
+func (o *LunMapReportingNodeCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this lun map reporting node create default response has a 4xx status code
+func (o *LunMapReportingNodeCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this lun map reporting node create default response has a 5xx status code
+func (o *LunMapReportingNodeCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this lun map reporting node create default response a status code equal to that given
+func (o *LunMapReportingNodeCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LunMapReportingNodeCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lun_map_reporting_node_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LunMapReportingNodeCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lun_map_reporting_node_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LunMapReportingNodeCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

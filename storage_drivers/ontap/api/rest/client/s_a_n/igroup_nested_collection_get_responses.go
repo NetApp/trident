@@ -46,7 +46,8 @@ func NewIgroupNestedCollectionGetOK() *IgroupNestedCollectionGetOK {
 	return &IgroupNestedCollectionGetOK{}
 }
 
-/* IgroupNestedCollectionGetOK describes a response with status code 200, with default header values.
+/*
+IgroupNestedCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IgroupNestedCollectionGetOK struct {
 	Payload *models.IgroupNestedResponse
 }
 
+// IsSuccess returns true when this igroup nested collection get o k response has a 2xx status code
+func (o *IgroupNestedCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup nested collection get o k response has a 3xx status code
+func (o *IgroupNestedCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup nested collection get o k response has a 4xx status code
+func (o *IgroupNestedCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup nested collection get o k response has a 5xx status code
+func (o *IgroupNestedCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup nested collection get o k response a status code equal to that given
+func (o *IgroupNestedCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IgroupNestedCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IgroupNestedCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IgroupNestedCollectionGetOK) GetPayload() *models.IgroupNestedResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewIgroupNestedCollectionGetDefault(code int) *IgroupNestedCollectionGetDef
 	}
 }
 
-/* IgroupNestedCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	IgroupNestedCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374852 | The initiator group specified in the URI does not exist. |
-
 */
 type IgroupNestedCollectionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *IgroupNestedCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup nested collection get default response has a 2xx status code
+func (o *IgroupNestedCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup nested collection get default response has a 3xx status code
+func (o *IgroupNestedCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup nested collection get default response has a 4xx status code
+func (o *IgroupNestedCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup nested collection get default response has a 5xx status code
+func (o *IgroupNestedCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup nested collection get default response a status code equal to that given
+func (o *IgroupNestedCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupNestedCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupNestedCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupNestedCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

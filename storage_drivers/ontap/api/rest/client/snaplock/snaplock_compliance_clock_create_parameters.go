@@ -55,10 +55,12 @@ func NewSnaplockComplianceClockCreateParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* SnaplockComplianceClockCreateParams contains all the parameters to send to the API endpoint
-   for the snaplock compliance clock create operation.
+/*
+SnaplockComplianceClockCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock compliance clock create operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockComplianceClockCreateParams struct {
 

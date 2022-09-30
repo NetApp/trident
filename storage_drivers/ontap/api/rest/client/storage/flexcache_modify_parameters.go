@@ -55,10 +55,12 @@ func NewFlexcacheModifyParamsWithHTTPClient(client *http.Client) *FlexcacheModif
 	}
 }
 
-/* FlexcacheModifyParams contains all the parameters to send to the API endpoint
-   for the flexcache modify operation.
+/*
+FlexcacheModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the flexcache modify operation.
+
+	Typically these are written to a http.Request.
 */
 type FlexcacheModifyParams struct {
 

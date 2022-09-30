@@ -53,10 +53,12 @@ func NewRolePrivilegeGetParamsWithHTTPClient(client *http.Client) *RolePrivilege
 	}
 }
 
-/* RolePrivilegeGetParams contains all the parameters to send to the API endpoint
-   for the role privilege get operation.
+/*
+RolePrivilegeGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the role privilege get operation.
+
+	Typically these are written to a http.Request.
 */
 type RolePrivilegeGetParams struct {
 

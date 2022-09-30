@@ -54,10 +54,12 @@ func NewNisModifyParamsWithHTTPClient(client *http.Client) *NisModifyParams {
 	}
 }
 
-/* NisModifyParams contains all the parameters to send to the API endpoint
-   for the nis modify operation.
+/*
+NisModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nis modify operation.
+
+	Typically these are written to a http.Request.
 */
 type NisModifyParams struct {
 

@@ -52,10 +52,12 @@ func NewIscsiServiceDeleteParamsWithHTTPClient(client *http.Client) *IscsiServic
 	}
 }
 
-/* IscsiServiceDeleteParams contains all the parameters to send to the API endpoint
-   for the iscsi service delete operation.
+/*
+IscsiServiceDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the iscsi service delete operation.
+
+	Typically these are written to a http.Request.
 */
 type IscsiServiceDeleteParams struct {
 

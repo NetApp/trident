@@ -46,14 +46,44 @@ func NewLicenseDeleteOK() *LicenseDeleteOK {
 	return &LicenseDeleteOK{}
 }
 
-/* LicenseDeleteOK describes a response with status code 200, with default header values.
+/*
+LicenseDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LicenseDeleteOK struct {
 }
 
+// IsSuccess returns true when this license delete o k response has a 2xx status code
+func (o *LicenseDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this license delete o k response has a 3xx status code
+func (o *LicenseDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this license delete o k response has a 4xx status code
+func (o *LicenseDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this license delete o k response has a 5xx status code
+func (o *LicenseDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this license delete o k response a status code equal to that given
+func (o *LicenseDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LicenseDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] licenseDeleteOK ", 200)
+}
+
+func (o *LicenseDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] licenseDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewLicenseDeleteDefault(code int) *LicenseDeleteDefault {
 	}
 }
 
-/* LicenseDeleteDefault describes a response with status code -1, with default header values.
+/*
+	LicenseDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 525028 | Error during volume limit check, cannot remove license |
@@ -83,7 +115,6 @@ func NewLicenseDeleteDefault(code int) *LicenseDeleteDefault {
 | 1115406 | Capacity pool licenses cannot be deleted |
 | 1115564 | Package is part of a NLFv2 license and cannot be removed individually |
 | 66846823 | A FlexCache license that is still in use cannot be deleted |
-
 */
 type LicenseDeleteDefault struct {
 	_statusCode int
@@ -96,9 +127,39 @@ func (o *LicenseDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this license delete default response has a 2xx status code
+func (o *LicenseDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this license delete default response has a 3xx status code
+func (o *LicenseDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this license delete default response has a 4xx status code
+func (o *LicenseDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this license delete default response has a 5xx status code
+func (o *LicenseDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this license delete default response a status code equal to that given
+func (o *LicenseDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LicenseDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] license_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LicenseDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /cluster/licensing/licenses/{name}][%d] license_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LicenseDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

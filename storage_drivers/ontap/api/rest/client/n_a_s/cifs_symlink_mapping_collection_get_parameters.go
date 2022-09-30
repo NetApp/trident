@@ -53,10 +53,12 @@ func NewCifsSymlinkMappingCollectionGetParamsWithHTTPClient(client *http.Client)
 	}
 }
 
-/* CifsSymlinkMappingCollectionGetParams contains all the parameters to send to the API endpoint
-   for the cifs symlink mapping collection get operation.
+/*
+CifsSymlinkMappingCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs symlink mapping collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsSymlinkMappingCollectionGetParams struct {
 

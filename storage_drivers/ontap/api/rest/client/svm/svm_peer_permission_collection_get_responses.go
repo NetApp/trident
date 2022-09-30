@@ -46,7 +46,8 @@ func NewSvmPeerPermissionCollectionGetOK() *SvmPeerPermissionCollectionGetOK {
 	return &SvmPeerPermissionCollectionGetOK{}
 }
 
-/* SvmPeerPermissionCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SvmPeerPermissionCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SvmPeerPermissionCollectionGetOK struct {
 	Payload *models.SvmPeerPermissionResponse
 }
 
+// IsSuccess returns true when this svm peer permission collection get o k response has a 2xx status code
+func (o *SvmPeerPermissionCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm peer permission collection get o k response has a 3xx status code
+func (o *SvmPeerPermissionCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm peer permission collection get o k response has a 4xx status code
+func (o *SvmPeerPermissionCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm peer permission collection get o k response has a 5xx status code
+func (o *SvmPeerPermissionCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm peer permission collection get o k response a status code equal to that given
+func (o *SvmPeerPermissionCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SvmPeerPermissionCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svmPeerPermissionCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SvmPeerPermissionCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svmPeerPermissionCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SvmPeerPermissionCollectionGetOK) GetPayload() *models.SvmPeerPermissionResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSvmPeerPermissionCollectionGetDefault(code int) *SvmPeerPermissionCollec
 	}
 }
 
-/* SvmPeerPermissionCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	SvmPeerPermissionCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 <br/>
 ```
 | Error codes | Description |
@@ -90,7 +123,6 @@ func NewSvmPeerPermissionCollectionGetDefault(code int) *SvmPeerPermissionCollec
 | 26345574    | Failed to find the SVM or volume name with UUID. |
 ```
 <br/>
-
 */
 type SvmPeerPermissionCollectionGetDefault struct {
 	_statusCode int
@@ -103,9 +135,39 @@ func (o *SvmPeerPermissionCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm peer permission collection get default response has a 2xx status code
+func (o *SvmPeerPermissionCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm peer permission collection get default response has a 3xx status code
+func (o *SvmPeerPermissionCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm peer permission collection get default response has a 4xx status code
+func (o *SvmPeerPermissionCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm peer permission collection get default response has a 5xx status code
+func (o *SvmPeerPermissionCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm peer permission collection get default response a status code equal to that given
+func (o *SvmPeerPermissionCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmPeerPermissionCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svm_peer_permission_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmPeerPermissionCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /svm/peer-permissions][%d] svm_peer_permission_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmPeerPermissionCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

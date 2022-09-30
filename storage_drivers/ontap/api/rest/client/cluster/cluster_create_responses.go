@@ -46,7 +46,8 @@ func NewClusterCreateAccepted() *ClusterCreateAccepted {
 	return &ClusterCreateAccepted{}
 }
 
-/* ClusterCreateAccepted describes a response with status code 202, with default header values.
+/*
+ClusterCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type ClusterCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cluster create accepted response has a 2xx status code
+func (o *ClusterCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster create accepted response has a 3xx status code
+func (o *ClusterCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster create accepted response has a 4xx status code
+func (o *ClusterCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster create accepted response has a 5xx status code
+func (o *ClusterCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster create accepted response a status code equal to that given
+func (o *ClusterCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ClusterCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /cluster][%d] clusterCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ClusterCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /cluster][%d] clusterCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ClusterCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewClusterCreateDefault(code int) *ClusterCreateDefault {
 	}
 }
 
-/* ClusterCreateDefault describes a response with status code -1, with default header values.
+/*
+	ClusterCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262245 | The value provided is invalid. |
@@ -103,7 +136,6 @@ func NewClusterCreateDefault(code int) *ClusterCreateDefault {
 | 131727360 | A node could not be added to the cluster. This is a generic code, see response message for details. |
 | 131727388 | Hostnames for NTP servers cannot be used without DNS configured. |
 | 131727389 | URL and username are required for configuration backup. |
-
 */
 type ClusterCreateDefault struct {
 	_statusCode int
@@ -116,9 +148,39 @@ func (o *ClusterCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster create default response has a 2xx status code
+func (o *ClusterCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster create default response has a 3xx status code
+func (o *ClusterCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster create default response has a 4xx status code
+func (o *ClusterCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster create default response has a 5xx status code
+func (o *ClusterCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster create default response a status code equal to that given
+func (o *ClusterCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /cluster][%d] cluster_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterCreateDefault) String() string {
+	return fmt.Sprintf("[POST /cluster][%d] cluster_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

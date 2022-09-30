@@ -46,14 +46,44 @@ func NewFileInfoCreateCreated() *FileInfoCreateCreated {
 	return &FileInfoCreateCreated{}
 }
 
-/* FileInfoCreateCreated describes a response with status code 201, with default header values.
+/*
+FileInfoCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type FileInfoCreateCreated struct {
 }
 
+// IsSuccess returns true when this file info create created response has a 2xx status code
+func (o *FileInfoCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file info create created response has a 3xx status code
+func (o *FileInfoCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file info create created response has a 4xx status code
+func (o *FileInfoCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file info create created response has a 5xx status code
+func (o *FileInfoCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file info create created response a status code equal to that given
+func (o *FileInfoCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *FileInfoCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoCreateCreated ", 201)
+}
+
+func (o *FileInfoCreateCreated) String() string {
 	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewFileInfoCreateDefault(code int) *FileInfoCreateDefault {
 	}
 }
 
-/* FileInfoCreateDefault describes a response with status code -1, with default header values.
+/*
+	FileInfoCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 917505 | The SVM does not exist. |
@@ -88,7 +120,6 @@ func NewFileInfoCreateDefault(code int) *FileInfoCreateDefault {
 | 8257542 | This operation is not supported for the administrative SVM. |
 | 9437549 | This operation is not allowed on SVMs with Infinite Volume. |
 | 13172837 | This operation is not permitted because the SVM is locked for a migrate operation. |
-
 */
 type FileInfoCreateDefault struct {
 	_statusCode int
@@ -101,9 +132,39 @@ func (o *FileInfoCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file info create default response has a 2xx status code
+func (o *FileInfoCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file info create default response has a 3xx status code
+func (o *FileInfoCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file info create default response has a 4xx status code
+func (o *FileInfoCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file info create default response has a 5xx status code
+func (o *FileInfoCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file info create default response a status code equal to that given
+func (o *FileInfoCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileInfoCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileInfoCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileInfoCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

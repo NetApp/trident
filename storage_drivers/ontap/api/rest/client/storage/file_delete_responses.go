@@ -52,14 +52,44 @@ func NewFileDeleteOK() *FileDeleteOK {
 	return &FileDeleteOK{}
 }
 
-/* FileDeleteOK describes a response with status code 200, with default header values.
+/*
+FileDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FileDeleteOK struct {
 }
 
+// IsSuccess returns true when this file delete o k response has a 2xx status code
+func (o *FileDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file delete o k response has a 3xx status code
+func (o *FileDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file delete o k response has a 4xx status code
+func (o *FileDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file delete o k response has a 5xx status code
+func (o *FileDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file delete o k response a status code equal to that given
+func (o *FileDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FileDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteOK ", 200)
+}
+
+func (o *FileDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteOK ", 200)
 }
 
@@ -73,7 +103,8 @@ func NewFileDeleteAccepted() *FileDeleteAccepted {
 	return &FileDeleteAccepted{}
 }
 
-/* FileDeleteAccepted describes a response with status code 202, with default header values.
+/*
+FileDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -81,9 +112,39 @@ type FileDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this file delete accepted response has a 2xx status code
+func (o *FileDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file delete accepted response has a 3xx status code
+func (o *FileDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file delete accepted response has a 4xx status code
+func (o *FileDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file delete accepted response has a 5xx status code
+func (o *FileDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file delete accepted response a status code equal to that given
+func (o *FileDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *FileDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *FileDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] fileDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *FileDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -107,9 +168,11 @@ func NewFileDeleteDefault(code int) *FileDeleteDefault {
 	}
 }
 
-/* FileDeleteDefault describes a response with status code -1, with default header values.
+/*
+	FileDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 131074 | No such file or directory. |
@@ -117,7 +180,6 @@ func NewFileDeleteDefault(code int) *FileDeleteDefault {
 | 131138 | Directory not empty. |
 | 918235 | A volume with UUID {volume.uuid} was not found. |
 | 6488081 | The {field} field is not supported for DELETE operations. |
-
 */
 type FileDeleteDefault struct {
 	_statusCode int
@@ -130,9 +192,39 @@ func (o *FileDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file delete default response has a 2xx status code
+func (o *FileDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file delete default response has a 3xx status code
+func (o *FileDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file delete default response has a 4xx status code
+func (o *FileDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file delete default response has a 5xx status code
+func (o *FileDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file delete default response a status code equal to that given
+func (o *FileDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] file_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/files/{path}][%d] file_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

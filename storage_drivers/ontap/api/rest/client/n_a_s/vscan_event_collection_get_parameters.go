@@ -53,10 +53,12 @@ func NewVscanEventCollectionGetParamsWithHTTPClient(client *http.Client) *VscanE
 	}
 }
 
-/* VscanEventCollectionGetParams contains all the parameters to send to the API endpoint
-   for the vscan event collection get operation.
+/*
+VscanEventCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vscan event collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type VscanEventCollectionGetParams struct {
 

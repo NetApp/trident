@@ -53,10 +53,12 @@ func NewFileInfoCreateParamsWithHTTPClient(client *http.Client) *FileInfoCreateP
 	}
 }
 
-/* FileInfoCreateParams contains all the parameters to send to the API endpoint
-   for the file info create operation.
+/*
+FileInfoCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file info create operation.
+
+	Typically these are written to a http.Request.
 */
 type FileInfoCreateParams struct {
 

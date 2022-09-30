@@ -53,10 +53,12 @@ func NewClusterGetParamsWithHTTPClient(client *http.Client) *ClusterGetParams {
 	}
 }
 
-/* ClusterGetParams contains all the parameters to send to the API endpoint
-   for the cluster get operation.
+/*
+ClusterGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster get operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterGetParams struct {
 

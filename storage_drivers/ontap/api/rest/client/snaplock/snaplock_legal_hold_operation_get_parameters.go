@@ -53,10 +53,12 @@ func NewSnaplockLegalHoldOperationGetParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* SnaplockLegalHoldOperationGetParams contains all the parameters to send to the API endpoint
-   for the snaplock legal hold operation get operation.
+/*
+SnaplockLegalHoldOperationGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock legal hold operation get operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockLegalHoldOperationGetParams struct {
 

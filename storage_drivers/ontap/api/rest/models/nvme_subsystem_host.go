@@ -17,7 +17,6 @@ import (
 
 // NvmeSubsystemHost The NVMe host provisioned to access NVMe namespaces mapped to a subsystem.
 //
-//
 // swagger:model nvme_subsystem_host
 type NvmeSubsystemHost struct {
 
@@ -247,7 +246,6 @@ func (m *NvmeSubsystemHost) UnmarshalBinary(b []byte) error {
 
 // NvmeSubsystemHostIoQueue The properties of the submission queue used to submit I/O commands for execution by the NVMe controller.
 //
-//
 // swagger:model NvmeSubsystemHostIoQueue
 type NvmeSubsystemHostIoQueue struct {
 
@@ -460,7 +458,6 @@ func (m *NvmeSubsystemHostLinks) UnmarshalBinary(b []byte) error {
 
 // NvmeSubsystemHostRecordsItems0 The NVMe host provisioned to access NVMe namespaces mapped to a subsystem.
 //
-//
 // swagger:model NvmeSubsystemHostRecordsItems0
 type NvmeSubsystemHostRecordsItems0 struct {
 
@@ -635,7 +632,6 @@ func (m *NvmeSubsystemHostRecordsItems0) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeSubsystemHostRecordsItems0IoQueue The properties of the submission queue used to submit I/O commands for execution by the NVMe controller.
-//
 //
 // swagger:model NvmeSubsystemHostRecordsItems0IoQueue
 type NvmeSubsystemHostRecordsItems0IoQueue struct {
@@ -849,7 +845,6 @@ func (m *NvmeSubsystemHostRecordsItems0Links) UnmarshalBinary(b []byte) error {
 
 // NvmeSubsystemHostRecordsItems0Subsystem The NVMe subsystem to which the NVMe host has been provisioned.
 //
-//
 // swagger:model NvmeSubsystemHostRecordsItems0Subsystem
 type NvmeSubsystemHostRecordsItems0Subsystem struct {
 
@@ -1040,7 +1035,6 @@ func (m *NvmeSubsystemHostRecordsItems0SubsystemLinks) UnmarshalBinary(b []byte)
 }
 
 // NvmeSubsystemHostSubsystem The NVMe subsystem to which the NVMe host has been provisioned.
-//
 //
 // swagger:model NvmeSubsystemHostSubsystem
 type NvmeSubsystemHostSubsystem struct {

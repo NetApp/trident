@@ -53,10 +53,12 @@ func NewLocalCifsGroupMembersCollectionGetParamsWithHTTPClient(client *http.Clie
 	}
 }
 
-/* LocalCifsGroupMembersCollectionGetParams contains all the parameters to send to the API endpoint
-   for the local cifs group members collection get operation.
+/*
+LocalCifsGroupMembersCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the local cifs group members collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type LocalCifsGroupMembersCollectionGetParams struct {
 

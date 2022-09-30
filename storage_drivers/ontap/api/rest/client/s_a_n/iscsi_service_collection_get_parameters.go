@@ -53,10 +53,12 @@ func NewIscsiServiceCollectionGetParamsWithHTTPClient(client *http.Client) *Iscs
 	}
 }
 
-/* IscsiServiceCollectionGetParams contains all the parameters to send to the API endpoint
-   for the iscsi service collection get operation.
+/*
+IscsiServiceCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the iscsi service collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type IscsiServiceCollectionGetParams struct {
 

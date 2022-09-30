@@ -53,10 +53,12 @@ func NewSplitLoadGetParamsWithHTTPClient(client *http.Client) *SplitLoadGetParam
 	}
 }
 
-/* SplitLoadGetParams contains all the parameters to send to the API endpoint
-   for the split load get operation.
+/*
+SplitLoadGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the split load get operation.
+
+	Typically these are written to a http.Request.
 */
 type SplitLoadGetParams struct {
 

@@ -46,7 +46,8 @@ func NewJobCollectionGetOK() *JobCollectionGetOK {
 	return &JobCollectionGetOK{}
 }
 
-/* JobCollectionGetOK describes a response with status code 200, with default header values.
+/*
+JobCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type JobCollectionGetOK struct {
 	Payload *models.JobResponse
 }
 
+// IsSuccess returns true when this job collection get o k response has a 2xx status code
+func (o *JobCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this job collection get o k response has a 3xx status code
+func (o *JobCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this job collection get o k response has a 4xx status code
+func (o *JobCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this job collection get o k response has a 5xx status code
+func (o *JobCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this job collection get o k response a status code equal to that given
+func (o *JobCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *JobCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/jobs][%d] jobCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *JobCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/jobs][%d] jobCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *JobCollectionGetOK) GetPayload() *models.JobResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewJobCollectionGetDefault(code int) *JobCollectionGetDefault {
 	}
 }
 
-/* JobCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+JobCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *JobCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this job collection get default response has a 2xx status code
+func (o *JobCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this job collection get default response has a 3xx status code
+func (o *JobCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this job collection get default response has a 4xx status code
+func (o *JobCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this job collection get default response has a 5xx status code
+func (o *JobCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this job collection get default response a status code equal to that given
+func (o *JobCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *JobCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/jobs][%d] job_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *JobCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/jobs][%d] job_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *JobCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

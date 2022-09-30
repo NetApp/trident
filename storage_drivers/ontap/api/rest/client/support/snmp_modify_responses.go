@@ -46,14 +46,44 @@ func NewSnmpModifyOK() *SnmpModifyOK {
 	return &SnmpModifyOK{}
 }
 
-/* SnmpModifyOK describes a response with status code 200, with default header values.
+/*
+SnmpModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnmpModifyOK struct {
 }
 
+// IsSuccess returns true when this snmp modify o k response has a 2xx status code
+func (o *SnmpModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snmp modify o k response has a 3xx status code
+func (o *SnmpModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snmp modify o k response has a 4xx status code
+func (o *SnmpModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snmp modify o k response has a 5xx status code
+func (o *SnmpModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snmp modify o k response a status code equal to that given
+func (o *SnmpModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnmpModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /support/snmp][%d] snmpModifyOK ", 200)
+}
+
+func (o *SnmpModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /support/snmp][%d] snmpModifyOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewSnmpModifyDefault(code int) *SnmpModifyDefault {
 	}
 }
 
-/* SnmpModifyDefault describes a response with status code -1, with default header values.
+/*
+	SnmpModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1179738 | Cluster identification not available for modification since a cluster has not been created. |
 | 1179739 | Cluster identification modification is not available in maintenance mode or other boot modes. |
-
 */
 type SnmpModifyDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *SnmpModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snmp modify default response has a 2xx status code
+func (o *SnmpModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snmp modify default response has a 3xx status code
+func (o *SnmpModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snmp modify default response has a 4xx status code
+func (o *SnmpModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snmp modify default response has a 5xx status code
+func (o *SnmpModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snmp modify default response a status code equal to that given
+func (o *SnmpModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnmpModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /support/snmp][%d] snmp_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnmpModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /support/snmp][%d] snmp_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnmpModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

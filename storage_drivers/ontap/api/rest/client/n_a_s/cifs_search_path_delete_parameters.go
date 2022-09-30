@@ -53,10 +53,12 @@ func NewCifsSearchPathDeleteParamsWithHTTPClient(client *http.Client) *CifsSearc
 	}
 }
 
-/* CifsSearchPathDeleteParams contains all the parameters to send to the API endpoint
-   for the cifs search path delete operation.
+/*
+CifsSearchPathDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs search path delete operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsSearchPathDeleteParams struct {
 

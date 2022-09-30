@@ -46,7 +46,8 @@ func NewCifsDomainCollectionGetOK() *CifsDomainCollectionGetOK {
 	return &CifsDomainCollectionGetOK{}
 }
 
-/* CifsDomainCollectionGetOK describes a response with status code 200, with default header values.
+/*
+CifsDomainCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsDomainCollectionGetOK struct {
 	Payload *models.CifsDomainResponse
 }
 
+// IsSuccess returns true when this cifs domain collection get o k response has a 2xx status code
+func (o *CifsDomainCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs domain collection get o k response has a 3xx status code
+func (o *CifsDomainCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs domain collection get o k response has a 4xx status code
+func (o *CifsDomainCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs domain collection get o k response has a 5xx status code
+func (o *CifsDomainCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs domain collection get o k response a status code equal to that given
+func (o *CifsDomainCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsDomainCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/domains][%d] cifsDomainCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsDomainCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/domains][%d] cifsDomainCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsDomainCollectionGetOK) GetPayload() *models.CifsDomainResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsDomainCollectionGetDefault(code int) *CifsDomainCollectionGetDefault
 	}
 }
 
-/* CifsDomainCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+CifsDomainCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsDomainCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs domain collection get default response has a 2xx status code
+func (o *CifsDomainCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs domain collection get default response has a 3xx status code
+func (o *CifsDomainCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs domain collection get default response has a 4xx status code
+func (o *CifsDomainCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs domain collection get default response has a 5xx status code
+func (o *CifsDomainCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs domain collection get default response a status code equal to that given
+func (o *CifsDomainCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsDomainCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/domains][%d] cifs_domain_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsDomainCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/domains][%d] cifs_domain_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsDomainCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

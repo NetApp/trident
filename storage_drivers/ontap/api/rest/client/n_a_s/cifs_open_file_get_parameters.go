@@ -53,10 +53,12 @@ func NewCifsOpenFileGetParamsWithHTTPClient(client *http.Client) *CifsOpenFileGe
 	}
 }
 
-/* CifsOpenFileGetParams contains all the parameters to send to the API endpoint
-   for the cifs open file get operation.
+/*
+CifsOpenFileGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs open file get operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsOpenFileGetParams struct {
 

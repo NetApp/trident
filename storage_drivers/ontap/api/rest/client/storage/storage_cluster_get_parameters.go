@@ -53,10 +53,12 @@ func NewStorageClusterGetParamsWithHTTPClient(client *http.Client) *StorageClust
 	}
 }
 
-/* StorageClusterGetParams contains all the parameters to send to the API endpoint
-   for the storage cluster get operation.
+/*
+StorageClusterGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the storage cluster get operation.
+
+	Typically these are written to a http.Request.
 */
 type StorageClusterGetParams struct {
 

@@ -46,7 +46,8 @@ func NewConsistencyGroupSnapshotCollectionGetOK() *ConsistencyGroupSnapshotColle
 	return &ConsistencyGroupSnapshotCollectionGetOK{}
 }
 
-/* ConsistencyGroupSnapshotCollectionGetOK describes a response with status code 200, with default header values.
+/*
+ConsistencyGroupSnapshotCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ConsistencyGroupSnapshotCollectionGetOK struct {
 	Payload *models.ConsistencyGroupSnapshotResponse
 }
 
+// IsSuccess returns true when this consistency group snapshot collection get o k response has a 2xx status code
+func (o *ConsistencyGroupSnapshotCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this consistency group snapshot collection get o k response has a 3xx status code
+func (o *ConsistencyGroupSnapshotCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this consistency group snapshot collection get o k response has a 4xx status code
+func (o *ConsistencyGroupSnapshotCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this consistency group snapshot collection get o k response has a 5xx status code
+func (o *ConsistencyGroupSnapshotCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this consistency group snapshot collection get o k response a status code equal to that given
+func (o *ConsistencyGroupSnapshotCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ConsistencyGroupSnapshotCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ConsistencyGroupSnapshotCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ConsistencyGroupSnapshotCollectionGetOK) GetPayload() *models.ConsistencyGroupSnapshotResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewConsistencyGroupSnapshotCollectionGetDefault(code int) *ConsistencyGroup
 	}
 }
 
-/* ConsistencyGroupSnapshotCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+ConsistencyGroupSnapshotCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ConsistencyGroupSnapshotCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this consistency group snapshot collection get default response has a 2xx status code
+func (o *ConsistencyGroupSnapshotCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this consistency group snapshot collection get default response has a 3xx status code
+func (o *ConsistencyGroupSnapshotCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this consistency group snapshot collection get default response has a 4xx status code
+func (o *ConsistencyGroupSnapshotCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this consistency group snapshot collection get default response has a 5xx status code
+func (o *ConsistencyGroupSnapshotCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this consistency group snapshot collection get default response a status code equal to that given
+func (o *ConsistencyGroupSnapshotCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ConsistencyGroupSnapshotCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistency_group_snapshot_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ConsistencyGroupSnapshotCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistency_group_snapshot_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ConsistencyGroupSnapshotCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

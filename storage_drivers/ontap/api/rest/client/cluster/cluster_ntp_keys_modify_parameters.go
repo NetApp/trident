@@ -55,10 +55,12 @@ func NewClusterNtpKeysModifyParamsWithHTTPClient(client *http.Client) *ClusterNt
 	}
 }
 
-/* ClusterNtpKeysModifyParams contains all the parameters to send to the API endpoint
-   for the cluster ntp keys modify operation.
+/*
+ClusterNtpKeysModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster ntp keys modify operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterNtpKeysModifyParams struct {
 

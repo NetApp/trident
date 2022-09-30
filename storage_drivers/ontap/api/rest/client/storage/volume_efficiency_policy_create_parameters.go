@@ -55,10 +55,12 @@ func NewVolumeEfficiencyPolicyCreateParamsWithHTTPClient(client *http.Client) *V
 	}
 }
 
-/* VolumeEfficiencyPolicyCreateParams contains all the parameters to send to the API endpoint
-   for the volume efficiency policy create operation.
+/*
+VolumeEfficiencyPolicyCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the volume efficiency policy create operation.
+
+	Typically these are written to a http.Request.
 */
 type VolumeEfficiencyPolicyCreateParams struct {
 

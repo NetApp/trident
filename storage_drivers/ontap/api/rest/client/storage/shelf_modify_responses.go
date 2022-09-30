@@ -46,14 +46,44 @@ func NewShelfModifyOK() *ShelfModifyOK {
 	return &ShelfModifyOK{}
 }
 
-/* ShelfModifyOK describes a response with status code 200, with default header values.
+/*
+ShelfModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ShelfModifyOK struct {
 }
 
+// IsSuccess returns true when this shelf modify o k response has a 2xx status code
+func (o *ShelfModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this shelf modify o k response has a 3xx status code
+func (o *ShelfModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this shelf modify o k response has a 4xx status code
+func (o *ShelfModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this shelf modify o k response has a 5xx status code
+func (o *ShelfModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this shelf modify o k response a status code equal to that given
+func (o *ShelfModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ShelfModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelfModifyOK ", 200)
+}
+
+func (o *ShelfModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelfModifyOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewShelfModifyDefault(code int) *ShelfModifyDefault {
 	}
 }
 
-/* ShelfModifyDefault describes a response with status code -1, with default header values.
+/*
+	ShelfModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 17825872 | Shelf locate request failed because shelf \"<name>\" was not found. |
 | 17825873 | Shelf locate request failed because shelf \"<name>\" does not support this command. |
 | 17825874 | Shelf locate request failed for shelf \"<name>\" with an unknown error. |
 | 17825875 | Shelf locate request failed for shelf \"<name>\" because shelf modules are unreachable. |
-
 */
 type ShelfModifyDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *ShelfModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this shelf modify default response has a 2xx status code
+func (o *ShelfModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this shelf modify default response has a 3xx status code
+func (o *ShelfModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this shelf modify default response has a 4xx status code
+func (o *ShelfModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this shelf modify default response has a 5xx status code
+func (o *ShelfModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this shelf modify default response a status code equal to that given
+func (o *ShelfModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ShelfModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelf_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ShelfModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/shelves/{uid}][%d] shelf_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ShelfModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

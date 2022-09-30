@@ -55,10 +55,12 @@ func NewFileDirectorySecurityACLModifyParamsWithHTTPClient(client *http.Client) 
 	}
 }
 
-/* FileDirectorySecurityACLModifyParams contains all the parameters to send to the API endpoint
-   for the file directory security acl modify operation.
+/*
+FileDirectorySecurityACLModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file directory security acl modify operation.
+
+	Typically these are written to a http.Request.
 */
 type FileDirectorySecurityACLModifyParams struct {
 

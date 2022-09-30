@@ -604,7 +604,6 @@ func (m *AzureKeyVault) UnmarshalBinary(b []byte) error {
 // AzureKeyVaultAzureReachability Indicates whether or not the AKV service is reachable from all the nodes in the cluster.
 // This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
-//
 // swagger:model AzureKeyVaultAzureReachability
 type AzureKeyVaultAzureReachability struct {
 
@@ -650,7 +649,6 @@ func (m *AzureKeyVaultAzureReachability) UnmarshalBinary(b []byte) error {
 
 // AzureKeyVaultEkmipReachabilityItems0 Provides the connectivity status for the given SVM on the given node to all EKMIP servers configured on all nodes of the cluster.
 // This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
-//
 //
 // swagger:model AzureKeyVaultEkmipReachabilityItems0
 type AzureKeyVaultEkmipReachabilityItems0 struct {
@@ -1015,7 +1013,6 @@ func (m *AzureKeyVaultLinks) UnmarshalBinary(b []byte) error {
 
 // AzureKeyVaultStateType Indicates whether or not the AKV wrapped internal key is available cluster wide.
 // This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
-//
 //
 // swagger:model AzureKeyVaultStateType
 type AzureKeyVaultStateType struct {

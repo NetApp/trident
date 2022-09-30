@@ -53,10 +53,12 @@ func NewApplicationComponentSnapshotDeleteParamsWithHTTPClient(client *http.Clie
 	}
 }
 
-/* ApplicationComponentSnapshotDeleteParams contains all the parameters to send to the API endpoint
-   for the application component snapshot delete operation.
+/*
+ApplicationComponentSnapshotDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the application component snapshot delete operation.
+
+	Typically these are written to a http.Request.
 */
 type ApplicationComponentSnapshotDeleteParams struct {
 

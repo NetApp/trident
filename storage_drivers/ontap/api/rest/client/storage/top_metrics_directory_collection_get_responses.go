@@ -46,7 +46,8 @@ func NewTopMetricsDirectoryCollectionGetOK() *TopMetricsDirectoryCollectionGetOK
 	return &TopMetricsDirectoryCollectionGetOK{}
 }
 
-/* TopMetricsDirectoryCollectionGetOK describes a response with status code 200, with default header values.
+/*
+TopMetricsDirectoryCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type TopMetricsDirectoryCollectionGetOK struct {
 	Payload *models.TopMetricsDirectoryResponse
 }
 
+// IsSuccess returns true when this top metrics directory collection get o k response has a 2xx status code
+func (o *TopMetricsDirectoryCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this top metrics directory collection get o k response has a 3xx status code
+func (o *TopMetricsDirectoryCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this top metrics directory collection get o k response has a 4xx status code
+func (o *TopMetricsDirectoryCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this top metrics directory collection get o k response has a 5xx status code
+func (o *TopMetricsDirectoryCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this top metrics directory collection get o k response a status code equal to that given
+func (o *TopMetricsDirectoryCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *TopMetricsDirectoryCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] topMetricsDirectoryCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *TopMetricsDirectoryCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] topMetricsDirectoryCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *TopMetricsDirectoryCollectionGetOK) GetPayload() *models.TopMetricsDirectoryResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewTopMetricsDirectoryCollectionGetDefault(code int) *TopMetricsDirectoryCo
 	}
 }
 
-/* TopMetricsDirectoryCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+TopMetricsDirectoryCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *TopMetricsDirectoryCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this top metrics directory collection get default response has a 2xx status code
+func (o *TopMetricsDirectoryCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this top metrics directory collection get default response has a 3xx status code
+func (o *TopMetricsDirectoryCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this top metrics directory collection get default response has a 4xx status code
+func (o *TopMetricsDirectoryCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this top metrics directory collection get default response has a 5xx status code
+func (o *TopMetricsDirectoryCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this top metrics directory collection get default response a status code equal to that given
+func (o *TopMetricsDirectoryCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TopMetricsDirectoryCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] top_metrics_directory_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *TopMetricsDirectoryCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/directories][%d] top_metrics_directory_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *TopMetricsDirectoryCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

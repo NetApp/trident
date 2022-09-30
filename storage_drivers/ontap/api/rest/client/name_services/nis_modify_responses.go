@@ -46,14 +46,44 @@ func NewNisModifyOK() *NisModifyOK {
 	return &NisModifyOK{}
 }
 
-/* NisModifyOK describes a response with status code 200, with default header values.
+/*
+NisModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NisModifyOK struct {
 }
 
+// IsSuccess returns true when this nis modify o k response has a 2xx status code
+func (o *NisModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nis modify o k response has a 3xx status code
+func (o *NisModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nis modify o k response has a 4xx status code
+func (o *NisModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nis modify o k response has a 5xx status code
+func (o *NisModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nis modify o k response a status code equal to that given
+func (o *NisModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NisModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nisModifyOK ", 200)
+}
+
+func (o *NisModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nisModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewNisModifyDefault(code int) *NisModifyDefault {
 	}
 }
 
-/* NisModifyDefault describes a response with status code -1, with default header values.
+/*
+	NisModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1966253    | IPv6 is not enabled in the cluster |
@@ -83,7 +115,6 @@ func NewNisModifyDefault(code int) *NisModifyDefault {
 | 23724112   | DNS resolution failed due to an internal error. Contact technical support if this issue persists |
 | 23724132   | DNS resolution failed for all the specified servers  |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
-
 */
 type NisModifyDefault struct {
 	_statusCode int
@@ -96,9 +127,39 @@ func (o *NisModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nis modify default response has a 2xx status code
+func (o *NisModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nis modify default response has a 3xx status code
+func (o *NisModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nis modify default response has a 4xx status code
+func (o *NisModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nis modify default response has a 5xx status code
+func (o *NisModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nis modify default response a status code equal to that given
+func (o *NisModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NisModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nis_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NisModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/nis/{svm.uuid}][%d] nis_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NisModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

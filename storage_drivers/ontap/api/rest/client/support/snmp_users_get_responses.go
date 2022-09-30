@@ -46,7 +46,8 @@ func NewSnmpUsersGetOK() *SnmpUsersGetOK {
 	return &SnmpUsersGetOK{}
 }
 
-/* SnmpUsersGetOK describes a response with status code 200, with default header values.
+/*
+SnmpUsersGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnmpUsersGetOK struct {
 	Payload *models.SnmpUser
 }
 
+// IsSuccess returns true when this snmp users get o k response has a 2xx status code
+func (o *SnmpUsersGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snmp users get o k response has a 3xx status code
+func (o *SnmpUsersGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snmp users get o k response has a 4xx status code
+func (o *SnmpUsersGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snmp users get o k response has a 5xx status code
+func (o *SnmpUsersGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snmp users get o k response a status code equal to that given
+func (o *SnmpUsersGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnmpUsersGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmpUsersGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnmpUsersGetOK) String() string {
+	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmpUsersGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnmpUsersGetOK) GetPayload() *models.SnmpUser {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSnmpUsersGetDefault(code int) *SnmpUsersGetDefault {
 	}
 }
 
-/* SnmpUsersGetDefault describes a response with status code -1, with default header values.
+/*
+SnmpUsersGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SnmpUsersGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snmp users get default response has a 2xx status code
+func (o *SnmpUsersGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snmp users get default response has a 3xx status code
+func (o *SnmpUsersGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snmp users get default response has a 4xx status code
+func (o *SnmpUsersGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snmp users get default response has a 5xx status code
+func (o *SnmpUsersGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snmp users get default response a status code equal to that given
+func (o *SnmpUsersGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnmpUsersGetDefault) Error() string {
 	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmp_users_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnmpUsersGetDefault) String() string {
+	return fmt.Sprintf("[GET /support/snmp/users/{engine_id}/{name}][%d] snmp_users_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnmpUsersGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

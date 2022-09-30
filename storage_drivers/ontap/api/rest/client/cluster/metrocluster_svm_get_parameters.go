@@ -53,10 +53,12 @@ func NewMetroclusterSvmGetParamsWithHTTPClient(client *http.Client) *Metrocluste
 	}
 }
 
-/* MetroclusterSvmGetParams contains all the parameters to send to the API endpoint
-   for the metrocluster svm get operation.
+/*
+MetroclusterSvmGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the metrocluster svm get operation.
+
+	Typically these are written to a http.Request.
 */
 type MetroclusterSvmGetParams struct {
 

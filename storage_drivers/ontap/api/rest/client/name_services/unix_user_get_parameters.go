@@ -53,10 +53,12 @@ func NewUnixUserGetParamsWithHTTPClient(client *http.Client) *UnixUserGetParams 
 	}
 }
 
-/* UnixUserGetParams contains all the parameters to send to the API endpoint
-   for the unix user get operation.
+/*
+UnixUserGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the unix user get operation.
+
+	Typically these are written to a http.Request.
 */
 type UnixUserGetParams struct {
 

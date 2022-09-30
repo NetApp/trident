@@ -46,7 +46,8 @@ func NewSecurityAuditModifyOK() *SecurityAuditModifyOK {
 	return &SecurityAuditModifyOK{}
 }
 
-/* SecurityAuditModifyOK describes a response with status code 200, with default header values.
+/*
+SecurityAuditModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SecurityAuditModifyOK struct {
 	Payload *models.SecurityAudit
 }
 
+// IsSuccess returns true when this security audit modify o k response has a 2xx status code
+func (o *SecurityAuditModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security audit modify o k response has a 3xx status code
+func (o *SecurityAuditModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security audit modify o k response has a 4xx status code
+func (o *SecurityAuditModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security audit modify o k response has a 5xx status code
+func (o *SecurityAuditModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security audit modify o k response a status code equal to that given
+func (o *SecurityAuditModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityAuditModifyOK) Error() string {
 	return fmt.Sprintf("[PATCH /security/audit][%d] securityAuditModifyOK  %+v", 200, o.Payload)
 }
+
+func (o *SecurityAuditModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /security/audit][%d] securityAuditModifyOK  %+v", 200, o.Payload)
+}
+
 func (o *SecurityAuditModifyOK) GetPayload() *models.SecurityAudit {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSecurityAuditModifyDefault(code int) *SecurityAuditModifyDefault {
 	}
 }
 
-/* SecurityAuditModifyDefault describes a response with status code -1, with default header values.
+/*
+SecurityAuditModifyDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SecurityAuditModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security audit modify default response has a 2xx status code
+func (o *SecurityAuditModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security audit modify default response has a 3xx status code
+func (o *SecurityAuditModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security audit modify default response has a 4xx status code
+func (o *SecurityAuditModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security audit modify default response has a 5xx status code
+func (o *SecurityAuditModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security audit modify default response a status code equal to that given
+func (o *SecurityAuditModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityAuditModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/audit][%d] security_audit_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityAuditModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/audit][%d] security_audit_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityAuditModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

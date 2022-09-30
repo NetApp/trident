@@ -498,7 +498,6 @@ func (m *ConsistencyGroupSnapshotResponseRecordsItems0) UnmarshalBinary(b []byte
 
 // ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup The consistency group of the Snapshot copy.
 //
-//
 // swagger:model ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup
 type ConsistencyGroupSnapshotResponseRecordsItems0ConsistencyGroup struct {
 

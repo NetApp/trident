@@ -46,7 +46,8 @@ func NewTopMetricsClientCollectionGetOK() *TopMetricsClientCollectionGetOK {
 	return &TopMetricsClientCollectionGetOK{}
 }
 
-/* TopMetricsClientCollectionGetOK describes a response with status code 200, with default header values.
+/*
+TopMetricsClientCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type TopMetricsClientCollectionGetOK struct {
 	Payload *models.TopMetricsClientResponse
 }
 
+// IsSuccess returns true when this top metrics client collection get o k response has a 2xx status code
+func (o *TopMetricsClientCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this top metrics client collection get o k response has a 3xx status code
+func (o *TopMetricsClientCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this top metrics client collection get o k response has a 4xx status code
+func (o *TopMetricsClientCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this top metrics client collection get o k response has a 5xx status code
+func (o *TopMetricsClientCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this top metrics client collection get o k response a status code equal to that given
+func (o *TopMetricsClientCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *TopMetricsClientCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/clients][%d] topMetricsClientCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *TopMetricsClientCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/clients][%d] topMetricsClientCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *TopMetricsClientCollectionGetOK) GetPayload() *models.TopMetricsClientResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewTopMetricsClientCollectionGetDefault(code int) *TopMetricsClientCollecti
 	}
 }
 
-/* TopMetricsClientCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+TopMetricsClientCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *TopMetricsClientCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this top metrics client collection get default response has a 2xx status code
+func (o *TopMetricsClientCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this top metrics client collection get default response has a 3xx status code
+func (o *TopMetricsClientCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this top metrics client collection get default response has a 4xx status code
+func (o *TopMetricsClientCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this top metrics client collection get default response has a 5xx status code
+func (o *TopMetricsClientCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this top metrics client collection get default response a status code equal to that given
+func (o *TopMetricsClientCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TopMetricsClientCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/clients][%d] top_metrics_client_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *TopMetricsClientCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/clients][%d] top_metrics_client_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *TopMetricsClientCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

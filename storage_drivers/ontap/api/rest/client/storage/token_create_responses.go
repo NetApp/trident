@@ -46,7 +46,8 @@ func NewTokenCreateCreated() *TokenCreateCreated {
 	return &TokenCreateCreated{}
 }
 
-/* TokenCreateCreated describes a response with status code 201, with default header values.
+/*
+TokenCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type TokenCreateCreated struct {
 	Payload *models.TokenResponse
 }
 
+// IsSuccess returns true when this token create created response has a 2xx status code
+func (o *TokenCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this token create created response has a 3xx status code
+func (o *TokenCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this token create created response has a 4xx status code
+func (o *TokenCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this token create created response has a 5xx status code
+func (o *TokenCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this token create created response a status code equal to that given
+func (o *TokenCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *TokenCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] tokenCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *TokenCreateCreated) String() string {
+	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] tokenCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *TokenCreateCreated) GetPayload() *models.TokenResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewTokenCreateDefault(code int) *TokenCreateDefault {
 	}
 }
 
-/* TokenCreateDefault describes a response with status code -1, with default header values.
+/*
+TokenCreateDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *TokenCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this token create default response has a 2xx status code
+func (o *TokenCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this token create default response has a 3xx status code
+func (o *TokenCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this token create default response has a 4xx status code
+func (o *TokenCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this token create default response has a 5xx status code
+func (o *TokenCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this token create default response a status code equal to that given
+func (o *TokenCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TokenCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] token_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *TokenCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/file/clone/tokens][%d] token_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *TokenCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewVscanGetOK() *VscanGetOK {
 	return &VscanGetOK{}
 }
 
-/* VscanGetOK describes a response with status code 200, with default header values.
+/*
+VscanGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type VscanGetOK struct {
 	Payload *models.Vscan
 }
 
+// IsSuccess returns true when this vscan get o k response has a 2xx status code
+func (o *VscanGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan get o k response has a 3xx status code
+func (o *VscanGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan get o k response has a 4xx status code
+func (o *VscanGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan get o k response has a 5xx status code
+func (o *VscanGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan get o k response a status code equal to that given
+func (o *VscanGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}][%d] vscanGetOK  %+v", 200, o.Payload)
 }
+
+func (o *VscanGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}][%d] vscanGetOK  %+v", 200, o.Payload)
+}
+
 func (o *VscanGetOK) GetPayload() *models.Vscan {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewVscanGetDefault(code int) *VscanGetDefault {
 	}
 }
 
-/* VscanGetDefault describes a response with status code -1, with default header values.
+/*
+VscanGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *VscanGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan get default response has a 2xx status code
+func (o *VscanGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan get default response has a 3xx status code
+func (o *VscanGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan get default response has a 4xx status code
+func (o *VscanGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan get default response has a 5xx status code
+func (o *VscanGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan get default response a status code equal to that given
+func (o *VscanGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}][%d] vscan_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}][%d] vscan_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

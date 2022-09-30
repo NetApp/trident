@@ -53,10 +53,12 @@ func NewFlexcacheDeleteParamsWithHTTPClient(client *http.Client) *FlexcacheDelet
 	}
 }
 
-/* FlexcacheDeleteParams contains all the parameters to send to the API endpoint
-   for the flexcache delete operation.
+/*
+FlexcacheDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the flexcache delete operation.
+
+	Typically these are written to a http.Request.
 */
 type FlexcacheDeleteParams struct {
 

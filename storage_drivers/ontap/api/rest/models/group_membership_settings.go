@@ -15,7 +15,6 @@ import (
 
 // GroupMembershipSettings Group membership cache setting.
 //
-//
 // swagger:model group_membership_settings
 type GroupMembershipSettings struct {
 

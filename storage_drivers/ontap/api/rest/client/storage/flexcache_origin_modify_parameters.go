@@ -54,10 +54,12 @@ func NewFlexcacheOriginModifyParamsWithHTTPClient(client *http.Client) *Flexcach
 	}
 }
 
-/* FlexcacheOriginModifyParams contains all the parameters to send to the API endpoint
-   for the flexcache origin modify operation.
+/*
+FlexcacheOriginModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the flexcache origin modify operation.
+
+	Typically these are written to a http.Request.
 */
 type FlexcacheOriginModifyParams struct {
 

@@ -18,7 +18,6 @@ import (
 
 // LunMap A LUN map is an association between a LUN and an initiator group. When a LUN is mapped to an initiator group, the initiator group's initiators are granted access to the LUN. The relationship between a LUN and an initiator group is many LUNs to many initiator groups.
 //
-//
 // swagger:model lun_map
 type LunMap struct {
 
@@ -318,7 +317,6 @@ func (m *LunMap) UnmarshalBinary(b []byte) error {
 }
 
 // LunMapIgroup The initiator group to which the LUN is mapped. Required in POST by supplying either the `igroup.uuid`, `igroup.name`, or both.
-//
 //
 // swagger:model LunMapIgroup
 type LunMapIgroup struct {
@@ -862,7 +860,6 @@ func (m *LunMapLinks) UnmarshalBinary(b []byte) error {
 
 // LunMapLun The LUN to which the initiator group is mapped. Required in POST by supplying either the `lun.uuid`, `lun.name`, or both.
 //
-//
 // swagger:model LunMapLun
 type LunMapLun struct {
 
@@ -1087,7 +1084,6 @@ func (m *LunMapLunLinks) UnmarshalBinary(b []byte) error {
 
 // LunMapLunNode The LUN node.
 //
-//
 // swagger:model LunMapLunNode
 type LunMapLunNode struct {
 
@@ -1297,7 +1293,6 @@ func (m *LunMapLunNodeLinks) UnmarshalBinary(b []byte) error {
 }
 
 // LunMapReportingNodesItems0 A cluster node from which network paths to the LUN are advertised by ONTAP via the SAN protocols.
-//
 //
 // swagger:model LunMapReportingNodesItems0
 type LunMapReportingNodesItems0 struct {

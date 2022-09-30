@@ -53,10 +53,12 @@ func NewAzureKeyVaultCollectionGetParamsWithHTTPClient(client *http.Client) *Azu
 	}
 }
 
-/* AzureKeyVaultCollectionGetParams contains all the parameters to send to the API endpoint
-   for the azure key vault collection get operation.
+/*
+AzureKeyVaultCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the azure key vault collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type AzureKeyVaultCollectionGetParams struct {
 

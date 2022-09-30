@@ -43,14 +43,44 @@ func NewDiskModifyOK() *DiskModifyOK {
 	return &DiskModifyOK{}
 }
 
-/* DiskModifyOK describes a response with status code 200, with default header values.
+/*
+DiskModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type DiskModifyOK struct {
 }
 
+// IsSuccess returns true when this disk modify o k response has a 2xx status code
+func (o *DiskModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this disk modify o k response has a 3xx status code
+func (o *DiskModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this disk modify o k response has a 4xx status code
+func (o *DiskModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this disk modify o k response has a 5xx status code
+func (o *DiskModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this disk modify o k response a status code equal to that given
+func (o *DiskModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *DiskModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/disks][%d] diskModifyOK ", 200)
+}
+
+func (o *DiskModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/disks][%d] diskModifyOK ", 200)
 }
 
@@ -66,9 +96,11 @@ func NewDiskModifyDefault(code int) *DiskModifyDefault {
 	}
 }
 
-/* DiskModifyDefault describes a response with status code -1, with default header values.
+/*
+	DiskModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 720951 | Unable to unfail the disk. |
@@ -78,7 +110,6 @@ func NewDiskModifyDefault(code int) *DiskModifyDefault {
 | 14155778 | No self-encrypting disks were specified. |
 | 14155779 | Status from a node shows that a conflicting operation has occurred. Some disk controls might have changed. |
 | 14155780 | Could not retrieve the required key ID from the key manager. |
-
 */
 type DiskModifyDefault struct {
 	_statusCode int
@@ -89,7 +120,36 @@ func (o *DiskModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this disk modify default response has a 2xx status code
+func (o *DiskModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this disk modify default response has a 3xx status code
+func (o *DiskModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this disk modify default response has a 4xx status code
+func (o *DiskModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this disk modify default response has a 5xx status code
+func (o *DiskModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this disk modify default response a status code equal to that given
+func (o *DiskModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *DiskModifyDefault) Error() string {
+	return fmt.Sprintf("[PATCH /storage/disks][%d] disk_modify default ", o._statusCode)
+}
+
+func (o *DiskModifyDefault) String() string {
 	return fmt.Sprintf("[PATCH /storage/disks][%d] disk_modify default ", o._statusCode)
 }
 

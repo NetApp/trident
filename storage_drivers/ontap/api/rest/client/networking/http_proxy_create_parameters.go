@@ -55,10 +55,12 @@ func NewHTTPProxyCreateParamsWithHTTPClient(client *http.Client) *HTTPProxyCreat
 	}
 }
 
-/* HTTPProxyCreateParams contains all the parameters to send to the API endpoint
-   for the http proxy create operation.
+/*
+HTTPProxyCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the http proxy create operation.
+
+	Typically these are written to a http.Request.
 */
 type HTTPProxyCreateParams struct {
 

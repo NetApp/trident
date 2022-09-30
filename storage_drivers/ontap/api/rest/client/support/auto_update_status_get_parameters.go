@@ -53,10 +53,12 @@ func NewAutoUpdateStatusGetParamsWithHTTPClient(client *http.Client) *AutoUpdate
 	}
 }
 
-/* AutoUpdateStatusGetParams contains all the parameters to send to the API endpoint
-   for the auto update status get operation.
+/*
+AutoUpdateStatusGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the auto update status get operation.
+
+	Typically these are written to a http.Request.
 */
 type AutoUpdateStatusGetParams struct {
 

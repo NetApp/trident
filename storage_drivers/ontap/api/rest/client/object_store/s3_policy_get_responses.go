@@ -46,7 +46,8 @@ func NewS3PolicyGetOK() *S3PolicyGetOK {
 	return &S3PolicyGetOK{}
 }
 
-/* S3PolicyGetOK describes a response with status code 200, with default header values.
+/*
+S3PolicyGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type S3PolicyGetOK struct {
 	Payload *models.S3Policy
 }
 
+// IsSuccess returns true when this s3 policy get o k response has a 2xx status code
+func (o *S3PolicyGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 policy get o k response has a 3xx status code
+func (o *S3PolicyGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 policy get o k response has a 4xx status code
+func (o *S3PolicyGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 policy get o k response has a 5xx status code
+func (o *S3PolicyGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 policy get o k response a status code equal to that given
+func (o *S3PolicyGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3PolicyGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyGetOK  %+v", 200, o.Payload)
 }
+
+func (o *S3PolicyGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyGetOK  %+v", 200, o.Payload)
+}
+
 func (o *S3PolicyGetOK) GetPayload() *models.S3Policy {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewS3PolicyGetDefault(code int) *S3PolicyGetDefault {
 	}
 }
 
-/* S3PolicyGetDefault describes a response with status code -1, with default header values.
+/*
+S3PolicyGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *S3PolicyGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 policy get default response has a 2xx status code
+func (o *S3PolicyGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 policy get default response has a 3xx status code
+func (o *S3PolicyGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 policy get default response has a 4xx status code
+func (o *S3PolicyGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 policy get default response has a 5xx status code
+func (o *S3PolicyGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 policy get default response a status code equal to that given
+func (o *S3PolicyGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3PolicyGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3PolicyGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3PolicyGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

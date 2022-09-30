@@ -46,7 +46,8 @@ func NewSoftwarePackageCreateAccepted() *SoftwarePackageCreateAccepted {
 	return &SoftwarePackageCreateAccepted{}
 }
 
-/* SoftwarePackageCreateAccepted describes a response with status code 202, with default header values.
+/*
+SoftwarePackageCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SoftwarePackageCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this software package create accepted response has a 2xx status code
+func (o *SoftwarePackageCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this software package create accepted response has a 3xx status code
+func (o *SoftwarePackageCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this software package create accepted response has a 4xx status code
+func (o *SoftwarePackageCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this software package create accepted response has a 5xx status code
+func (o *SoftwarePackageCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this software package create accepted response a status code equal to that given
+func (o *SoftwarePackageCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SoftwarePackageCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /cluster/software/download][%d] softwarePackageCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SoftwarePackageCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /cluster/software/download][%d] softwarePackageCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SoftwarePackageCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSoftwarePackageCreateDefault(code int) *SoftwarePackageCreateDefault {
 	}
 }
 
-/* SoftwarePackageCreateDefault describes a response with status code -1, with default header values.
+/*
+SoftwarePackageCreateDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SoftwarePackageCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this software package create default response has a 2xx status code
+func (o *SoftwarePackageCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this software package create default response has a 3xx status code
+func (o *SoftwarePackageCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this software package create default response has a 4xx status code
+func (o *SoftwarePackageCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this software package create default response has a 5xx status code
+func (o *SoftwarePackageCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this software package create default response a status code equal to that given
+func (o *SoftwarePackageCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SoftwarePackageCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /cluster/software/download][%d] software_package_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SoftwarePackageCreateDefault) String() string {
+	return fmt.Sprintf("[POST /cluster/software/download][%d] software_package_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SoftwarePackageCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

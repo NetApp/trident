@@ -53,10 +53,12 @@ func NewFlexcacheCollectionGetParamsWithHTTPClient(client *http.Client) *Flexcac
 	}
 }
 
-/* FlexcacheCollectionGetParams contains all the parameters to send to the API endpoint
-   for the flexcache collection get operation.
+/*
+FlexcacheCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the flexcache collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type FlexcacheCollectionGetParams struct {
 

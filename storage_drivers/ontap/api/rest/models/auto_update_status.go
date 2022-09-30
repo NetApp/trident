@@ -970,7 +970,6 @@ func (m *AutoUpdateStatusLinksSelf) UnmarshalBinary(b []byte) error {
 // | 131072331 | DQP update timed out. |
 // | 131072332 | Failed to copy firmware. |
 //
-//
 // swagger:model AutoUpdateStatusStatus
 type AutoUpdateStatusStatus struct {
 

@@ -54,10 +54,12 @@ func NewUnixGroupSettingsModifyParamsWithHTTPClient(client *http.Client) *UnixGr
 	}
 }
 
-/* UnixGroupSettingsModifyParams contains all the parameters to send to the API endpoint
-   for the unix group settings modify operation.
+/*
+UnixGroupSettingsModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the unix group settings modify operation.
+
+	Typically these are written to a http.Request.
 */
 type UnixGroupSettingsModifyParams struct {
 

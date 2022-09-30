@@ -53,10 +53,12 @@ func NewCifsHomedirSearchPathGetParamsWithHTTPClient(client *http.Client) *CifsH
 	}
 }
 
-/* CifsHomedirSearchPathGetParams contains all the parameters to send to the API endpoint
-   for the cifs homedir search path get operation.
+/*
+CifsHomedirSearchPathGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs homedir search path get operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsHomedirSearchPathGetParams struct {
 

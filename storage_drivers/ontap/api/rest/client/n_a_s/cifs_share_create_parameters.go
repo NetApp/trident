@@ -55,10 +55,12 @@ func NewCifsShareCreateParamsWithHTTPClient(client *http.Client) *CifsShareCreat
 	}
 }
 
-/* CifsShareCreateParams contains all the parameters to send to the API endpoint
-   for the cifs share create operation.
+/*
+CifsShareCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs share create operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsShareCreateParams struct {
 

@@ -53,10 +53,12 @@ func NewAzureKeyVaultRestoreParamsWithHTTPClient(client *http.Client) *AzureKeyV
 	}
 }
 
-/* AzureKeyVaultRestoreParams contains all the parameters to send to the API endpoint
-   for the azure key vault restore operation.
+/*
+AzureKeyVaultRestoreParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the azure key vault restore operation.
+
+	Typically these are written to a http.Request.
 */
 type AzureKeyVaultRestoreParams struct {
 

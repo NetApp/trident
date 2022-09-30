@@ -55,10 +55,12 @@ func NewNetworkIPRoutesCreateParamsWithHTTPClient(client *http.Client) *NetworkI
 	}
 }
 
-/* NetworkIPRoutesCreateParams contains all the parameters to send to the API endpoint
-   for the network ip routes create operation.
+/*
+NetworkIPRoutesCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ip routes create operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkIPRoutesCreateParams struct {
 

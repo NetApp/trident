@@ -53,10 +53,12 @@ func NewChassisGetParamsWithHTTPClient(client *http.Client) *ChassisGetParams {
 	}
 }
 
-/* ChassisGetParams contains all the parameters to send to the API endpoint
-   for the chassis get operation.
+/*
+ChassisGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the chassis get operation.
+
+	Typically these are written to a http.Request.
 */
 type ChassisGetParams struct {
 

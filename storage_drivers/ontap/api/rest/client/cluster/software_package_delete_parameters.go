@@ -53,10 +53,12 @@ func NewSoftwarePackageDeleteParamsWithHTTPClient(client *http.Client) *Software
 	}
 }
 
-/* SoftwarePackageDeleteParams contains all the parameters to send to the API endpoint
-   for the software package delete operation.
+/*
+SoftwarePackageDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the software package delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SoftwarePackageDeleteParams struct {
 

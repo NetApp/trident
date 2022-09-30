@@ -46,7 +46,8 @@ func NewNvmeSubsystemCollectionGetOK() *NvmeSubsystemCollectionGetOK {
 	return &NvmeSubsystemCollectionGetOK{}
 }
 
-/* NvmeSubsystemCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NvmeSubsystemCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NvmeSubsystemCollectionGetOK struct {
 	Payload *models.NvmeSubsystemResponse
 }
 
+// IsSuccess returns true when this nvme subsystem collection get o k response has a 2xx status code
+func (o *NvmeSubsystemCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme subsystem collection get o k response has a 3xx status code
+func (o *NvmeSubsystemCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme subsystem collection get o k response has a 4xx status code
+func (o *NvmeSubsystemCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme subsystem collection get o k response has a 5xx status code
+func (o *NvmeSubsystemCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme subsystem collection get o k response a status code equal to that given
+func (o *NvmeSubsystemCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeSubsystemCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/subsystems][%d] nvmeSubsystemCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NvmeSubsystemCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems][%d] nvmeSubsystemCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NvmeSubsystemCollectionGetOK) GetPayload() *models.NvmeSubsystemResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNvmeSubsystemCollectionGetDefault(code int) *NvmeSubsystemCollectionGetD
 	}
 }
 
-/* NvmeSubsystemCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+NvmeSubsystemCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NvmeSubsystemCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme subsystem collection get default response has a 2xx status code
+func (o *NvmeSubsystemCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme subsystem collection get default response has a 3xx status code
+func (o *NvmeSubsystemCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme subsystem collection get default response has a 4xx status code
+func (o *NvmeSubsystemCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme subsystem collection get default response has a 5xx status code
+func (o *NvmeSubsystemCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme subsystem collection get default response a status code equal to that given
+func (o *NvmeSubsystemCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeSubsystemCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/subsystems][%d] nvme_subsystem_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeSubsystemCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems][%d] nvme_subsystem_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeSubsystemCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

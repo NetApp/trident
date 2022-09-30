@@ -53,10 +53,12 @@ func NewUserGroupPrivilegesGetParamsWithHTTPClient(client *http.Client) *UserGro
 	}
 }
 
-/* UserGroupPrivilegesGetParams contains all the parameters to send to the API endpoint
-   for the user group privileges get operation.
+/*
+UserGroupPrivilegesGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the user group privileges get operation.
+
+	Typically these are written to a http.Request.
 */
 type UserGroupPrivilegesGetParams struct {
 

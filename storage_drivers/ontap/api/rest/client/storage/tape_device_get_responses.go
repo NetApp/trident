@@ -46,7 +46,8 @@ func NewTapeDeviceGetOK() *TapeDeviceGetOK {
 	return &TapeDeviceGetOK{}
 }
 
-/* TapeDeviceGetOK describes a response with status code 200, with default header values.
+/*
+TapeDeviceGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type TapeDeviceGetOK struct {
 	Payload *models.TapeDevice
 }
 
+// IsSuccess returns true when this tape device get o k response has a 2xx status code
+func (o *TapeDeviceGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this tape device get o k response has a 3xx status code
+func (o *TapeDeviceGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this tape device get o k response has a 4xx status code
+func (o *TapeDeviceGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this tape device get o k response has a 5xx status code
+func (o *TapeDeviceGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this tape device get o k response a status code equal to that given
+func (o *TapeDeviceGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *TapeDeviceGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceGetOK  %+v", 200, o.Payload)
 }
+
+func (o *TapeDeviceGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceGetOK  %+v", 200, o.Payload)
+}
+
 func (o *TapeDeviceGetOK) GetPayload() *models.TapeDevice {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewTapeDeviceGetDefault(code int) *TapeDeviceGetDefault {
 	}
 }
 
-/* TapeDeviceGetDefault describes a response with status code -1, with default header values.
+/*
+TapeDeviceGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *TapeDeviceGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this tape device get default response has a 2xx status code
+func (o *TapeDeviceGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this tape device get default response has a 3xx status code
+func (o *TapeDeviceGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this tape device get default response has a 4xx status code
+func (o *TapeDeviceGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this tape device get default response has a 5xx status code
+func (o *TapeDeviceGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this tape device get default response a status code equal to that given
+func (o *TapeDeviceGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TapeDeviceGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *TapeDeviceGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *TapeDeviceGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

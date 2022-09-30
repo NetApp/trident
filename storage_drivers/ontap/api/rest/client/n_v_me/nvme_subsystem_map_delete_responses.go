@@ -46,7 +46,8 @@ func NewNvmeSubsystemMapDeleteOK() *NvmeSubsystemMapDeleteOK {
 	return &NvmeSubsystemMapDeleteOK{}
 }
 
-/* NvmeSubsystemMapDeleteOK describes a response with status code 200, with default header values.
+/*
+NvmeSubsystemMapDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NvmeSubsystemMapDeleteOK struct {
 	Payload *models.NvmeSubsystemMapResponse
 }
 
+// IsSuccess returns true when this nvme subsystem map delete o k response has a 2xx status code
+func (o *NvmeSubsystemMapDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme subsystem map delete o k response has a 3xx status code
+func (o *NvmeSubsystemMapDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme subsystem map delete o k response has a 4xx status code
+func (o *NvmeSubsystemMapDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme subsystem map delete o k response has a 5xx status code
+func (o *NvmeSubsystemMapDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme subsystem map delete o k response a status code equal to that given
+func (o *NvmeSubsystemMapDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeSubsystemMapDeleteOK) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvmeSubsystemMapDeleteOK  %+v", 200, o.Payload)
 }
+
+func (o *NvmeSubsystemMapDeleteOK) String() string {
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvmeSubsystemMapDeleteOK  %+v", 200, o.Payload)
+}
+
 func (o *NvmeSubsystemMapDeleteOK) GetPayload() *models.NvmeSubsystemMapResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewNvmeSubsystemMapDeleteDefault(code int) *NvmeSubsystemMapDeleteDefault {
 	}
 }
 
-/* NvmeSubsystemMapDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NvmeSubsystemMapDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 72090019 | The specified NVMe namespace is not mapped to the specified NVMe subsystem. |
-
 */
 type NvmeSubsystemMapDeleteDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *NvmeSubsystemMapDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme subsystem map delete default response has a 2xx status code
+func (o *NvmeSubsystemMapDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme subsystem map delete default response has a 3xx status code
+func (o *NvmeSubsystemMapDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme subsystem map delete default response has a 4xx status code
+func (o *NvmeSubsystemMapDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme subsystem map delete default response has a 5xx status code
+func (o *NvmeSubsystemMapDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme subsystem map delete default response a status code equal to that given
+func (o *NvmeSubsystemMapDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeSubsystemMapDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvme_subsystem_map_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeSubsystemMapDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystem-maps/{subsystem.uuid}/{namespace.uuid}][%d] nvme_subsystem_map_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeSubsystemMapDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -55,10 +55,12 @@ func NewDNSCreateParamsWithHTTPClient(client *http.Client) *DNSCreateParams {
 	}
 }
 
-/* DNSCreateParams contains all the parameters to send to the API endpoint
-   for the dns create operation.
+/*
+DNSCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the dns create operation.
+
+	Typically these are written to a http.Request.
 */
 type DNSCreateParams struct {
 

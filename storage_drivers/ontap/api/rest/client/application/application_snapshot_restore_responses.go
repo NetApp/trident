@@ -46,7 +46,8 @@ func NewApplicationSnapshotRestoreAccepted() *ApplicationSnapshotRestoreAccepted
 	return &ApplicationSnapshotRestoreAccepted{}
 }
 
-/* ApplicationSnapshotRestoreAccepted describes a response with status code 202, with default header values.
+/*
+ApplicationSnapshotRestoreAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type ApplicationSnapshotRestoreAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this application snapshot restore accepted response has a 2xx status code
+func (o *ApplicationSnapshotRestoreAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application snapshot restore accepted response has a 3xx status code
+func (o *ApplicationSnapshotRestoreAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application snapshot restore accepted response has a 4xx status code
+func (o *ApplicationSnapshotRestoreAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application snapshot restore accepted response has a 5xx status code
+func (o *ApplicationSnapshotRestoreAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application snapshot restore accepted response a status code equal to that given
+func (o *ApplicationSnapshotRestoreAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ApplicationSnapshotRestoreAccepted) Error() string {
 	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] applicationSnapshotRestoreAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ApplicationSnapshotRestoreAccepted) String() string {
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] applicationSnapshotRestoreAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ApplicationSnapshotRestoreAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewApplicationSnapshotRestoreDefault(code int) *ApplicationSnapshotRestoreD
 	}
 }
 
-/* ApplicationSnapshotRestoreDefault describes a response with status code -1, with default header values.
+/*
+ApplicationSnapshotRestoreDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ApplicationSnapshotRestoreDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this application snapshot restore default response has a 2xx status code
+func (o *ApplicationSnapshotRestoreDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this application snapshot restore default response has a 3xx status code
+func (o *ApplicationSnapshotRestoreDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this application snapshot restore default response has a 4xx status code
+func (o *ApplicationSnapshotRestoreDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this application snapshot restore default response has a 5xx status code
+func (o *ApplicationSnapshotRestoreDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this application snapshot restore default response a status code equal to that given
+func (o *ApplicationSnapshotRestoreDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ApplicationSnapshotRestoreDefault) Error() string {
 	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] application_snapshot_restore default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ApplicationSnapshotRestoreDefault) String() string {
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/snapshots/{uuid}/restore][%d] application_snapshot_restore default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ApplicationSnapshotRestoreDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

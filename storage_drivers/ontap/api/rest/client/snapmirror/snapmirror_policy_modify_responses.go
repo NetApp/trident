@@ -46,7 +46,8 @@ func NewSnapmirrorPolicyModifyAccepted() *SnapmirrorPolicyModifyAccepted {
 	return &SnapmirrorPolicyModifyAccepted{}
 }
 
-/* SnapmirrorPolicyModifyAccepted describes a response with status code 202, with default header values.
+/*
+SnapmirrorPolicyModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SnapmirrorPolicyModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this snapmirror policy modify accepted response has a 2xx status code
+func (o *SnapmirrorPolicyModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror policy modify accepted response has a 3xx status code
+func (o *SnapmirrorPolicyModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror policy modify accepted response has a 4xx status code
+func (o *SnapmirrorPolicyModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror policy modify accepted response has a 5xx status code
+func (o *SnapmirrorPolicyModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror policy modify accepted response a status code equal to that given
+func (o *SnapmirrorPolicyModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SnapmirrorPolicyModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /snapmirror/policies/{uuid}][%d] snapmirrorPolicyModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SnapmirrorPolicyModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /snapmirror/policies/{uuid}][%d] snapmirrorPolicyModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SnapmirrorPolicyModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSnapmirrorPolicyModifyDefault(code int) *SnapmirrorPolicyModifyDefault {
 	}
 }
 
-/* SnapmirrorPolicyModifyDefault describes a response with status code -1, with default header values.
+/*
+	SnapmirrorPolicyModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 6619714     | Schedule specified is an interval schedule. SnapMirror does not support interval schedules. |
@@ -91,8 +124,6 @@ func NewSnapmirrorPolicyModifyDefault(code int) *SnapmirrorPolicyModifyDefault {
 | 13303850    | Invalid input parameter |
 | 13303887    | Failed to create SnapMirror policy. Reason: Maximum number of allowed retention rules reached |
 | 13304050    | Retention cannot be empty for a SnapMirror policy with 'create_snapshot_on_source' set to false. |
-
-
 */
 type SnapmirrorPolicyModifyDefault struct {
 	_statusCode int
@@ -105,9 +136,39 @@ func (o *SnapmirrorPolicyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapmirror policy modify default response has a 2xx status code
+func (o *SnapmirrorPolicyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapmirror policy modify default response has a 3xx status code
+func (o *SnapmirrorPolicyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapmirror policy modify default response has a 4xx status code
+func (o *SnapmirrorPolicyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapmirror policy modify default response has a 5xx status code
+func (o *SnapmirrorPolicyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapmirror policy modify default response a status code equal to that given
+func (o *SnapmirrorPolicyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapmirrorPolicyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /snapmirror/policies/{uuid}][%d] snapmirror_policy_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapmirrorPolicyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /snapmirror/policies/{uuid}][%d] snapmirror_policy_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapmirrorPolicyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -172,7 +172,8 @@ type ClientService interface {
 }
 
 /*
-  FabricCollectionGet Retrieves Fibre Channel fabrics.
+	FabricCollectionGet Retrieves Fibre Channel fabrics.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connections`
@@ -182,7 +183,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `network fcp zone show`
 ### Learn more
 * [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
-
 */
 func (a *Client) FabricCollectionGet(params *FabricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FabricCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -220,7 +220,8 @@ func (a *Client) FabricCollectionGet(params *FabricCollectionGetParams, authInfo
 }
 
 /*
-  FabricGet Retrieves a Fibre Channel fabric.
+	FabricGet Retrieves a Fibre Channel fabric.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connections`
@@ -230,7 +231,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `network fcp zone show`
 ### Learn more
 * [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
-
 */
 func (a *Client) FabricGet(params *FabricGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FabricGetOK, error) {
 	// TODO: Validate the params before sending
@@ -268,13 +268,13 @@ func (a *Client) FabricGet(params *FabricGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  FcInterfaceCollectionGet Retrieves FC interfaces.
+	FcInterfaceCollectionGet Retrieves FC interfaces.
+
 ### Related ONTAP commands
 * `network interface show`
 * `vserver fcp interface show`
 ### Learn more
 * [`DOC /network/fc/interfaces`](#docs-networking-network_fc_interfaces)
-
 */
 func (a *Client) FcInterfaceCollectionGet(params *FcInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -312,7 +312,8 @@ func (a *Client) FcInterfaceCollectionGet(params *FcInterfaceCollectionGetParams
 }
 
 /*
-  FcInterfaceCreate Creates an FC interface.
+	FcInterfaceCreate Creates an FC interface.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the FC interface.
 * `name` - Name of the FC interface.
@@ -325,7 +326,6 @@ If not specified in POST, the following default property values are assigned.
 * `network interface create`
 ### Learn more
 * [`DOC /network/fc/interfaces`](#docs-networking-network_fc_interfaces)
-
 */
 func (a *Client) FcInterfaceCreate(params *FcInterfaceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -363,12 +363,12 @@ func (a *Client) FcInterfaceCreate(params *FcInterfaceCreateParams, authInfo run
 }
 
 /*
-  FcInterfaceDelete Deletes an FC interface.
+	FcInterfaceDelete Deletes an FC interface.
+
 ### Related ONTAP commands
 * `network interface delete`
 ### Learn more
 * [`DOC /network/fc/interfaces`](#docs-networking-network_fc_interfaces)
-
 */
 func (a *Client) FcInterfaceDelete(params *FcInterfaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -406,7 +406,8 @@ func (a *Client) FcInterfaceDelete(params *FcInterfaceDeleteParams, authInfo run
 }
 
 /*
-  FcInterfaceGet Retrieves an FC interface.
+	FcInterfaceGet Retrieves an FC interface.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
@@ -416,7 +417,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver fcp interface show`
 ### Learn more
 * [`DOC /network/fc/interfaces`](#docs-networking-network_fc_interfaces)
-
 */
 func (a *Client) FcInterfaceGet(params *FcInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -454,12 +454,12 @@ func (a *Client) FcInterfaceGet(params *FcInterfaceGetParams, authInfo runtime.C
 }
 
 /*
-  FcInterfaceModify Updates an FC interface.
+	FcInterfaceModify Updates an FC interface.
+
 ### Related ONTAP commands
 * `network interface modify`
 ### Learn more
 * [`DOC /network/fc/interfaces`](#docs-networking-network_fc_interfaces)
-
 */
 func (a *Client) FcInterfaceModify(params *FcInterfaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcInterfaceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -497,7 +497,8 @@ func (a *Client) FcInterfaceModify(params *FcInterfaceModifyParams, authInfo run
 }
 
 /*
-  FcPortCollectionGet Retrieves FC ports.<br/>
+	FcPortCollectionGet Retrieves FC ports.<br/>
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `fabric.name`
@@ -507,7 +508,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `network fcp adapter show`
 ### Learn more
 * [`DOC /network/fc/ports`](#docs-networking-network_fc_ports)
-
 */
 func (a *Client) FcPortCollectionGet(params *FcPortCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcPortCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -545,7 +545,8 @@ func (a *Client) FcPortCollectionGet(params *FcPortCollectionGetParams, authInfo
 }
 
 /*
-  FcPortGet Retrieves an FC port.
+	FcPortGet Retrieves an FC port.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `fabric.name`
@@ -555,7 +556,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `network fcp adapter show`
 ### Learn more
 * [`DOC /network/fc/ports`](#docs-networking-network_fc_ports)
-
 */
 func (a *Client) FcPortGet(params *FcPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcPortGetOK, error) {
 	// TODO: Validate the params before sending
@@ -593,12 +593,12 @@ func (a *Client) FcPortGet(params *FcPortGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  FcPortModify Updates an FC port.
+	FcPortModify Updates an FC port.
+
 ### Related ONTAP commands
 * `network fcp adapter modify`
 ### Learn more
 * [`DOC /network/fc/ports`](#docs-networking-network_fc_ports)
-
 */
 func (a *Client) FcPortModify(params *FcPortModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcPortModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -636,7 +636,8 @@ func (a *Client) FcPortModify(params *FcPortModifyParams, authInfo runtime.Clien
 }
 
 /*
-  FcSwitchCollectionGet Retrieves the Fibre Channel switches of a Fibre Channel fabric.
+	FcSwitchCollectionGet Retrieves the Fibre Channel switches of a Fibre Channel fabric.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `ports`
@@ -644,7 +645,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `network fcp topology show`
 ### Learn more
 * [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
-
 */
 func (a *Client) FcSwitchCollectionGet(params *FcSwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcSwitchCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -682,7 +682,8 @@ func (a *Client) FcSwitchCollectionGet(params *FcSwitchCollectionGetParams, auth
 }
 
 /*
-  FcSwitchGet Retrieves a Fibre Channel switch.
+	FcSwitchGet Retrieves a Fibre Channel switch.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `ports`
@@ -690,7 +691,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `network fcp topology show`
 ### Learn more
 * [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
-
 */
 func (a *Client) FcSwitchGet(params *FcSwitchGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcSwitchGetOK, error) {
 	// TODO: Validate the params before sending
@@ -728,7 +728,8 @@ func (a *Client) FcSwitchGet(params *FcSwitchGetParams, authInfo runtime.ClientA
 }
 
 /*
-  FcZoneCollectionGet Retrieves the zones of the active zoneset of a Fibre Channel fabric.
+	FcZoneCollectionGet Retrieves the zones of the active zoneset of a Fibre Channel fabric.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `members`
@@ -736,7 +737,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `network fcp zone show`
 ### Learn more
 * [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
-
 */
 func (a *Client) FcZoneCollectionGet(params *FcZoneCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcZoneCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -774,7 +774,8 @@ func (a *Client) FcZoneCollectionGet(params *FcZoneCollectionGetParams, authInfo
 }
 
 /*
-  FcZoneGet Retrieves a zone of the active zoneset of a Fibre Channel fabric.
+	FcZoneGet Retrieves a zone of the active zoneset of a Fibre Channel fabric.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `members`
@@ -782,7 +783,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `network fcp zone show`
 ### Learn more
 * [`DOC /network/fc/fabrics`](#docs-networking-network_fc_fabrics)
-
 */
 func (a *Client) FcZoneGet(params *FcZoneGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcZoneGetOK, error) {
 	// TODO: Validate the params before sending
@@ -820,10 +820,10 @@ func (a *Client) FcZoneGet(params *FcZoneGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  HTTPProxyCollectionGet Retrieves the HTTP proxy configurations of all the SVMs and Cluster IPspaces.
+	HTTPProxyCollectionGet Retrieves the HTTP proxy configurations of all the SVMs and Cluster IPspaces.
+
 ### Related ONTAP commands
 * `vserver http-proxy show`
-
 */
 func (a *Client) HTTPProxyCollectionGet(params *HTTPProxyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -861,18 +861,22 @@ func (a *Client) HTTPProxyCollectionGet(params *HTTPProxyCollectionGetParams, au
 }
 
 /*
-  HTTPProxyCreate Creates an HTTP proxy configuration for an SVM or a Cluster IPspace.
+	HTTPProxyCreate Creates an HTTP proxy configuration for an SVM or a Cluster IPspace.
+
 Important notes:
 * IPv6 must be enabled if IPv6 family addresses are specified in the "server" field.
 * The server and the port combination specified using the "server" and "port" fields is validated during this operation. The validation will fail in the following scenarios:
-  * The HTTP proxy service is not configured on the server.
-  * The HTTP proxy service is not running on the specified port.
-  * The server is unreachable.
+  - The HTTP proxy service is not configured on the server.
+  - The HTTP proxy service is not running on the specified port.
+  - The server is unreachable.
+
 ### Required properties
 * SVM-scoped HTTP proxy
-  * `svm.uuid` or `svm.name` - Existing SVM in which to create the HTTP proxy.
+  - `svm.uuid` or `svm.name` - Existing SVM in which to create the HTTP proxy.
+
 * Cluster-scoped HTTP proxy
-  * `ipspace.uuid` or `ipspace.name` - Exisitng Cluster IPspace in which to create the HTTP proxy.
+  - `ipspace.uuid` or `ipspace.name` - Exisitng Cluster IPspace in which to create the HTTP proxy.
+
 * `server` - HTTP proxy server FQDN or IP address.
 * `port` - HTTP proxy server port.
 ### Optional properties
@@ -881,7 +885,6 @@ Important notes:
 * `password` - Password used to authenticate with the HTTP proxy server.
 ### Related ONTAP commands
 * `vserver http-proxy create`
-
 */
 func (a *Client) HTTPProxyCreate(params *HTTPProxyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -919,10 +922,10 @@ func (a *Client) HTTPProxyCreate(params *HTTPProxyCreateParams, authInfo runtime
 }
 
 /*
-  HTTPProxyDelete Deletes the HTTP proxy configuration of the specified SVM or Cluster IPspace.
+	HTTPProxyDelete Deletes the HTTP proxy configuration of the specified SVM or Cluster IPspace.
+
 ### Related ONTAP commands
 * `vserver http-proxy delete`
-
 */
 func (a *Client) HTTPProxyDelete(params *HTTPProxyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -960,10 +963,10 @@ func (a *Client) HTTPProxyDelete(params *HTTPProxyDeleteParams, authInfo runtime
 }
 
 /*
-  HTTPProxyGet Displays the HTTP proxy server, port, and IPspace of the specified SVM or Cluster IPspace.
+	HTTPProxyGet Displays the HTTP proxy server, port, and IPspace of the specified SVM or Cluster IPspace.
+
 ### Related ONTAP commands
 * `vserver http-proxy show`
-
 */
 func (a *Client) HTTPProxyGet(params *HTTPProxyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1001,16 +1004,17 @@ func (a *Client) HTTPProxyGet(params *HTTPProxyGetParams, authInfo runtime.Clien
 }
 
 /*
-  HTTPProxyModify Updates the proxy server, port, username, and password parameters.
+	HTTPProxyModify Updates the proxy server, port, username, and password parameters.
+
 Important notes:
 * IPv6 must be enabled if IPv6 family addresses are specified in the "server" field.
 * The server and the port combination specified using the "server" and "port" fields is validated during this operation. The validation will fail in the following scenarios:
-  * The HTTP proxy service is not configured on the server.
-  * The HTTP proxy service is not running on the specified port.
-  * The server is unreachable.
+  - The HTTP proxy service is not configured on the server.
+  - The HTTP proxy service is not running on the specified port.
+  - The server is unreachable.
+
 ### Related ONTAP commands
 * `vserver http-proxy modify`
-
 */
 func (a *Client) HTTPProxyModify(params *HTTPProxyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1048,7 +1052,7 @@ func (a *Client) HTTPProxyModify(params *HTTPProxyModifyParams, authInfo runtime
 }
 
 /*
-  InterfacesMetricsCollectionGet Retrieves historical performance metrics for an interface.
+InterfacesMetricsCollectionGet Retrieves historical performance metrics for an interface.
 */
 func (a *Client) InterfacesMetricsCollectionGet(params *InterfacesMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*InterfacesMetricsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1086,21 +1090,23 @@ func (a *Client) InterfacesMetricsCollectionGet(params *InterfacesMetricsCollect
 }
 
 /*
-  IPServicePolicyCreate Creates a service policy for network interfaces. <br/>
+	IPServicePolicyCreate Creates a service policy for network interfaces. <br/>
+
 ### Required properties
 * `name` - Name of the service policy to create.
 * `ipspace.name` or `ipspace.uuid`
-  * Required for cluster-scoped service policies.
-  * Optional for SVM-scoped service policies.
+  - Required for cluster-scoped service policies.
+  - Optional for SVM-scoped service policies.
+
 * `svm.name` or `svm.uuid`
-  * Required for SVM-scoped service policies.
-  * Not valid for cluster-scoped service policies.
+  - Required for SVM-scoped service policies.
+  - Not valid for cluster-scoped service policies.
+
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `scope`
-  * svm if the svm parameter is specified
-  * cluster if the svm parameter is not specified
-
+  - svm if the svm parameter is specified
+  - cluster if the svm parameter is not specified
 */
 func (a *Client) IPServicePolicyCreate(params *IPServicePolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyCreateOK, error) {
 	// TODO: Validate the params before sending
@@ -1138,7 +1144,7 @@ func (a *Client) IPServicePolicyCreate(params *IPServicePolicyCreateParams, auth
 }
 
 /*
-  IPServicePolicyDelete Deletes a service policy for network interfaces.
+IPServicePolicyDelete Deletes a service policy for network interfaces.
 */
 func (a *Client) IPServicePolicyDelete(params *IPServicePolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1176,7 +1182,7 @@ func (a *Client) IPServicePolicyDelete(params *IPServicePolicyDeleteParams, auth
 }
 
 /*
-  IPServicePolicyModify Updates a service policy for network interfaces.
+IPServicePolicyModify Updates a service policy for network interfaces.
 */
 func (a *Client) IPServicePolicyModify(params *IPServicePolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1214,10 +1220,10 @@ func (a *Client) IPServicePolicyModify(params *IPServicePolicyModifyParams, auth
 }
 
 /*
-  IPSubnetCollectionGet Retrieves details for all subnets.
+	IPSubnetCollectionGet Retrieves details for all subnets.
+
 ### Related ONTAP Commands
 * `network subnet show`
-
 */
 func (a *Client) IPSubnetCollectionGet(params *IPSubnetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1255,7 +1261,8 @@ func (a *Client) IPSubnetCollectionGet(params *IPSubnetCollectionGetParams, auth
 }
 
 /*
-  IPSubnetCreate Creates a new named subnet.
+	IPSubnetCreate Creates a new named subnet.
+
 ### Required properties
 * `name` - Name of the subnet to create.
 * `broadcast_domain` - Broadcast domain containing the subnet.
@@ -1270,7 +1277,6 @@ If not specified in POST, the following default property values are assigned:
 * `fail_if_lifs_conflict` - _true_
 ### Related ONTAP commands
 * `network subnet create`
-
 */
 func (a *Client) IPSubnetCreate(params *IPSubnetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1308,10 +1314,10 @@ func (a *Client) IPSubnetCreate(params *IPSubnetCreateParams, authInfo runtime.C
 }
 
 /*
-  IPSubnetDelete Deletes an IP subnet.
+	IPSubnetDelete Deletes an IP subnet.
+
 ### Related ONTAP commands
 * `network subnet delete`
-
 */
 func (a *Client) IPSubnetDelete(params *IPSubnetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1350,10 +1356,10 @@ func (a *Client) IPSubnetDelete(params *IPSubnetDeleteParams, authInfo runtime.C
 }
 
 /*
-  IPSubnetGet Retrieves details for a specific IP subnet.
+	IPSubnetGet Retrieves details for a specific IP subnet.
+
 ### Related ONTAP commands
 * `network subnet show`
-
 */
 func (a *Client) IPSubnetGet(params *IPSubnetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1391,13 +1397,13 @@ func (a *Client) IPSubnetGet(params *IPSubnetGetParams, authInfo runtime.ClientA
 }
 
 /*
-  IPSubnetModify Updates an IP subnet.
+	IPSubnetModify Updates an IP subnet.
+
 ### Related ONTAP commands
 * `network subnet modify`
 * `network subnet rename`
 * `network subnet add-ranges`
 * `network subnet remove-ranges`
-
 */
 func (a *Client) IPSubnetModify(params *IPSubnetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPSubnetModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1435,10 +1441,10 @@ func (a *Client) IPSubnetModify(params *IPSubnetModifyParams, authInfo runtime.C
 }
 
 /*
-  IpspaceDelete Deletes an IPspace object.
+	IpspaceDelete Deletes an IPspace object.
+
 ### Related ONTAP commands
 * `network ipspace delete`
-
 */
 func (a *Client) IpspaceDelete(params *IpspaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1477,10 +1483,10 @@ func (a *Client) IpspaceDelete(params *IpspaceDeleteParams, authInfo runtime.Cli
 }
 
 /*
-  IpspaceGet Retrieves information about a specific IPspace.
+	IpspaceGet Retrieves information about a specific IPspace.
+
 ### Related ONTAP commands
 * `network ipspace show`
-
 */
 func (a *Client) IpspaceGet(params *IpspaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1518,10 +1524,10 @@ func (a *Client) IpspaceGet(params *IpspaceGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  IpspaceModify Updates an IPspace object.
+	IpspaceModify Updates an IPspace object.
+
 ### Related ONTAP commands
 * `network ipspace rename`
-
 */
 func (a *Client) IpspaceModify(params *IpspaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1560,12 +1566,12 @@ func (a *Client) IpspaceModify(params *IpspaceModifyParams, authInfo runtime.Cli
 }
 
 /*
-  IpspacesCreate Creates a new domain within which IP addresses are unique. SVMs, ports, and networks are scoped to a single IPspace.
+	IpspacesCreate Creates a new domain within which IP addresses are unique. SVMs, ports, and networks are scoped to a single IPspace.
+
 ### Required properties
 * `name` - Name of the IPspace to create.
 ### Related ONTAP commands
 * `network ipspace create`
-
 */
 func (a *Client) IpspacesCreate(params *IpspacesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspacesCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1603,10 +1609,10 @@ func (a *Client) IpspacesCreate(params *IpspacesCreateParams, authInfo runtime.C
 }
 
 /*
-  IpspacesGet Retrieves a collection of IPspaces for the entire cluster.
+	IpspacesGet Retrieves a collection of IPspaces for the entire cluster.
+
 ### Related ONTAP commands
 * `network ipspace show`
-
 */
 func (a *Client) IpspacesGet(params *IpspacesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspacesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1644,10 +1650,10 @@ func (a *Client) IpspacesGet(params *IpspacesGetParams, authInfo runtime.ClientA
 }
 
 /*
-  NetworkEthernetBroadcastDomainDelete Deletes a broadcast domain.
+	NetworkEthernetBroadcastDomainDelete Deletes a broadcast domain.
+
 ### Related ONTAP commands
 * `network port broadcast-domain delete`
-
 */
 func (a *Client) NetworkEthernetBroadcastDomainDelete(params *NetworkEthernetBroadcastDomainDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1685,10 +1691,10 @@ func (a *Client) NetworkEthernetBroadcastDomainDelete(params *NetworkEthernetBro
 }
 
 /*
-  NetworkEthernetBroadcastDomainGet Retrieves details of a broadcast domain.
+	NetworkEthernetBroadcastDomainGet Retrieves details of a broadcast domain.
+
 ### Related ONTAP commands
 * `network port broadcast-domain show`
-
 */
 func (a *Client) NetworkEthernetBroadcastDomainGet(params *NetworkEthernetBroadcastDomainGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1726,12 +1732,12 @@ func (a *Client) NetworkEthernetBroadcastDomainGet(params *NetworkEthernetBroadc
 }
 
 /*
-  NetworkEthernetBroadcastDomainModify Updates the properties of a broadcast domain.
+	NetworkEthernetBroadcastDomainModify Updates the properties of a broadcast domain.
+
 ### Related ONTAP commands
 * `network port broadcast-domain modify`
 * `network port broadcast-domain rename`
 * `network port broadcast-domain move`
-
 */
 func (a *Client) NetworkEthernetBroadcastDomainModify(params *NetworkEthernetBroadcastDomainModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1769,7 +1775,8 @@ func (a *Client) NetworkEthernetBroadcastDomainModify(params *NetworkEthernetBro
 }
 
 /*
-  NetworkEthernetBroadcastDomainsCreate Creates a new broadcast domain.<br/>
+	NetworkEthernetBroadcastDomainsCreate Creates a new broadcast domain.<br/>
+
 ### Required properties
 * `name` - Name of the broadcast-domain to create.
 * `mtu` - Maximum transmission unit (MTU) of the broadcast domain.
@@ -1780,7 +1787,6 @@ If not specified in POST, the following default property values are assigned:
 * `ipspace` - _Default_
 ### Related ONTAP commands
 * `network port broadcast-domain create`
-
 */
 func (a *Client) NetworkEthernetBroadcastDomainsCreate(params *NetworkEthernetBroadcastDomainsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1818,10 +1824,10 @@ func (a *Client) NetworkEthernetBroadcastDomainsCreate(params *NetworkEthernetBr
 }
 
 /*
-  NetworkEthernetBroadcastDomainsGet Retrieves a collection of broadcast domains for the entire cluster.
+	NetworkEthernetBroadcastDomainsGet Retrieves a collection of broadcast domains for the entire cluster.
+
 ### Related ONTAP commands
 * `network port broadcast-domain show`
-
 */
 func (a *Client) NetworkEthernetBroadcastDomainsGet(params *NetworkEthernetBroadcastDomainsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1859,11 +1865,11 @@ func (a *Client) NetworkEthernetBroadcastDomainsGet(params *NetworkEthernetBroad
 }
 
 /*
-  NetworkEthernetPortDelete Deletes a VLAN or LAG.
+	NetworkEthernetPortDelete Deletes a VLAN or LAG.
+
 ### Related ONTAP commands
 * `network port ifgrp delete`
 * `network port vlan delete`
-
 */
 func (a *Client) NetworkEthernetPortDelete(params *NetworkEthernetPortDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1901,12 +1907,12 @@ func (a *Client) NetworkEthernetPortDelete(params *NetworkEthernetPortDeletePara
 }
 
 /*
-  NetworkEthernetPortGet Retrieves the details of a physical port, VLAN, or LAG.
+	NetworkEthernetPortGet Retrieves the details of a physical port, VLAN, or LAG.
+
 ### Related ONTAP commands
 * `network port show`
 * `network port ifgrp show`
 * `network port vlan show`
-
 */
 func (a *Client) NetworkEthernetPortGet(params *NetworkEthernetPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1944,7 +1950,8 @@ func (a *Client) NetworkEthernetPortGet(params *NetworkEthernetPortGetParams, au
 }
 
 /*
-  NetworkEthernetPortModify Updates a port.
+	NetworkEthernetPortModify Updates a port.
+
 ### Related ONTAP commands
 * `network port broadcast-domain add-ports`
 * `network port broadcast-domain remove-ports`
@@ -1952,7 +1959,6 @@ func (a *Client) NetworkEthernetPortGet(params *NetworkEthernetPortGetParams, au
 * `network port modify`
 * `network port vlan modify`
 * `network port reachability repair`
-
 */
 func (a *Client) NetworkEthernetPortModify(params *NetworkEthernetPortModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1990,23 +1996,24 @@ func (a *Client) NetworkEthernetPortModify(params *NetworkEthernetPortModifyPara
 }
 
 /*
-  NetworkEthernetPortsCreate Creates a new VLAN (such as node1:e0a-100) or LAG (ifgrp, such as node2:a0a).
+	NetworkEthernetPortsCreate Creates a new VLAN (such as node1:e0a-100) or LAG (ifgrp, such as node2:a0a).
+
 ### Required properties
 * `node` - Node the port will be created on.
 * `type` - Defines if a VLAN or LAG will be created:
-  * VLAN
-    * `vlan.base_port` - Physical port or LAG the VLAN will be created on.
-    * `vlan.tag` - Tag used to identify VLAN on the base port.
-  * LAG
-    * `lag.mode` - Policy for the LAG that will be created.
-    * `lag.distribution_policy` - Indicates how the packets are distributed between ports.
-    * `lag.member_ports` - Set of ports the LAG consists of.
+  - VLAN
+  - `vlan.base_port` - Physical port or LAG the VLAN will be created on.
+  - `vlan.tag` - Tag used to identify VLAN on the base port.
+  - LAG
+  - `lag.mode` - Policy for the LAG that will be created.
+  - `lag.distribution_policy` - Indicates how the packets are distributed between ports.
+  - `lag.member_ports` - Set of ports the LAG consists of.
+
 ### Optional properties
 * `broadcast_domain` - The layer-2 broadcast domain the port is associated with. The port will be placed in a broadcast domain if it is not specified.  It may take several minutes for the broadcast domain to be assigned.  During that period the port cannot host interfaces.
 ### Related ONTAP commands
 * `network port ifgrp create`
 * `network port vlan create`
-
 */
 func (a *Client) NetworkEthernetPortsCreate(params *NetworkEthernetPortsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2044,12 +2051,12 @@ func (a *Client) NetworkEthernetPortsCreate(params *NetworkEthernetPortsCreatePa
 }
 
 /*
-  NetworkEthernetPortsGet Retrieves a collection of ports (physical, VLAN and LAG) for an entire cluster.
+	NetworkEthernetPortsGet Retrieves a collection of ports (physical, VLAN and LAG) for an entire cluster.
+
 ### Related ONTAP commands
 * `network port show`
 * `network port ifgrp show`
 * `network port vlan show`
-
 */
 func (a *Client) NetworkEthernetPortsGet(params *NetworkEthernetPortsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2087,10 +2094,10 @@ func (a *Client) NetworkEthernetPortsGet(params *NetworkEthernetPortsGetParams, 
 }
 
 /*
-  NetworkIPBgpPeerGroupDelete Deletes a BGP peer group for VIP.
+	NetworkIPBgpPeerGroupDelete Deletes a BGP peer group for VIP.
+
 ### Related ONTAP commands
 * `network bgp peer-group delete`
-
 */
 func (a *Client) NetworkIPBgpPeerGroupDelete(params *NetworkIPBgpPeerGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2128,10 +2135,10 @@ func (a *Client) NetworkIPBgpPeerGroupDelete(params *NetworkIPBgpPeerGroupDelete
 }
 
 /*
-  NetworkIPBgpPeerGroupGet Retrieves details of a BGP peer group for VIP.
+	NetworkIPBgpPeerGroupGet Retrieves details of a BGP peer group for VIP.
+
 ### Related ONTAP commands
 * `network bgp peer-group show`
-
 */
 func (a *Client) NetworkIPBgpPeerGroupGet(params *NetworkIPBgpPeerGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2169,11 +2176,11 @@ func (a *Client) NetworkIPBgpPeerGroupGet(params *NetworkIPBgpPeerGroupGetParams
 }
 
 /*
-  NetworkIPBgpPeerGroupModify Updates a BGP peer group for VIP.
+	NetworkIPBgpPeerGroupModify Updates a BGP peer group for VIP.
+
 ### Related ONTAP commands
 * `network bgp peer-group modify`
 * `network bgp peer-group rename`
-
 */
 func (a *Client) NetworkIPBgpPeerGroupModify(params *NetworkIPBgpPeerGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2211,23 +2218,26 @@ func (a *Client) NetworkIPBgpPeerGroupModify(params *NetworkIPBgpPeerGroupModify
 }
 
 /*
-  NetworkIPBgpPeerGroupsCreate Creates a new BGP peer group for VIP. Multipath-routing is turned on cluster-wide automatically if the peer group being created results in multiple paths being available for an existing or future VIP interface.<br/>
+	NetworkIPBgpPeerGroupsCreate Creates a new BGP peer group for VIP. Multipath-routing is turned on cluster-wide automatically if the peer group being created results in multiple paths being available for an existing or future VIP interface.<br/>
+
 ### Required properties
 * `name` - Name of the peer-group to create.
 * `ipspace.name` or `ipspace.uuid`
-  * Required with local.interface.name to identify a local interface
-  * Optional when local.interface.uuid is specified
+  - Required with local.interface.name to identify a local interface
+  - Optional when local.interface.uuid is specified
+
 * `local.interface.uuid` or `local.interface.name`
-  * Required when specifying an existing local interface.
+  - Required when specifying an existing local interface.
+
 * `local.interface.name`, `local.ip` and `local.port`
-  * Required to create a new local interface.
+  - Required to create a new local interface.
+
 * `peer.address` - IP address of the peer router
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `is_next_hop` - _false_
 ### Related ONTAP commands
 * `network bgp peer-group create`
-
 */
 func (a *Client) NetworkIPBgpPeerGroupsCreate(params *NetworkIPBgpPeerGroupsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2265,10 +2275,10 @@ func (a *Client) NetworkIPBgpPeerGroupsCreate(params *NetworkIPBgpPeerGroupsCrea
 }
 
 /*
-  NetworkIPBgpPeerGroupsGet Retrieves the details of all BGP peer groups for VIP.
+	NetworkIPBgpPeerGroupsGet Retrieves the details of all BGP peer groups for VIP.
+
 ### Related ONTAP Commands
 * `network bgp peer-group show`
-
 */
 func (a *Client) NetworkIPBgpPeerGroupsGet(params *NetworkIPBgpPeerGroupsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2306,10 +2316,10 @@ func (a *Client) NetworkIPBgpPeerGroupsGet(params *NetworkIPBgpPeerGroupsGetPara
 }
 
 /*
-  NetworkIPInterfaceDelete Deletes an IP interface.
+	NetworkIPInterfaceDelete Deletes an IP interface.
+
 ### Related ONTAP commands
 * `network interface delete`
-
 */
 func (a *Client) NetworkIPInterfaceDelete(params *NetworkIPInterfaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2348,10 +2358,10 @@ func (a *Client) NetworkIPInterfaceDelete(params *NetworkIPInterfaceDeleteParams
 }
 
 /*
-  NetworkIPInterfaceGet Retrieves details for a specific IP interface.
+	NetworkIPInterfaceGet Retrieves details for a specific IP interface.
+
 ### Related ONTAP commands
 * `network interface show`
-
 */
 func (a *Client) NetworkIPInterfaceGet(params *NetworkIPInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2389,13 +2399,13 @@ func (a *Client) NetworkIPInterfaceGet(params *NetworkIPInterfaceGetParams, auth
 }
 
 /*
-  NetworkIPInterfaceModify Updates an IP interface.
+	NetworkIPInterfaceModify Updates an IP interface.
+
 ### Related ONTAP commands
 * `network interface migrate`
 * `network interface modify`
 * `network interface rename`
 * `network interface revert`
-
 */
 func (a *Client) NetworkIPInterfaceModify(params *NetworkIPInterfaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2433,50 +2443,57 @@ func (a *Client) NetworkIPInterfaceModify(params *NetworkIPInterfaceModifyParams
 }
 
 /*
-  NetworkIPInterfacesCreate Creates a new Cluster-scoped or SVM-scoped interface.<br/>
+	NetworkIPInterfacesCreate Creates a new Cluster-scoped or SVM-scoped interface.<br/>
+
 ### Required properties
 * `name` - Name of the interface to create.
 * `ip` or `subnet`
-  * `ip.address` - IP address for the interface.
-  * `ip.netmask` - IP subnet of the interface.
-  * `subnet.uuid` or `subnet.name`
+  - `ip.address` - IP address for the interface.
+  - `ip.netmask` - IP subnet of the interface.
+  - `subnet.uuid` or `subnet.name`
+
 * `ipspace.name` or `ipspace.uuid`
-  * Required for Cluster-scoped interfaces.
-  * Optional for SVM-scoped interfaces.
+  - Required for Cluster-scoped interfaces.
+  - Optional for SVM-scoped interfaces.
+
 * `svm.name` or `svm.uuid`
-  * Required for an SVM-scoped interface.
-  * Invalid for a Cluster-scoped interface.
+  - Required for an SVM-scoped interface.
+  - Invalid for a Cluster-scoped interface.
+
 * `location.home_port` or `location.home_node` or `location.broadcast_domain` - One of these properties must be set to a value to define where the interface will be located.
 ### Recommended property values
 * `service_policy`
-  * `for SVM scoped interfaces`
-    * _default-data-files_ for interfaces carrying file-oriented NAS data traffic
-    * (DEPRECATED) _default-data-blocks_ for interfaces carrying block-oriented SAN data traffic
-    * _default-data-iscsi_ for interfaces carrying iSCSI data traffic
-    * _default-management_ for interfaces carrying SVM management requests
-  * `for Cluster scoped interfaces`
-    * _default-intercluster_ for interfaces carrying cluster peering traffic
-    * _default-management_ for interfaces carrying system management requests
-    * _default-route-announce_ for interfaces carrying BGP peer connections
+  - `for SVM scoped interfaces`
+  - _default-data-files_ for interfaces carrying file-oriented NAS data traffic
+  - (DEPRECATED) _default-data-blocks_ for interfaces carrying block-oriented SAN data traffic
+  - _default-data-iscsi_ for interfaces carrying iSCSI data traffic
+  - _default-management_ for interfaces carrying SVM management requests
+  - `for Cluster scoped interfaces`
+  - _default-intercluster_ for interfaces carrying cluster peering traffic
+  - _default-management_ for interfaces carrying system management requests
+  - _default-route-announce_ for interfaces carrying BGP peer connections
+
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `scope`
-  * _svm_ if svm parameter is specified.
-  * _cluster_ if svm parameter is not specified
+  - _svm_ if svm parameter is specified.
+  - _cluster_ if svm parameter is not specified
+
 * `enabled` - _true_
 * `location.auto_revert` - _true_
 * `service_policy`
-  * _default-data-files_ if scope is `svm`
-  * _default-management_ if scope is `cluster` and IPspace is not `Cluster`
-  * _default-cluster_ if scope is `cluster` and IPspace is `Cluster`
+  - _default-data-files_ if scope is `svm`
+  - _default-management_ if scope is `cluster` and IPspace is not `Cluster`
+  - _default-cluster_ if scope is `cluster` and IPspace is `Cluster`
+
 * `failover` - Selects the least restrictive failover policy supported by all the services in the service policy.
 * `ddns_enabled`
-  * _true_ if the interface supports _data_nfs_ or _data_cifs_ services
-  * _false_ otherwise
+  - _true_ if the interface supports _data_nfs_ or _data_cifs_ services
+  - _false_ otherwise
+
 * `fail_if_subnet_conflicts` - _true_
 ### Related ONTAP commands
 * `network interface create`
-
 */
 func (a *Client) NetworkIPInterfacesCreate(params *NetworkIPInterfacesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfacesCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2514,10 +2531,10 @@ func (a *Client) NetworkIPInterfacesCreate(params *NetworkIPInterfacesCreatePara
 }
 
 /*
-  NetworkIPInterfacesGet Retrieves the details of all IP interfaces.
+	NetworkIPInterfacesGet Retrieves the details of all IP interfaces.
+
 ### Related ONTAP Commands
 * `network interface show`
-
 */
 func (a *Client) NetworkIPInterfacesGet(params *NetworkIPInterfacesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfacesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2555,10 +2572,10 @@ func (a *Client) NetworkIPInterfacesGet(params *NetworkIPInterfacesGetParams, au
 }
 
 /*
-  NetworkIPRouteDelete Deletes a specific IP route.
+	NetworkIPRouteDelete Deletes a specific IP route.
+
 ### Related ONTAP commands
 * `network route delete`
-
 */
 func (a *Client) NetworkIPRouteDelete(params *NetworkIPRouteDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRouteDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2596,11 +2613,11 @@ func (a *Client) NetworkIPRouteDelete(params *NetworkIPRouteDeleteParams, authIn
 }
 
 /*
-  NetworkIPRouteGet Retrieves the details of a specific IP route.
+	NetworkIPRouteGet Retrieves the details of a specific IP route.
+
 ### Related ONTAP commands
 * `network route show`
 * `network route show-lifs`
-
 */
 func (a *Client) NetworkIPRouteGet(params *NetworkIPRouteGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRouteGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2638,23 +2655,26 @@ func (a *Client) NetworkIPRouteGet(params *NetworkIPRouteGetParams, authInfo run
 }
 
 /*
-  NetworkIPRoutesCreate Creates a Cluster-scoped or SVM-scoped static route.
+	NetworkIPRoutesCreate Creates a Cluster-scoped or SVM-scoped static route.
+
 ### Required properties
 * `gateway` - IP address to route packets to.
 * SVM-scoped routes
-  * `svm.name` or `svm.uuid` - SVM that route is applied to.
+  - `svm.name` or `svm.uuid` - SVM that route is applied to.
+
 * cluster-scoped routes
-  * There are no additional required fields for Cluster-scoped routes.
+  - There are no additional required fields for Cluster-scoped routes.
+
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `destination` - _0.0.0.0/0_ for IPv4 or _::/0_ for IPv6.
 * `ipspace.name`
-  * _Default_ for Cluster-scoped routes.
-  * Name of the SVM's IPspace for SVM-scoped routes.
+  - _Default_ for Cluster-scoped routes.
+  - Name of the SVM's IPspace for SVM-scoped routes.
+
 * `metric` - 20.
 ### Related ONTAP commands
 * `network route create`
-
 */
 func (a *Client) NetworkIPRoutesCreate(params *NetworkIPRoutesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRoutesCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2692,14 +2712,14 @@ func (a *Client) NetworkIPRoutesCreate(params *NetworkIPRoutesCreateParams, auth
 }
 
 /*
-  NetworkIPRoutesGet Retrieves the collection of IP routes.
+	NetworkIPRoutesGet Retrieves the collection of IP routes.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `interfaces.*`
 ### Related ONTAP commands
 * `network route show`
 * `network route show-lifs`
-
 */
 func (a *Client) NetworkIPRoutesGet(params *NetworkIPRoutesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRoutesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2737,10 +2757,10 @@ func (a *Client) NetworkIPRoutesGet(params *NetworkIPRoutesGetParams, authInfo r
 }
 
 /*
-  NetworkIPServicePoliciesGet Retrieves a collection of service policies.
+	NetworkIPServicePoliciesGet Retrieves a collection of service policies.
+
 ### Related ONTAP commands
 * `network interface service-policy show`
-
 */
 func (a *Client) NetworkIPServicePoliciesGet(params *NetworkIPServicePoliciesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPServicePoliciesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2778,10 +2798,10 @@ func (a *Client) NetworkIPServicePoliciesGet(params *NetworkIPServicePoliciesGet
 }
 
 /*
-  NetworkIPServicePolicyGet Retrieves a specific service policy.
+	NetworkIPServicePolicyGet Retrieves a specific service policy.
+
 ### Related ONTAP commands
 * `network interface service-policy show`
-
 */
 func (a *Client) NetworkIPServicePolicyGet(params *NetworkIPServicePolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPServicePolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2819,7 +2839,7 @@ func (a *Client) NetworkIPServicePolicyGet(params *NetworkIPServicePolicyGetPara
 }
 
 /*
-  PerformanceFcInterfaceMetricCollectionGet Retrieves historical performance metrics for an FC interface.
+PerformanceFcInterfaceMetricCollectionGet Retrieves historical performance metrics for an FC interface.
 */
 func (a *Client) PerformanceFcInterfaceMetricCollectionGet(params *PerformanceFcInterfaceMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcInterfaceMetricCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2857,7 +2877,7 @@ func (a *Client) PerformanceFcInterfaceMetricCollectionGet(params *PerformanceFc
 }
 
 /*
-  PerformanceFcPortMetricCollectionGet Retrieves historical performance metrics for an FC port
+PerformanceFcPortMetricCollectionGet Retrieves historical performance metrics for an FC port
 */
 func (a *Client) PerformanceFcPortMetricCollectionGet(params *PerformanceFcPortMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcPortMetricCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2895,7 +2915,7 @@ func (a *Client) PerformanceFcPortMetricCollectionGet(params *PerformanceFcPortM
 }
 
 /*
-  PortMetricsCollectionGet Retrieves historical performance metrics for a port.
+PortMetricsCollectionGet Retrieves historical performance metrics for a port.
 */
 func (a *Client) PortMetricsCollectionGet(params *PortMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortMetricsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2933,12 +2953,12 @@ func (a *Client) PortMetricsCollectionGet(params *PortMetricsCollectionGetParams
 }
 
 /*
-  SwitchCollectionGet Retrieves the ethernet switches attached to the chassis.
+	SwitchCollectionGet Retrieves the ethernet switches attached to the chassis.
+
 ### Related ONTAP commands
 * `system switch ethernet show`
 ### Learn more
 * [`DOC /network/ethernet/switches`](#docs-networking-network_ethernet_switches)
-
 */
 func (a *Client) SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2976,23 +2996,24 @@ func (a *Client) SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo
 }
 
 /*
-  SwitchCreate Creates an ethernet switch.
+	SwitchCreate Creates an ethernet switch.
+
 ### Required properties
 * `name` - Name of the switch to create.
 * `address` - Switch IP address.
 * `model` - Switch model number.
 * `monitoring.enabled` - Whether the switch should be monitored by CSHM.
 * `network`
-  * _cluster_ for cluster or shared switches.
-  * _storage_ for storage switches.
-  * _management_ for management switches.
+  - _cluster_ for cluster or shared switches.
+  - _storage_ for storage switches.
+  - _management_ for management switches.
+
 * `snmp.version` - SNMP version.
 * `snmp.user` - SNMP user.
 ### Related ONTAP commands
 * `system switch ethernet create`
 ### Learn more
 * [`DOC /network/ethernet/switches`](#docs-networking-network_ethernet_switches)
-
 */
 func (a *Client) SwitchCreate(params *SwitchCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3030,12 +3051,12 @@ func (a *Client) SwitchCreate(params *SwitchCreateParams, authInfo runtime.Clien
 }
 
 /*
-  SwitchDelete Deletes an Ethernet switch.
+	SwitchDelete Deletes an Ethernet switch.
+
 ### Related ONTAP commands
 * `system switch ethernet delete`
 ### Learn more
 * [`DOC /network/ethernet/switches`](#docs-networking-network_ethernet_switches)
-
 */
 func (a *Client) SwitchDelete(params *SwitchDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3073,12 +3094,12 @@ func (a *Client) SwitchDelete(params *SwitchDeleteParams, authInfo runtime.Clien
 }
 
 /*
-  SwitchGet Retrieves the details of an Ethernet switch.
+	SwitchGet Retrieves the details of an Ethernet switch.
+
 ### Related ONTAP commands
 * `system switch ethernet show`
 ### Learn more
 * [`DOC /network/ethernet/switches`](#docs-networking-network_ethernet_switches)
-
 */
 func (a *Client) SwitchGet(params *SwitchGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3116,7 +3137,7 @@ func (a *Client) SwitchGet(params *SwitchGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  SwitchModify Update Ethernet Switch REST API
+SwitchModify Update Ethernet Switch REST API
 */
 func (a *Client) SwitchModify(params *SwitchModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3154,12 +3175,12 @@ func (a *Client) SwitchModify(params *SwitchModifyParams, authInfo runtime.Clien
 }
 
 /*
-  SwitchPortCollectionGet Retrieves the ethernet switch ports.
+	SwitchPortCollectionGet Retrieves the ethernet switch ports.
+
 ### Related ONTAP commands
 * `system switch ethernet interface show`
 ### Learn more
 * [`DOC /network/ethernet/switch/ports`](#docs-networking-network_ethernet_switch_ports)
-
 */
 func (a *Client) SwitchPortCollectionGet(params *SwitchPortCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchPortCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3197,10 +3218,10 @@ func (a *Client) SwitchPortCollectionGet(params *SwitchPortCollectionGetParams, 
 }
 
 /*
-  SwitchPortGet Retrieves an ethernet switch port.
+	SwitchPortGet Retrieves an ethernet switch port.
+
 ### Related ONTAP commands
 * `system switch ethernet interface show`
-
 */
 func (a *Client) SwitchPortGet(params *SwitchPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchPortGetOK, error) {
 	// TODO: Validate the params before sending

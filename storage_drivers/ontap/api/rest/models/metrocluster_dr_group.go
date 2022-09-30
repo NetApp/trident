@@ -269,7 +269,6 @@ func (m *MetroclusterDrGroup) UnmarshalBinary(b []byte) error {
 // MetroclusterDrGroupMccipPortsItems0 Port configuration specification.
 // l3_config information is only needed when configuring a MetroCluster IP for use in a layer 3 network.
 //
-//
 // swagger:model MetroclusterDrGroupMccipPortsItems0
 type MetroclusterDrGroupMccipPortsItems0 struct {
 

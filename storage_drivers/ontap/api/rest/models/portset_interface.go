@@ -302,7 +302,6 @@ func (m *PortsetInterface) UnmarshalBinary(b []byte) error {
 
 // PortsetInterfaceFc An FC interface.
 //
-//
 // swagger:model PortsetInterfaceFc
 type PortsetInterfaceFc struct {
 
@@ -897,7 +896,6 @@ func (m *PortsetInterfaceLinks) UnmarshalBinary(b []byte) error {
 // PortsetInterfacePortset The portset in which the network interface is found.<br/>
 // Note that this does not mean that the network interface cannot also be found in other portsets.
 //
-//
 // swagger:model PortsetInterfacePortset
 type PortsetInterfacePortset struct {
 
@@ -1089,7 +1087,6 @@ func (m *PortsetInterfacePortsetLinks) UnmarshalBinary(b []byte) error {
 
 // PortsetInterfaceRecordsItems0 A container for either a Fibre Channel network interface or an IP network interface. On POST `fc` and `ip` are mutually exclusive.
 //
-//
 // swagger:model PortsetInterfaceRecordsItems0
 type PortsetInterfaceRecordsItems0 struct {
 
@@ -1278,7 +1275,6 @@ func (m *PortsetInterfaceRecordsItems0) UnmarshalBinary(b []byte) error {
 }
 
 // PortsetInterfaceRecordsItems0Fc An FC interface.
-//
 //
 // swagger:model PortsetInterfaceRecordsItems0Fc
 type PortsetInterfaceRecordsItems0Fc struct {

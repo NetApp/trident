@@ -55,10 +55,12 @@ func NewLicenseCreateParamsWithHTTPClient(client *http.Client) *LicenseCreatePar
 	}
 }
 
-/* LicenseCreateParams contains all the parameters to send to the API endpoint
-   for the license create operation.
+/*
+LicenseCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the license create operation.
+
+	Typically these are written to a http.Request.
 */
 type LicenseCreateParams struct {
 

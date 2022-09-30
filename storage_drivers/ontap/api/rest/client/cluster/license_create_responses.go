@@ -46,7 +46,8 @@ func NewLicenseCreateCreated() *LicenseCreateCreated {
 	return &LicenseCreateCreated{}
 }
 
-/* LicenseCreateCreated describes a response with status code 201, with default header values.
+/*
+LicenseCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type LicenseCreateCreated struct {
 	Payload *models.LicensePackageResponse
 }
 
+// IsSuccess returns true when this license create created response has a 2xx status code
+func (o *LicenseCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this license create created response has a 3xx status code
+func (o *LicenseCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this license create created response has a 4xx status code
+func (o *LicenseCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this license create created response has a 5xx status code
+func (o *LicenseCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this license create created response a status code equal to that given
+func (o *LicenseCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *LicenseCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] licenseCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *LicenseCreateCreated) String() string {
+	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] licenseCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *LicenseCreateCreated) GetPayload() *models.LicensePackageResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewLicenseCreateDefault(code int) *LicenseCreateDefault {
 	}
 }
 
-/* LicenseCreateDefault describes a response with status code -1, with default header values.
+/*
+	LicenseCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1115117    | Generic licensing error |
@@ -124,7 +157,6 @@ func NewLicenseCreateDefault(code int) *LicenseCreateDefault {
 | 655294468  | Expired license |
 | 655294469  | License does not apply to the platform |
 | 655294470  | License does not apply to the product  |
-
 */
 type LicenseCreateDefault struct {
 	_statusCode int
@@ -137,9 +169,39 @@ func (o *LicenseCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this license create default response has a 2xx status code
+func (o *LicenseCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this license create default response has a 3xx status code
+func (o *LicenseCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this license create default response has a 4xx status code
+func (o *LicenseCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this license create default response has a 5xx status code
+func (o *LicenseCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this license create default response a status code equal to that given
+func (o *LicenseCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LicenseCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] license_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LicenseCreateDefault) String() string {
+	return fmt.Sprintf("[POST /cluster/licensing/licenses][%d] license_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LicenseCreateDefault) GetPayload() *models.ErrorResponses {
 	return o.Payload
 }

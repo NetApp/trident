@@ -55,10 +55,12 @@ func NewCloudTargetCreateParamsWithHTTPClient(client *http.Client) *CloudTargetC
 	}
 }
 
-/* CloudTargetCreateParams contains all the parameters to send to the API endpoint
-   for the cloud target create operation.
+/*
+CloudTargetCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cloud target create operation.
+
+	Typically these are written to a http.Request.
 */
 type CloudTargetCreateParams struct {
 

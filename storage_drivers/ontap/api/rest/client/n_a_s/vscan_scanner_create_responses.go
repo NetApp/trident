@@ -46,7 +46,8 @@ func NewVscanScannerCreateCreated() *VscanScannerCreateCreated {
 	return &VscanScannerCreateCreated{}
 }
 
-/* VscanScannerCreateCreated describes a response with status code 201, with default header values.
+/*
+VscanScannerCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type VscanScannerCreateCreated struct {
 	Payload *models.VscanScannerPoolResponse
 }
 
+// IsSuccess returns true when this vscan scanner create created response has a 2xx status code
+func (o *VscanScannerCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan scanner create created response has a 3xx status code
+func (o *VscanScannerCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan scanner create created response has a 4xx status code
+func (o *VscanScannerCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan scanner create created response has a 5xx status code
+func (o *VscanScannerCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan scanner create created response a status code equal to that given
+func (o *VscanScannerCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *VscanScannerCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscanScannerCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *VscanScannerCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscanScannerCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *VscanScannerCreateCreated) GetPayload() *models.VscanScannerPoolResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewVscanScannerCreateDefault(code int) *VscanScannerCreateDefault {
 	}
 }
 
-/* VscanScannerCreateDefault describes a response with status code -1, with default header values.
+/*
+	VscanScannerCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 10027086   | The specified list of servers contain one or more entries that cannot be resolved
@@ -93,7 +126,6 @@ func NewVscanScannerCreateDefault(code int) *VscanScannerCreateDefault {
 | 10027107   | The list of privileged users or list of servers specified is empty
 | 10027108   | The list of privileged users specified contains an invalid entry
 | 10027063   | Attempting to modify a scanner-pool on an administrative SVM with a data SVM
-
 */
 type VscanScannerCreateDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *VscanScannerCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan scanner create default response has a 2xx status code
+func (o *VscanScannerCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan scanner create default response has a 3xx status code
+func (o *VscanScannerCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan scanner create default response has a 4xx status code
+func (o *VscanScannerCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan scanner create default response has a 5xx status code
+func (o *VscanScannerCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan scanner create default response a status code equal to that given
+func (o *VscanScannerCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanScannerCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscan_scanner_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanScannerCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/vscan/{svm.uuid}/scanner-pools][%d] vscan_scanner_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanScannerCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

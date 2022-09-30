@@ -54,10 +54,12 @@ func NewKeyManagerConfigModifyParamsWithHTTPClient(client *http.Client) *KeyMana
 	}
 }
 
-/* KeyManagerConfigModifyParams contains all the parameters to send to the API endpoint
-   for the key manager config modify operation.
+/*
+KeyManagerConfigModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the key manager config modify operation.
+
+	Typically these are written to a http.Request.
 */
 type KeyManagerConfigModifyParams struct {
 

@@ -46,7 +46,8 @@ func NewMetroclusterDrGroupCollectionGetOK() *MetroclusterDrGroupCollectionGetOK
 	return &MetroclusterDrGroupCollectionGetOK{}
 }
 
-/* MetroclusterDrGroupCollectionGetOK describes a response with status code 200, with default header values.
+/*
+MetroclusterDrGroupCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type MetroclusterDrGroupCollectionGetOK struct {
 	Payload *models.MetroclusterDrGroupResponse
 }
 
+// IsSuccess returns true when this metrocluster dr group collection get o k response has a 2xx status code
+func (o *MetroclusterDrGroupCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster dr group collection get o k response has a 3xx status code
+func (o *MetroclusterDrGroupCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster dr group collection get o k response has a 4xx status code
+func (o *MetroclusterDrGroupCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster dr group collection get o k response has a 5xx status code
+func (o *MetroclusterDrGroupCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster dr group collection get o k response a status code equal to that given
+func (o *MetroclusterDrGroupCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MetroclusterDrGroupCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *MetroclusterDrGroupCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metroclusterDrGroupCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *MetroclusterDrGroupCollectionGetOK) GetPayload() *models.MetroclusterDrGroupResponse {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewMetroclusterDrGroupCollectionGetDefault(code int) *MetroclusterDrGroupCo
 	}
 }
 
-/* MetroclusterDrGroupCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	MetroclusterDrGroupCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
 | 2427132 | MetroCluster is not configured on this cluster. |
-
 */
 type MetroclusterDrGroupCollectionGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *MetroclusterDrGroupCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster dr group collection get default response has a 2xx status code
+func (o *MetroclusterDrGroupCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster dr group collection get default response has a 3xx status code
+func (o *MetroclusterDrGroupCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster dr group collection get default response has a 4xx status code
+func (o *MetroclusterDrGroupCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster dr group collection get default response has a 5xx status code
+func (o *MetroclusterDrGroupCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster dr group collection get default response a status code equal to that given
+func (o *MetroclusterDrGroupCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterDrGroupCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MetroclusterDrGroupCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/dr-groups][%d] metrocluster_dr_group_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MetroclusterDrGroupCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

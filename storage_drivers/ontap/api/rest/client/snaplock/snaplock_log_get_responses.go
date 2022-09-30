@@ -46,7 +46,8 @@ func NewSnaplockLogGetOK() *SnaplockLogGetOK {
 	return &SnaplockLogGetOK{}
 }
 
-/* SnaplockLogGetOK describes a response with status code 200, with default header values.
+/*
+SnaplockLogGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnaplockLogGetOK struct {
 	Payload *models.SnaplockLog
 }
 
+// IsSuccess returns true when this snaplock log get o k response has a 2xx status code
+func (o *SnaplockLogGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock log get o k response has a 3xx status code
+func (o *SnaplockLogGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock log get o k response has a 4xx status code
+func (o *SnaplockLogGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock log get o k response has a 5xx status code
+func (o *SnaplockLogGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock log get o k response a status code equal to that given
+func (o *SnaplockLogGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnaplockLogGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplockLogGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnaplockLogGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplockLogGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnaplockLogGetOK) GetPayload() *models.SnaplockLog {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSnaplockLogGetDefault(code int) *SnaplockLogGetDefault {
 	}
 }
 
-/* SnaplockLogGetDefault describes a response with status code -1, with default header values.
+/*
+SnaplockLogGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SnaplockLogGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock log get default response has a 2xx status code
+func (o *SnaplockLogGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock log get default response has a 3xx status code
+func (o *SnaplockLogGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock log get default response has a 4xx status code
+func (o *SnaplockLogGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock log get default response has a 5xx status code
+func (o *SnaplockLogGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock log get default response a status code equal to that given
+func (o *SnaplockLogGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockLogGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplock_log_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockLogGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplock_log_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockLogGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

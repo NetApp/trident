@@ -52,14 +52,44 @@ func NewWebSvmModifyOK() *WebSvmModifyOK {
 	return &WebSvmModifyOK{}
 }
 
-/* WebSvmModifyOK describes a response with status code 200, with default header values.
+/*
+WebSvmModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type WebSvmModifyOK struct {
 }
 
+// IsSuccess returns true when this web svm modify o k response has a 2xx status code
+func (o *WebSvmModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this web svm modify o k response has a 3xx status code
+func (o *WebSvmModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this web svm modify o k response has a 4xx status code
+func (o *WebSvmModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this web svm modify o k response has a 5xx status code
+func (o *WebSvmModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this web svm modify o k response a status code equal to that given
+func (o *WebSvmModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *WebSvmModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyOK ", 200)
+}
+
+func (o *WebSvmModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyOK ", 200)
 }
 
@@ -73,7 +103,8 @@ func NewWebSvmModifyAccepted() *WebSvmModifyAccepted {
 	return &WebSvmModifyAccepted{}
 }
 
-/* WebSvmModifyAccepted describes a response with status code 202, with default header values.
+/*
+WebSvmModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -81,9 +112,39 @@ type WebSvmModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this web svm modify accepted response has a 2xx status code
+func (o *WebSvmModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this web svm modify accepted response has a 3xx status code
+func (o *WebSvmModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this web svm modify accepted response has a 4xx status code
+func (o *WebSvmModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this web svm modify accepted response has a 5xx status code
+func (o *WebSvmModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this web svm modify accepted response a status code equal to that given
+func (o *WebSvmModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *WebSvmModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *WebSvmModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] webSvmModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *WebSvmModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -107,15 +168,16 @@ func NewWebSvmModifyDefault(code int) *WebSvmModifyDefault {
 	}
 }
 
-/* WebSvmModifyDefault describes a response with status code -1, with default header values.
+/*
+	WebSvmModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 9830442 | Client authentication cannot be enabled without a client ca certificate. |
 | 9830488 | The certificate is not a "server" certificate. |
 | 9830489 | The certificate does not exist for the given SVM. |
-
 */
 type WebSvmModifyDefault struct {
 	_statusCode int
@@ -128,9 +190,39 @@ func (o *WebSvmModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this web svm modify default response has a 2xx status code
+func (o *WebSvmModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this web svm modify default response has a 3xx status code
+func (o *WebSvmModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this web svm modify default response has a 4xx status code
+func (o *WebSvmModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this web svm modify default response has a 5xx status code
+func (o *WebSvmModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this web svm modify default response a status code equal to that given
+func (o *WebSvmModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *WebSvmModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] web_svm_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *WebSvmModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /svm/svms/{svm.uuid}/web][%d] web_svm_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *WebSvmModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

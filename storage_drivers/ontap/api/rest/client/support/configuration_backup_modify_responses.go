@@ -46,14 +46,44 @@ func NewConfigurationBackupModifyOK() *ConfigurationBackupModifyOK {
 	return &ConfigurationBackupModifyOK{}
 }
 
-/* ConfigurationBackupModifyOK describes a response with status code 200, with default header values.
+/*
+ConfigurationBackupModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ConfigurationBackupModifyOK struct {
 }
 
+// IsSuccess returns true when this configuration backup modify o k response has a 2xx status code
+func (o *ConfigurationBackupModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this configuration backup modify o k response has a 3xx status code
+func (o *ConfigurationBackupModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this configuration backup modify o k response has a 4xx status code
+func (o *ConfigurationBackupModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this configuration backup modify o k response has a 5xx status code
+func (o *ConfigurationBackupModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this configuration backup modify o k response a status code equal to that given
+func (o *ConfigurationBackupModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ConfigurationBackupModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configurationBackupModifyOK ", 200)
+}
+
+func (o *ConfigurationBackupModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configurationBackupModifyOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewConfigurationBackupModifyDefault(code int) *ConfigurationBackupModifyDef
 	}
 }
 
-/* ConfigurationBackupModifyDefault describes a response with status code -1, with default header values.
+/*
+	ConfigurationBackupModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 39387137   | Invalid URL |
 | 39387138   | Invalid URL Scheme |
 |  5963792   | Using HTTPS for URL requires an effective cluster version of 9.7.0 or later. |
 |  5963794   | Validating the certificate is supported for the HTTPS protocol only. |
-
 */
 type ConfigurationBackupModifyDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *ConfigurationBackupModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this configuration backup modify default response has a 2xx status code
+func (o *ConfigurationBackupModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this configuration backup modify default response has a 3xx status code
+func (o *ConfigurationBackupModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this configuration backup modify default response has a 4xx status code
+func (o *ConfigurationBackupModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this configuration backup modify default response has a 5xx status code
+func (o *ConfigurationBackupModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this configuration backup modify default response a status code equal to that given
+func (o *ConfigurationBackupModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ConfigurationBackupModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configuration_backup_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ConfigurationBackupModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /support/configuration-backup][%d] configuration_backup_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ConfigurationBackupModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

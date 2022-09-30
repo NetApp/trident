@@ -46,7 +46,8 @@ func NewEmsDestinationModifyOK() *EmsDestinationModifyOK {
 	return &EmsDestinationModifyOK{}
 }
 
-/* EmsDestinationModifyOK describes a response with status code 200, with default header values.
+/*
+EmsDestinationModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type EmsDestinationModifyOK struct {
 	Payload *models.EmsDestination
 }
 
+// IsSuccess returns true when this ems destination modify o k response has a 2xx status code
+func (o *EmsDestinationModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems destination modify o k response has a 3xx status code
+func (o *EmsDestinationModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems destination modify o k response has a 4xx status code
+func (o *EmsDestinationModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems destination modify o k response has a 5xx status code
+func (o *EmsDestinationModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems destination modify o k response a status code equal to that given
+func (o *EmsDestinationModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EmsDestinationModifyOK) Error() string {
 	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] emsDestinationModifyOK  %+v", 200, o.Payload)
 }
+
+func (o *EmsDestinationModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] emsDestinationModifyOK  %+v", 200, o.Payload)
+}
+
 func (o *EmsDestinationModifyOK) GetPayload() *models.EmsDestination {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewEmsDestinationModifyDefault(code int) *EmsDestinationModifyDefault {
 	}
 }
 
-/* EmsDestinationModifyDefault describes a response with status code -1, with default header values.
+/*
+	EmsDestinationModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 983088     | The destination name provided cannot be empty |
@@ -101,7 +134,6 @@ func NewEmsDestinationModifyDefault(code int) *EmsDestinationModifyDefault {
 | 983150     | The type of an existing destination cannot be changed |
 | 983151     | A property provided cannot be configured on the requested destination type |
 | 983152     | Default destinations cannot be modified or removed |
-
 */
 type EmsDestinationModifyDefault struct {
 	_statusCode int
@@ -114,9 +146,39 @@ func (o *EmsDestinationModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems destination modify default response has a 2xx status code
+func (o *EmsDestinationModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems destination modify default response has a 3xx status code
+func (o *EmsDestinationModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems destination modify default response has a 4xx status code
+func (o *EmsDestinationModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems destination modify default response has a 5xx status code
+func (o *EmsDestinationModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems destination modify default response a status code equal to that given
+func (o *EmsDestinationModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsDestinationModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] ems_destination_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsDestinationModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /support/ems/destinations/{name}][%d] ems_destination_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsDestinationModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewCifsDomainPreferredDcDeleteOK() *CifsDomainPreferredDcDeleteOK {
 	return &CifsDomainPreferredDcDeleteOK{}
 }
 
-/* CifsDomainPreferredDcDeleteOK describes a response with status code 200, with default header values.
+/*
+CifsDomainPreferredDcDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type CifsDomainPreferredDcDeleteOK struct {
 }
 
+// IsSuccess returns true when this cifs domain preferred dc delete o k response has a 2xx status code
+func (o *CifsDomainPreferredDcDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs domain preferred dc delete o k response has a 3xx status code
+func (o *CifsDomainPreferredDcDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs domain preferred dc delete o k response has a 4xx status code
+func (o *CifsDomainPreferredDcDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs domain preferred dc delete o k response has a 5xx status code
+func (o *CifsDomainPreferredDcDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs domain preferred dc delete o k response a status code equal to that given
+func (o *CifsDomainPreferredDcDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsDomainPreferredDcDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifsDomainPreferredDcDeleteOK ", 200)
+}
+
+func (o *CifsDomainPreferredDcDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifsDomainPreferredDcDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewCifsDomainPreferredDcDeleteDefault(code int) *CifsDomainPreferredDcDelet
 	}
 }
 
-/* CifsDomainPreferredDcDeleteDefault describes a response with status code -1, with default header values.
+/*
+	CifsDomainPreferredDcDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 655507     | Failed to remove preferred-dc. |
-
 */
 type CifsDomainPreferredDcDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *CifsDomainPreferredDcDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs domain preferred dc delete default response has a 2xx status code
+func (o *CifsDomainPreferredDcDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs domain preferred dc delete default response has a 3xx status code
+func (o *CifsDomainPreferredDcDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs domain preferred dc delete default response has a 4xx status code
+func (o *CifsDomainPreferredDcDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs domain preferred dc delete default response has a 5xx status code
+func (o *CifsDomainPreferredDcDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs domain preferred dc delete default response a status code equal to that given
+func (o *CifsDomainPreferredDcDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsDomainPreferredDcDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifs_domain_preferred_dc_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsDomainPreferredDcDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}][%d] cifs_domain_preferred_dc_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsDomainPreferredDcDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

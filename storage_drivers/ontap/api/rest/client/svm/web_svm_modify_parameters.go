@@ -55,10 +55,12 @@ func NewWebSvmModifyParamsWithHTTPClient(client *http.Client) *WebSvmModifyParam
 	}
 }
 
-/* WebSvmModifyParams contains all the parameters to send to the API endpoint
-   for the web svm modify operation.
+/*
+WebSvmModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the web svm modify operation.
+
+	Typically these are written to a http.Request.
 */
 type WebSvmModifyParams struct {
 

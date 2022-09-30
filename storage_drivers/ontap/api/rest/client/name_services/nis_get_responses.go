@@ -46,7 +46,8 @@ func NewNisGetOK() *NisGetOK {
 	return &NisGetOK{}
 }
 
-/* NisGetOK describes a response with status code 200, with default header values.
+/*
+NisGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NisGetOK struct {
 	Payload *models.NisService
 }
 
+// IsSuccess returns true when this nis get o k response has a 2xx status code
+func (o *NisGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nis get o k response has a 3xx status code
+func (o *NisGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nis get o k response has a 4xx status code
+func (o *NisGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nis get o k response has a 5xx status code
+func (o *NisGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nis get o k response a status code equal to that given
+func (o *NisGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NisGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/nis/{svm.uuid}][%d] nisGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NisGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/nis/{svm.uuid}][%d] nisGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NisGetOK) GetPayload() *models.NisService {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNisGetDefault(code int) *NisGetDefault {
 	}
 }
 
-/* NisGetDefault describes a response with status code -1, with default header values.
+/*
+NisGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NisGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nis get default response has a 2xx status code
+func (o *NisGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nis get default response has a 3xx status code
+func (o *NisGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nis get default response has a 4xx status code
+func (o *NisGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nis get default response has a 5xx status code
+func (o *NisGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nis get default response a status code equal to that given
+func (o *NisGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NisGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/nis/{svm.uuid}][%d] nis_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NisGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/nis/{svm.uuid}][%d] nis_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NisGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

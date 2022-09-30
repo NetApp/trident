@@ -16,7 +16,6 @@ import (
 
 // LoginMessages The login banner and message of the day (MOTD) configuration.
 //
-//
 // swagger:model login_messages
 type LoginMessages struct {
 

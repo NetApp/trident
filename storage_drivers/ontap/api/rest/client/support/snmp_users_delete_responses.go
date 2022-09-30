@@ -46,14 +46,44 @@ func NewSnmpUsersDeleteOK() *SnmpUsersDeleteOK {
 	return &SnmpUsersDeleteOK{}
 }
 
-/* SnmpUsersDeleteOK describes a response with status code 200, with default header values.
+/*
+SnmpUsersDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnmpUsersDeleteOK struct {
 }
 
+// IsSuccess returns true when this snmp users delete o k response has a 2xx status code
+func (o *SnmpUsersDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snmp users delete o k response has a 3xx status code
+func (o *SnmpUsersDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snmp users delete o k response has a 4xx status code
+func (o *SnmpUsersDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snmp users delete o k response has a 5xx status code
+func (o *SnmpUsersDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snmp users delete o k response a status code equal to that given
+func (o *SnmpUsersDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnmpUsersDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /support/snmp/users/{engine_id}/{name}][%d] snmpUsersDeleteOK ", 200)
+}
+
+func (o *SnmpUsersDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /support/snmp/users/{engine_id}/{name}][%d] snmpUsersDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewSnmpUsersDeleteDefault(code int) *SnmpUsersDeleteDefault {
 	}
 }
 
-/* SnmpUsersDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SnmpUsersDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621475 | This operation is not allowed on a node SVM. |
@@ -81,7 +113,6 @@ func NewSnmpUsersDeleteDefault(code int) *SnmpUsersDeleteDefault {
 | 5832712 | Cannot modify attributes for user \"diag.\" |
 | 7077906 | Cannot use given role with this SVM because a role with that name has not been defined for the SVM. |
 | 9043999 | ONTAP failed to create an SNMPv3 user because SNMPv3 is disabled in the cluster. |
-
 */
 type SnmpUsersDeleteDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *SnmpUsersDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snmp users delete default response has a 2xx status code
+func (o *SnmpUsersDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snmp users delete default response has a 3xx status code
+func (o *SnmpUsersDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snmp users delete default response has a 4xx status code
+func (o *SnmpUsersDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snmp users delete default response has a 5xx status code
+func (o *SnmpUsersDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snmp users delete default response a status code equal to that given
+func (o *SnmpUsersDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnmpUsersDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /support/snmp/users/{engine_id}/{name}][%d] snmp_users_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnmpUsersDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /support/snmp/users/{engine_id}/{name}][%d] snmp_users_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnmpUsersDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

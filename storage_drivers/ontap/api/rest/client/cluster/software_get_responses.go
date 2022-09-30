@@ -46,7 +46,8 @@ func NewSoftwareGetOK() *SoftwareGetOK {
 	return &SoftwareGetOK{}
 }
 
-/* SoftwareGetOK describes a response with status code 200, with default header values.
+/*
+SoftwareGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SoftwareGetOK struct {
 	Payload *models.SoftwareReference
 }
 
+// IsSuccess returns true when this software get o k response has a 2xx status code
+func (o *SoftwareGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this software get o k response has a 3xx status code
+func (o *SoftwareGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this software get o k response has a 4xx status code
+func (o *SoftwareGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this software get o k response has a 5xx status code
+func (o *SoftwareGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this software get o k response a status code equal to that given
+func (o *SoftwareGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SoftwareGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/software][%d] softwareGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SoftwareGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/software][%d] softwareGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SoftwareGetOK) GetPayload() *models.SoftwareReference {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSoftwareGetDefault(code int) *SoftwareGetDefault {
 	}
 }
 
-/* SoftwareGetDefault describes a response with status code -1, with default header values.
+/*
+SoftwareGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SoftwareGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this software get default response has a 2xx status code
+func (o *SoftwareGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this software get default response has a 3xx status code
+func (o *SoftwareGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this software get default response has a 4xx status code
+func (o *SoftwareGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this software get default response has a 5xx status code
+func (o *SoftwareGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this software get default response a status code equal to that given
+func (o *SoftwareGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SoftwareGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/software][%d] software_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SoftwareGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/software][%d] software_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SoftwareGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewFcpServiceCreateCreated() *FcpServiceCreateCreated {
 	return &FcpServiceCreateCreated{}
 }
 
-/* FcpServiceCreateCreated describes a response with status code 201, with default header values.
+/*
+FcpServiceCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type FcpServiceCreateCreated struct {
 	Payload *models.FcpServiceResponse
 }
 
+// IsSuccess returns true when this fcp service create created response has a 2xx status code
+func (o *FcpServiceCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fcp service create created response has a 3xx status code
+func (o *FcpServiceCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fcp service create created response has a 4xx status code
+func (o *FcpServiceCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fcp service create created response has a 5xx status code
+func (o *FcpServiceCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fcp service create created response a status code equal to that given
+func (o *FcpServiceCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *FcpServiceCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcpServiceCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *FcpServiceCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcpServiceCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *FcpServiceCreateCreated) GetPayload() *models.FcpServiceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewFcpServiceCreateDefault(code int) *FcpServiceCreateDefault {
 	}
 }
 
-/* FcpServiceCreateDefault describes a response with status code -1, with default header values.
+/*
+	FcpServiceCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1115127 | The cluster lacks a valid FCP license. |
@@ -93,7 +126,6 @@ func NewFcpServiceCreateDefault(code int) *FcpServiceCreateDefault {
 | 5374082 | The Fibre Channel Protocol service already exists for the SVM. |
 | 5374092 | The Fibre Channel Procotol is not supported on the cluster hardware configuration; there are no Fibre Channel adapters. |
 | 5374893 | The SVM is stopped. The SVM must be running to create a Fibre Channel Protocol service. |
-
 */
 type FcpServiceCreateDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *FcpServiceCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fcp service create default response has a 2xx status code
+func (o *FcpServiceCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fcp service create default response has a 3xx status code
+func (o *FcpServiceCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fcp service create default response has a 4xx status code
+func (o *FcpServiceCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fcp service create default response has a 5xx status code
+func (o *FcpServiceCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fcp service create default response a status code equal to that given
+func (o *FcpServiceCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcpServiceCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcp_service_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcpServiceCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/san/fcp/services][%d] fcp_service_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcpServiceCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

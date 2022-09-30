@@ -46,7 +46,8 @@ func NewPerformanceFcInterfaceMetricCollectionGetOK() *PerformanceFcInterfaceMet
 	return &PerformanceFcInterfaceMetricCollectionGetOK{}
 }
 
-/* PerformanceFcInterfaceMetricCollectionGetOK describes a response with status code 200, with default header values.
+/*
+PerformanceFcInterfaceMetricCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type PerformanceFcInterfaceMetricCollectionGetOK struct {
 	Payload *models.PerformanceFcInterfaceMetricResponse
 }
 
+// IsSuccess returns true when this performance fc interface metric collection get o k response has a 2xx status code
+func (o *PerformanceFcInterfaceMetricCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this performance fc interface metric collection get o k response has a 3xx status code
+func (o *PerformanceFcInterfaceMetricCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this performance fc interface metric collection get o k response has a 4xx status code
+func (o *PerformanceFcInterfaceMetricCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this performance fc interface metric collection get o k response has a 5xx status code
+func (o *PerformanceFcInterfaceMetricCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this performance fc interface metric collection get o k response a status code equal to that given
+func (o *PerformanceFcInterfaceMetricCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *PerformanceFcInterfaceMetricCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}/metrics][%d] performanceFcInterfaceMetricCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *PerformanceFcInterfaceMetricCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}/metrics][%d] performanceFcInterfaceMetricCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *PerformanceFcInterfaceMetricCollectionGetOK) GetPayload() *models.PerformanceFcInterfaceMetricResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewPerformanceFcInterfaceMetricCollectionGetDefault(code int) *PerformanceF
 	}
 }
 
-/* PerformanceFcInterfaceMetricCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+PerformanceFcInterfaceMetricCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *PerformanceFcInterfaceMetricCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this performance fc interface metric collection get default response has a 2xx status code
+func (o *PerformanceFcInterfaceMetricCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this performance fc interface metric collection get default response has a 3xx status code
+func (o *PerformanceFcInterfaceMetricCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this performance fc interface metric collection get default response has a 4xx status code
+func (o *PerformanceFcInterfaceMetricCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this performance fc interface metric collection get default response has a 5xx status code
+func (o *PerformanceFcInterfaceMetricCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this performance fc interface metric collection get default response a status code equal to that given
+func (o *PerformanceFcInterfaceMetricCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *PerformanceFcInterfaceMetricCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}/metrics][%d] performance_fc_interface_metric_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *PerformanceFcInterfaceMetricCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/fc/interfaces/{uuid}/metrics][%d] performance_fc_interface_metric_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *PerformanceFcInterfaceMetricCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

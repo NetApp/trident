@@ -55,10 +55,12 @@ func NewFileMoveCreateParamsWithHTTPClient(client *http.Client) *FileMoveCreateP
 	}
 }
 
-/* FileMoveCreateParams contains all the parameters to send to the API endpoint
-   for the file move create operation.
+/*
+FileMoveCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file move create operation.
+
+	Typically these are written to a http.Request.
 */
 type FileMoveCreateParams struct {
 

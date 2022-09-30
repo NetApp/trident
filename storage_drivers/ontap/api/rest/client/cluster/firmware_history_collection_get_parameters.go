@@ -53,10 +53,12 @@ func NewFirmwareHistoryCollectionGetParamsWithHTTPClient(client *http.Client) *F
 	}
 }
 
-/* FirmwareHistoryCollectionGetParams contains all the parameters to send to the API endpoint
-   for the firmware history collection get operation.
+/*
+FirmwareHistoryCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the firmware history collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type FirmwareHistoryCollectionGetParams struct {
 

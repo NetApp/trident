@@ -46,7 +46,8 @@ func NewDNSGetOK() *DNSGetOK {
 	return &DNSGetOK{}
 }
 
-/* DNSGetOK describes a response with status code 200, with default header values.
+/*
+DNSGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type DNSGetOK struct {
 	Payload *models.DNS
 }
 
+// IsSuccess returns true when this dns get o k response has a 2xx status code
+func (o *DNSGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this dns get o k response has a 3xx status code
+func (o *DNSGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this dns get o k response has a 4xx status code
+func (o *DNSGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this dns get o k response has a 5xx status code
+func (o *DNSGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this dns get o k response a status code equal to that given
+func (o *DNSGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *DNSGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/dns/{svm.uuid}][%d] dnsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *DNSGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/dns/{svm.uuid}][%d] dnsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *DNSGetOK) GetPayload() *models.DNS {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewDNSGetDefault(code int) *DNSGetDefault {
 	}
 }
 
-/* DNSGetDefault describes a response with status code -1, with default header values.
+/*
+DNSGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *DNSGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this dns get default response has a 2xx status code
+func (o *DNSGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this dns get default response has a 3xx status code
+func (o *DNSGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this dns get default response has a 4xx status code
+func (o *DNSGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this dns get default response has a 5xx status code
+func (o *DNSGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this dns get default response a status code equal to that given
+func (o *DNSGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *DNSGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/dns/{svm.uuid}][%d] dns_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *DNSGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/dns/{svm.uuid}][%d] dns_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *DNSGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

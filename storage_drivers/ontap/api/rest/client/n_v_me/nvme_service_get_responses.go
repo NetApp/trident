@@ -46,7 +46,8 @@ func NewNvmeServiceGetOK() *NvmeServiceGetOK {
 	return &NvmeServiceGetOK{}
 }
 
-/* NvmeServiceGetOK describes a response with status code 200, with default header values.
+/*
+NvmeServiceGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NvmeServiceGetOK struct {
 	Payload *models.NvmeService
 }
 
+// IsSuccess returns true when this nvme service get o k response has a 2xx status code
+func (o *NvmeServiceGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme service get o k response has a 3xx status code
+func (o *NvmeServiceGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme service get o k response has a 4xx status code
+func (o *NvmeServiceGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme service get o k response has a 5xx status code
+func (o *NvmeServiceGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme service get o k response a status code equal to that given
+func (o *NvmeServiceGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeServiceGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NvmeServiceGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NvmeServiceGetOK) GetPayload() *models.NvmeService {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewNvmeServiceGetDefault(code int) *NvmeServiceGetDefault {
 	}
 }
 
-/* NvmeServiceGetDefault describes a response with status code -1, with default header values.
+/*
+	NvmeServiceGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | The supplied SVM does not exist. |
 | 72089651 | The supplied SVM does not have an NVMe service. |
-
 */
 type NvmeServiceGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *NvmeServiceGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme service get default response has a 2xx status code
+func (o *NvmeServiceGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme service get default response has a 3xx status code
+func (o *NvmeServiceGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme service get default response has a 4xx status code
+func (o *NvmeServiceGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme service get default response has a 5xx status code
+func (o *NvmeServiceGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme service get default response a status code equal to that given
+func (o *NvmeServiceGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeServiceGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvme_service_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeServiceGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}][%d] nvme_service_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeServiceGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

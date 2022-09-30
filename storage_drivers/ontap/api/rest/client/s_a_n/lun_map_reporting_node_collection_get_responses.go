@@ -46,7 +46,8 @@ func NewLunMapReportingNodeCollectionGetOK() *LunMapReportingNodeCollectionGetOK
 	return &LunMapReportingNodeCollectionGetOK{}
 }
 
-/* LunMapReportingNodeCollectionGetOK describes a response with status code 200, with default header values.
+/*
+LunMapReportingNodeCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LunMapReportingNodeCollectionGetOK struct {
 	Payload *models.LunMapReportingNodeResponse
 }
 
+// IsSuccess returns true when this lun map reporting node collection get o k response has a 2xx status code
+func (o *LunMapReportingNodeCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun map reporting node collection get o k response has a 3xx status code
+func (o *LunMapReportingNodeCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun map reporting node collection get o k response has a 4xx status code
+func (o *LunMapReportingNodeCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun map reporting node collection get o k response has a 5xx status code
+func (o *LunMapReportingNodeCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun map reporting node collection get o k response a status code equal to that given
+func (o *LunMapReportingNodeCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LunMapReportingNodeCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lunMapReportingNodeCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LunMapReportingNodeCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lunMapReportingNodeCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LunMapReportingNodeCollectionGetOK) GetPayload() *models.LunMapReportingNodeResponse {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewLunMapReportingNodeCollectionGetDefault(code int) *LunMapReportingNodeCo
 	}
 }
 
-/* LunMapReportingNodeCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	LunMapReportingNodeCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374875 | The specified LUN does not exist or is not accessible to the caller. |
 | 5374878 | The specified initiator group does not exist, is not accessible to the caller, or is not in the same SVM as the specified LUN. |
 | 5374922 | The specified LUN map does not exist. |
-
 */
 type LunMapReportingNodeCollectionGetDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *LunMapReportingNodeCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this lun map reporting node collection get default response has a 2xx status code
+func (o *LunMapReportingNodeCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this lun map reporting node collection get default response has a 3xx status code
+func (o *LunMapReportingNodeCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this lun map reporting node collection get default response has a 4xx status code
+func (o *LunMapReportingNodeCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this lun map reporting node collection get default response has a 5xx status code
+func (o *LunMapReportingNodeCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this lun map reporting node collection get default response a status code equal to that given
+func (o *LunMapReportingNodeCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LunMapReportingNodeCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lun_map_reporting_node_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LunMapReportingNodeCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes][%d] lun_map_reporting_node_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LunMapReportingNodeCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

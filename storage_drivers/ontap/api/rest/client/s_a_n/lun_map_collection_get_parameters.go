@@ -53,10 +53,12 @@ func NewLunMapCollectionGetParamsWithHTTPClient(client *http.Client) *LunMapColl
 	}
 }
 
-/* LunMapCollectionGetParams contains all the parameters to send to the API endpoint
-   for the lun map collection get operation.
+/*
+LunMapCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the lun map collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type LunMapCollectionGetParams struct {
 

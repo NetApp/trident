@@ -46,7 +46,8 @@ func NewTapeDeviceCollectionGetOK() *TapeDeviceCollectionGetOK {
 	return &TapeDeviceCollectionGetOK{}
 }
 
-/* TapeDeviceCollectionGetOK describes a response with status code 200, with default header values.
+/*
+TapeDeviceCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type TapeDeviceCollectionGetOK struct {
 	Payload *models.TapeDeviceResponse
 }
 
+// IsSuccess returns true when this tape device collection get o k response has a 2xx status code
+func (o *TapeDeviceCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this tape device collection get o k response has a 3xx status code
+func (o *TapeDeviceCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this tape device collection get o k response has a 4xx status code
+func (o *TapeDeviceCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this tape device collection get o k response has a 5xx status code
+func (o *TapeDeviceCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this tape device collection get o k response a status code equal to that given
+func (o *TapeDeviceCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *TapeDeviceCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/tape-devices][%d] tapeDeviceCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *TapeDeviceCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/tape-devices][%d] tapeDeviceCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *TapeDeviceCollectionGetOK) GetPayload() *models.TapeDeviceResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewTapeDeviceCollectionGetDefault(code int) *TapeDeviceCollectionGetDefault
 	}
 }
 
-/* TapeDeviceCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+TapeDeviceCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *TapeDeviceCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this tape device collection get default response has a 2xx status code
+func (o *TapeDeviceCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this tape device collection get default response has a 3xx status code
+func (o *TapeDeviceCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this tape device collection get default response has a 4xx status code
+func (o *TapeDeviceCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this tape device collection get default response has a 5xx status code
+func (o *TapeDeviceCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this tape device collection get default response a status code equal to that given
+func (o *TapeDeviceCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TapeDeviceCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/tape-devices][%d] tape_device_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *TapeDeviceCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/tape-devices][%d] tape_device_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *TapeDeviceCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

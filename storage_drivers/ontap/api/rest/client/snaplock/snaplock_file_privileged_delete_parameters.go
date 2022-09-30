@@ -53,10 +53,12 @@ func NewSnaplockFilePrivilegedDeleteParamsWithHTTPClient(client *http.Client) *S
 	}
 }
 
-/* SnaplockFilePrivilegedDeleteParams contains all the parameters to send to the API endpoint
-   for the snaplock file privileged delete operation.
+/*
+SnaplockFilePrivilegedDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock file privileged delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockFilePrivilegedDeleteParams struct {
 

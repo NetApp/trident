@@ -46,7 +46,8 @@ func NewNvmeSubsystemMapCreateCreated() *NvmeSubsystemMapCreateCreated {
 	return &NvmeSubsystemMapCreateCreated{}
 }
 
-/* NvmeSubsystemMapCreateCreated describes a response with status code 201, with default header values.
+/*
+NvmeSubsystemMapCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type NvmeSubsystemMapCreateCreated struct {
 	Payload *models.NvmeSubsystemMapResponse
 }
 
+// IsSuccess returns true when this nvme subsystem map create created response has a 2xx status code
+func (o *NvmeSubsystemMapCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme subsystem map create created response has a 3xx status code
+func (o *NvmeSubsystemMapCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme subsystem map create created response has a 4xx status code
+func (o *NvmeSubsystemMapCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme subsystem map create created response has a 5xx status code
+func (o *NvmeSubsystemMapCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme subsystem map create created response a status code equal to that given
+func (o *NvmeSubsystemMapCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *NvmeSubsystemMapCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *NvmeSubsystemMapCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvmeSubsystemMapCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *NvmeSubsystemMapCreateCreated) GetPayload() *models.NvmeSubsystemMapResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewNvmeSubsystemMapCreateDefault(code int) *NvmeSubsystemMapCreateDefault {
 	}
 }
 
-/* NvmeSubsystemMapCreateDefault describes a response with status code -1, with default header values.
+/*
+	NvmeSubsystemMapCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 72089790 | The supplied NVMe namespace is already mapped to the supplied NVMe subsystem. |
@@ -97,7 +130,6 @@ func NewNvmeSubsystemMapCreateDefault(code int) *NvmeSubsystemMapCreateDefault {
 | 72090007 | The NVMe namespace specified by `namespace.name` was not found. |
 | 72090020 | The specified `subsystem.uuid` and `subsystem.name` refer to different NVMe subsystems. |
 | 72090021 | The NVMe subsystem specified by `subsystem.name` was not found. |
-
 */
 type NvmeSubsystemMapCreateDefault struct {
 	_statusCode int
@@ -110,9 +142,39 @@ func (o *NvmeSubsystemMapCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme subsystem map create default response has a 2xx status code
+func (o *NvmeSubsystemMapCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme subsystem map create default response has a 3xx status code
+func (o *NvmeSubsystemMapCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme subsystem map create default response has a 4xx status code
+func (o *NvmeSubsystemMapCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme subsystem map create default response has a 5xx status code
+func (o *NvmeSubsystemMapCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme subsystem map create default response a status code equal to that given
+func (o *NvmeSubsystemMapCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeSubsystemMapCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeSubsystemMapCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/nvme/subsystem-maps][%d] nvme_subsystem_map_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeSubsystemMapCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

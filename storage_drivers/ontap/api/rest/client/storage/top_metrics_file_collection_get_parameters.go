@@ -53,10 +53,12 @@ func NewTopMetricsFileCollectionGetParamsWithHTTPClient(client *http.Client) *To
 	}
 }
 
-/* TopMetricsFileCollectionGetParams contains all the parameters to send to the API endpoint
-   for the top metrics file collection get operation.
+/*
+TopMetricsFileCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the top metrics file collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type TopMetricsFileCollectionGetParams struct {
 

@@ -46,7 +46,8 @@ func NewAggregateCollectionGetOK() *AggregateCollectionGetOK {
 	return &AggregateCollectionGetOK{}
 }
 
-/* AggregateCollectionGetOK describes a response with status code 200, with default header values.
+/*
+AggregateCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AggregateCollectionGetOK struct {
 	Payload *models.AggregateResponse
 }
 
+// IsSuccess returns true when this aggregate collection get o k response has a 2xx status code
+func (o *AggregateCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aggregate collection get o k response has a 3xx status code
+func (o *AggregateCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aggregate collection get o k response has a 4xx status code
+func (o *AggregateCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aggregate collection get o k response has a 5xx status code
+func (o *AggregateCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aggregate collection get o k response a status code equal to that given
+func (o *AggregateCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AggregateCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregateCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AggregateCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregateCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AggregateCollectionGetOK) GetPayload() *models.AggregateResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewAggregateCollectionGetDefault(code int) *AggregateCollectionGetDefault {
 	}
 }
 
-/* AggregateCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	AggregateCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 787092 | The target field cannot be specified for this operation. |
@@ -104,7 +137,6 @@ func NewAggregateCollectionGetDefault(code int) *AggregateCollectionGetDefault {
 | 19726540 | The next tag is not supported for recommended aggregates. Retry the operation with a higher "return_timeout" value. |
 | 196608055 | Aggregate recommendation is not supported on this node because it does not support NetApp Aggregate Encryption (NAE). |
 | 196608206 | Internal error. Failed to get encryption operation status. |
-
 */
 type AggregateCollectionGetDefault struct {
 	_statusCode int
@@ -117,9 +149,39 @@ func (o *AggregateCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this aggregate collection get default response has a 2xx status code
+func (o *AggregateCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this aggregate collection get default response has a 3xx status code
+func (o *AggregateCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this aggregate collection get default response has a 4xx status code
+func (o *AggregateCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this aggregate collection get default response has a 5xx status code
+func (o *AggregateCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this aggregate collection get default response a status code equal to that given
+func (o *AggregateCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AggregateCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregate_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AggregateCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/aggregates][%d] aggregate_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AggregateCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

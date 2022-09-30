@@ -55,10 +55,12 @@ func NewMetroclusterCreateParamsWithHTTPClient(client *http.Client) *Metrocluste
 	}
 }
 
-/* MetroclusterCreateParams contains all the parameters to send to the API endpoint
-   for the metrocluster create operation.
+/*
+MetroclusterCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the metrocluster create operation.
+
+	Typically these are written to a http.Request.
 */
 type MetroclusterCreateParams struct {
 

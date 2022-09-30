@@ -55,10 +55,12 @@ func NewIscsiServiceCreateParamsWithHTTPClient(client *http.Client) *IscsiServic
 	}
 }
 
-/* IscsiServiceCreateParams contains all the parameters to send to the API endpoint
-   for the iscsi service create operation.
+/*
+IscsiServiceCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the iscsi service create operation.
+
+	Typically these are written to a http.Request.
 */
 type IscsiServiceCreateParams struct {
 

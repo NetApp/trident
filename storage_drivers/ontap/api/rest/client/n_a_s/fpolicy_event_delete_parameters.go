@@ -52,10 +52,12 @@ func NewFpolicyEventDeleteParamsWithHTTPClient(client *http.Client) *FpolicyEven
 	}
 }
 
-/* FpolicyEventDeleteParams contains all the parameters to send to the API endpoint
-   for the fpolicy event delete operation.
+/*
+FpolicyEventDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fpolicy event delete operation.
+
+	Typically these are written to a http.Request.
 */
 type FpolicyEventDeleteParams struct {
 

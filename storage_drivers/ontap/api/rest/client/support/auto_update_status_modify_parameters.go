@@ -52,10 +52,12 @@ func NewAutoUpdateStatusModifyParamsWithHTTPClient(client *http.Client) *AutoUpd
 	}
 }
 
-/* AutoUpdateStatusModifyParams contains all the parameters to send to the API endpoint
-   for the auto update status modify operation.
+/*
+AutoUpdateStatusModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the auto update status modify operation.
+
+	Typically these are written to a http.Request.
 */
 type AutoUpdateStatusModifyParams struct {
 

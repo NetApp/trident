@@ -46,7 +46,8 @@ func NewLoginMessagesCollectionGetOK() *LoginMessagesCollectionGetOK {
 	return &LoginMessagesCollectionGetOK{}
 }
 
-/* LoginMessagesCollectionGetOK describes a response with status code 200, with default header values.
+/*
+LoginMessagesCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LoginMessagesCollectionGetOK struct {
 	Payload *models.LoginMessagesResponse
 }
 
+// IsSuccess returns true when this login messages collection get o k response has a 2xx status code
+func (o *LoginMessagesCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this login messages collection get o k response has a 3xx status code
+func (o *LoginMessagesCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this login messages collection get o k response has a 4xx status code
+func (o *LoginMessagesCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this login messages collection get o k response has a 5xx status code
+func (o *LoginMessagesCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this login messages collection get o k response a status code equal to that given
+func (o *LoginMessagesCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LoginMessagesCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/login/messages][%d] loginMessagesCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LoginMessagesCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/login/messages][%d] loginMessagesCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LoginMessagesCollectionGetOK) GetPayload() *models.LoginMessagesResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLoginMessagesCollectionGetDefault(code int) *LoginMessagesCollectionGetD
 	}
 }
 
-/* LoginMessagesCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+LoginMessagesCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LoginMessagesCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this login messages collection get default response has a 2xx status code
+func (o *LoginMessagesCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this login messages collection get default response has a 3xx status code
+func (o *LoginMessagesCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this login messages collection get default response has a 4xx status code
+func (o *LoginMessagesCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this login messages collection get default response has a 5xx status code
+func (o *LoginMessagesCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this login messages collection get default response a status code equal to that given
+func (o *LoginMessagesCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LoginMessagesCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/login/messages][%d] login_messages_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LoginMessagesCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/login/messages][%d] login_messages_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LoginMessagesCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewCreateCertificateSigningRequestOK() *CreateCertificateSigningRequestOK {
 	return &CreateCertificateSigningRequestOK{}
 }
 
-/* CreateCertificateSigningRequestOK describes a response with status code 200, with default header values.
+/*
+CreateCertificateSigningRequestOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CreateCertificateSigningRequestOK struct {
 	Payload *models.CertificateSigningRequest
 }
 
+// IsSuccess returns true when this create certificate signing request o k response has a 2xx status code
+func (o *CreateCertificateSigningRequestOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this create certificate signing request o k response has a 3xx status code
+func (o *CreateCertificateSigningRequestOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create certificate signing request o k response has a 4xx status code
+func (o *CreateCertificateSigningRequestOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this create certificate signing request o k response has a 5xx status code
+func (o *CreateCertificateSigningRequestOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this create certificate signing request o k response a status code equal to that given
+func (o *CreateCertificateSigningRequestOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CreateCertificateSigningRequestOK) Error() string {
 	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] createCertificateSigningRequestOK  %+v", 200, o.Payload)
 }
+
+func (o *CreateCertificateSigningRequestOK) String() string {
+	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] createCertificateSigningRequestOK  %+v", 200, o.Payload)
+}
+
 func (o *CreateCertificateSigningRequestOK) GetPayload() *models.CertificateSigningRequest {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewCreateCertificateSigningRequestDefault(code int) *CreateCertificateSigni
 	}
 }
 
-/* CreateCertificateSigningRequestDefault describes a response with status code -1, with default header values.
+/*
+	CreateCertificateSigningRequestDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 3735554 | Certificate signing request failed. |
@@ -95,7 +128,6 @@ func NewCreateCertificateSigningRequestDefault(code int) *CreateCertificateSigni
 | 3735741 | Key size is not applicable with the EC encryption algorithm. |
 | 52560173 | Hash function is not supported for digital signatures. |
 | 52560423 | Failed to read the relative distinguished names. |
-
 */
 type CreateCertificateSigningRequestDefault struct {
 	_statusCode int
@@ -108,9 +140,39 @@ func (o *CreateCertificateSigningRequestDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this create certificate signing request default response has a 2xx status code
+func (o *CreateCertificateSigningRequestDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this create certificate signing request default response has a 3xx status code
+func (o *CreateCertificateSigningRequestDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this create certificate signing request default response has a 4xx status code
+func (o *CreateCertificateSigningRequestDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this create certificate signing request default response has a 5xx status code
+func (o *CreateCertificateSigningRequestDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this create certificate signing request default response a status code equal to that given
+func (o *CreateCertificateSigningRequestDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CreateCertificateSigningRequestDefault) Error() string {
 	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] create_certificate_signing_request default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CreateCertificateSigningRequestDefault) String() string {
+	return fmt.Sprintf("[POST /security/certificate-signing-request][%d] create_certificate_signing_request default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CreateCertificateSigningRequestDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

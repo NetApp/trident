@@ -53,10 +53,12 @@ func NewNetworkEthernetPortGetParamsWithHTTPClient(client *http.Client) *Network
 	}
 }
 
-/* NetworkEthernetPortGetParams contains all the parameters to send to the API endpoint
-   for the network ethernet port get operation.
+/*
+NetworkEthernetPortGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ethernet port get operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkEthernetPortGetParams struct {
 

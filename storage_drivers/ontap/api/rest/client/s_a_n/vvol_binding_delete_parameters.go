@@ -53,10 +53,12 @@ func NewVvolBindingDeleteParamsWithHTTPClient(client *http.Client) *VvolBindingD
 	}
 }
 
-/* VvolBindingDeleteParams contains all the parameters to send to the API endpoint
-   for the vvol binding delete operation.
+/*
+VvolBindingDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vvol binding delete operation.
+
+	Typically these are written to a http.Request.
 */
 type VvolBindingDeleteParams struct {
 

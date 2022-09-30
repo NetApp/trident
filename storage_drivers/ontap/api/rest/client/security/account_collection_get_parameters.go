@@ -53,10 +53,12 @@ func NewAccountCollectionGetParamsWithHTTPClient(client *http.Client) *AccountCo
 	}
 }
 
-/* AccountCollectionGetParams contains all the parameters to send to the API endpoint
-   for the account collection get operation.
+/*
+AccountCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the account collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type AccountCollectionGetParams struct {
 

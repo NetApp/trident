@@ -136,8 +136,7 @@ type ClientService interface {
 }
 
 /*
-  AutoUpdateConfigurationCollectionGet Retrieves the configuration for automatic updates.
-
+AutoUpdateConfigurationCollectionGet Retrieves the configuration for automatic updates.
 */
 func (a *Client) AutoUpdateConfigurationCollectionGet(params *AutoUpdateConfigurationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -175,8 +174,7 @@ func (a *Client) AutoUpdateConfigurationCollectionGet(params *AutoUpdateConfigur
 }
 
 /*
-  AutoUpdateConfigurationGet Retrieves the configuration for a specified automatic update.
-
+AutoUpdateConfigurationGet Retrieves the configuration for a specified automatic update.
 */
 func (a *Client) AutoUpdateConfigurationGet(params *AutoUpdateConfigurationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationGetOK, error) {
 	// TODO: Validate the params before sending
@@ -214,8 +212,7 @@ func (a *Client) AutoUpdateConfigurationGet(params *AutoUpdateConfigurationGetPa
 }
 
 /*
-  AutoUpdateConfigurationModify Updates the configuration for a specified automatic update.
-
+AutoUpdateConfigurationModify Updates the configuration for a specified automatic update.
 */
 func (a *Client) AutoUpdateConfigurationModify(params *AutoUpdateConfigurationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -253,8 +250,7 @@ func (a *Client) AutoUpdateConfigurationModify(params *AutoUpdateConfigurationMo
 }
 
 /*
-  AutoUpdateInfoGet Retrieves the current status of the automatic update feature and the End User License Agreement (EULA).
-
+AutoUpdateInfoGet Retrieves the current status of the automatic update feature and the End User License Agreement (EULA).
 */
 func (a *Client) AutoUpdateInfoGet(params *AutoUpdateInfoGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateInfoGetOK, error) {
 	// TODO: Validate the params before sending
@@ -292,8 +288,7 @@ func (a *Client) AutoUpdateInfoGet(params *AutoUpdateInfoGetParams, authInfo run
 }
 
 /*
-  AutoUpdateInfoModify Updates the current enabled status of the automatic update feature and accepts the EULA.
-
+AutoUpdateInfoModify Updates the current enabled status of the automatic update feature and accepts the EULA.
 */
 func (a *Client) AutoUpdateInfoModify(params *AutoUpdateInfoModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateInfoModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -331,8 +326,7 @@ func (a *Client) AutoUpdateInfoModify(params *AutoUpdateInfoModifyParams, authIn
 }
 
 /*
-  AutoUpdateStatusCollectionGet Retrieves the status of all updates.
-
+AutoUpdateStatusCollectionGet Retrieves the status of all updates.
 */
 func (a *Client) AutoUpdateStatusCollectionGet(params *AutoUpdateStatusCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -370,8 +364,7 @@ func (a *Client) AutoUpdateStatusCollectionGet(params *AutoUpdateStatusCollectio
 }
 
 /*
-  AutoUpdateStatusGet Retrieves the status of an update.
-
+AutoUpdateStatusGet Retrieves the status of an update.
 */
 func (a *Client) AutoUpdateStatusGet(params *AutoUpdateStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusGetOK, error) {
 	// TODO: Validate the params before sending
@@ -409,8 +402,7 @@ func (a *Client) AutoUpdateStatusGet(params *AutoUpdateStatusGetParams, authInfo
 }
 
 /*
-  AutoUpdateStatusModify Perform an action on the update.
-
+AutoUpdateStatusModify Perform an action on the update.
 */
 func (a *Client) AutoUpdateStatusModify(params *AutoUpdateStatusModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -448,7 +440,8 @@ func (a *Client) AutoUpdateStatusModify(params *AutoUpdateStatusModifyParams, au
 }
 
 /*
-  AutosupportCreate Creates and sends an AutoSupport message with the provided input parameters.<p/>
+	AutosupportCreate Creates and sends an AutoSupport message with the provided input parameters.<p/>
+
 Important note:
 * By default, the response is an empty object. If `return_records=true` is passed in the request, the response includes information about the node and the index of the invoked AutoSupport message.
 ### Recommended optional properties
@@ -461,7 +454,6 @@ If not specified in POST, the following are the default property values:
 * `system node autosupport invoke`
 ### Learn more
 * [`DOC /support/autosupport/messages`](#docs-support-support_autosupport_messages)
-
 */
 func (a *Client) AutosupportCreate(params *AutosupportCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -499,7 +491,8 @@ func (a *Client) AutosupportCreate(params *AutosupportCreateParams, authInfo run
 }
 
 /*
-  AutosupportGet Retrieves the AutoSupport configuration of the cluster and if requested, returns connectivity issues with the AutoSupport configuration.<p/>
+	AutosupportGet Retrieves the AutoSupport configuration of the cluster and if requested, returns connectivity issues with the AutoSupport configuration.<p/>
+
 </br>Important note:
 * The **issues** field consists of a list of objects containing details of the node that has a connectivity issue, the issue description, and corrective action you can take to address the issue. When not empty, this indicates a connection issue to the **HTTP/S**, **SMTP**, or **AutoSupport On Demand** server.
 ### Expensive properties
@@ -510,7 +503,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `system node autosupport check show-details`
 ### Learn more
 * [`DOC /support/autosupport`](#docs-support-support_autosupport)
-
 */
 func (a *Client) AutosupportGet(params *AutosupportGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportGetOK, error) {
 	// TODO: Validate the params before sending
@@ -548,13 +540,13 @@ func (a *Client) AutosupportGet(params *AutosupportGetParams, authInfo runtime.C
 }
 
 /*
-  AutosupportMessageCollectionGet Retrieves AutoSupport message history from all nodes in the cluster.<p/>
+	AutosupportMessageCollectionGet Retrieves AutoSupport message history from all nodes in the cluster.<p/>
+
 There can be a short delay on invoked AutoSupport messages showing in history, dependent on processing of other AutoSupports in the queue.
 ### Related ONTAP commands
 * `system node autosupport history show`
 ### Learn more
 * [`DOC /support/autosupport/messages`](#docs-support-support_autosupport_messages)
-
 */
 func (a *Client) AutosupportMessageCollectionGet(params *AutosupportMessageCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportMessageCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -592,12 +584,12 @@ func (a *Client) AutosupportMessageCollectionGet(params *AutosupportMessageColle
 }
 
 /*
-  AutosupportModify Updates the AutoSupport configuration for the entire cluster.
+	AutosupportModify Updates the AutoSupport configuration for the entire cluster.
+
 ### Related ONTAP commands
 * `system node autosupport modify`
 ### Learn more
 * [`DOC /support/autosupport`](#docs-support-support_autosupport)
-
 */
 func (a *Client) AutosupportModify(params *AutosupportModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -635,10 +627,10 @@ func (a *Client) AutosupportModify(params *AutosupportModifyParams, authInfo run
 }
 
 /*
-  ConfigurationBackupFileCollectionGet Retrieves a list of configuration backup files.
+	ConfigurationBackupFileCollectionGet Retrieves a list of configuration backup files.
+
 ### Related ONTAP commands
 * `system configuration backup show`
-
 */
 func (a *Client) ConfigurationBackupFileCollectionGet(params *ConfigurationBackupFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -676,13 +668,13 @@ func (a *Client) ConfigurationBackupFileCollectionGet(params *ConfigurationBacku
 }
 
 /*
-  ConfigurationBackupFileCreate Creates a configuration backup. The required backup file name must end with .7z extension.
+	ConfigurationBackupFileCreate Creates a configuration backup. The required backup file name must end with .7z extension.
+
 ### Required properties
 * `node.uuid` or `node.name` - The node UUID or node name on which the configuration backup will be created.
 * `name` - The backup file name
 ### Related ONTAP commands
 * `system configuration backup create`
-
 */
 func (a *Client) ConfigurationBackupFileCreate(params *ConfigurationBackupFileCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -720,10 +712,10 @@ func (a *Client) ConfigurationBackupFileCreate(params *ConfigurationBackupFileCr
 }
 
 /*
-  ConfigurationBackupFileDelete Deletes a configuration backup.
+	ConfigurationBackupFileDelete Deletes a configuration backup.
+
 ### Related ONTAP commands
 * `system configuration backup delete`
-
 */
 func (a *Client) ConfigurationBackupFileDelete(params *ConfigurationBackupFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -761,10 +753,10 @@ func (a *Client) ConfigurationBackupFileDelete(params *ConfigurationBackupFileDe
 }
 
 /*
-  ConfigurationBackupFileGet Retrieves details of the specified configuration backup file.
+	ConfigurationBackupFileGet Retrieves details of the specified configuration backup file.
+
 ### Related ONTAP commands
 * `system configuration backup show`
-
 */
 func (a *Client) ConfigurationBackupFileGet(params *ConfigurationBackupFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileGetOK, error) {
 	// TODO: Validate the params before sending
@@ -802,7 +794,7 @@ func (a *Client) ConfigurationBackupFileGet(params *ConfigurationBackupFileGetPa
 }
 
 /*
-  ConfigurationBackupGet Retrieves the cluster configuration backup information.
+ConfigurationBackupGet Retrieves the cluster configuration backup information.
 */
 func (a *Client) ConfigurationBackupGet(params *ConfigurationBackupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -840,8 +832,7 @@ func (a *Client) ConfigurationBackupGet(params *ConfigurationBackupGetParams, au
 }
 
 /*
-  ConfigurationBackupModify Updates the cluster configuration backup information.
-
+ConfigurationBackupModify Updates the cluster configuration backup information.
 */
 func (a *Client) ConfigurationBackupModify(params *ConfigurationBackupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -879,10 +870,10 @@ func (a *Client) ConfigurationBackupModify(params *ConfigurationBackupModifyPara
 }
 
 /*
-  CoredumpCollectionGet Retrieves a collection of coredumps.
+	CoredumpCollectionGet Retrieves a collection of coredumps.
+
 ### Related ONTAP commands
 * `system node coredump show`
-
 */
 func (a *Client) CoredumpCollectionGet(params *CoredumpCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -920,10 +911,10 @@ func (a *Client) CoredumpCollectionGet(params *CoredumpCollectionGetParams, auth
 }
 
 /*
-  CoredumpDelete Deletes a core dump.
+	CoredumpDelete Deletes a core dump.
+
 ### Related ONTAP commands
 * `system node coredump delete`
-
 */
 func (a *Client) CoredumpDelete(params *CoredumpDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -961,10 +952,10 @@ func (a *Client) CoredumpDelete(params *CoredumpDeleteParams, authInfo runtime.C
 }
 
 /*
-  CoredumpGet Retrieves a specific core dump.
+	CoredumpGet Retrieves a specific core dump.
+
 ### Related ONTAP commands
 * `system node coredump show`
-
 */
 func (a *Client) CoredumpGet(params *CoredumpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1002,7 +993,8 @@ func (a *Client) CoredumpGet(params *CoredumpGetParams, authInfo runtime.ClientA
 }
 
 /*
-  EmsApplicationLogsCreate Creates an app.log.* event. Setting the "autosupport_required" flag causes callhome.client.app.* events also to be generated, which in turn triggers AutoSupports.
+	EmsApplicationLogsCreate Creates an app.log.* event. Setting the "autosupport_required" flag causes callhome.client.app.* events also to be generated, which in turn triggers AutoSupports.
+
 ### Required properties
 * `computer_name` - Client computer connected to the cluster.
 * `event_source` - Client application that generated this event.
@@ -1012,7 +1004,6 @@ func (a *Client) CoredumpGet(params *CoredumpGetParams, authInfo runtime.ClientA
 * `event_description` - Event description.
 * `severity` - Severity of the event.
 * `autosupport_required` - Indicates whether AutoSupport generation is required.
-
 */
 func (a *Client) EmsApplicationLogsCreate(params *EmsApplicationLogsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsApplicationLogsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1050,10 +1041,10 @@ func (a *Client) EmsApplicationLogsCreate(params *EmsApplicationLogsCreateParams
 }
 
 /*
-  EmsConfigGet Retrieves the EMS configuration.
+	EmsConfigGet Retrieves the EMS configuration.
+
 ### Related ONTAP commands
 * `event config show`
-
 */
 func (a *Client) EmsConfigGet(params *EmsConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsConfigGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1091,10 +1082,10 @@ func (a *Client) EmsConfigGet(params *EmsConfigGetParams, authInfo runtime.Clien
 }
 
 /*
-  EmsConfigModify Updates the EMS configuration.
+	EmsConfigModify Updates the EMS configuration.
+
 ### Related ONTAP commands
 * `event config modify`
-
 */
 func (a *Client) EmsConfigModify(params *EmsConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsConfigModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1132,11 +1123,11 @@ func (a *Client) EmsConfigModify(params *EmsConfigModifyParams, authInfo runtime
 }
 
 /*
-  EmsDestinationCollectionGet Retrieves a collection of event destinations.
+	EmsDestinationCollectionGet Retrieves a collection of event destinations.
+
 ### Related ONTAP commands
 * `event notification destination show`
 * `event notification show`
-
 */
 func (a *Client) EmsDestinationCollectionGet(params *EmsDestinationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1174,7 +1165,8 @@ func (a *Client) EmsDestinationCollectionGet(params *EmsDestinationCollectionGet
 }
 
 /*
-  EmsDestinationCreate Creates an event destination.
+	EmsDestinationCreate Creates an event destination.
+
 ### Required properties
 * `name` - String that uniquely identifies the destination.
 * `type` - Type of destination that is to be created.
@@ -1185,7 +1177,6 @@ func (a *Client) EmsDestinationCollectionGet(params *EmsDestinationCollectionGet
 ### Related ONTAP commands
 * `event notification destination create`
 * `event notification create`
-
 */
 func (a *Client) EmsDestinationCreate(params *EmsDestinationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1223,11 +1214,11 @@ func (a *Client) EmsDestinationCreate(params *EmsDestinationCreateParams, authIn
 }
 
 /*
-  EmsDestinationDelete Deletes an event destination.
+	EmsDestinationDelete Deletes an event destination.
+
 ### Related ONTAP commands
 * `event notification destination delete`
 * `event notification delete`
-
 */
 func (a *Client) EmsDestinationDelete(params *EmsDestinationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1265,14 +1256,14 @@ func (a *Client) EmsDestinationDelete(params *EmsDestinationDeleteParams, authIn
 }
 
 /*
-  EmsDestinationGet Retrieves event destinations.
+	EmsDestinationGet Retrieves event destinations.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter.
 * `connectivity.*`
 ### Related ONTAP commands
 * `event notification destination show`
 * `event notification show`
-
 */
 func (a *Client) EmsDestinationGet(params *EmsDestinationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1310,14 +1301,14 @@ func (a *Client) EmsDestinationGet(params *EmsDestinationGetParams, authInfo run
 }
 
 /*
-  EmsDestinationModify Updates an event destination.
+	EmsDestinationModify Updates an event destination.
+
 ### Recommended optional properties
 * `filters.name` - New list of filters that should direct to this destination. The existing list is discarded.
 * `certificate` - New certificate parameters when the destination type is `rest api`.
 ### Related ONTAP commands
 * `event notification destination modify`
 * `event notification modify`
-
 */
 func (a *Client) EmsDestinationModify(params *EmsDestinationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1355,10 +1346,10 @@ func (a *Client) EmsDestinationModify(params *EmsDestinationModifyParams, authIn
 }
 
 /*
-  EmsEventCollectionGet Retrieves a collection of observed events.
+	EmsEventCollectionGet Retrieves a collection of observed events.
+
 ### Related ONTAP commands
 * `event log show`
-
 */
 func (a *Client) EmsEventCollectionGet(params *EmsEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsEventCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1396,10 +1387,10 @@ func (a *Client) EmsEventCollectionGet(params *EmsEventCollectionGetParams, auth
 }
 
 /*
-  EmsFilterCollectionGet Retrieves a collection of event filters.
+	EmsFilterCollectionGet Retrieves a collection of event filters.
+
 ### Related ONTAP commands
 * `event filter show`
-
 */
 func (a *Client) EmsFilterCollectionGet(params *EmsFilterCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1437,14 +1428,14 @@ func (a *Client) EmsFilterCollectionGet(params *EmsFilterCollectionGetParams, au
 }
 
 /*
-  EmsFilterCreate Creates an event filter.
+	EmsFilterCreate Creates an event filter.
+
 ### Required properties
 * `name` - String that uniquely identifies the filter.
 ### Recommended optional properties
 * `rules` - List of criteria which is used to match a filter with an event.
 ### Related ONTAP commands
 * `event filter create`
-
 */
 func (a *Client) EmsFilterCreate(params *EmsFilterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1482,10 +1473,10 @@ func (a *Client) EmsFilterCreate(params *EmsFilterCreateParams, authInfo runtime
 }
 
 /*
-  EmsFilterDelete Deletes an event filter.
+	EmsFilterDelete Deletes an event filter.
+
 ### Related ONTAP commands
 * `event filter delete`
-
 */
 func (a *Client) EmsFilterDelete(params *EmsFilterDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1523,10 +1514,10 @@ func (a *Client) EmsFilterDelete(params *EmsFilterDeleteParams, authInfo runtime
 }
 
 /*
-  EmsFilterGet Retrieves an event filter.
+	EmsFilterGet Retrieves an event filter.
+
 ### Related ONTAP commands
 * `event filter show`
-
 */
 func (a *Client) EmsFilterGet(params *EmsFilterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1564,7 +1555,8 @@ func (a *Client) EmsFilterGet(params *EmsFilterGetParams, authInfo runtime.Clien
 }
 
 /*
-  EmsFilterModify Updates an event filter.
+	EmsFilterModify Updates an event filter.
+
 ### Recommended optional properties
 * `new_name` - New string that uniquely identifies a filter.
 * `rules` - New list of criteria used to match the filter with an event. The existing list is discarded.
@@ -1573,7 +1565,6 @@ func (a *Client) EmsFilterGet(params *EmsFilterGetParams, authInfo runtime.Clien
 * `event filter rule add`
 * `event filter rule delete`
 * `event filter rule reorder`
-
 */
 func (a *Client) EmsFilterModify(params *EmsFilterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1611,10 +1602,10 @@ func (a *Client) EmsFilterModify(params *EmsFilterModifyParams, authInfo runtime
 }
 
 /*
-  EmsFilterRuleCollectionGet Retrieves event filter rules.
+	EmsFilterRuleCollectionGet Retrieves event filter rules.
+
 ### Related ONTAP commands
 * `event filter show`
-
 */
 func (a *Client) EmsFilterRuleCollectionGet(params *EmsFilterRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1652,10 +1643,10 @@ func (a *Client) EmsFilterRuleCollectionGet(params *EmsFilterRuleCollectionGetPa
 }
 
 /*
-  EmsFilterRuleDelete Deletes an event filter rule.
+	EmsFilterRuleDelete Deletes an event filter rule.
+
 ### Related ONTAP commands
 * `event filter rule delete`
-
 */
 func (a *Client) EmsFilterRuleDelete(params *EmsFilterRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1693,10 +1684,10 @@ func (a *Client) EmsFilterRuleDelete(params *EmsFilterRuleDeleteParams, authInfo
 }
 
 /*
-  EmsFilterRuleGet Retrieves an event filter rule.
+	EmsFilterRuleGet Retrieves an event filter rule.
+
 ### Related ONTAP commands
 * `event filter show`
-
 */
 func (a *Client) EmsFilterRuleGet(params *EmsFilterRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1734,13 +1725,13 @@ func (a *Client) EmsFilterRuleGet(params *EmsFilterRuleGetParams, authInfo runti
 }
 
 /*
-  EmsFilterRuleModify Updates an event filter rule.
+	EmsFilterRuleModify Updates an event filter rule.
+
 ### Recommended optional properties
 * `message_criteria` - New criteria on which a rule is to match an event.
 ### Related ONTAP commands
 * `event filter rule add`
 * `event filter rule delete`
-
 */
 func (a *Client) EmsFilterRuleModify(params *EmsFilterRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1778,14 +1769,14 @@ func (a *Client) EmsFilterRuleModify(params *EmsFilterRuleModifyParams, authInfo
 }
 
 /*
-  EmsFiltersRulesCreate Creates an event filter rule.
+	EmsFiltersRulesCreate Creates an event filter rule.
+
 ### Required properties
 * `message_criteria` - Criteria on which a rule is to match an event.
 ### Recommended optional properties
 * `index` - One-based position index of the new rule.
 ### Related ONTAP commands
 * `event filter rule add`
-
 */
 func (a *Client) EmsFiltersRulesCreate(params *EmsFiltersRulesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFiltersRulesCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1823,10 +1814,10 @@ func (a *Client) EmsFiltersRulesCreate(params *EmsFiltersRulesCreateParams, auth
 }
 
 /*
-  EmsMessageCollectionGet Retrieves the event catalog definitions.
+	EmsMessageCollectionGet Retrieves the event catalog definitions.
+
 ### Related ONTAP commands
 * `event catalog show`
-
 */
 func (a *Client) EmsMessageCollectionGet(params *EmsMessageCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsMessageCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1864,13 +1855,13 @@ func (a *Client) EmsMessageCollectionGet(params *EmsMessageCollectionGetParams, 
 }
 
 /*
-  SnmpGet Retrieves the cluster wide SNMP configuration.
+	SnmpGet Retrieves the cluster wide SNMP configuration.
+
 ### Related ONTAP commands
 * `options snmp.enable`
 * `system snmp show`
 ### Learn more
 * [`DOC /support/snmp`](#docs-support-support_snmp)
-
 */
 func (a *Client) SnmpGet(params *SnmpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1908,14 +1899,14 @@ func (a *Client) SnmpGet(params *SnmpGetParams, authInfo runtime.ClientAuthInfoW
 }
 
 /*
-  SnmpModify Updates the cluster wide SNMP configuration, such as, enabling or disabling SNMP, enabling or disabling SNMP traps, and enabling or disabling authentication traps. It can also be used to trigger an SNMP test trap.
+	SnmpModify Updates the cluster wide SNMP configuration, such as, enabling or disabling SNMP, enabling or disabling SNMP traps, and enabling or disabling authentication traps. It can also be used to trigger an SNMP test trap.
+
 ### Related ONTAP commands
 * `options snmp.enable`
 * `system snmp authtrap`
 * `system snmp init`
 ### Learn more
 * [`DOC /support/snmp`](#docs-support-support_snmp)
-
 */
 func (a *Client) SnmpModify(params *SnmpModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1953,12 +1944,12 @@ func (a *Client) SnmpModify(params *SnmpModifyParams, authInfo runtime.ClientAut
 }
 
 /*
-  SnmpTraphostsCollectionGet Retrieves the list of SNMP traphosts along with the SNMP users configured for those traphosts.
+	SnmpTraphostsCollectionGet Retrieves the list of SNMP traphosts along with the SNMP users configured for those traphosts.
+
 ### Related ONTAP commands
 * `system snmp traphost show`
 ### Learn more
 * [`DOC /support/snmp/traphosts`](#docs-support-support_snmp_traphosts)
-
 */
 func (a *Client) SnmpTraphostsCollectionGet(params *SnmpTraphostsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpTraphostsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1996,18 +1987,19 @@ func (a *Client) SnmpTraphostsCollectionGet(params *SnmpTraphostsCollectionGetPa
 }
 
 /*
-  SnmpTraphostsCreate Creates SNMP traphosts. While adding an SNMPv3 traphost, an SNMPv3 user configured in ONTAP must be specified. ONTAP uses this user's credentials to authenticate and/or encrypt traps sent to this SNMPv3 traphost. While adding an SNMPv1/SNMPv2c traphost, SNMPv1/SNMPv2c user or community need not be specified.
+	SnmpTraphostsCreate Creates SNMP traphosts. While adding an SNMPv3 traphost, an SNMPv3 user configured in ONTAP must be specified. ONTAP uses this user's credentials to authenticate and/or encrypt traps sent to this SNMPv3 traphost. While adding an SNMPv1/SNMPv2c traphost, SNMPv1/SNMPv2c user or community need not be specified.
+
 ### Required properties
 * `host` - Fully Qualified Domain Name (FQDN), IPv4 address or IPv6 address of SNMP traphost.
 ### Recommended optional properties
 * If `host` refers to an SNMPv3 traphost, the following field is required:
-  * `user` - SNMPv3 or User-based Security Model (USM) user.
+  - `user` - SNMPv3 or User-based Security Model (USM) user.
+
 * For an SNMPv1/SNMPv2c traphost, ONTAP automatically uses 'public' if 'public' is configured or no community is configured. Otherwise, ONTAP uses the first configured community.
 ### Related ONTAP commands
 * `system snmp traphost add`
 ### Learn more
 * [`DOC /support/snmp/traphosts`](#docs-support-support_snmp_traphosts)
-
 */
 func (a *Client) SnmpTraphostsCreate(params *SnmpTraphostsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpTraphostsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2045,10 +2037,10 @@ func (a *Client) SnmpTraphostsCreate(params *SnmpTraphostsCreateParams, authInfo
 }
 
 /*
-  SnmpTraphostsDelete Deletes an SNMP traphost.
+	SnmpTraphostsDelete Deletes an SNMP traphost.
+
 ### Learn more
 * [`DOC /support/snmp/traphosts/{host}`](#docs-support-support_snmp_traphosts_{host})
-
 */
 func (a *Client) SnmpTraphostsDelete(params *SnmpTraphostsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpTraphostsDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2086,10 +2078,10 @@ func (a *Client) SnmpTraphostsDelete(params *SnmpTraphostsDeleteParams, authInfo
 }
 
 /*
-  SnmpTraphostsGet Retrieves the details of an SNMP traphost along with the SNMP user configured for that traphost.
+	SnmpTraphostsGet Retrieves the details of an SNMP traphost along with the SNMP user configured for that traphost.
+
 ### Learn more
 * [`DOC /support/snmp/traphosts/{host}`](#docs-support-support_snmp_traphosts_{host})
-
 */
 func (a *Client) SnmpTraphostsGet(params *SnmpTraphostsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpTraphostsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2127,13 +2119,13 @@ func (a *Client) SnmpTraphostsGet(params *SnmpTraphostsGetParams, authInfo runti
 }
 
 /*
-  SnmpUsersCollectionGet Retrieves the list of SNMP users on the cluster.
+	SnmpUsersCollectionGet Retrieves the list of SNMP users on the cluster.
+
 ### Related ONTAP commands
 * `security snmpusers`
 * `security login show -application snmp`
 ### Learn more
 * [`DOC /support/snmp/users`](#docs-support-support_snmp_users)
-
 */
 func (a *Client) SnmpUsersCollectionGet(params *SnmpUsersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2171,7 +2163,8 @@ func (a *Client) SnmpUsersCollectionGet(params *SnmpUsersCollectionGetParams, au
 }
 
 /*
-  SnmpUsersCreate Creates either a cluster-scoped or an SVM-scoped SNMP user. This user can be an SNMPv1 or SNMPv2c community user or an SNMPv3 user. An SNMPv3 user can be a local SNMPv3 user or a remote SNMPv3 user.
+	SnmpUsersCreate Creates either a cluster-scoped or an SVM-scoped SNMP user. This user can be an SNMPv1 or SNMPv2c community user or an SNMPv3 user. An SNMPv3 user can be a local SNMPv3 user or a remote SNMPv3 user.
+
 ### Required properties
 * `owner` - Name and UUID of owning SVM.
 * `engine_id` - Engine ID of owning SVM or remote switch.
@@ -2189,7 +2182,6 @@ func (a *Client) SnmpUsersCollectionGet(params *SnmpUsersCollectionGetParams, au
 * `system snmp community add`
 ### Learn more
 * [`DOC /support/snmp/users`](#docs-support-support_snmp_users)
-
 */
 func (a *Client) SnmpUsersCreate(params *SnmpUsersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2227,13 +2219,13 @@ func (a *Client) SnmpUsersCreate(params *SnmpUsersCreateParams, authInfo runtime
 }
 
 /*
-  SnmpUsersDelete Deletes an SNMP user. The engine ID can be the engine ID of the administrative SVM or a data SVM. It can also be the SNMPv3 engine ID of a remote switch.
+	SnmpUsersDelete Deletes an SNMP user. The engine ID can be the engine ID of the administrative SVM or a data SVM. It can also be the SNMPv3 engine ID of a remote switch.
+
 ### Related ONTAP commands
 * `security login delete`
 * `system snmp community delete`
 ### Learn more
 * [`DOC /support/snmp/users/{engine_id}/{name}`](#docs-support-support_snmp_users_{engine_id}_{name})
-
 */
 func (a *Client) SnmpUsersDelete(params *SnmpUsersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2271,13 +2263,13 @@ func (a *Client) SnmpUsersDelete(params *SnmpUsersDeleteParams, authInfo runtime
 }
 
 /*
-  SnmpUsersGet Retrieves the details of an SNMP user. The engine ID can be the engine ID of the administrative SVM or a data SVM. It can also be the SNMPv3 engine ID of a remote switch.
+	SnmpUsersGet Retrieves the details of an SNMP user. The engine ID can be the engine ID of the administrative SVM or a data SVM. It can also be the SNMPv3 engine ID of a remote switch.
+
 ### Related ONTAP commands
 * `security snmpusers -vserver <SVM Name> -username <User Name>`
 * `security login show -application snmp -vserver <SVM Name> -user-or-group-name <User Name>`
 ### Learn more
 * [`DOC /support/snmp/users/{engine_id}/{name}`](#docs-support-support_snmp_users_{engine_id}_{name})
-
 */
 func (a *Client) SnmpUsersGet(params *SnmpUsersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2315,14 +2307,14 @@ func (a *Client) SnmpUsersGet(params *SnmpUsersGetParams, authInfo runtime.Clien
 }
 
 /*
-  SnmpUsersModify Updates the comment parameter of an SNMP user.
+	SnmpUsersModify Updates the comment parameter of an SNMP user.
+
 ### Optional properties
 * `comment` - Comment text.
 ### Related ONTAP commands
 * `security login modify`
 ### Learn more
 * [`DOC /support/snmp/users/{engine_id}/{name}`](#docs-support-support_snmp_users_{engine_id}_{name})
-
 */
 func (a *Client) SnmpUsersModify(params *SnmpUsersModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersModifyOK, error) {
 	// TODO: Validate the params before sending

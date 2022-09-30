@@ -55,10 +55,12 @@ func NewGcpKmsRekeyExternalParamsWithHTTPClient(client *http.Client) *GcpKmsReke
 	}
 }
 
-/* GcpKmsRekeyExternalParams contains all the parameters to send to the API endpoint
-   for the gcp kms rekey external operation.
+/*
+GcpKmsRekeyExternalParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the gcp kms rekey external operation.
+
+	Typically these are written to a http.Request.
 */
 type GcpKmsRekeyExternalParams struct {
 

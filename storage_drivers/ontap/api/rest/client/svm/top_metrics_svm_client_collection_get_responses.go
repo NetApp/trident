@@ -46,7 +46,8 @@ func NewTopMetricsSvmClientCollectionGetOK() *TopMetricsSvmClientCollectionGetOK
 	return &TopMetricsSvmClientCollectionGetOK{}
 }
 
-/* TopMetricsSvmClientCollectionGetOK describes a response with status code 200, with default header values.
+/*
+TopMetricsSvmClientCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type TopMetricsSvmClientCollectionGetOK struct {
 	Payload *models.TopMetricsSvmClientResponse
 }
 
+// IsSuccess returns true when this top metrics svm client collection get o k response has a 2xx status code
+func (o *TopMetricsSvmClientCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this top metrics svm client collection get o k response has a 3xx status code
+func (o *TopMetricsSvmClientCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this top metrics svm client collection get o k response has a 4xx status code
+func (o *TopMetricsSvmClientCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this top metrics svm client collection get o k response has a 5xx status code
+func (o *TopMetricsSvmClientCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this top metrics svm client collection get o k response a status code equal to that given
+func (o *TopMetricsSvmClientCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *TopMetricsSvmClientCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/top-metrics/clients][%d] topMetricsSvmClientCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *TopMetricsSvmClientCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/top-metrics/clients][%d] topMetricsSvmClientCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *TopMetricsSvmClientCollectionGetOK) GetPayload() *models.TopMetricsSvmClientResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewTopMetricsSvmClientCollectionGetDefault(code int) *TopMetricsSvmClientCo
 	}
 }
 
-/* TopMetricsSvmClientCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	TopMetricsSvmClientCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 124519405 | The activity tracking report for SVM svm.name returned zero records. Check whether the volumes belonging to the SVM have read/write traffic. Refer to the REST API documentation for more information on why there might be no records. |
@@ -90,7 +123,6 @@ func NewTopMetricsSvmClientCollectionGetDefault(code int) *TopMetricsSvmClientCo
 | 124519407 | SVM wildcard queries are not supported for activity tracking reports. |
 | 124519408 | Activity tracking is not supported on SVM svm.name, because it is configured as a destination for SVM DR. |
 | 124519409 | Activity tracking is not supported on SVM svm.name, because it is configured as a destination of a MetroCluster SVM relationship and the SVM admin state is stopped. |
-
 */
 type TopMetricsSvmClientCollectionGetDefault struct {
 	_statusCode int
@@ -103,9 +135,39 @@ func (o *TopMetricsSvmClientCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this top metrics svm client collection get default response has a 2xx status code
+func (o *TopMetricsSvmClientCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this top metrics svm client collection get default response has a 3xx status code
+func (o *TopMetricsSvmClientCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this top metrics svm client collection get default response has a 4xx status code
+func (o *TopMetricsSvmClientCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this top metrics svm client collection get default response has a 5xx status code
+func (o *TopMetricsSvmClientCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this top metrics svm client collection get default response a status code equal to that given
+func (o *TopMetricsSvmClientCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TopMetricsSvmClientCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/top-metrics/clients][%d] top_metrics_svm_client_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *TopMetricsSvmClientCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /svm/svms/{svm.uuid}/top-metrics/clients][%d] top_metrics_svm_client_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *TopMetricsSvmClientCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

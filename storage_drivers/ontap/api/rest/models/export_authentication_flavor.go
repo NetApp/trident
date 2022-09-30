@@ -24,7 +24,6 @@ import (
 // * ntlm - CIFS NTLM Authentication
 // * sys - AUTH_SYS or AUTH_UNIX Authentication
 //
-//
 // swagger:model export_authentication_flavor
 type ExportAuthenticationFlavor string
 

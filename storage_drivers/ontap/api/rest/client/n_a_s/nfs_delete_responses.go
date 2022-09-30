@@ -46,14 +46,44 @@ func NewNfsDeleteOK() *NfsDeleteOK {
 	return &NfsDeleteOK{}
 }
 
-/* NfsDeleteOK describes a response with status code 200, with default header values.
+/*
+NfsDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NfsDeleteOK struct {
 }
 
+// IsSuccess returns true when this nfs delete o k response has a 2xx status code
+func (o *NfsDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nfs delete o k response has a 3xx status code
+func (o *NfsDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nfs delete o k response has a 4xx status code
+func (o *NfsDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nfs delete o k response has a 5xx status code
+func (o *NfsDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nfs delete o k response a status code equal to that given
+func (o *NfsDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NfsDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/nfs/services/{svm.uuid}][%d] nfsDeleteOK ", 200)
+}
+
+func (o *NfsDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/nfs/services/{svm.uuid}][%d] nfsDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewNfsDeleteDefault(code int) *NfsDeleteDefault {
 	}
 }
 
-/* NfsDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NfsDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 3276916    | Vserver is not running |
@@ -79,7 +111,6 @@ func NewNfsDeleteDefault(code int) *NfsDeleteDefault {
 | 3277009    | NFS Kerberos realms associated with the Vserver are deleted |
 | 3277111    | Internal error. Failed to remove NFS-specific security trace filter for Vserver |
 | 3277112    | Internal error. Failed to modify the protocols field of a security trace filter for Vserver  |
-
 */
 type NfsDeleteDefault struct {
 	_statusCode int
@@ -92,9 +123,39 @@ func (o *NfsDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nfs delete default response has a 2xx status code
+func (o *NfsDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nfs delete default response has a 3xx status code
+func (o *NfsDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nfs delete default response has a 4xx status code
+func (o *NfsDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nfs delete default response has a 5xx status code
+func (o *NfsDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nfs delete default response a status code equal to that given
+func (o *NfsDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NfsDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/nfs/services/{svm.uuid}][%d] nfs_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NfsDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/nfs/services/{svm.uuid}][%d] nfs_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NfsDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

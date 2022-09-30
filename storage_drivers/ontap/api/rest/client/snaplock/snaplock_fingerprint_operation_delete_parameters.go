@@ -52,10 +52,12 @@ func NewSnaplockFingerprintOperationDeleteParamsWithHTTPClient(client *http.Clie
 	}
 }
 
-/* SnaplockFingerprintOperationDeleteParams contains all the parameters to send to the API endpoint
-   for the snaplock fingerprint operation delete operation.
+/*
+SnaplockFingerprintOperationDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock fingerprint operation delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockFingerprintOperationDeleteParams struct {
 

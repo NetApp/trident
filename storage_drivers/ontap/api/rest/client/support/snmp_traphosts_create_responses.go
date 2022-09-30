@@ -46,7 +46,8 @@ func NewSnmpTraphostsCreateCreated() *SnmpTraphostsCreateCreated {
 	return &SnmpTraphostsCreateCreated{}
 }
 
-/* SnmpTraphostsCreateCreated describes a response with status code 201, with default header values.
+/*
+SnmpTraphostsCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type SnmpTraphostsCreateCreated struct {
 	Payload *models.SnmpTraphostResponse
 }
 
+// IsSuccess returns true when this snmp traphosts create created response has a 2xx status code
+func (o *SnmpTraphostsCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snmp traphosts create created response has a 3xx status code
+func (o *SnmpTraphostsCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snmp traphosts create created response has a 4xx status code
+func (o *SnmpTraphostsCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snmp traphosts create created response has a 5xx status code
+func (o *SnmpTraphostsCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snmp traphosts create created response a status code equal to that given
+func (o *SnmpTraphostsCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *SnmpTraphostsCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmpTraphostsCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *SnmpTraphostsCreateCreated) String() string {
+	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmpTraphostsCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *SnmpTraphostsCreateCreated) GetPayload() *models.SnmpTraphostResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSnmpTraphostsCreateDefault(code int) *SnmpTraphostsCreateDefault {
 	}
 }
 
-/* SnmpTraphostsCreateDefault describes a response with status code -1, with default header values.
+/*
+	SnmpTraphostsCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 8847365 | Unknown host. |
@@ -92,7 +125,6 @@ func NewSnmpTraphostsCreateDefault(code int) *SnmpTraphostsCreateDefault {
 | 9043993 | Current cluster version does not support SNMPv3 traps. |
 | 9044001 | Failed to create SNMPv1 traphost. |
 | 9044002 | Failed to create SNMPv3 traphost. |
-
 */
 type SnmpTraphostsCreateDefault struct {
 	_statusCode int
@@ -105,9 +137,39 @@ func (o *SnmpTraphostsCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snmp traphosts create default response has a 2xx status code
+func (o *SnmpTraphostsCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snmp traphosts create default response has a 3xx status code
+func (o *SnmpTraphostsCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snmp traphosts create default response has a 4xx status code
+func (o *SnmpTraphostsCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snmp traphosts create default response has a 5xx status code
+func (o *SnmpTraphostsCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snmp traphosts create default response a status code equal to that given
+func (o *SnmpTraphostsCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnmpTraphostsCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmp_traphosts_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnmpTraphostsCreateDefault) String() string {
+	return fmt.Sprintf("[POST /support/snmp/traphosts][%d] snmp_traphosts_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnmpTraphostsCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

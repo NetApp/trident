@@ -46,7 +46,8 @@ func NewMetroclusterSvmGetOK() *MetroclusterSvmGetOK {
 	return &MetroclusterSvmGetOK{}
 }
 
-/* MetroclusterSvmGetOK describes a response with status code 200, with default header values.
+/*
+MetroclusterSvmGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type MetroclusterSvmGetOK struct {
 	Payload *models.MetroclusterSvm
 }
 
+// IsSuccess returns true when this metrocluster svm get o k response has a 2xx status code
+func (o *MetroclusterSvmGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster svm get o k response has a 3xx status code
+func (o *MetroclusterSvmGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster svm get o k response has a 4xx status code
+func (o *MetroclusterSvmGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster svm get o k response has a 5xx status code
+func (o *MetroclusterSvmGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster svm get o k response a status code equal to that given
+func (o *MetroclusterSvmGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MetroclusterSvmGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/svms/{cluster.uuid}/{svm.uuid}][%d] metroclusterSvmGetOK  %+v", 200, o.Payload)
 }
+
+func (o *MetroclusterSvmGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/svms/{cluster.uuid}/{svm.uuid}][%d] metroclusterSvmGetOK  %+v", 200, o.Payload)
+}
+
 func (o *MetroclusterSvmGetOK) GetPayload() *models.MetroclusterSvm {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewMetroclusterSvmGetDefault(code int) *MetroclusterSvmGetDefault {
 	}
 }
 
-/* MetroclusterSvmGetDefault describes a response with status code -1, with default header values.
+/*
+MetroclusterSvmGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *MetroclusterSvmGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster svm get default response has a 2xx status code
+func (o *MetroclusterSvmGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster svm get default response has a 3xx status code
+func (o *MetroclusterSvmGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster svm get default response has a 4xx status code
+func (o *MetroclusterSvmGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster svm get default response has a 5xx status code
+func (o *MetroclusterSvmGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster svm get default response a status code equal to that given
+func (o *MetroclusterSvmGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterSvmGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/svms/{cluster.uuid}/{svm.uuid}][%d] metrocluster_svm_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MetroclusterSvmGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/svms/{cluster.uuid}/{svm.uuid}][%d] metrocluster_svm_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MetroclusterSvmGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

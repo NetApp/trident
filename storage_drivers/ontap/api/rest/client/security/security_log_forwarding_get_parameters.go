@@ -53,10 +53,12 @@ func NewSecurityLogForwardingGetParamsWithHTTPClient(client *http.Client) *Secur
 	}
 }
 
-/* SecurityLogForwardingGetParams contains all the parameters to send to the API endpoint
-   for the security log forwarding get operation.
+/*
+SecurityLogForwardingGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security log forwarding get operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityLogForwardingGetParams struct {
 

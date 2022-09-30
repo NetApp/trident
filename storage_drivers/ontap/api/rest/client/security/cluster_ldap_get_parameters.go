@@ -53,10 +53,12 @@ func NewClusterLdapGetParamsWithHTTPClient(client *http.Client) *ClusterLdapGetP
 	}
 }
 
-/* ClusterLdapGetParams contains all the parameters to send to the API endpoint
-   for the cluster ldap get operation.
+/*
+ClusterLdapGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster ldap get operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterLdapGetParams struct {
 

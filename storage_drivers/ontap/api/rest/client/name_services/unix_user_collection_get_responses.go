@@ -46,7 +46,8 @@ func NewUnixUserCollectionGetOK() *UnixUserCollectionGetOK {
 	return &UnixUserCollectionGetOK{}
 }
 
-/* UnixUserCollectionGetOK describes a response with status code 200, with default header values.
+/*
+UnixUserCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type UnixUserCollectionGetOK struct {
 	Payload *models.UnixUserResponse
 }
 
+// IsSuccess returns true when this unix user collection get o k response has a 2xx status code
+func (o *UnixUserCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix user collection get o k response has a 3xx status code
+func (o *UnixUserCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix user collection get o k response has a 4xx status code
+func (o *UnixUserCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix user collection get o k response has a 5xx status code
+func (o *UnixUserCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix user collection get o k response a status code equal to that given
+func (o *UnixUserCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixUserCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/unix-users][%d] unixUserCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *UnixUserCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/unix-users][%d] unixUserCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *UnixUserCollectionGetOK) GetPayload() *models.UnixUserResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewUnixUserCollectionGetDefault(code int) *UnixUserCollectionGetDefault {
 	}
 }
 
-/* UnixUserCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+UnixUserCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *UnixUserCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix user collection get default response has a 2xx status code
+func (o *UnixUserCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix user collection get default response has a 3xx status code
+func (o *UnixUserCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix user collection get default response has a 4xx status code
+func (o *UnixUserCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix user collection get default response has a 5xx status code
+func (o *UnixUserCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix user collection get default response a status code equal to that given
+func (o *UnixUserCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixUserCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/unix-users][%d] unix_user_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixUserCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/unix-users][%d] unix_user_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixUserCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

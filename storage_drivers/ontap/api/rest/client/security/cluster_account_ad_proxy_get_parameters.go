@@ -52,10 +52,12 @@ func NewClusterAccountAdProxyGetParamsWithHTTPClient(client *http.Client) *Clust
 	}
 }
 
-/* ClusterAccountAdProxyGetParams contains all the parameters to send to the API endpoint
-   for the cluster account ad proxy get operation.
+/*
+ClusterAccountAdProxyGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster account ad proxy get operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterAccountAdProxyGetParams struct {
 	timeout    time.Duration

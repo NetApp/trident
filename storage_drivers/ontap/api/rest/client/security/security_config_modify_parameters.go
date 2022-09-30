@@ -55,10 +55,12 @@ func NewSecurityConfigModifyParamsWithHTTPClient(client *http.Client) *SecurityC
 	}
 }
 
-/* SecurityConfigModifyParams contains all the parameters to send to the API endpoint
-   for the security config modify operation.
+/*
+SecurityConfigModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security config modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityConfigModifyParams struct {
 

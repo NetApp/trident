@@ -53,10 +53,12 @@ func NewSplitStatusGetParamsWithHTTPClient(client *http.Client) *SplitStatusGetP
 	}
 }
 
-/* SplitStatusGetParams contains all the parameters to send to the API endpoint
-   for the split status get operation.
+/*
+SplitStatusGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the split status get operation.
+
+	Typically these are written to a http.Request.
 */
 type SplitStatusGetParams struct {
 

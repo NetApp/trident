@@ -52,14 +52,44 @@ func NewConsistencyGroupSnapshotDeleteOK() *ConsistencyGroupSnapshotDeleteOK {
 	return &ConsistencyGroupSnapshotDeleteOK{}
 }
 
-/* ConsistencyGroupSnapshotDeleteOK describes a response with status code 200, with default header values.
+/*
+ConsistencyGroupSnapshotDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ConsistencyGroupSnapshotDeleteOK struct {
 }
 
+// IsSuccess returns true when this consistency group snapshot delete o k response has a 2xx status code
+func (o *ConsistencyGroupSnapshotDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this consistency group snapshot delete o k response has a 3xx status code
+func (o *ConsistencyGroupSnapshotDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this consistency group snapshot delete o k response has a 4xx status code
+func (o *ConsistencyGroupSnapshotDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this consistency group snapshot delete o k response has a 5xx status code
+func (o *ConsistencyGroupSnapshotDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this consistency group snapshot delete o k response a status code equal to that given
+func (o *ConsistencyGroupSnapshotDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ConsistencyGroupSnapshotDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteOK ", 200)
+}
+
+func (o *ConsistencyGroupSnapshotDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteOK ", 200)
 }
 
@@ -73,14 +103,44 @@ func NewConsistencyGroupSnapshotDeleteAccepted() *ConsistencyGroupSnapshotDelete
 	return &ConsistencyGroupSnapshotDeleteAccepted{}
 }
 
-/* ConsistencyGroupSnapshotDeleteAccepted describes a response with status code 202, with default header values.
+/*
+ConsistencyGroupSnapshotDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type ConsistencyGroupSnapshotDeleteAccepted struct {
 }
 
+// IsSuccess returns true when this consistency group snapshot delete accepted response has a 2xx status code
+func (o *ConsistencyGroupSnapshotDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this consistency group snapshot delete accepted response has a 3xx status code
+func (o *ConsistencyGroupSnapshotDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this consistency group snapshot delete accepted response has a 4xx status code
+func (o *ConsistencyGroupSnapshotDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this consistency group snapshot delete accepted response has a 5xx status code
+func (o *ConsistencyGroupSnapshotDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this consistency group snapshot delete accepted response a status code equal to that given
+func (o *ConsistencyGroupSnapshotDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ConsistencyGroupSnapshotDeleteAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteAccepted ", 202)
+}
+
+func (o *ConsistencyGroupSnapshotDeleteAccepted) String() string {
 	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteAccepted ", 202)
 }
 
@@ -96,7 +156,8 @@ func NewConsistencyGroupSnapshotDeleteDefault(code int) *ConsistencyGroupSnapsho
 	}
 }
 
-/* ConsistencyGroupSnapshotDeleteDefault describes a response with status code -1, with default header values.
+/*
+ConsistencyGroupSnapshotDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -111,9 +172,39 @@ func (o *ConsistencyGroupSnapshotDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this consistency group snapshot delete default response has a 2xx status code
+func (o *ConsistencyGroupSnapshotDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this consistency group snapshot delete default response has a 3xx status code
+func (o *ConsistencyGroupSnapshotDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this consistency group snapshot delete default response has a 4xx status code
+func (o *ConsistencyGroupSnapshotDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this consistency group snapshot delete default response has a 5xx status code
+func (o *ConsistencyGroupSnapshotDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this consistency group snapshot delete default response a status code equal to that given
+func (o *ConsistencyGroupSnapshotDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ConsistencyGroupSnapshotDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistency_group_snapshot_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ConsistencyGroupSnapshotDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistency_group_snapshot_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ConsistencyGroupSnapshotDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

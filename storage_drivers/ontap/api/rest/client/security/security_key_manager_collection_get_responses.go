@@ -46,7 +46,8 @@ func NewSecurityKeyManagerCollectionGetOK() *SecurityKeyManagerCollectionGetOK {
 	return &SecurityKeyManagerCollectionGetOK{}
 }
 
-/* SecurityKeyManagerCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SecurityKeyManagerCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SecurityKeyManagerCollectionGetOK struct {
 	Payload *models.SecurityKeyManagerResponse
 }
 
+// IsSuccess returns true when this security key manager collection get o k response has a 2xx status code
+func (o *SecurityKeyManagerCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager collection get o k response has a 3xx status code
+func (o *SecurityKeyManagerCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager collection get o k response has a 4xx status code
+func (o *SecurityKeyManagerCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager collection get o k response has a 5xx status code
+func (o *SecurityKeyManagerCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager collection get o k response a status code equal to that given
+func (o *SecurityKeyManagerCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityKeyManagerCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/key-managers][%d] securityKeyManagerCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SecurityKeyManagerCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/key-managers][%d] securityKeyManagerCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SecurityKeyManagerCollectionGetOK) GetPayload() *models.SecurityKeyManagerResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSecurityKeyManagerCollectionGetDefault(code int) *SecurityKeyManagerColl
 	}
 }
 
-/* SecurityKeyManagerCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+SecurityKeyManagerCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SecurityKeyManagerCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security key manager collection get default response has a 2xx status code
+func (o *SecurityKeyManagerCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security key manager collection get default response has a 3xx status code
+func (o *SecurityKeyManagerCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security key manager collection get default response has a 4xx status code
+func (o *SecurityKeyManagerCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security key manager collection get default response has a 5xx status code
+func (o *SecurityKeyManagerCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security key manager collection get default response a status code equal to that given
+func (o *SecurityKeyManagerCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityKeyManagerCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/key-managers][%d] security_key_manager_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityKeyManagerCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/key-managers][%d] security_key_manager_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityKeyManagerCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

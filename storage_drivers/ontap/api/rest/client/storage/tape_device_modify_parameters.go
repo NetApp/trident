@@ -55,10 +55,12 @@ func NewTapeDeviceModifyParamsWithHTTPClient(client *http.Client) *TapeDeviceMod
 	}
 }
 
-/* TapeDeviceModifyParams contains all the parameters to send to the API endpoint
-   for the tape device modify operation.
+/*
+TapeDeviceModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the tape device modify operation.
+
+	Typically these are written to a http.Request.
 */
 type TapeDeviceModifyParams struct {
 

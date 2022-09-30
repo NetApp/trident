@@ -46,7 +46,8 @@ func NewVolumeEfficiencyPolicyGetOK() *VolumeEfficiencyPolicyGetOK {
 	return &VolumeEfficiencyPolicyGetOK{}
 }
 
-/* VolumeEfficiencyPolicyGetOK describes a response with status code 200, with default header values.
+/*
+VolumeEfficiencyPolicyGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type VolumeEfficiencyPolicyGetOK struct {
 	Payload *models.VolumeEfficiencyPolicy
 }
 
+// IsSuccess returns true when this volume efficiency policy get o k response has a 2xx status code
+func (o *VolumeEfficiencyPolicyGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume efficiency policy get o k response has a 3xx status code
+func (o *VolumeEfficiencyPolicyGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume efficiency policy get o k response has a 4xx status code
+func (o *VolumeEfficiencyPolicyGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume efficiency policy get o k response has a 5xx status code
+func (o *VolumeEfficiencyPolicyGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume efficiency policy get o k response a status code equal to that given
+func (o *VolumeEfficiencyPolicyGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VolumeEfficiencyPolicyGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyGetOK  %+v", 200, o.Payload)
 }
+
+func (o *VolumeEfficiencyPolicyGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyGetOK  %+v", 200, o.Payload)
+}
+
 func (o *VolumeEfficiencyPolicyGetOK) GetPayload() *models.VolumeEfficiencyPolicy {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewVolumeEfficiencyPolicyGetDefault(code int) *VolumeEfficiencyPolicyGetDef
 	}
 }
 
-/* VolumeEfficiencyPolicyGetDefault describes a response with status code -1, with default header values.
+/*
+VolumeEfficiencyPolicyGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *VolumeEfficiencyPolicyGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this volume efficiency policy get default response has a 2xx status code
+func (o *VolumeEfficiencyPolicyGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this volume efficiency policy get default response has a 3xx status code
+func (o *VolumeEfficiencyPolicyGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this volume efficiency policy get default response has a 4xx status code
+func (o *VolumeEfficiencyPolicyGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this volume efficiency policy get default response has a 5xx status code
+func (o *VolumeEfficiencyPolicyGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this volume efficiency policy get default response a status code equal to that given
+func (o *VolumeEfficiencyPolicyGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VolumeEfficiencyPolicyGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VolumeEfficiencyPolicyGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VolumeEfficiencyPolicyGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

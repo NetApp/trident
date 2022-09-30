@@ -17,7 +17,6 @@ import (
 
 // IscsiConnection An active iSCSI connection.
 //
-//
 // swagger:model iscsi_connection
 type IscsiConnection struct {
 
@@ -284,7 +283,6 @@ func (m *IscsiConnection) UnmarshalBinary(b []byte) error {
 }
 
 // IscsiConnectionInitiatorAddress The TCP socket information for the initiator end of the connection. This is useful for network packet debugging.
-//
 //
 // swagger:model IscsiConnectionInitiatorAddress
 type IscsiConnectionInitiatorAddress struct {

@@ -46,7 +46,8 @@ func NewLdapCreateCreated() *LdapCreateCreated {
 	return &LdapCreateCreated{}
 }
 
-/* LdapCreateCreated describes a response with status code 201, with default header values.
+/*
+LdapCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type LdapCreateCreated struct {
 	Payload *models.LdapServiceResponse
 }
 
+// IsSuccess returns true when this ldap create created response has a 2xx status code
+func (o *LdapCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ldap create created response has a 3xx status code
+func (o *LdapCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ldap create created response has a 4xx status code
+func (o *LdapCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ldap create created response has a 5xx status code
+func (o *LdapCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ldap create created response a status code equal to that given
+func (o *LdapCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *LdapCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /name-services/ldap][%d] ldapCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *LdapCreateCreated) String() string {
+	return fmt.Sprintf("[POST /name-services/ldap][%d] ldapCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *LdapCreateCreated) GetPayload() *models.LdapServiceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewLdapCreateDefault(code int) *LdapCreateDefault {
 	}
 }
 
-/* LdapCreateDefault describes a response with status code -1, with default header values.
+/*
+	LdapCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262186     | LDAP Servers cannot be used with Active Directory domain and/or preferred Acti Directory servers |
@@ -104,7 +137,6 @@ func NewLdapCreateDefault(code int) *LdapCreateDefault {
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
 | 4915252    | LDAP Referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
-
 */
 type LdapCreateDefault struct {
 	_statusCode int
@@ -117,9 +149,39 @@ func (o *LdapCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ldap create default response has a 2xx status code
+func (o *LdapCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ldap create default response has a 3xx status code
+func (o *LdapCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ldap create default response has a 4xx status code
+func (o *LdapCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ldap create default response has a 5xx status code
+func (o *LdapCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ldap create default response a status code equal to that given
+func (o *LdapCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LdapCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /name-services/ldap][%d] ldap_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LdapCreateDefault) String() string {
+	return fmt.Sprintf("[POST /name-services/ldap][%d] ldap_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LdapCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

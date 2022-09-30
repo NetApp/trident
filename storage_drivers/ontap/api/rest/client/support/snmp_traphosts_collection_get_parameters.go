@@ -53,10 +53,12 @@ func NewSnmpTraphostsCollectionGetParamsWithHTTPClient(client *http.Client) *Snm
 	}
 }
 
-/* SnmpTraphostsCollectionGetParams contains all the parameters to send to the API endpoint
-   for the snmp traphosts collection get operation.
+/*
+SnmpTraphostsCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snmp traphosts collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type SnmpTraphostsCollectionGetParams struct {
 

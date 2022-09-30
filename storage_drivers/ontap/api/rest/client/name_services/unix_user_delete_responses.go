@@ -46,14 +46,44 @@ func NewUnixUserDeleteOK() *UnixUserDeleteOK {
 	return &UnixUserDeleteOK{}
 }
 
-/* UnixUserDeleteOK describes a response with status code 200, with default header values.
+/*
+UnixUserDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type UnixUserDeleteOK struct {
 }
 
+// IsSuccess returns true when this unix user delete o k response has a 2xx status code
+func (o *UnixUserDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix user delete o k response has a 3xx status code
+func (o *UnixUserDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix user delete o k response has a 4xx status code
+func (o *UnixUserDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix user delete o k response has a 5xx status code
+func (o *UnixUserDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix user delete o k response a status code equal to that given
+func (o *UnixUserDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixUserDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserDeleteOK ", 200)
+}
+
+func (o *UnixUserDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewUnixUserDeleteDefault(code int) *UnixUserDeleteDefault {
 	}
 }
 
-/* UnixUserDeleteDefault describes a response with status code -1, with default header values.
+/*
+UnixUserDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *UnixUserDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix user delete default response has a 2xx status code
+func (o *UnixUserDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix user delete default response has a 3xx status code
+func (o *UnixUserDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix user delete default response has a 4xx status code
+func (o *UnixUserDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix user delete default response has a 5xx status code
+func (o *UnixUserDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix user delete default response a status code equal to that given
+func (o *UnixUserDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixUserDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixUserDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixUserDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

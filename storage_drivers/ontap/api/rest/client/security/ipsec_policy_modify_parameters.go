@@ -54,10 +54,12 @@ func NewIpsecPolicyModifyParamsWithHTTPClient(client *http.Client) *IpsecPolicyM
 	}
 }
 
-/* IpsecPolicyModifyParams contains all the parameters to send to the API endpoint
-   for the ipsec policy modify operation.
+/*
+IpsecPolicyModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ipsec policy modify operation.
+
+	Typically these are written to a http.Request.
 */
 type IpsecPolicyModifyParams struct {
 

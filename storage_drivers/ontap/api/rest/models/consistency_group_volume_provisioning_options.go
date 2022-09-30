@@ -170,7 +170,6 @@ func (m *ConsistencyGroupVolumeProvisioningOptions) UnmarshalBinary(b []byte) er
 
 // ConsistencyGroupVolumeProvisioningOptionsStorageService Determines the placement of any storage object created during this operation.
 //
-//
 // swagger:model ConsistencyGroupVolumeProvisioningOptionsStorageService
 type ConsistencyGroupVolumeProvisioningOptionsStorageService struct {
 

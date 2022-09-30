@@ -53,10 +53,12 @@ func NewConfigurationBackupGetParamsWithHTTPClient(client *http.Client) *Configu
 	}
 }
 
-/* ConfigurationBackupGetParams contains all the parameters to send to the API endpoint
-   for the configuration backup get operation.
+/*
+ConfigurationBackupGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the configuration backup get operation.
+
+	Typically these are written to a http.Request.
 */
 type ConfigurationBackupGetParams struct {
 

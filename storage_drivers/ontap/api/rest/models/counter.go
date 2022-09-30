@@ -20,39 +20,40 @@ import (
 // * A 2D array is represented as a list of counter entries.
 // ```
 // "counters": [
-//     // Scalar counter
-//     {
-//         "name": "memory",
-//         "value": 4480
-//     },
-//     // one dimensional array "sys_read_latency_hist"
-//     {
-//         "name": "sys_read_latency_hist",
-//         "labels": ["0 - <1ms", "1 - <2ms", ...],
-//         "values": [0, 0, ...]
-//     },
-//     // Two dimensional array "foo" with ["Label 1", "Label 2"] as the first
-//     // array dimension and labels ["w", "x", "y"] for the 2nd dimension
-//     {
-//         "name": "foo",
-//         "labels": ["Label 1", "Label 2"],
-//         "counters": [
-//             {
-//                 "label": "x",
-//                 "values": [0, 0]
-//             },
-//             {
-//                 "label": "y",
-//                 "values": [0, 0]
-//             },
-//             {
-//                 "label": "z",
-//                 "values": [0, 0]
-//             }
-//         ]
-//     }
-// ```
 //
+//	// Scalar counter
+//	{
+//	    "name": "memory",
+//	    "value": 4480
+//	},
+//	// one dimensional array "sys_read_latency_hist"
+//	{
+//	    "name": "sys_read_latency_hist",
+//	    "labels": ["0 - <1ms", "1 - <2ms", ...],
+//	    "values": [0, 0, ...]
+//	},
+//	// Two dimensional array "foo" with ["Label 1", "Label 2"] as the first
+//	// array dimension and labels ["w", "x", "y"] for the 2nd dimension
+//	{
+//	    "name": "foo",
+//	    "labels": ["Label 1", "Label 2"],
+//	    "counters": [
+//	        {
+//	            "label": "x",
+//	            "values": [0, 0]
+//	        },
+//	        {
+//	            "label": "y",
+//	            "values": [0, 0]
+//	        },
+//	        {
+//	            "label": "z",
+//	            "values": [0, 0]
+//	        }
+//	    ]
+//	}
+//
+// ```
 //
 // swagger:model counter
 type Counter struct {

@@ -53,10 +53,12 @@ func NewPortGetParamsWithHTTPClient(client *http.Client) *PortGetParams {
 	}
 }
 
-/* PortGetParams contains all the parameters to send to the API endpoint
-   for the port get operation.
+/*
+PortGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the port get operation.
+
+	Typically these are written to a http.Request.
 */
 type PortGetParams struct {
 

@@ -53,10 +53,12 @@ func NewAntiRansomwareSuspectCollectionGetParamsWithHTTPClient(client *http.Clie
 	}
 }
 
-/* AntiRansomwareSuspectCollectionGetParams contains all the parameters to send to the API endpoint
-   for the anti ransomware suspect collection get operation.
+/*
+AntiRansomwareSuspectCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the anti ransomware suspect collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type AntiRansomwareSuspectCollectionGetParams struct {
 

@@ -18,7 +18,6 @@ import (
 // NvmeSubsystemController A Non-Volatile Memory Express (NVMe) subsystem controller represents a connection between a host and a storage solution.<br/>
 // An NVMe subsystem controller is identified by the NVMe subsystem UUID and the controller ID.
 //
-//
 // swagger:model nvme_subsystem_controller
 type NvmeSubsystemController struct {
 
@@ -475,7 +474,6 @@ func (m *NvmeSubsystemControllerAdminQueue) UnmarshalBinary(b []byte) error {
 
 // NvmeSubsystemControllerHost Properties of the connected host.
 //
-//
 // swagger:model NvmeSubsystemControllerHost
 type NvmeSubsystemControllerHost struct {
 
@@ -599,7 +597,6 @@ func (m *NvmeSubsystemControllerHost) UnmarshalBinary(b []byte) error {
 
 // NvmeSubsystemControllerInterface The logical interface through which the host is connected.
 //
-//
 // swagger:model NvmeSubsystemControllerInterface
 type NvmeSubsystemControllerInterface struct {
 
@@ -695,7 +692,6 @@ func (m *NvmeSubsystemControllerInterface) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeSubsystemControllerIoQueue Properties of the I/O queues available to the controller.
-//
 //
 // swagger:model NvmeSubsystemControllerIoQueue
 type NvmeSubsystemControllerIoQueue struct {

@@ -55,10 +55,12 @@ func NewFileCloneCreateParamsWithHTTPClient(client *http.Client) *FileCloneCreat
 	}
 }
 
-/* FileCloneCreateParams contains all the parameters to send to the API endpoint
-   for the file clone create operation.
+/*
+FileCloneCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file clone create operation.
+
+	Typically these are written to a http.Request.
 */
 type FileCloneCreateParams struct {
 

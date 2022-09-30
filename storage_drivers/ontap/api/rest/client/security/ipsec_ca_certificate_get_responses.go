@@ -46,7 +46,8 @@ func NewIpsecCaCertificateGetOK() *IpsecCaCertificateGetOK {
 	return &IpsecCaCertificateGetOK{}
 }
 
-/* IpsecCaCertificateGetOK describes a response with status code 200, with default header values.
+/*
+IpsecCaCertificateGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IpsecCaCertificateGetOK struct {
 	Payload *models.IpsecCaCertificate
 }
 
+// IsSuccess returns true when this ipsec ca certificate get o k response has a 2xx status code
+func (o *IpsecCaCertificateGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipsec ca certificate get o k response has a 3xx status code
+func (o *IpsecCaCertificateGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipsec ca certificate get o k response has a 4xx status code
+func (o *IpsecCaCertificateGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipsec ca certificate get o k response has a 5xx status code
+func (o *IpsecCaCertificateGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipsec ca certificate get o k response a status code equal to that given
+func (o *IpsecCaCertificateGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IpsecCaCertificateGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsecCaCertificateGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IpsecCaCertificateGetOK) String() string {
+	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsecCaCertificateGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IpsecCaCertificateGetOK) GetPayload() *models.IpsecCaCertificate {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewIpsecCaCertificateGetDefault(code int) *IpsecCaCertificateGetDefault {
 	}
 }
 
-/* IpsecCaCertificateGetDefault describes a response with status code -1, with default header values.
+/*
+IpsecCaCertificateGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *IpsecCaCertificateGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ipsec ca certificate get default response has a 2xx status code
+func (o *IpsecCaCertificateGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipsec ca certificate get default response has a 3xx status code
+func (o *IpsecCaCertificateGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipsec ca certificate get default response has a 4xx status code
+func (o *IpsecCaCertificateGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipsec ca certificate get default response has a 5xx status code
+func (o *IpsecCaCertificateGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipsec ca certificate get default response a status code equal to that given
+func (o *IpsecCaCertificateGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IpsecCaCertificateGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsec_ca_certificate_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IpsecCaCertificateGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/ipsec/ca-certificates/{certificate.uuid}][%d] ipsec_ca_certificate_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IpsecCaCertificateGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

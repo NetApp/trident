@@ -46,7 +46,8 @@ func NewAuditCreateAccepted() *AuditCreateAccepted {
 	return &AuditCreateAccepted{}
 }
 
-/* AuditCreateAccepted describes a response with status code 202, with default header values.
+/*
+AuditCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type AuditCreateAccepted struct {
 	Payload *models.AuditResponse
 }
 
+// IsSuccess returns true when this audit create accepted response has a 2xx status code
+func (o *AuditCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this audit create accepted response has a 3xx status code
+func (o *AuditCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this audit create accepted response has a 4xx status code
+func (o *AuditCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this audit create accepted response has a 5xx status code
+func (o *AuditCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this audit create accepted response a status code equal to that given
+func (o *AuditCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *AuditCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /protocols/audit][%d] auditCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *AuditCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /protocols/audit][%d] auditCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *AuditCreateAccepted) GetPayload() *models.AuditResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewAuditCreateDefault(code int) *AuditCreateDefault {
 	}
 }
 
-/* AuditCreateDefault describes a response with status code -1, with default header values.
+/*
+	AuditCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262196     | Log_rotation_now is not an allowed operation                                           |
@@ -112,7 +145,6 @@ func NewAuditCreateDefault(code int) *AuditCreateDefault {
 | 9699429    | Failed to enable multiproto.audit.cifslogonlogoff.support support capability           |
 | 9699431    | All nodes need to run ONTAP 8.3.0 release to audit CAP staging events                  |
 | 9699432    | Failed to enable multiproto.audit.capstaging.support support capability                |
-
 */
 type AuditCreateDefault struct {
 	_statusCode int
@@ -125,9 +157,39 @@ func (o *AuditCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this audit create default response has a 2xx status code
+func (o *AuditCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this audit create default response has a 3xx status code
+func (o *AuditCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this audit create default response has a 4xx status code
+func (o *AuditCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this audit create default response has a 5xx status code
+func (o *AuditCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this audit create default response a status code equal to that given
+func (o *AuditCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AuditCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/audit][%d] audit_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AuditCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/audit][%d] audit_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AuditCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

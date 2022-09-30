@@ -46,7 +46,8 @@ func NewIpsecPolicyCreateCreated() *IpsecPolicyCreateCreated {
 	return &IpsecPolicyCreateCreated{}
 }
 
-/* IpsecPolicyCreateCreated describes a response with status code 201, with default header values.
+/*
+IpsecPolicyCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type IpsecPolicyCreateCreated struct {
 	Payload *models.IpsecPolicyResponse
 }
 
+// IsSuccess returns true when this ipsec policy create created response has a 2xx status code
+func (o *IpsecPolicyCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipsec policy create created response has a 3xx status code
+func (o *IpsecPolicyCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipsec policy create created response has a 4xx status code
+func (o *IpsecPolicyCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipsec policy create created response has a 5xx status code
+func (o *IpsecPolicyCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipsec policy create created response a status code equal to that given
+func (o *IpsecPolicyCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *IpsecPolicyCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsecPolicyCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *IpsecPolicyCreateCreated) String() string {
+	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsecPolicyCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *IpsecPolicyCreateCreated) GetPayload() *models.IpsecPolicyResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewIpsecPolicyCreateDefault(code int) *IpsecPolicyCreateDefault {
 	}
 }
 
-/* IpsecPolicyCreateDefault describes a response with status code -1, with default header values.
+/*
+	IpsecPolicyCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 66257099 | Only one protocol can be specified. |
@@ -108,7 +141,6 @@ func NewIpsecPolicyCreateDefault(code int) *IpsecPolicyCreateDefault {
 | 66257137 | A pre-shared key is not needed for the PKI authentication method. |
 | 66257139 | Certificate with the specified UUID was not found. |
 | 66257140 | Only certificates with a client or server type are supported. |
-
 */
 type IpsecPolicyCreateDefault struct {
 	_statusCode int
@@ -121,9 +153,39 @@ func (o *IpsecPolicyCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ipsec policy create default response has a 2xx status code
+func (o *IpsecPolicyCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipsec policy create default response has a 3xx status code
+func (o *IpsecPolicyCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipsec policy create default response has a 4xx status code
+func (o *IpsecPolicyCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipsec policy create default response has a 5xx status code
+func (o *IpsecPolicyCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipsec policy create default response a status code equal to that given
+func (o *IpsecPolicyCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IpsecPolicyCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsec_policy_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IpsecPolicyCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/ipsec/policies][%d] ipsec_policy_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IpsecPolicyCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

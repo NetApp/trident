@@ -15,7 +15,6 @@ import (
 
 // UnixUserSettings UNIX users cache setting.
 //
-//
 // swagger:model unix_user_settings
 type UnixUserSettings struct {
 

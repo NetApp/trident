@@ -46,7 +46,8 @@ func NewClientLockCollectionGetOK() *ClientLockCollectionGetOK {
 	return &ClientLockCollectionGetOK{}
 }
 
-/* ClientLockCollectionGetOK describes a response with status code 200, with default header values.
+/*
+ClientLockCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ClientLockCollectionGetOK struct {
 	Payload *models.ClientLockResponse
 }
 
+// IsSuccess returns true when this client lock collection get o k response has a 2xx status code
+func (o *ClientLockCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this client lock collection get o k response has a 3xx status code
+func (o *ClientLockCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this client lock collection get o k response has a 4xx status code
+func (o *ClientLockCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this client lock collection get o k response has a 5xx status code
+func (o *ClientLockCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this client lock collection get o k response a status code equal to that given
+func (o *ClientLockCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClientLockCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/locks][%d] clientLockCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ClientLockCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/locks][%d] clientLockCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ClientLockCollectionGetOK) GetPayload() *models.ClientLockResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewClientLockCollectionGetDefault(code int) *ClientLockCollectionGetDefault
 	}
 }
 
-/* ClientLockCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+ClientLockCollectionGetDefault describes a response with status code -1, with default header values.
 
 unexpected error_response
 */
@@ -95,9 +127,39 @@ func (o *ClientLockCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this client lock collection get default response has a 2xx status code
+func (o *ClientLockCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this client lock collection get default response has a 3xx status code
+func (o *ClientLockCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this client lock collection get default response has a 4xx status code
+func (o *ClientLockCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this client lock collection get default response has a 5xx status code
+func (o *ClientLockCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this client lock collection get default response a status code equal to that given
+func (o *ClientLockCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClientLockCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/locks][%d] client_lock_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClientLockCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/locks][%d] client_lock_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClientLockCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -55,10 +55,12 @@ func NewLunMapCreateParamsWithHTTPClient(client *http.Client) *LunMapCreateParam
 	}
 }
 
-/* LunMapCreateParams contains all the parameters to send to the API endpoint
-   for the lun map create operation.
+/*
+LunMapCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the lun map create operation.
+
+	Typically these are written to a http.Request.
 */
 type LunMapCreateParams struct {
 

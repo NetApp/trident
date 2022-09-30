@@ -55,10 +55,12 @@ func NewConfigurationBackupFileCreateParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* ConfigurationBackupFileCreateParams contains all the parameters to send to the API endpoint
-   for the configuration backup file create operation.
+/*
+ConfigurationBackupFileCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the configuration backup file create operation.
+
+	Typically these are written to a http.Request.
 */
 type ConfigurationBackupFileCreateParams struct {
 

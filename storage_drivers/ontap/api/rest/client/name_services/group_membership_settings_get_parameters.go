@@ -53,10 +53,12 @@ func NewGroupMembershipSettingsGetParamsWithHTTPClient(client *http.Client) *Gro
 	}
 }
 
-/* GroupMembershipSettingsGetParams contains all the parameters to send to the API endpoint
-   for the group membership settings get operation.
+/*
+GroupMembershipSettingsGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the group membership settings get operation.
+
+	Typically these are written to a http.Request.
 */
 type GroupMembershipSettingsGetParams struct {
 

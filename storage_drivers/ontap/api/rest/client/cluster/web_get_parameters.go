@@ -53,10 +53,12 @@ func NewWebGetParamsWithHTTPClient(client *http.Client) *WebGetParams {
 	}
 }
 
-/* WebGetParams contains all the parameters to send to the API endpoint
-   for the web get operation.
+/*
+WebGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the web get operation.
+
+	Typically these are written to a http.Request.
 */
 type WebGetParams struct {
 

@@ -18,7 +18,6 @@ import (
 // NvmeService A Non-Volatile Memory Express (NVMe) service defines the properties of the NVMe controller target for an SVM. There can be at most one NVMe service for an SVM. An SVM's NVMe service must be created before NVMe host initiators can connect to the SVM.<br/>
 // An NVMe service is identified by the UUID of its SVM.
 //
-//
 // swagger:model nvme_service
 type NvmeService struct {
 

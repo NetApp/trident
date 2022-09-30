@@ -46,7 +46,8 @@ func NewCifsServiceGetOK() *CifsServiceGetOK {
 	return &CifsServiceGetOK{}
 }
 
-/* CifsServiceGetOK describes a response with status code 200, with default header values.
+/*
+CifsServiceGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsServiceGetOK struct {
 	Payload *models.CifsService
 }
 
+// IsSuccess returns true when this cifs service get o k response has a 2xx status code
+func (o *CifsServiceGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs service get o k response has a 3xx status code
+func (o *CifsServiceGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs service get o k response has a 4xx status code
+func (o *CifsServiceGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs service get o k response has a 5xx status code
+func (o *CifsServiceGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs service get o k response a status code equal to that given
+func (o *CifsServiceGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsServiceGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifsServiceGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsServiceGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifsServiceGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsServiceGetOK) GetPayload() *models.CifsService {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsServiceGetDefault(code int) *CifsServiceGetDefault {
 	}
 }
 
-/* CifsServiceGetDefault describes a response with status code -1, with default header values.
+/*
+CifsServiceGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsServiceGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs service get default response has a 2xx status code
+func (o *CifsServiceGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs service get default response has a 3xx status code
+func (o *CifsServiceGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs service get default response has a 4xx status code
+func (o *CifsServiceGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs service get default response has a 5xx status code
+func (o *CifsServiceGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs service get default response a status code equal to that given
+func (o *CifsServiceGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsServiceGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifs_service_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsServiceGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}][%d] cifs_service_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsServiceGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

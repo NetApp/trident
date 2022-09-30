@@ -46,7 +46,8 @@ func NewSoftwareUploadAccepted() *SoftwareUploadAccepted {
 	return &SoftwareUploadAccepted{}
 }
 
-/* SoftwareUploadAccepted describes a response with status code 202, with default header values.
+/*
+SoftwareUploadAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SoftwareUploadAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this software upload accepted response has a 2xx status code
+func (o *SoftwareUploadAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this software upload accepted response has a 3xx status code
+func (o *SoftwareUploadAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this software upload accepted response has a 4xx status code
+func (o *SoftwareUploadAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this software upload accepted response has a 5xx status code
+func (o *SoftwareUploadAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this software upload accepted response a status code equal to that given
+func (o *SoftwareUploadAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SoftwareUploadAccepted) Error() string {
 	return fmt.Sprintf("[POST /cluster/software/upload][%d] softwareUploadAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SoftwareUploadAccepted) String() string {
+	return fmt.Sprintf("[POST /cluster/software/upload][%d] softwareUploadAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SoftwareUploadAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSoftwareUploadDefault(code int) *SoftwareUploadDefault {
 	}
 }
 
-/* SoftwareUploadDefault describes a response with status code -1, with default header values.
+/*
+SoftwareUploadDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SoftwareUploadDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this software upload default response has a 2xx status code
+func (o *SoftwareUploadDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this software upload default response has a 3xx status code
+func (o *SoftwareUploadDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this software upload default response has a 4xx status code
+func (o *SoftwareUploadDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this software upload default response has a 5xx status code
+func (o *SoftwareUploadDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this software upload default response a status code equal to that given
+func (o *SoftwareUploadDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SoftwareUploadDefault) Error() string {
 	return fmt.Sprintf("[POST /cluster/software/upload][%d] software_upload default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SoftwareUploadDefault) String() string {
+	return fmt.Sprintf("[POST /cluster/software/upload][%d] software_upload default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SoftwareUploadDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

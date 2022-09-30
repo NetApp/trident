@@ -46,7 +46,8 @@ func NewEmsEventCollectionGetOK() *EmsEventCollectionGetOK {
 	return &EmsEventCollectionGetOK{}
 }
 
-/* EmsEventCollectionGetOK describes a response with status code 200, with default header values.
+/*
+EmsEventCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type EmsEventCollectionGetOK struct {
 	Payload *models.EmsEventResponse
 }
 
+// IsSuccess returns true when this ems event collection get o k response has a 2xx status code
+func (o *EmsEventCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems event collection get o k response has a 3xx status code
+func (o *EmsEventCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems event collection get o k response has a 4xx status code
+func (o *EmsEventCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems event collection get o k response has a 5xx status code
+func (o *EmsEventCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems event collection get o k response a status code equal to that given
+func (o *EmsEventCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EmsEventCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/ems/events][%d] emsEventCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *EmsEventCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /support/ems/events][%d] emsEventCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *EmsEventCollectionGetOK) GetPayload() *models.EmsEventResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewEmsEventCollectionGetDefault(code int) *EmsEventCollectionGetDefault {
 	}
 }
 
-/* EmsEventCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+EmsEventCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *EmsEventCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems event collection get default response has a 2xx status code
+func (o *EmsEventCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems event collection get default response has a 3xx status code
+func (o *EmsEventCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems event collection get default response has a 4xx status code
+func (o *EmsEventCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems event collection get default response has a 5xx status code
+func (o *EmsEventCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems event collection get default response a status code equal to that given
+func (o *EmsEventCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsEventCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /support/ems/events][%d] ems_event_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsEventCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /support/ems/events][%d] ems_event_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsEventCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewLoginMessagesCollectionGetParamsWithHTTPClient(client *http.Client) *Log
 	}
 }
 
-/* LoginMessagesCollectionGetParams contains all the parameters to send to the API endpoint
-   for the login messages collection get operation.
+/*
+LoginMessagesCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the login messages collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type LoginMessagesCollectionGetParams struct {
 

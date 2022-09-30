@@ -46,7 +46,8 @@ func NewS3AuditCreateAccepted() *S3AuditCreateAccepted {
 	return &S3AuditCreateAccepted{}
 }
 
-/* S3AuditCreateAccepted describes a response with status code 202, with default header values.
+/*
+S3AuditCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type S3AuditCreateAccepted struct {
 	Payload *models.S3AuditResponse
 }
 
+// IsSuccess returns true when this s3 audit create accepted response has a 2xx status code
+func (o *S3AuditCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 audit create accepted response has a 3xx status code
+func (o *S3AuditCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 audit create accepted response has a 4xx status code
+func (o *S3AuditCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 audit create accepted response has a 5xx status code
+func (o *S3AuditCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 audit create accepted response a status code equal to that given
+func (o *S3AuditCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *S3AuditCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3AuditCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *S3AuditCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3AuditCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *S3AuditCreateAccepted) GetPayload() *models.S3AuditResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewS3AuditCreateDefault(code int) *S3AuditCreateDefault {
 	}
 }
 
-/* S3AuditCreateDefault describes a response with status code -1, with default header values.
+/*
+	S3AuditCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 140902401 | Failed to create an audit configuration for the SVM. |
@@ -120,7 +153,6 @@ ONTAP Error Response Codes
 | ---------- | ----------- |
 | 9699340    | SVM UUID lookup failed                                                        |
 | 9699407    | Additional fields are provided                                                |
-
 */
 type S3AuditCreateDefault struct {
 	_statusCode int
@@ -133,9 +165,39 @@ func (o *S3AuditCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 audit create default response has a 2xx status code
+func (o *S3AuditCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 audit create default response has a 3xx status code
+func (o *S3AuditCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 audit create default response has a 4xx status code
+func (o *S3AuditCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 audit create default response has a 5xx status code
+func (o *S3AuditCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 audit create default response a status code equal to that given
+func (o *S3AuditCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3AuditCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3AuditCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3AuditCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

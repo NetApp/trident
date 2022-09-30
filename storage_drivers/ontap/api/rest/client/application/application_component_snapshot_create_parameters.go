@@ -55,10 +55,12 @@ func NewApplicationComponentSnapshotCreateParamsWithHTTPClient(client *http.Clie
 	}
 }
 
-/* ApplicationComponentSnapshotCreateParams contains all the parameters to send to the API endpoint
-   for the application component snapshot create operation.
+/*
+ApplicationComponentSnapshotCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the application component snapshot create operation.
+
+	Typically these are written to a http.Request.
 */
 type ApplicationComponentSnapshotCreateParams struct {
 

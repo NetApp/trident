@@ -36,14 +36,44 @@ func NewIpspaceModifyOK() *IpspaceModifyOK {
 	return &IpspaceModifyOK{}
 }
 
-/* IpspaceModifyOK describes a response with status code 200, with default header values.
+/*
+IpspaceModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IpspaceModifyOK struct {
 }
 
+// IsSuccess returns true when this ipspace modify o k response has a 2xx status code
+func (o *IpspaceModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipspace modify o k response has a 3xx status code
+func (o *IpspaceModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipspace modify o k response has a 4xx status code
+func (o *IpspaceModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipspace modify o k response has a 5xx status code
+func (o *IpspaceModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipspace modify o k response a status code equal to that given
+func (o *IpspaceModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IpspaceModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /network/ipspaces/{uuid}][%d] ipspaceModifyOK ", 200)
+}
+
+func (o *IpspaceModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /network/ipspaces/{uuid}][%d] ipspaceModifyOK ", 200)
 }
 

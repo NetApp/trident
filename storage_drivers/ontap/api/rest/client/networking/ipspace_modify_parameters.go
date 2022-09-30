@@ -54,10 +54,12 @@ func NewIpspaceModifyParamsWithHTTPClient(client *http.Client) *IpspaceModifyPar
 	}
 }
 
-/* IpspaceModifyParams contains all the parameters to send to the API endpoint
-   for the ipspace modify operation.
+/*
+IpspaceModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ipspace modify operation.
+
+	Typically these are written to a http.Request.
 */
 type IpspaceModifyParams struct {
 

@@ -53,10 +53,12 @@ func NewNetworkIPInterfacesGetParamsWithHTTPClient(client *http.Client) *Network
 	}
 }
 
-/* NetworkIPInterfacesGetParams contains all the parameters to send to the API endpoint
-   for the network ip interfaces get operation.
+/*
+NetworkIPInterfacesGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ip interfaces get operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkIPInterfacesGetParams struct {
 

@@ -15,7 +15,6 @@ import (
 
 // FcPortReference An FC port is the physical port of an FC adapter on a cluster node that can be connected to an FC network.
 //
-//
 // swagger:model fc_port_reference
 type FcPortReference struct {
 
@@ -239,7 +238,6 @@ func (m *FcPortReferenceLinks) UnmarshalBinary(b []byte) error {
 }
 
 // FcPortReferenceNode The node on which the FC port is located.
-//
 //
 // swagger:model FcPortReferenceNode
 type FcPortReferenceNode struct {

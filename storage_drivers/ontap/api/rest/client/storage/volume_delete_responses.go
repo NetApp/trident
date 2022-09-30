@@ -46,7 +46,8 @@ func NewVolumeDeleteAccepted() *VolumeDeleteAccepted {
 	return &VolumeDeleteAccepted{}
 }
 
-/* VolumeDeleteAccepted describes a response with status code 202, with default header values.
+/*
+VolumeDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type VolumeDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this volume delete accepted response has a 2xx status code
+func (o *VolumeDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume delete accepted response has a 3xx status code
+func (o *VolumeDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume delete accepted response has a 4xx status code
+func (o *VolumeDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume delete accepted response has a 5xx status code
+func (o *VolumeDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume delete accepted response a status code equal to that given
+func (o *VolumeDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *VolumeDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volumeDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *VolumeDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volumeDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *VolumeDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewVolumeDeleteDefault(code int) *VolumeDeleteDefault {
 	}
 }
 
-/* VolumeDeleteDefault describes a response with status code -1, with default header values.
+/*
+VolumeDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *VolumeDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this volume delete default response has a 2xx status code
+func (o *VolumeDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this volume delete default response has a 3xx status code
+func (o *VolumeDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this volume delete default response has a 4xx status code
+func (o *VolumeDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this volume delete default response has a 5xx status code
+func (o *VolumeDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this volume delete default response a status code equal to that given
+func (o *VolumeDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VolumeDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volume_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VolumeDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/volumes/{uuid}][%d] volume_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VolumeDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

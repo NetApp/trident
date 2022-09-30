@@ -54,10 +54,12 @@ func NewIpsecModifyParamsWithHTTPClient(client *http.Client) *IpsecModifyParams 
 	}
 }
 
-/* IpsecModifyParams contains all the parameters to send to the API endpoint
-   for the ipsec modify operation.
+/*
+IpsecModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ipsec modify operation.
+
+	Typically these are written to a http.Request.
 */
 type IpsecModifyParams struct {
 

@@ -46,7 +46,8 @@ func NewQtreeCreateAccepted() *QtreeCreateAccepted {
 	return &QtreeCreateAccepted{}
 }
 
-/* QtreeCreateAccepted describes a response with status code 202, with default header values.
+/*
+QtreeCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type QtreeCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this qtree create accepted response has a 2xx status code
+func (o *QtreeCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this qtree create accepted response has a 3xx status code
+func (o *QtreeCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this qtree create accepted response has a 4xx status code
+func (o *QtreeCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this qtree create accepted response has a 5xx status code
+func (o *QtreeCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this qtree create accepted response a status code equal to that given
+func (o *QtreeCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *QtreeCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/qtrees][%d] qtreeCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *QtreeCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/qtrees][%d] qtreeCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *QtreeCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewQtreeCreateDefault(code int) *QtreeCreateDefault {
 	}
 }
 
-/* QtreeCreateDefault describes a response with status code -1, with default header values.
+/*
+	QtreeCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 917927 | The specified volume was not found. |
@@ -96,7 +129,6 @@ func NewQtreeCreateDefault(code int) *QtreeCreateDefault {
 | 5242952 | Export Policy ID specified is invalid. |
 | 5242953 | Qtree name must be provided. |
 | 5242967 | UNIX user or group ID must be 32-bit unsigned integer. |
-
 */
 type QtreeCreateDefault struct {
 	_statusCode int
@@ -109,9 +141,39 @@ func (o *QtreeCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this qtree create default response has a 2xx status code
+func (o *QtreeCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this qtree create default response has a 3xx status code
+func (o *QtreeCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this qtree create default response has a 4xx status code
+func (o *QtreeCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this qtree create default response has a 5xx status code
+func (o *QtreeCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this qtree create default response a status code equal to that given
+func (o *QtreeCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QtreeCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/qtrees][%d] qtree_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QtreeCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/qtrees][%d] qtree_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QtreeCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

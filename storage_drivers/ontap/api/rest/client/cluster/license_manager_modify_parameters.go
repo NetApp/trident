@@ -55,10 +55,12 @@ func NewLicenseManagerModifyParamsWithHTTPClient(client *http.Client) *LicenseMa
 	}
 }
 
-/* LicenseManagerModifyParams contains all the parameters to send to the API endpoint
-   for the license manager modify operation.
+/*
+LicenseManagerModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the license manager modify operation.
+
+	Typically these are written to a http.Request.
 */
 type LicenseManagerModifyParams struct {
 

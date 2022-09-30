@@ -46,7 +46,8 @@ func NewFabricGetOK() *FabricGetOK {
 	return &FabricGetOK{}
 }
 
-/* FabricGetOK describes a response with status code 200, with default header values.
+/*
+FabricGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FabricGetOK struct {
 	Payload *models.Fabric
 }
 
+// IsSuccess returns true when this fabric get o k response has a 2xx status code
+func (o *FabricGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fabric get o k response has a 3xx status code
+func (o *FabricGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fabric get o k response has a 4xx status code
+func (o *FabricGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fabric get o k response has a 5xx status code
+func (o *FabricGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fabric get o k response a status code equal to that given
+func (o *FabricGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FabricGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/fc/fabrics/{name}][%d] fabricGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FabricGetOK) String() string {
+	return fmt.Sprintf("[GET /network/fc/fabrics/{name}][%d] fabricGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FabricGetOK) GetPayload() *models.Fabric {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFabricGetDefault(code int) *FabricGetDefault {
 	}
 }
 
-/* FabricGetDefault describes a response with status code -1, with default header values.
+/*
+FabricGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FabricGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fabric get default response has a 2xx status code
+func (o *FabricGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fabric get default response has a 3xx status code
+func (o *FabricGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fabric get default response has a 4xx status code
+func (o *FabricGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fabric get default response has a 5xx status code
+func (o *FabricGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fabric get default response a status code equal to that given
+func (o *FabricGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FabricGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/fc/fabrics/{name}][%d] fabric_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FabricGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/fc/fabrics/{name}][%d] fabric_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FabricGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

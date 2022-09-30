@@ -46,14 +46,44 @@ func NewAccountPasswordCreateCreated() *AccountPasswordCreateCreated {
 	return &AccountPasswordCreateCreated{}
 }
 
-/* AccountPasswordCreateCreated describes a response with status code 201, with default header values.
+/*
+AccountPasswordCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type AccountPasswordCreateCreated struct {
 }
 
+// IsSuccess returns true when this account password create created response has a 2xx status code
+func (o *AccountPasswordCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this account password create created response has a 3xx status code
+func (o *AccountPasswordCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this account password create created response has a 4xx status code
+func (o *AccountPasswordCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this account password create created response has a 5xx status code
+func (o *AccountPasswordCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this account password create created response a status code equal to that given
+func (o *AccountPasswordCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *AccountPasswordCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /security/authentication/password][%d] accountPasswordCreateCreated ", 201)
+}
+
+func (o *AccountPasswordCreateCreated) String() string {
 	return fmt.Sprintf("[POST /security/authentication/password][%d] accountPasswordCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewAccountPasswordCreateDefault(code int) *AccountPasswordCreateDefault {
 	}
 }
 
-/* AccountPasswordCreateDefault describes a response with status code -1, with default header values.
+/*
+	AccountPasswordCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 7077918 | The password cannot contain the username. |
@@ -82,7 +114,6 @@ func NewAccountPasswordCreateDefault(code int) *AccountPasswordCreateDefault {
 | 7077925 | The new password must be different to the old password. |
 | 7077940 | The password exceeds maximum supported length. |
 | 7077941 | Defined password composition exceeds the maximum password length of 128 characters. |
-
 */
 type AccountPasswordCreateDefault struct {
 	_statusCode int
@@ -95,9 +126,39 @@ func (o *AccountPasswordCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this account password create default response has a 2xx status code
+func (o *AccountPasswordCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this account password create default response has a 3xx status code
+func (o *AccountPasswordCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this account password create default response has a 4xx status code
+func (o *AccountPasswordCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this account password create default response has a 5xx status code
+func (o *AccountPasswordCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this account password create default response a status code equal to that given
+func (o *AccountPasswordCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AccountPasswordCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/authentication/password][%d] account_password_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AccountPasswordCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/authentication/password][%d] account_password_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AccountPasswordCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

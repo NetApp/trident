@@ -53,10 +53,12 @@ func NewFcZoneCollectionGetParamsWithHTTPClient(client *http.Client) *FcZoneColl
 	}
 }
 
-/* FcZoneCollectionGetParams contains all the parameters to send to the API endpoint
-   for the fc zone collection get operation.
+/*
+FcZoneCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fc zone collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type FcZoneCollectionGetParams struct {
 

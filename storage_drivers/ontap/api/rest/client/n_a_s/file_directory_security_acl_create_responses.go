@@ -46,7 +46,8 @@ func NewFileDirectorySecurityACLCreateAccepted() *FileDirectorySecurityACLCreate
 	return &FileDirectorySecurityACLCreateAccepted{}
 }
 
-/* FileDirectorySecurityACLCreateAccepted describes a response with status code 202, with default header values.
+/*
+FileDirectorySecurityACLCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type FileDirectorySecurityACLCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this file directory security Acl create accepted response has a 2xx status code
+func (o *FileDirectorySecurityACLCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file directory security Acl create accepted response has a 3xx status code
+func (o *FileDirectorySecurityACLCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file directory security Acl create accepted response has a 4xx status code
+func (o *FileDirectorySecurityACLCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file directory security Acl create accepted response has a 5xx status code
+func (o *FileDirectorySecurityACLCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file directory security Acl create accepted response a status code equal to that given
+func (o *FileDirectorySecurityACLCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *FileDirectorySecurityACLCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] fileDirectorySecurityAclCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *FileDirectorySecurityACLCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] fileDirectorySecurityAclCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *FileDirectorySecurityACLCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFileDirectorySecurityACLCreateDefault(code int) *FileDirectorySecurityAC
 	}
 }
 
-/* FileDirectorySecurityACLCreateDefault describes a response with status code -1, with default header values.
+/*
+FileDirectorySecurityACLCreateDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FileDirectorySecurityACLCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file directory security acl create default response has a 2xx status code
+func (o *FileDirectorySecurityACLCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file directory security acl create default response has a 3xx status code
+func (o *FileDirectorySecurityACLCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file directory security acl create default response has a 4xx status code
+func (o *FileDirectorySecurityACLCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file directory security acl create default response has a 5xx status code
+func (o *FileDirectorySecurityACLCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file directory security acl create default response a status code equal to that given
+func (o *FileDirectorySecurityACLCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileDirectorySecurityACLCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] file_directory_security_acl_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileDirectorySecurityACLCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}/acl][%d] file_directory_security_acl_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileDirectorySecurityACLCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

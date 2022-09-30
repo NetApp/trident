@@ -46,14 +46,44 @@ func NewS3AuditModifyAccepted() *S3AuditModifyAccepted {
 	return &S3AuditModifyAccepted{}
 }
 
-/* S3AuditModifyAccepted describes a response with status code 202, with default header values.
+/*
+S3AuditModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type S3AuditModifyAccepted struct {
 }
 
+// IsSuccess returns true when this s3 audit modify accepted response has a 2xx status code
+func (o *S3AuditModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 audit modify accepted response has a 3xx status code
+func (o *S3AuditModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 audit modify accepted response has a 4xx status code
+func (o *S3AuditModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 audit modify accepted response has a 5xx status code
+func (o *S3AuditModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 audit modify accepted response a status code equal to that given
+func (o *S3AuditModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *S3AuditModifyAccepted) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3AuditModifyAccepted ", 202)
+}
+
+func (o *S3AuditModifyAccepted) String() string {
 	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3AuditModifyAccepted ", 202)
 }
 
@@ -69,9 +99,11 @@ func NewS3AuditModifyDefault(code int) *S3AuditModifyDefault {
 	}
 }
 
-/* S3AuditModifyDefault describes a response with status code -1, with default header values.
+/*
+	S3AuditModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 140902401 | Failed to create an audit configuration for the SVM. |
@@ -109,7 +141,6 @@ ONTAP Error Response Codes
 | ---------- | ----------- |
 | 9699340    | SVM UUID lookup failed                                                        |
 | 9699407    | Additional fields are provided                                                |
-
 */
 type S3AuditModifyDefault struct {
 	_statusCode int
@@ -122,9 +153,39 @@ func (o *S3AuditModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 audit modify default response has a 2xx status code
+func (o *S3AuditModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 audit modify default response has a 3xx status code
+func (o *S3AuditModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 audit modify default response has a 4xx status code
+func (o *S3AuditModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 audit modify default response has a 5xx status code
+func (o *S3AuditModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 audit modify default response a status code equal to that given
+func (o *S3AuditModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3AuditModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3AuditModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3AuditModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

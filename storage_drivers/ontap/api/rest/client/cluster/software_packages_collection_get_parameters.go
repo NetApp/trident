@@ -53,10 +53,12 @@ func NewSoftwarePackagesCollectionGetParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* SoftwarePackagesCollectionGetParams contains all the parameters to send to the API endpoint
-   for the software packages collection get operation.
+/*
+SoftwarePackagesCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the software packages collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type SoftwarePackagesCollectionGetParams struct {
 

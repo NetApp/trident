@@ -20,7 +20,6 @@ import (
 // a CIFS share must be created with sufficient share permission. CIFS shares are tied to the CIFS server on the SVM.
 // When a CIFS share is created, ONTAP creates a default ACL for the share with Full Control permissions for Everyone.
 //
-//
 // swagger:model cifs_share
 type CifsShare struct {
 

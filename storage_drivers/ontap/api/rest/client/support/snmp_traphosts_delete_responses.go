@@ -46,14 +46,44 @@ func NewSnmpTraphostsDeleteOK() *SnmpTraphostsDeleteOK {
 	return &SnmpTraphostsDeleteOK{}
 }
 
-/* SnmpTraphostsDeleteOK describes a response with status code 200, with default header values.
+/*
+SnmpTraphostsDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnmpTraphostsDeleteOK struct {
 }
 
+// IsSuccess returns true when this snmp traphosts delete o k response has a 2xx status code
+func (o *SnmpTraphostsDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snmp traphosts delete o k response has a 3xx status code
+func (o *SnmpTraphostsDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snmp traphosts delete o k response has a 4xx status code
+func (o *SnmpTraphostsDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snmp traphosts delete o k response has a 5xx status code
+func (o *SnmpTraphostsDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snmp traphosts delete o k response a status code equal to that given
+func (o *SnmpTraphostsDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnmpTraphostsDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmpTraphostsDeleteOK ", 200)
+}
+
+func (o *SnmpTraphostsDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmpTraphostsDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewSnmpTraphostsDeleteDefault(code int) *SnmpTraphostsDeleteDefault {
 	}
 }
 
-/* SnmpTraphostsDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SnmpTraphostsDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 9043970 | Traphost entry does not exist. |
-
 */
 type SnmpTraphostsDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *SnmpTraphostsDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snmp traphosts delete default response has a 2xx status code
+func (o *SnmpTraphostsDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snmp traphosts delete default response has a 3xx status code
+func (o *SnmpTraphostsDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snmp traphosts delete default response has a 4xx status code
+func (o *SnmpTraphostsDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snmp traphosts delete default response has a 5xx status code
+func (o *SnmpTraphostsDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snmp traphosts delete default response a status code equal to that given
+func (o *SnmpTraphostsDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnmpTraphostsDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmp_traphosts_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnmpTraphostsDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /support/snmp/traphosts/{host}][%d] snmp_traphosts_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnmpTraphostsDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

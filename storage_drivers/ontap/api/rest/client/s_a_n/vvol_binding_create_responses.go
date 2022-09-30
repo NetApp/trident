@@ -46,7 +46,8 @@ func NewVvolBindingCreateCreated() *VvolBindingCreateCreated {
 	return &VvolBindingCreateCreated{}
 }
 
-/* VvolBindingCreateCreated describes a response with status code 201, with default header values.
+/*
+VvolBindingCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type VvolBindingCreateCreated struct {
 	Payload *models.VvolBindingResponse
 }
 
+// IsSuccess returns true when this vvol binding create created response has a 2xx status code
+func (o *VvolBindingCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vvol binding create created response has a 3xx status code
+func (o *VvolBindingCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vvol binding create created response has a 4xx status code
+func (o *VvolBindingCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vvol binding create created response has a 5xx status code
+func (o *VvolBindingCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vvol binding create created response a status code equal to that given
+func (o *VvolBindingCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *VvolBindingCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvolBindingCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *VvolBindingCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvolBindingCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *VvolBindingCreateCreated) GetPayload() *models.VvolBindingResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewVvolBindingCreateDefault(code int) *VvolBindingCreateDefault {
 	}
 }
 
-/* VvolBindingCreateDefault describes a response with status code -1, with default header values.
+/*
+	VvolBindingCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | The specified SVM does not exist or is not accessible to the caller. |
@@ -96,7 +129,6 @@ func NewVvolBindingCreateDefault(code int) *VvolBindingCreateDefault {
 | 5374876 | The protocol endpoint or vVol LUN was not found in the SVM. Use to the `target` property of the error object to differentiate between the protocol endpoint LUN and the vVol LUN. |
 | 5374924 | No protocol endpoint LUN was supplied. |
 | 5374925 | No vVol LUN was supplied. |
-
 */
 type VvolBindingCreateDefault struct {
 	_statusCode int
@@ -109,9 +141,39 @@ func (o *VvolBindingCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vvol binding create default response has a 2xx status code
+func (o *VvolBindingCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vvol binding create default response has a 3xx status code
+func (o *VvolBindingCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vvol binding create default response has a 4xx status code
+func (o *VvolBindingCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vvol binding create default response has a 5xx status code
+func (o *VvolBindingCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vvol binding create default response a status code equal to that given
+func (o *VvolBindingCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VvolBindingCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvol_binding_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VvolBindingCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/san/vvol-bindings][%d] vvol_binding_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VvolBindingCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewPortsetInterfaceGetParamsWithHTTPClient(client *http.Client) *PortsetInt
 	}
 }
 
-/* PortsetInterfaceGetParams contains all the parameters to send to the API endpoint
-   for the portset interface get operation.
+/*
+PortsetInterfaceGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the portset interface get operation.
+
+	Typically these are written to a http.Request.
 */
 type PortsetInterfaceGetParams struct {
 

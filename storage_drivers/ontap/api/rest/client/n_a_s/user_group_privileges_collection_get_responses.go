@@ -46,7 +46,8 @@ func NewUserGroupPrivilegesCollectionGetOK() *UserGroupPrivilegesCollectionGetOK
 	return &UserGroupPrivilegesCollectionGetOK{}
 }
 
-/* UserGroupPrivilegesCollectionGetOK describes a response with status code 200, with default header values.
+/*
+UserGroupPrivilegesCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type UserGroupPrivilegesCollectionGetOK struct {
 	Payload *models.UserGroupPrivilegesResponse
 }
 
+// IsSuccess returns true when this user group privileges collection get o k response has a 2xx status code
+func (o *UserGroupPrivilegesCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this user group privileges collection get o k response has a 3xx status code
+func (o *UserGroupPrivilegesCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this user group privileges collection get o k response has a 4xx status code
+func (o *UserGroupPrivilegesCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this user group privileges collection get o k response has a 5xx status code
+func (o *UserGroupPrivilegesCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this user group privileges collection get o k response a status code equal to that given
+func (o *UserGroupPrivilegesCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UserGroupPrivilegesCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges][%d] userGroupPrivilegesCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *UserGroupPrivilegesCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges][%d] userGroupPrivilegesCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *UserGroupPrivilegesCollectionGetOK) GetPayload() *models.UserGroupPrivilegesResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewUserGroupPrivilegesCollectionGetDefault(code int) *UserGroupPrivilegesCo
 	}
 }
 
-/* UserGroupPrivilegesCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+UserGroupPrivilegesCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *UserGroupPrivilegesCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this user group privileges collection get default response has a 2xx status code
+func (o *UserGroupPrivilegesCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this user group privileges collection get default response has a 3xx status code
+func (o *UserGroupPrivilegesCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this user group privileges collection get default response has a 4xx status code
+func (o *UserGroupPrivilegesCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this user group privileges collection get default response has a 5xx status code
+func (o *UserGroupPrivilegesCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this user group privileges collection get default response a status code equal to that given
+func (o *UserGroupPrivilegesCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UserGroupPrivilegesCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges][%d] user_group_privileges_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UserGroupPrivilegesCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/users-and-groups/privileges][%d] user_group_privileges_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UserGroupPrivilegesCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

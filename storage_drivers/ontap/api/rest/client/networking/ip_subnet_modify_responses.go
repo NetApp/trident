@@ -43,14 +43,44 @@ func NewIPSubnetModifyOK() *IPSubnetModifyOK {
 	return &IPSubnetModifyOK{}
 }
 
-/* IPSubnetModifyOK describes a response with status code 200, with default header values.
+/*
+IPSubnetModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IPSubnetModifyOK struct {
 }
 
+// IsSuccess returns true when this ip subnet modify o k response has a 2xx status code
+func (o *IPSubnetModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ip subnet modify o k response has a 3xx status code
+func (o *IPSubnetModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ip subnet modify o k response has a 4xx status code
+func (o *IPSubnetModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ip subnet modify o k response has a 5xx status code
+func (o *IPSubnetModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ip subnet modify o k response a status code equal to that given
+func (o *IPSubnetModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IPSubnetModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ipSubnetModifyOK ", 200)
+}
+
+func (o *IPSubnetModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ipSubnetModifyOK ", 200)
 }
 
@@ -66,9 +96,11 @@ func NewIPSubnetModifyDefault(code int) *IPSubnetModifyDefault {
 	}
 }
 
-/* IPSubnetModifyDefault describes a response with status code -1, with default header values.
+/*
+	IPSubnetModifyDefault describes a response with status code -1, with default header values.
 
- Fill error codes below.
+	Fill error codes below.
+
 ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
@@ -85,7 +117,6 @@ ONTAP Error Response Codes
 | 53282570 | Each pair of ranges must have ip_ranges.start less than or equal to ip_ranges.end. |
 | 53282571 | The ip_ranges.start and ip_ranges.end fields must have the same number of items. |
 | 53282572 | PATCH partially succeeded with error. |
-
 */
 type IPSubnetModifyDefault struct {
 	_statusCode int
@@ -96,7 +127,36 @@ func (o *IPSubnetModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ip subnet modify default response has a 2xx status code
+func (o *IPSubnetModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ip subnet modify default response has a 3xx status code
+func (o *IPSubnetModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ip subnet modify default response has a 4xx status code
+func (o *IPSubnetModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ip subnet modify default response has a 5xx status code
+func (o *IPSubnetModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ip subnet modify default response a status code equal to that given
+func (o *IPSubnetModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IPSubnetModifyDefault) Error() string {
+	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ip_subnet_modify default ", o._statusCode)
+}
+
+func (o *IPSubnetModifyDefault) String() string {
 	return fmt.Sprintf("[PATCH /network/ip/subnets/{uuid}][%d] ip_subnet_modify default ", o._statusCode)
 }
 

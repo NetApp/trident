@@ -46,7 +46,8 @@ func NewExportPolicyCreateCreated() *ExportPolicyCreateCreated {
 	return &ExportPolicyCreateCreated{}
 }
 
-/* ExportPolicyCreateCreated describes a response with status code 201, with default header values.
+/*
+ExportPolicyCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type ExportPolicyCreateCreated struct {
 	Payload *models.ExportPolicyResponse
 }
 
+// IsSuccess returns true when this export policy create created response has a 2xx status code
+func (o *ExportPolicyCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this export policy create created response has a 3xx status code
+func (o *ExportPolicyCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this export policy create created response has a 4xx status code
+func (o *ExportPolicyCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this export policy create created response has a 5xx status code
+func (o *ExportPolicyCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this export policy create created response a status code equal to that given
+func (o *ExportPolicyCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *ExportPolicyCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/nfs/export-policies][%d] exportPolicyCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *ExportPolicyCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies][%d] exportPolicyCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *ExportPolicyCreateCreated) GetPayload() *models.ExportPolicyResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewExportPolicyCreateDefault(code int) *ExportPolicyCreateDefault {
 	}
 }
 
-/* ExportPolicyCreateDefault describes a response with status code -1, with default header values.
+/*
+	ExportPolicyCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1703952    | Invalid ruleset name provided. No spaces allowed in a ruleset name|
@@ -91,7 +124,6 @@ func NewExportPolicyCreateDefault(code int) *ExportPolicyCreateDefault {
 | 1704055    | Export policies are only supported for data Vservers |
 | 3277000    | Upgrade all nodes to Data ONTAP 9.0.0 or above to use krb5p as a security flavor in export-policy rules |
 | 3277083    | User ID is not valid. Enter a value for User ID from 0 to 4294967295 |
-
 */
 type ExportPolicyCreateDefault struct {
 	_statusCode int
@@ -104,9 +136,39 @@ func (o *ExportPolicyCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this export policy create default response has a 2xx status code
+func (o *ExportPolicyCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this export policy create default response has a 3xx status code
+func (o *ExportPolicyCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this export policy create default response has a 4xx status code
+func (o *ExportPolicyCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this export policy create default response has a 5xx status code
+func (o *ExportPolicyCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this export policy create default response a status code equal to that given
+func (o *ExportPolicyCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ExportPolicyCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/nfs/export-policies][%d] export_policy_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ExportPolicyCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies][%d] export_policy_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ExportPolicyCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

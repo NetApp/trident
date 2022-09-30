@@ -46,14 +46,44 @@ func NewSecurityKeyManagerDeleteOK() *SecurityKeyManagerDeleteOK {
 	return &SecurityKeyManagerDeleteOK{}
 }
 
-/* SecurityKeyManagerDeleteOK describes a response with status code 200, with default header values.
+/*
+SecurityKeyManagerDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SecurityKeyManagerDeleteOK struct {
 }
 
+// IsSuccess returns true when this security key manager delete o k response has a 2xx status code
+func (o *SecurityKeyManagerDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager delete o k response has a 3xx status code
+func (o *SecurityKeyManagerDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager delete o k response has a 4xx status code
+func (o *SecurityKeyManagerDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager delete o k response has a 5xx status code
+func (o *SecurityKeyManagerDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager delete o k response a status code equal to that given
+func (o *SecurityKeyManagerDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityKeyManagerDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] securityKeyManagerDeleteOK ", 200)
+}
+
+func (o *SecurityKeyManagerDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] securityKeyManagerDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewSecurityKeyManagerDeleteDefault(code int) *SecurityKeyManagerDeleteDefau
 	}
 }
 
-/* SecurityKeyManagerDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SecurityKeyManagerDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65536208 | Failed to delete the SVM Key ID. |
@@ -89,7 +121,6 @@ func NewSecurityKeyManagerDeleteDefault(code int) *SecurityKeyManagerDeleteDefau
 | 65536867 | Encrypted volumes are found for the SVM. |
 | 196608301 | Failed to determine the type of encryption. |
 | 196608305 | NAE aggregates are found in the cluster. |
-
 */
 type SecurityKeyManagerDeleteDefault struct {
 	_statusCode int
@@ -102,9 +133,39 @@ func (o *SecurityKeyManagerDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security key manager delete default response has a 2xx status code
+func (o *SecurityKeyManagerDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security key manager delete default response has a 3xx status code
+func (o *SecurityKeyManagerDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security key manager delete default response has a 4xx status code
+func (o *SecurityKeyManagerDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security key manager delete default response has a 5xx status code
+func (o *SecurityKeyManagerDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security key manager delete default response a status code equal to that given
+func (o *SecurityKeyManagerDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityKeyManagerDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] security_key_manager_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityKeyManagerDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}][%d] security_key_manager_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityKeyManagerDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

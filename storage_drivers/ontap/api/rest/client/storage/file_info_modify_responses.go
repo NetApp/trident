@@ -46,14 +46,44 @@ func NewFileInfoModifyOK() *FileInfoModifyOK {
 	return &FileInfoModifyOK{}
 }
 
-/* FileInfoModifyOK describes a response with status code 200, with default header values.
+/*
+FileInfoModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FileInfoModifyOK struct {
 }
 
+// IsSuccess returns true when this file info modify o k response has a 2xx status code
+func (o *FileInfoModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file info modify o k response has a 3xx status code
+func (o *FileInfoModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file info modify o k response has a 4xx status code
+func (o *FileInfoModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file info modify o k response has a 5xx status code
+func (o *FileInfoModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file info modify o k response a status code equal to that given
+func (o *FileInfoModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FileInfoModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoModifyOK ", 200)
+}
+
+func (o *FileInfoModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] fileInfoModifyOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewFileInfoModifyDefault(code int) *FileInfoModifyDefault {
 	}
 }
 
-/* FileInfoModifyDefault describes a response with status code -1, with default header values.
+/*
+	FileInfoModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 918235 | A volume with UUID {volume.uuid} was not found. |
 | 6488081 | The {field} field is not supported for PATCH operations. |
 | 6488082 | Failed to rename {path}. |
 | 6488083 | Failed to rename {path} to {path} because a directory named {path} already exists. |
-
 */
 type FileInfoModifyDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *FileInfoModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file info modify default response has a 2xx status code
+func (o *FileInfoModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file info modify default response has a 3xx status code
+func (o *FileInfoModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file info modify default response has a 4xx status code
+func (o *FileInfoModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file info modify default response has a 5xx status code
+func (o *FileInfoModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file info modify default response a status code equal to that given
+func (o *FileInfoModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileInfoModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileInfoModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/files/{path}][%d] file_info_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileInfoModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

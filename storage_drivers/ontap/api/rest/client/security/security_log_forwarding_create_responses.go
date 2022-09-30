@@ -46,7 +46,8 @@ func NewSecurityLogForwardingCreateAccepted() *SecurityLogForwardingCreateAccept
 	return &SecurityLogForwardingCreateAccepted{}
 }
 
-/* SecurityLogForwardingCreateAccepted describes a response with status code 202, with default header values.
+/*
+SecurityLogForwardingCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SecurityLogForwardingCreateAccepted struct {
 	Payload *models.SecurityAuditLogForwardResponse
 }
 
+// IsSuccess returns true when this security log forwarding create accepted response has a 2xx status code
+func (o *SecurityLogForwardingCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security log forwarding create accepted response has a 3xx status code
+func (o *SecurityLogForwardingCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security log forwarding create accepted response has a 4xx status code
+func (o *SecurityLogForwardingCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security log forwarding create accepted response has a 5xx status code
+func (o *SecurityLogForwardingCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security log forwarding create accepted response a status code equal to that given
+func (o *SecurityLogForwardingCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SecurityLogForwardingCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /security/audit/destinations][%d] securityLogForwardingCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SecurityLogForwardingCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /security/audit/destinations][%d] securityLogForwardingCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SecurityLogForwardingCreateAccepted) GetPayload() *models.SecurityAuditLogForwardResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSecurityLogForwardingCreateDefault(code int) *SecurityLogForwardingCreat
 	}
 }
 
-/* SecurityLogForwardingCreateDefault describes a response with status code -1, with default header values.
+/*
+	SecurityLogForwardingCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 15661      | The object specified could not be found |
@@ -93,7 +126,6 @@ func NewSecurityLogForwardingCreateDefault(code int) *SecurityLogForwardingCreat
 | 327698     | Failed to create RPC client to destination host |
 | 9240609    | Cannot connect to destination host. |
 | 9240604    | Cannot resolve the destination host. |
-
 */
 type SecurityLogForwardingCreateDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *SecurityLogForwardingCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security log forwarding create default response has a 2xx status code
+func (o *SecurityLogForwardingCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security log forwarding create default response has a 3xx status code
+func (o *SecurityLogForwardingCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security log forwarding create default response has a 4xx status code
+func (o *SecurityLogForwardingCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security log forwarding create default response has a 5xx status code
+func (o *SecurityLogForwardingCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security log forwarding create default response a status code equal to that given
+func (o *SecurityLogForwardingCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityLogForwardingCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/audit/destinations][%d] security_log_forwarding_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityLogForwardingCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/audit/destinations][%d] security_log_forwarding_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityLogForwardingCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

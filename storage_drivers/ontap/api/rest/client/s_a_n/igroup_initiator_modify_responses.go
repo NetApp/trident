@@ -46,14 +46,44 @@ func NewIgroupInitiatorModifyOK() *IgroupInitiatorModifyOK {
 	return &IgroupInitiatorModifyOK{}
 }
 
-/* IgroupInitiatorModifyOK describes a response with status code 200, with default header values.
+/*
+IgroupInitiatorModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IgroupInitiatorModifyOK struct {
 }
 
+// IsSuccess returns true when this igroup initiator modify o k response has a 2xx status code
+func (o *IgroupInitiatorModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup initiator modify o k response has a 3xx status code
+func (o *IgroupInitiatorModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup initiator modify o k response has a 4xx status code
+func (o *IgroupInitiatorModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup initiator modify o k response has a 5xx status code
+func (o *IgroupInitiatorModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup initiator modify o k response a status code equal to that given
+func (o *IgroupInitiatorModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IgroupInitiatorModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorModifyOK ", 200)
+}
+
+func (o *IgroupInitiatorModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorModifyOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewIgroupInitiatorModifyDefault(code int) *IgroupInitiatorModifyDefault {
 	}
 }
 
-/* IgroupInitiatorModifyDefault describes a response with status code -1, with default header values.
+/*
+	IgroupInitiatorModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374034 | An initiator is not a member of the initiator group. |
 | 5374744 | The cluster is currently running in a mixed version and the initiators cannot be modified until the effective cluster version reaches 9.9.1. |
 | 5374852 | The initiator group does not exist. |
 | 5374918 | A subset of the provided list of initiators were modified before a failure occurred. |
-
 */
 type IgroupInitiatorModifyDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *IgroupInitiatorModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup initiator modify default response has a 2xx status code
+func (o *IgroupInitiatorModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup initiator modify default response has a 3xx status code
+func (o *IgroupInitiatorModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup initiator modify default response has a 4xx status code
+func (o *IgroupInitiatorModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup initiator modify default response has a 5xx status code
+func (o *IgroupInitiatorModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup initiator modify default response a status code equal to that given
+func (o *IgroupInitiatorModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupInitiatorModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupInitiatorModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupInitiatorModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -55,10 +55,12 @@ func NewSecuritySamlSpCreateParamsWithHTTPClient(client *http.Client) *SecurityS
 	}
 }
 
-/* SecuritySamlSpCreateParams contains all the parameters to send to the API endpoint
-   for the security saml sp create operation.
+/*
+SecuritySamlSpCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security saml sp create operation.
+
+	Typically these are written to a http.Request.
 */
 type SecuritySamlSpCreateParams struct {
 

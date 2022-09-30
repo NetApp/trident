@@ -46,14 +46,44 @@ func NewCifsSessionDeleteOK() *CifsSessionDeleteOK {
 	return &CifsSessionDeleteOK{}
 }
 
-/* CifsSessionDeleteOK describes a response with status code 200, with default header values.
+/*
+CifsSessionDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type CifsSessionDeleteOK struct {
 }
 
+// IsSuccess returns true when this cifs session delete o k response has a 2xx status code
+func (o *CifsSessionDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs session delete o k response has a 3xx status code
+func (o *CifsSessionDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs session delete o k response has a 4xx status code
+func (o *CifsSessionDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs session delete o k response has a 5xx status code
+func (o *CifsSessionDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs session delete o k response a status code equal to that given
+func (o *CifsSessionDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsSessionDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifsSessionDeleteOK ", 200)
+}
+
+func (o *CifsSessionDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifsSessionDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewCifsSessionDeleteDefault(code int) *CifsSessionDeleteDefault {
 	}
 }
 
-/* CifsSessionDeleteDefault describes a response with status code -1, with default header values.
+/*
+	CifsSessionDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 655503     | The SMB session delete does not allow a connection ID of zero (0). |
-
 */
 type CifsSessionDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *CifsSessionDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs session delete default response has a 2xx status code
+func (o *CifsSessionDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs session delete default response has a 3xx status code
+func (o *CifsSessionDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs session delete default response has a 4xx status code
+func (o *CifsSessionDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs session delete default response has a 5xx status code
+func (o *CifsSessionDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs session delete default response a status code equal to that given
+func (o *CifsSessionDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsSessionDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifs_session_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsSessionDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}][%d] cifs_session_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsSessionDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

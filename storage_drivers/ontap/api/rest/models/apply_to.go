@@ -15,7 +15,6 @@ import (
 // ApplyTo Specifies where to apply the DACL or SACL entries.
 // You can specify more than one value by using a comma-delimited list.
 //
-//
 // swagger:model apply_to
 type ApplyTo struct {
 

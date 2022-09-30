@@ -55,10 +55,12 @@ func NewWwpnAliasCreateParamsWithHTTPClient(client *http.Client) *WwpnAliasCreat
 	}
 }
 
-/* WwpnAliasCreateParams contains all the parameters to send to the API endpoint
-   for the wwpn alias create operation.
+/*
+WwpnAliasCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the wwpn alias create operation.
+
+	Typically these are written to a http.Request.
 */
 type WwpnAliasCreateParams struct {
 

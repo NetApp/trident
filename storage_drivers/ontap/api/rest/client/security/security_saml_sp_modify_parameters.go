@@ -54,10 +54,12 @@ func NewSecuritySamlSpModifyParamsWithHTTPClient(client *http.Client) *SecurityS
 	}
 }
 
-/* SecuritySamlSpModifyParams contains all the parameters to send to the API endpoint
-   for the security saml sp modify operation.
+/*
+SecuritySamlSpModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security saml sp modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SecuritySamlSpModifyParams struct {
 

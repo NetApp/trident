@@ -54,10 +54,12 @@ func NewUserGroupPrivilegesModifyParamsWithHTTPClient(client *http.Client) *User
 	}
 }
 
-/* UserGroupPrivilegesModifyParams contains all the parameters to send to the API endpoint
-   for the user group privileges modify operation.
+/*
+UserGroupPrivilegesModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the user group privileges modify operation.
+
+	Typically these are written to a http.Request.
 */
 type UserGroupPrivilegesModifyParams struct {
 

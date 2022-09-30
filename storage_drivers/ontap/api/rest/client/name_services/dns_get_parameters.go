@@ -53,10 +53,12 @@ func NewDNSGetParamsWithHTTPClient(client *http.Client) *DNSGetParams {
 	}
 }
 
-/* DNSGetParams contains all the parameters to send to the API endpoint
-   for the dns get operation.
+/*
+DNSGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the dns get operation.
+
+	Typically these are written to a http.Request.
 */
 type DNSGetParams struct {
 

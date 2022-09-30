@@ -53,10 +53,12 @@ func NewNameMappingDeleteParamsWithHTTPClient(client *http.Client) *NameMappingD
 	}
 }
 
-/* NameMappingDeleteParams contains all the parameters to send to the API endpoint
-   for the name mapping delete operation.
+/*
+NameMappingDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the name mapping delete operation.
+
+	Typically these are written to a http.Request.
 */
 type NameMappingDeleteParams struct {
 

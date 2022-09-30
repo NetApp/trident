@@ -53,10 +53,12 @@ func NewNdmpSvmGetParamsWithHTTPClient(client *http.Client) *NdmpSvmGetParams {
 	}
 }
 
-/* NdmpSvmGetParams contains all the parameters to send to the API endpoint
-   for the ndmp svm get operation.
+/*
+NdmpSvmGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ndmp svm get operation.
+
+	Typically these are written to a http.Request.
 */
 type NdmpSvmGetParams struct {
 

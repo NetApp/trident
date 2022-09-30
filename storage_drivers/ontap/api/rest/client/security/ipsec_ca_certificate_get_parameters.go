@@ -53,10 +53,12 @@ func NewIpsecCaCertificateGetParamsWithHTTPClient(client *http.Client) *IpsecCaC
 	}
 }
 
-/* IpsecCaCertificateGetParams contains all the parameters to send to the API endpoint
-   for the ipsec ca certificate get operation.
+/*
+IpsecCaCertificateGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ipsec ca certificate get operation.
+
+	Typically these are written to a http.Request.
 */
 type IpsecCaCertificateGetParams struct {
 

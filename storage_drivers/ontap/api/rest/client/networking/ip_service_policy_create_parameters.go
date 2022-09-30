@@ -55,10 +55,12 @@ func NewIPServicePolicyCreateParamsWithHTTPClient(client *http.Client) *IPServic
 	}
 }
 
-/* IPServicePolicyCreateParams contains all the parameters to send to the API endpoint
-   for the ip service policy create operation.
+/*
+IPServicePolicyCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ip service policy create operation.
+
+	Typically these are written to a http.Request.
 */
 type IPServicePolicyCreateParams struct {
 

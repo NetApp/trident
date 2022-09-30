@@ -46,7 +46,8 @@ func NewHostsSettingsGetOK() *HostsSettingsGetOK {
 	return &HostsSettingsGetOK{}
 }
 
-/* HostsSettingsGetOK describes a response with status code 200, with default header values.
+/*
+HostsSettingsGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type HostsSettingsGetOK struct {
 	Payload *models.HostsSettings
 }
 
+// IsSuccess returns true when this hosts settings get o k response has a 2xx status code
+func (o *HostsSettingsGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this hosts settings get o k response has a 3xx status code
+func (o *HostsSettingsGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this hosts settings get o k response has a 4xx status code
+func (o *HostsSettingsGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this hosts settings get o k response has a 5xx status code
+func (o *HostsSettingsGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this hosts settings get o k response a status code equal to that given
+func (o *HostsSettingsGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *HostsSettingsGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/host/settings/{svm.uuid}][%d] hostsSettingsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *HostsSettingsGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/host/settings/{svm.uuid}][%d] hostsSettingsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *HostsSettingsGetOK) GetPayload() *models.HostsSettings {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewHostsSettingsGetDefault(code int) *HostsSettingsGetDefault {
 	}
 }
 
-/* HostsSettingsGetDefault describes a response with status code -1, with default header values.
+/*
+HostsSettingsGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *HostsSettingsGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this hosts settings get default response has a 2xx status code
+func (o *HostsSettingsGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this hosts settings get default response has a 3xx status code
+func (o *HostsSettingsGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this hosts settings get default response has a 4xx status code
+func (o *HostsSettingsGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this hosts settings get default response has a 5xx status code
+func (o *HostsSettingsGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this hosts settings get default response a status code equal to that given
+func (o *HostsSettingsGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *HostsSettingsGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/host/settings/{svm.uuid}][%d] hosts_settings_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *HostsSettingsGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/host/settings/{svm.uuid}][%d] hosts_settings_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *HostsSettingsGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

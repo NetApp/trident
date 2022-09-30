@@ -46,7 +46,8 @@ func NewUnixUserCreateCreated() *UnixUserCreateCreated {
 	return &UnixUserCreateCreated{}
 }
 
-/* UnixUserCreateCreated describes a response with status code 201, with default header values.
+/*
+UnixUserCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type UnixUserCreateCreated struct {
 	Payload *models.UnixUserResponse
 }
 
+// IsSuccess returns true when this unix user create created response has a 2xx status code
+func (o *UnixUserCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix user create created response has a 3xx status code
+func (o *UnixUserCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix user create created response has a 4xx status code
+func (o *UnixUserCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix user create created response has a 5xx status code
+func (o *UnixUserCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix user create created response a status code equal to that given
+func (o *UnixUserCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *UnixUserCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /name-services/unix-users][%d] unixUserCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *UnixUserCreateCreated) String() string {
+	return fmt.Sprintf("[POST /name-services/unix-users][%d] unixUserCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *UnixUserCreateCreated) GetPayload() *models.UnixUserResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewUnixUserCreateDefault(code int) *UnixUserCreateDefault {
 	}
 }
 
-/* UnixUserCreateDefault describes a response with status code -1, with default header values.
+/*
+	UnixUserCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name |
@@ -93,7 +126,6 @@ func NewUnixUserCreateDefault(code int) *UnixUserCreateDefault {
 | 23724055   | Internal error. Failed to create the UNIX user for the SVM. Verify that the cluster is healthy, then try the command again. |
 | 23724090   | Configuring individual entries is not supported because file-only configuration is enabled. |
 | 3277025    | Failed to create the UNIX user for the SVM because the system limit has been reached. |
-
 */
 type UnixUserCreateDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *UnixUserCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix user create default response has a 2xx status code
+func (o *UnixUserCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix user create default response has a 3xx status code
+func (o *UnixUserCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix user create default response has a 4xx status code
+func (o *UnixUserCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix user create default response has a 5xx status code
+func (o *UnixUserCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix user create default response a status code equal to that given
+func (o *UnixUserCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixUserCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /name-services/unix-users][%d] unix_user_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixUserCreateDefault) String() string {
+	return fmt.Sprintf("[POST /name-services/unix-users][%d] unix_user_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixUserCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

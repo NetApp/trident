@@ -18,7 +18,6 @@ import (
 // Class `protocol_endpoint` and `vvol` LUNs support many-to-many vVol bindings. A LUN of one class can be bound to zero or more LUNs of the opposite class.</br>
 // The vVol binding between any two specific LUNs is reference counted. When a REST POST is executed for a vVol binding that already exists, the vVol binding reference count is incremented. When a REST DELETE is executed, the vVol binding reference count is decremented. Only when the vVol binding count reaches zero, or the query parameter `delete_all_references` is supplied, is the vVol binding destroyed.
 //
-//
 // swagger:model vvol_binding
 type VvolBinding struct {
 
@@ -374,7 +373,6 @@ func (m *VvolBindingLinks) UnmarshalBinary(b []byte) error {
 
 // VvolBindingProtocolEndpoint The class `protocol_endpoint` LUN in the vVol binding. Required in POST.
 //
-//
 // swagger:model VvolBindingProtocolEndpoint
 type VvolBindingProtocolEndpoint struct {
 
@@ -557,7 +555,6 @@ func (m *VvolBindingProtocolEndpointLinks) UnmarshalBinary(b []byte) error {
 
 // VvolBindingSvm The SVM in which the vVol binding and its LUNs are located. Required in POST.
 //
-//
 // swagger:model VvolBindingSvm
 type VvolBindingSvm struct {
 
@@ -739,7 +736,6 @@ func (m *VvolBindingSvmLinks) UnmarshalBinary(b []byte) error {
 }
 
 // VvolBindingVvol The class `vvol` LUN in the vVol binding. Required in POST.
-//
 //
 // swagger:model VvolBindingVvol
 type VvolBindingVvol struct {

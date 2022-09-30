@@ -53,10 +53,12 @@ func NewBucketsCollectionGetParamsWithHTTPClient(client *http.Client) *BucketsCo
 	}
 }
 
-/* BucketsCollectionGetParams contains all the parameters to send to the API endpoint
-   for the buckets collection get operation.
+/*
+BucketsCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the buckets collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type BucketsCollectionGetParams struct {
 

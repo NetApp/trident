@@ -55,10 +55,12 @@ func NewLocalCifsUsersAndGroupsImportModifyParamsWithHTTPClient(client *http.Cli
 	}
 }
 
-/* LocalCifsUsersAndGroupsImportModifyParams contains all the parameters to send to the API endpoint
-   for the local cifs users and groups import modify operation.
+/*
+LocalCifsUsersAndGroupsImportModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the local cifs users and groups import modify operation.
+
+	Typically these are written to a http.Request.
 */
 type LocalCifsUsersAndGroupsImportModifyParams struct {
 

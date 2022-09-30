@@ -46,14 +46,44 @@ func NewVscanScannerDeleteOK() *VscanScannerDeleteOK {
 	return &VscanScannerDeleteOK{}
 }
 
-/* VscanScannerDeleteOK describes a response with status code 200, with default header values.
+/*
+VscanScannerDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type VscanScannerDeleteOK struct {
 }
 
+// IsSuccess returns true when this vscan scanner delete o k response has a 2xx status code
+func (o *VscanScannerDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan scanner delete o k response has a 3xx status code
+func (o *VscanScannerDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan scanner delete o k response has a 4xx status code
+func (o *VscanScannerDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan scanner delete o k response has a 5xx status code
+func (o *VscanScannerDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan scanner delete o k response a status code equal to that given
+func (o *VscanScannerDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanScannerDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerDeleteOK ", 200)
+}
+
+func (o *VscanScannerDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerDeleteOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewVscanScannerDeleteDefault(code int) *VscanScannerDeleteDefault {
 	}
 }
 
-/* VscanScannerDeleteDefault describes a response with status code -1, with default header values.
+/*
+	VscanScannerDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 10027070   | Attempting to delete a scanner-pool but it is the only active scanner-pool for a Vscan enabled on the SVM
 | 10027064   | Attempting to delete a scanner-pool with a data SVM which was created with an administrative SVM
-
 */
 type VscanScannerDeleteDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *VscanScannerDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan scanner delete default response has a 2xx status code
+func (o *VscanScannerDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan scanner delete default response has a 3xx status code
+func (o *VscanScannerDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan scanner delete default response has a 4xx status code
+func (o *VscanScannerDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan scanner delete default response has a 5xx status code
+func (o *VscanScannerDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan scanner delete default response a status code equal to that given
+func (o *VscanScannerDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanScannerDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanScannerDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanScannerDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -54,10 +54,12 @@ func NewStoragePortModifyParamsWithHTTPClient(client *http.Client) *StoragePortM
 	}
 }
 
-/* StoragePortModifyParams contains all the parameters to send to the API endpoint
-   for the storage port modify operation.
+/*
+StoragePortModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the storage port modify operation.
+
+	Typically these are written to a http.Request.
 */
 type StoragePortModifyParams struct {
 

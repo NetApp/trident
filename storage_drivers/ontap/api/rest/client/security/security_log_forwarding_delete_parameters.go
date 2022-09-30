@@ -53,10 +53,12 @@ func NewSecurityLogForwardingDeleteParamsWithHTTPClient(client *http.Client) *Se
 	}
 }
 
-/* SecurityLogForwardingDeleteParams contains all the parameters to send to the API endpoint
-   for the security log forwarding delete operation.
+/*
+SecurityLogForwardingDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security log forwarding delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityLogForwardingDeleteParams struct {
 

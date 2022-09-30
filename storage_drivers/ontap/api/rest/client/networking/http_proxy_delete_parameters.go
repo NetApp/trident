@@ -52,10 +52,12 @@ func NewHTTPProxyDeleteParamsWithHTTPClient(client *http.Client) *HTTPProxyDelet
 	}
 }
 
-/* HTTPProxyDeleteParams contains all the parameters to send to the API endpoint
-   for the http proxy delete operation.
+/*
+HTTPProxyDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the http proxy delete operation.
+
+	Typically these are written to a http.Request.
 */
 type HTTPProxyDeleteParams struct {
 

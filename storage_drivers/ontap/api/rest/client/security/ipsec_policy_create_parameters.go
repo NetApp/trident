@@ -55,10 +55,12 @@ func NewIpsecPolicyCreateParamsWithHTTPClient(client *http.Client) *IpsecPolicyC
 	}
 }
 
-/* IpsecPolicyCreateParams contains all the parameters to send to the API endpoint
-   for the ipsec policy create operation.
+/*
+IpsecPolicyCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ipsec policy create operation.
+
+	Typically these are written to a http.Request.
 */
 type IpsecPolicyCreateParams struct {
 

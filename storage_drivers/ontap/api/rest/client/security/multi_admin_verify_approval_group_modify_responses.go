@@ -46,14 +46,44 @@ func NewMultiAdminVerifyApprovalGroupModifyOK() *MultiAdminVerifyApprovalGroupMo
 	return &MultiAdminVerifyApprovalGroupModifyOK{}
 }
 
-/* MultiAdminVerifyApprovalGroupModifyOK describes a response with status code 200, with default header values.
+/*
+MultiAdminVerifyApprovalGroupModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type MultiAdminVerifyApprovalGroupModifyOK struct {
 }
 
+// IsSuccess returns true when this multi admin verify approval group modify o k response has a 2xx status code
+func (o *MultiAdminVerifyApprovalGroupModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this multi admin verify approval group modify o k response has a 3xx status code
+func (o *MultiAdminVerifyApprovalGroupModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this multi admin verify approval group modify o k response has a 4xx status code
+func (o *MultiAdminVerifyApprovalGroupModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this multi admin verify approval group modify o k response has a 5xx status code
+func (o *MultiAdminVerifyApprovalGroupModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this multi admin verify approval group modify o k response a status code equal to that given
+func (o *MultiAdminVerifyApprovalGroupModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MultiAdminVerifyApprovalGroupModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multiAdminVerifyApprovalGroupModifyOK ", 200)
+}
+
+func (o *MultiAdminVerifyApprovalGroupModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multiAdminVerifyApprovalGroupModifyOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewMultiAdminVerifyApprovalGroupModifyDefault(code int) *MultiAdminVerifyAp
 	}
 }
 
-/* MultiAdminVerifyApprovalGroupModifyDefault describes a response with status code -1, with default header values.
+/*
+	MultiAdminVerifyApprovalGroupModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262331 | At least one approver is required. |
 | 262332 | An add or remove list is required. |
-
 */
 type MultiAdminVerifyApprovalGroupModifyDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *MultiAdminVerifyApprovalGroupModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this multi admin verify approval group modify default response has a 2xx status code
+func (o *MultiAdminVerifyApprovalGroupModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this multi admin verify approval group modify default response has a 3xx status code
+func (o *MultiAdminVerifyApprovalGroupModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this multi admin verify approval group modify default response has a 4xx status code
+func (o *MultiAdminVerifyApprovalGroupModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this multi admin verify approval group modify default response has a 5xx status code
+func (o *MultiAdminVerifyApprovalGroupModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this multi admin verify approval group modify default response a status code equal to that given
+func (o *MultiAdminVerifyApprovalGroupModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MultiAdminVerifyApprovalGroupModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multi_admin_verify_approval_group_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MultiAdminVerifyApprovalGroupModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/approval-groups/{owner.uuid}/{name}][%d] multi_admin_verify_approval_group_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MultiAdminVerifyApprovalGroupModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

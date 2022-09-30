@@ -55,10 +55,12 @@ func NewNetworkIPBgpPeerGroupsCreateParamsWithHTTPClient(client *http.Client) *N
 	}
 }
 
-/* NetworkIPBgpPeerGroupsCreateParams contains all the parameters to send to the API endpoint
-   for the network ip bgp peer groups create operation.
+/*
+NetworkIPBgpPeerGroupsCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ip bgp peer groups create operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkIPBgpPeerGroupsCreateParams struct {
 

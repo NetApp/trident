@@ -46,7 +46,8 @@ func NewVolumeEfficiencyPolicyCollectionGetOK() *VolumeEfficiencyPolicyCollectio
 	return &VolumeEfficiencyPolicyCollectionGetOK{}
 }
 
-/* VolumeEfficiencyPolicyCollectionGetOK describes a response with status code 200, with default header values.
+/*
+VolumeEfficiencyPolicyCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type VolumeEfficiencyPolicyCollectionGetOK struct {
 	Payload *models.VolumeEfficiencyPolicyResponse
 }
 
+// IsSuccess returns true when this volume efficiency policy collection get o k response has a 2xx status code
+func (o *VolumeEfficiencyPolicyCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume efficiency policy collection get o k response has a 3xx status code
+func (o *VolumeEfficiencyPolicyCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume efficiency policy collection get o k response has a 4xx status code
+func (o *VolumeEfficiencyPolicyCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume efficiency policy collection get o k response has a 5xx status code
+func (o *VolumeEfficiencyPolicyCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume efficiency policy collection get o k response a status code equal to that given
+func (o *VolumeEfficiencyPolicyCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VolumeEfficiencyPolicyCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/volume-efficiency-policies][%d] volumeEfficiencyPolicyCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *VolumeEfficiencyPolicyCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/volume-efficiency-policies][%d] volumeEfficiencyPolicyCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *VolumeEfficiencyPolicyCollectionGetOK) GetPayload() *models.VolumeEfficiencyPolicyResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewVolumeEfficiencyPolicyCollectionGetDefault(code int) *VolumeEfficiencyPo
 	}
 }
 
-/* VolumeEfficiencyPolicyCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+VolumeEfficiencyPolicyCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *VolumeEfficiencyPolicyCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this volume efficiency policy collection get default response has a 2xx status code
+func (o *VolumeEfficiencyPolicyCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this volume efficiency policy collection get default response has a 3xx status code
+func (o *VolumeEfficiencyPolicyCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this volume efficiency policy collection get default response has a 4xx status code
+func (o *VolumeEfficiencyPolicyCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this volume efficiency policy collection get default response has a 5xx status code
+func (o *VolumeEfficiencyPolicyCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this volume efficiency policy collection get default response a status code equal to that given
+func (o *VolumeEfficiencyPolicyCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VolumeEfficiencyPolicyCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/volume-efficiency-policies][%d] volume_efficiency_policy_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VolumeEfficiencyPolicyCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/volume-efficiency-policies][%d] volume_efficiency_policy_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VolumeEfficiencyPolicyCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

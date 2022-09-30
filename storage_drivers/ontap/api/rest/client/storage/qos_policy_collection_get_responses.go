@@ -46,7 +46,8 @@ func NewQosPolicyCollectionGetOK() *QosPolicyCollectionGetOK {
 	return &QosPolicyCollectionGetOK{}
 }
 
-/* QosPolicyCollectionGetOK describes a response with status code 200, with default header values.
+/*
+QosPolicyCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type QosPolicyCollectionGetOK struct {
 	Payload *models.QosPolicyResponse
 }
 
+// IsSuccess returns true when this qos policy collection get o k response has a 2xx status code
+func (o *QosPolicyCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this qos policy collection get o k response has a 3xx status code
+func (o *QosPolicyCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this qos policy collection get o k response has a 4xx status code
+func (o *QosPolicyCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this qos policy collection get o k response has a 5xx status code
+func (o *QosPolicyCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this qos policy collection get o k response a status code equal to that given
+func (o *QosPolicyCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *QosPolicyCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/qos/policies][%d] qosPolicyCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *QosPolicyCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/qos/policies][%d] qosPolicyCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *QosPolicyCollectionGetOK) GetPayload() *models.QosPolicyResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewQosPolicyCollectionGetDefault(code int) *QosPolicyCollectionGetDefault {
 	}
 }
 
-/* QosPolicyCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+QosPolicyCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *QosPolicyCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this qos policy collection get default response has a 2xx status code
+func (o *QosPolicyCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this qos policy collection get default response has a 3xx status code
+func (o *QosPolicyCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this qos policy collection get default response has a 4xx status code
+func (o *QosPolicyCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this qos policy collection get default response has a 5xx status code
+func (o *QosPolicyCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this qos policy collection get default response a status code equal to that given
+func (o *QosPolicyCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QosPolicyCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/qos/policies][%d] qos_policy_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QosPolicyCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/qos/policies][%d] qos_policy_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QosPolicyCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewSvmPeerCollectionGetParamsWithHTTPClient(client *http.Client) *SvmPeerCo
 	}
 }
 
-/* SvmPeerCollectionGetParams contains all the parameters to send to the API endpoint
-   for the svm peer collection get operation.
+/*
+SvmPeerCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm peer collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmPeerCollectionGetParams struct {
 

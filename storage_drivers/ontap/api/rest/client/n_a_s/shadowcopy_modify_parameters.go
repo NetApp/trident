@@ -55,10 +55,12 @@ func NewShadowcopyModifyParamsWithHTTPClient(client *http.Client) *ShadowcopyMod
 	}
 }
 
-/* ShadowcopyModifyParams contains all the parameters to send to the API endpoint
-   for the shadowcopy modify operation.
+/*
+ShadowcopyModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the shadowcopy modify operation.
+
+	Typically these are written to a http.Request.
 */
 type ShadowcopyModifyParams struct {
 

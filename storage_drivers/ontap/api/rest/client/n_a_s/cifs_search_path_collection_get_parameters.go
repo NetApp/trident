@@ -53,10 +53,12 @@ func NewCifsSearchPathCollectionGetParamsWithHTTPClient(client *http.Client) *Ci
 	}
 }
 
-/* CifsSearchPathCollectionGetParams contains all the parameters to send to the API endpoint
-   for the cifs search path collection get operation.
+/*
+CifsSearchPathCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs search path collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsSearchPathCollectionGetParams struct {
 

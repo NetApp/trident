@@ -55,10 +55,12 @@ func NewMediatorCreateParamsWithHTTPClient(client *http.Client) *MediatorCreateP
 	}
 }
 
-/* MediatorCreateParams contains all the parameters to send to the API endpoint
-   for the mediator create operation.
+/*
+MediatorCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the mediator create operation.
+
+	Typically these are written to a http.Request.
 */
 type MediatorCreateParams struct {
 

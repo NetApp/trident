@@ -46,7 +46,8 @@ func NewTokenDeleteOK() *TokenDeleteOK {
 	return &TokenDeleteOK{}
 }
 
-/* TokenDeleteOK describes a response with status code 200, with default header values.
+/*
+TokenDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type TokenDeleteOK struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this token delete o k response has a 2xx status code
+func (o *TokenDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this token delete o k response has a 3xx status code
+func (o *TokenDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this token delete o k response has a 4xx status code
+func (o *TokenDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this token delete o k response has a 5xx status code
+func (o *TokenDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this token delete o k response a status code equal to that given
+func (o *TokenDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *TokenDeleteOK) Error() string {
 	return fmt.Sprintf("[DELETE /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] tokenDeleteOK  %+v", 200, o.Payload)
 }
+
+func (o *TokenDeleteOK) String() string {
+	return fmt.Sprintf("[DELETE /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] tokenDeleteOK  %+v", 200, o.Payload)
+}
+
 func (o *TokenDeleteOK) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewTokenDeleteDefault(code int) *TokenDeleteDefault {
 	}
 }
 
-/* TokenDeleteDefault describes a response with status code -1, with default header values.
+/*
+TokenDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *TokenDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this token delete default response has a 2xx status code
+func (o *TokenDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this token delete default response has a 3xx status code
+func (o *TokenDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this token delete default response has a 4xx status code
+func (o *TokenDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this token delete default response has a 5xx status code
+func (o *TokenDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this token delete default response a status code equal to that given
+func (o *TokenDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TokenDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] token_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *TokenDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/file/clone/tokens/{node.uuid}/{uuid}][%d] token_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *TokenDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

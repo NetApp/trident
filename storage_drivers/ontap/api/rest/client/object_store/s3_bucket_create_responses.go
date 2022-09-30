@@ -46,7 +46,8 @@ func NewS3BucketCreateAccepted() *S3BucketCreateAccepted {
 	return &S3BucketCreateAccepted{}
 }
 
-/* S3BucketCreateAccepted describes a response with status code 202, with default header values.
+/*
+S3BucketCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type S3BucketCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this s3 bucket create accepted response has a 2xx status code
+func (o *S3BucketCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 bucket create accepted response has a 3xx status code
+func (o *S3BucketCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 bucket create accepted response has a 4xx status code
+func (o *S3BucketCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 bucket create accepted response has a 5xx status code
+func (o *S3BucketCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 bucket create accepted response a status code equal to that given
+func (o *S3BucketCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *S3BucketCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3BucketCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *S3BucketCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3BucketCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *S3BucketCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewS3BucketCreateDefault(code int) *S3BucketCreateDefault {
 	}
 }
 
-/* S3BucketCreateDefault describes a response with status code -1, with default header values.
+/*
+	S3BucketCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error code | Message |
 | ---------- | ------- |
 | 92405777   | "Failed to create bucket \\\"{bucket name}\\\" for SVM \\\"{svm.name}\\\". Reason: {Reason of failure}. ";
@@ -104,7 +137,6 @@ func NewS3BucketCreateDefault(code int) *S3BucketCreateDefault {
 | 92405894   | "Statements, principals and resources list can have a maximum of 10 entries.";
 | 92405897   | "The principals specified in the access policy are not in the correct format. User name must be between 1 and 64 characters. Valid characters for a user name are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\"=\\\", \\\",\\\", \\\".\\\", \\\"@\\\", and \\\"-\\\". ";
 | 92405898   | "The SID specified in the access policy is not valid. Valid characters for a SID are 0-9, A-Z and a-z.";
-
 */
 type S3BucketCreateDefault struct {
 	_statusCode int
@@ -117,9 +149,39 @@ func (o *S3BucketCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 bucket create default response has a 2xx status code
+func (o *S3BucketCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 bucket create default response has a 3xx status code
+func (o *S3BucketCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 bucket create default response has a 4xx status code
+func (o *S3BucketCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 bucket create default response has a 5xx status code
+func (o *S3BucketCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 bucket create default response a status code equal to that given
+func (o *S3BucketCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3BucketCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3_bucket_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3BucketCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/buckets][%d] s3_bucket_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3BucketCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

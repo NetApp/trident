@@ -52,10 +52,12 @@ func NewConfigurationBackupFileDeleteParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* ConfigurationBackupFileDeleteParams contains all the parameters to send to the API endpoint
-   for the configuration backup file delete operation.
+/*
+ConfigurationBackupFileDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the configuration backup file delete operation.
+
+	Typically these are written to a http.Request.
 */
 type ConfigurationBackupFileDeleteParams struct {
 

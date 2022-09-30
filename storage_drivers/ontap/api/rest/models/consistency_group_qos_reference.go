@@ -101,7 +101,6 @@ func (m *ConsistencyGroupQosReference) UnmarshalBinary(b []byte) error {
 
 // ConsistencyGroupQosReferencePolicy The QoS policy
 //
-//
 // swagger:model ConsistencyGroupQosReferencePolicy
 type ConsistencyGroupQosReferencePolicy struct {
 

@@ -46,7 +46,8 @@ func NewCifsCollectionPerformanceMetricsGetOK() *CifsCollectionPerformanceMetric
 	return &CifsCollectionPerformanceMetricsGetOK{}
 }
 
-/* CifsCollectionPerformanceMetricsGetOK describes a response with status code 200, with default header values.
+/*
+CifsCollectionPerformanceMetricsGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsCollectionPerformanceMetricsGetOK struct {
 	Payload *models.PerformanceCifsMetricResponse
 }
 
+// IsSuccess returns true when this cifs collection performance metrics get o k response has a 2xx status code
+func (o *CifsCollectionPerformanceMetricsGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs collection performance metrics get o k response has a 3xx status code
+func (o *CifsCollectionPerformanceMetricsGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs collection performance metrics get o k response has a 4xx status code
+func (o *CifsCollectionPerformanceMetricsGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs collection performance metrics get o k response has a 5xx status code
+func (o *CifsCollectionPerformanceMetricsGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs collection performance metrics get o k response a status code equal to that given
+func (o *CifsCollectionPerformanceMetricsGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsCollectionPerformanceMetricsGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifsCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsCollectionPerformanceMetricsGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifsCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsCollectionPerformanceMetricsGetOK) GetPayload() *models.PerformanceCifsMetricResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsCollectionPerformanceMetricsGetDefault(code int) *CifsCollectionPerf
 	}
 }
 
-/* CifsCollectionPerformanceMetricsGetDefault describes a response with status code -1, with default header values.
+/*
+CifsCollectionPerformanceMetricsGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsCollectionPerformanceMetricsGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs collection performance metrics get default response has a 2xx status code
+func (o *CifsCollectionPerformanceMetricsGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs collection performance metrics get default response has a 3xx status code
+func (o *CifsCollectionPerformanceMetricsGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs collection performance metrics get default response has a 4xx status code
+func (o *CifsCollectionPerformanceMetricsGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs collection performance metrics get default response has a 5xx status code
+func (o *CifsCollectionPerformanceMetricsGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs collection performance metrics get default response a status code equal to that given
+func (o *CifsCollectionPerformanceMetricsGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsCollectionPerformanceMetricsGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifs_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsCollectionPerformanceMetricsGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/services/{svm.uuid}/metrics][%d] cifs_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsCollectionPerformanceMetricsGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

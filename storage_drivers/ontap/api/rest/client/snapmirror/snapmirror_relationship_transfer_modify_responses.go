@@ -46,14 +46,44 @@ func NewSnapmirrorRelationshipTransferModifyOK() *SnapmirrorRelationshipTransfer
 	return &SnapmirrorRelationshipTransferModifyOK{}
 }
 
-/* SnapmirrorRelationshipTransferModifyOK describes a response with status code 200, with default header values.
+/*
+SnapmirrorRelationshipTransferModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnapmirrorRelationshipTransferModifyOK struct {
 }
 
+// IsSuccess returns true when this snapmirror relationship transfer modify o k response has a 2xx status code
+func (o *SnapmirrorRelationshipTransferModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror relationship transfer modify o k response has a 3xx status code
+func (o *SnapmirrorRelationshipTransferModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror relationship transfer modify o k response has a 4xx status code
+func (o *SnapmirrorRelationshipTransferModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror relationship transfer modify o k response has a 5xx status code
+func (o *SnapmirrorRelationshipTransferModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror relationship transfer modify o k response a status code equal to that given
+func (o *SnapmirrorRelationshipTransferModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnapmirrorRelationshipTransferModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /snapmirror/relationships/{relationship.uuid}/transfers/{uuid}][%d] snapmirrorRelationshipTransferModifyOK ", 200)
+}
+
+func (o *SnapmirrorRelationshipTransferModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /snapmirror/relationships/{relationship.uuid}/transfers/{uuid}][%d] snapmirrorRelationshipTransferModifyOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewSnapmirrorRelationshipTransferModifyDefault(code int) *SnapmirrorRelatio
 	}
 }
 
-/* SnapmirrorRelationshipTransferModifyDefault describes a response with status code -1, with default header values.
+/*
+	SnapmirrorRelationshipTransferModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 13303848    | Abort of sync SnapMirror is not allowed |
 | 13303849    | SnapMirror transfer state is invalid |
-
 */
 type SnapmirrorRelationshipTransferModifyDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *SnapmirrorRelationshipTransferModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapmirror relationship transfer modify default response has a 2xx status code
+func (o *SnapmirrorRelationshipTransferModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapmirror relationship transfer modify default response has a 3xx status code
+func (o *SnapmirrorRelationshipTransferModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapmirror relationship transfer modify default response has a 4xx status code
+func (o *SnapmirrorRelationshipTransferModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapmirror relationship transfer modify default response has a 5xx status code
+func (o *SnapmirrorRelationshipTransferModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapmirror relationship transfer modify default response a status code equal to that given
+func (o *SnapmirrorRelationshipTransferModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapmirrorRelationshipTransferModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /snapmirror/relationships/{relationship.uuid}/transfers/{uuid}][%d] snapmirror_relationship_transfer_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapmirrorRelationshipTransferModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /snapmirror/relationships/{relationship.uuid}/transfers/{uuid}][%d] snapmirror_relationship_transfer_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapmirrorRelationshipTransferModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

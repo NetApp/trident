@@ -46,14 +46,44 @@ func NewSnaplockFileRetentionTimeModifyOK() *SnaplockFileRetentionTimeModifyOK {
 	return &SnaplockFileRetentionTimeModifyOK{}
 }
 
-/* SnaplockFileRetentionTimeModifyOK describes a response with status code 200, with default header values.
+/*
+SnaplockFileRetentionTimeModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnaplockFileRetentionTimeModifyOK struct {
 }
 
+// IsSuccess returns true when this snaplock file retention time modify o k response has a 2xx status code
+func (o *SnaplockFileRetentionTimeModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock file retention time modify o k response has a 3xx status code
+func (o *SnaplockFileRetentionTimeModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock file retention time modify o k response has a 4xx status code
+func (o *SnaplockFileRetentionTimeModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock file retention time modify o k response has a 5xx status code
+func (o *SnaplockFileRetentionTimeModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock file retention time modify o k response a status code equal to that given
+func (o *SnaplockFileRetentionTimeModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnaplockFileRetentionTimeModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionTimeModifyOK ", 200)
+}
+
+func (o *SnaplockFileRetentionTimeModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionTimeModifyOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewSnaplockFileRetentionTimeModifyDefault(code int) *SnaplockFileRetentionT
 	}
 }
 
-/* SnaplockFileRetentionTimeModifyDefault describes a response with status code -1, with default header values.
+/*
+	SnaplockFileRetentionTimeModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 14090347    | File path must be in the format \"/<dir>/<file path>\"  |
 | 14090348    | Invalid Expiry time  |
-
 */
 type SnaplockFileRetentionTimeModifyDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *SnaplockFileRetentionTimeModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock file retention time modify default response has a 2xx status code
+func (o *SnaplockFileRetentionTimeModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock file retention time modify default response has a 3xx status code
+func (o *SnaplockFileRetentionTimeModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock file retention time modify default response has a 4xx status code
+func (o *SnaplockFileRetentionTimeModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock file retention time modify default response has a 5xx status code
+func (o *SnaplockFileRetentionTimeModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock file retention time modify default response a status code equal to that given
+func (o *SnaplockFileRetentionTimeModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockFileRetentionTimeModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_time_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockFileRetentionTimeModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_time_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockFileRetentionTimeModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

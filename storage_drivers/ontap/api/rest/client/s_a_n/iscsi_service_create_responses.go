@@ -46,7 +46,8 @@ func NewIscsiServiceCreateCreated() *IscsiServiceCreateCreated {
 	return &IscsiServiceCreateCreated{}
 }
 
-/* IscsiServiceCreateCreated describes a response with status code 201, with default header values.
+/*
+IscsiServiceCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type IscsiServiceCreateCreated struct {
 	Payload *models.IscsiServiceResponse
 }
 
+// IsSuccess returns true when this iscsi service create created response has a 2xx status code
+func (o *IscsiServiceCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this iscsi service create created response has a 3xx status code
+func (o *IscsiServiceCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this iscsi service create created response has a 4xx status code
+func (o *IscsiServiceCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this iscsi service create created response has a 5xx status code
+func (o *IscsiServiceCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this iscsi service create created response a status code equal to that given
+func (o *IscsiServiceCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *IscsiServiceCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsiServiceCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *IscsiServiceCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsiServiceCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *IscsiServiceCreateCreated) GetPayload() *models.IscsiServiceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewIscsiServiceCreateDefault(code int) *IscsiServiceCreateDefault {
 	}
 }
 
-/* IscsiServiceCreateDefault describes a response with status code -1, with default header values.
+/*
+	IscsiServiceCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1115127 | The cluster lacks a valid iSCSI license. |
@@ -93,7 +126,6 @@ func NewIscsiServiceCreateDefault(code int) *IscsiServiceCreateDefault {
 | 5373966 | An iSCSI service cannot be created in an SVM that is configured for NVMe. |
 | 5374077 | An iSCSI service already exists for the specified SVM. |
 | 5374893 | The SVM is stopped. The SVM must be running to create an iSCSI service. |
-
 */
 type IscsiServiceCreateDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *IscsiServiceCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this iscsi service create default response has a 2xx status code
+func (o *IscsiServiceCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this iscsi service create default response has a 3xx status code
+func (o *IscsiServiceCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this iscsi service create default response has a 4xx status code
+func (o *IscsiServiceCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this iscsi service create default response has a 5xx status code
+func (o *IscsiServiceCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this iscsi service create default response a status code equal to that given
+func (o *IscsiServiceCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IscsiServiceCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsi_service_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IscsiServiceCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/san/iscsi/services][%d] iscsi_service_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IscsiServiceCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

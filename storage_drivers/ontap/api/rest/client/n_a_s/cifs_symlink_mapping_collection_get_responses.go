@@ -46,7 +46,8 @@ func NewCifsSymlinkMappingCollectionGetOK() *CifsSymlinkMappingCollectionGetOK {
 	return &CifsSymlinkMappingCollectionGetOK{}
 }
 
-/* CifsSymlinkMappingCollectionGetOK describes a response with status code 200, with default header values.
+/*
+CifsSymlinkMappingCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsSymlinkMappingCollectionGetOK struct {
 	Payload *models.CifsSymlinkMappingResponse
 }
 
+// IsSuccess returns true when this cifs symlink mapping collection get o k response has a 2xx status code
+func (o *CifsSymlinkMappingCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs symlink mapping collection get o k response has a 3xx status code
+func (o *CifsSymlinkMappingCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs symlink mapping collection get o k response has a 4xx status code
+func (o *CifsSymlinkMappingCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs symlink mapping collection get o k response has a 5xx status code
+func (o *CifsSymlinkMappingCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs symlink mapping collection get o k response a status code equal to that given
+func (o *CifsSymlinkMappingCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsSymlinkMappingCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping][%d] cifsSymlinkMappingCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsSymlinkMappingCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping][%d] cifsSymlinkMappingCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsSymlinkMappingCollectionGetOK) GetPayload() *models.CifsSymlinkMappingResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsSymlinkMappingCollectionGetDefault(code int) *CifsSymlinkMappingColl
 	}
 }
 
-/* CifsSymlinkMappingCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+CifsSymlinkMappingCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsSymlinkMappingCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs symlink mapping collection get default response has a 2xx status code
+func (o *CifsSymlinkMappingCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs symlink mapping collection get default response has a 3xx status code
+func (o *CifsSymlinkMappingCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs symlink mapping collection get default response has a 4xx status code
+func (o *CifsSymlinkMappingCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs symlink mapping collection get default response has a 5xx status code
+func (o *CifsSymlinkMappingCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs symlink mapping collection get default response a status code equal to that given
+func (o *CifsSymlinkMappingCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsSymlinkMappingCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping][%d] cifs_symlink_mapping_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsSymlinkMappingCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/unix-symlink-mapping][%d] cifs_symlink_mapping_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsSymlinkMappingCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

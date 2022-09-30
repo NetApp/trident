@@ -90,7 +90,7 @@ type ClientService interface {
 }
 
 /*
-  NvmeCollectionPerformanceMetricsGet Retrieves historical performance metrics for NVMe protocol of an SVM.
+NvmeCollectionPerformanceMetricsGet Retrieves historical performance metrics for NVMe protocol of an SVM.
 */
 func (a *Client) NvmeCollectionPerformanceMetricsGet(params *NvmeCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeCollectionPerformanceMetricsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -128,12 +128,12 @@ func (a *Client) NvmeCollectionPerformanceMetricsGet(params *NvmeCollectionPerfo
 }
 
 /*
-  NvmeInterfaceCollectionGet Retrieves NVMe interfaces.
+	NvmeInterfaceCollectionGet Retrieves NVMe interfaces.
+
 ### Related ONTAP commands
 * `vserver nvme show-interface`
 ### Learn more
 * [`DOC /protocols/nvme/interfaces`](#docs-NVMe-protocols_nvme_interfaces)
-
 */
 func (a *Client) NvmeInterfaceCollectionGet(params *NvmeInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeInterfaceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -171,12 +171,12 @@ func (a *Client) NvmeInterfaceCollectionGet(params *NvmeInterfaceCollectionGetPa
 }
 
 /*
-  NvmeInterfaceGet Retrieves an NVMe interface.
+	NvmeInterfaceGet Retrieves an NVMe interface.
+
 ### Related ONTAP commands
 * `vserver nvme show-interface`
 ### Learn more
 * [`DOC /protocols/nvme/interfaces`](#docs-NVMe-protocols_nvme_interfaces)
-
 */
 func (a *Client) NvmeInterfaceGet(params *NvmeInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeInterfaceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -214,7 +214,8 @@ func (a *Client) NvmeInterfaceGet(params *NvmeInterfaceGetParams, authInfo runti
 }
 
 /*
-  NvmeNamespaceCollectionGet Retrieves NVMe namespaces.
+	NvmeNamespaceCollectionGet Retrieves NVMe namespaces.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `auto_delete`
@@ -227,7 +228,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver nvme subsystem map show`
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces) to learn more and examples.
-
 */
 func (a *Client) NvmeNamespaceCollectionGet(params *NvmeNamespaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -265,7 +265,8 @@ func (a *Client) NvmeNamespaceCollectionGet(params *NvmeNamespaceCollectionGetPa
 }
 
 /*
-  NvmeNamespaceCreate Creates an NVMe namespace.
+	NvmeNamespaceCreate Creates an NVMe namespace.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the NVMe namespace.
 * `name`, `location.volume.name` or `location.volume.uuid` - Existing volume in which to create the NVMe namespace.
@@ -283,7 +284,6 @@ If not specified in POST, the following default property values are assigned:
 * `vserver nvme namespace create`
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)
-
 */
 func (a *Client) NvmeNamespaceCreate(params *NvmeNamespaceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -321,12 +321,12 @@ func (a *Client) NvmeNamespaceCreate(params *NvmeNamespaceCreateParams, authInfo
 }
 
 /*
-  NvmeNamespaceDelete Deletes an NVMe namespace.
+	NvmeNamespaceDelete Deletes an NVMe namespace.
+
 ### Related ONTAP commands
 * `vserver nvme namespace delete`
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)
-
 */
 func (a *Client) NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -364,7 +364,8 @@ func (a *Client) NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo
 }
 
 /*
-  NvmeNamespaceGet Retrieves an NVMe namespace.
+	NvmeNamespaceGet Retrieves an NVMe namespace.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `auto_delete`
@@ -377,7 +378,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver nvme subsystem map show`
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)
-
 */
 func (a *Client) NvmeNamespaceGet(params *NvmeNamespaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -415,13 +415,13 @@ func (a *Client) NvmeNamespaceGet(params *NvmeNamespaceGetParams, authInfo runti
 }
 
 /*
-  NvmeNamespaceModify Updates an NVMe namespace.
+	NvmeNamespaceModify Updates an NVMe namespace.
+
 ### Related ONTAP commands
 * `volume file clone autodelete`
 * `vserver nvme namespace modify`
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)
-
 */
 func (a *Client) NvmeNamespaceModify(params *NvmeNamespaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeNamespaceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -459,7 +459,8 @@ func (a *Client) NvmeNamespaceModify(params *NvmeNamespaceModifyParams, authInfo
 }
 
 /*
-  NvmeServiceCollectionGet Retrieves NVMe services.
+	NvmeServiceCollectionGet Retrieves NVMe services.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
@@ -468,7 +469,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver nvme show`
 ### Learn more
 * [`DOC /protocols/nvme/services`](#docs-NVMe-protocols_nvme_services)
-
 */
 func (a *Client) NvmeServiceCollectionGet(params *NvmeServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -506,14 +506,14 @@ func (a *Client) NvmeServiceCollectionGet(params *NvmeServiceCollectionGetParams
 }
 
 /*
-  NvmeServiceCreate Creates an NVMe service.
+	NvmeServiceCreate Creates an NVMe service.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - The existing SVM in which to create the NVMe service.
 ### Related ONTAP commands
 * `vserver nvme create`
 ### Learn more
 * [`DOC /protocols/nvme/services`](#docs-NVMe-protocols_nvme_services)
-
 */
 func (a *Client) NvmeServiceCreate(params *NvmeServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -551,12 +551,12 @@ func (a *Client) NvmeServiceCreate(params *NvmeServiceCreateParams, authInfo run
 }
 
 /*
-  NvmeServiceDelete Deletes an NVMe service. An NVMe service must be disabled before it can be deleted. In addition, all NVMe interfaces, subsystems, and subsystem maps associated with the SVM must first be deleted.
+	NvmeServiceDelete Deletes an NVMe service. An NVMe service must be disabled before it can be deleted. In addition, all NVMe interfaces, subsystems, and subsystem maps associated with the SVM must first be deleted.
+
 ### Related ONTAP commands
 * `vserver nvme delete`
 ### Learn more
 * [`DOC /protocols/nvme/services`](#docs-NVMe-protocols_nvme_services)
-
 */
 func (a *Client) NvmeServiceDelete(params *NvmeServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -594,12 +594,12 @@ func (a *Client) NvmeServiceDelete(params *NvmeServiceDeleteParams, authInfo run
 }
 
 /*
-  NvmeServiceGet Retrieves an NVMe service.
+	NvmeServiceGet Retrieves an NVMe service.
+
 ### Related ONTAP commands
 * `vserver nvme show`
 ### Learn more
 * [`DOC /protocols/nvme/services`](#docs-NVMe-protocols_nvme_services)
-
 */
 func (a *Client) NvmeServiceGet(params *NvmeServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -637,12 +637,12 @@ func (a *Client) NvmeServiceGet(params *NvmeServiceGetParams, authInfo runtime.C
 }
 
 /*
-  NvmeServiceModify Updates an NVMe service.
+	NvmeServiceModify Updates an NVMe service.
+
 ### Related ONTAP commands
 * `vserver nvme modify`
 ### Learn more
 * [`DOC /protocols/nvme/services`](#docs-NVMe-protocols_nvme_services)
-
 */
 func (a *Client) NvmeServiceModify(params *NvmeServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeServiceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -680,14 +680,14 @@ func (a *Client) NvmeServiceModify(params *NvmeServiceModifyParams, authInfo run
 }
 
 /*
-  NvmeSubsystemCollectionGet Retrieves NVMe subsystems.
+	NvmeSubsystemCollectionGet Retrieves NVMe subsystems.
+
 ### Related ONTAP commands
 * `vserver nvme subsystem host show`
 * `vserver nvme subsystem map show`
 * `vserver nvme subsystem show`
 ### Learn more
 * [`DOC /protocols/nvme/subsystems`](#docs-NVMe-protocols_nvme_subsystems)
-
 */
 func (a *Client) NvmeSubsystemCollectionGet(params *NvmeSubsystemCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -725,12 +725,12 @@ func (a *Client) NvmeSubsystemCollectionGet(params *NvmeSubsystemCollectionGetPa
 }
 
 /*
-  NvmeSubsystemControllerCollectionGet Retrieves NVMe subsystem controllers.
+	NvmeSubsystemControllerCollectionGet Retrieves NVMe subsystem controllers.
+
 ### Related ONTAP commands
 * `vserver nvme subsystem controller show`
 ### Learn more
 * [`DOC /protocols/nvme/subsystem-controllers`](#docs-NVMe-protocols_nvme_subsystem-controllers)
-
 */
 func (a *Client) NvmeSubsystemControllerCollectionGet(params *NvmeSubsystemControllerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemControllerCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -768,12 +768,12 @@ func (a *Client) NvmeSubsystemControllerCollectionGet(params *NvmeSubsystemContr
 }
 
 /*
-  NvmeSubsystemControllerGet Retrieves an NVMe subsystem controller.
+	NvmeSubsystemControllerGet Retrieves an NVMe subsystem controller.
+
 ### Related ONTAP commands
 * `vserver nvme subsystem controller show`
 ### Learn more
 * [`DOC /protocols/nvme/subsystem-controllers`](#docs-NVMe-protocols_nvme_subsystem-controllers)
-
 */
 func (a *Client) NvmeSubsystemControllerGet(params *NvmeSubsystemControllerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemControllerGetOK, error) {
 	// TODO: Validate the params before sending
@@ -811,7 +811,8 @@ func (a *Client) NvmeSubsystemControllerGet(params *NvmeSubsystemControllerGetPa
 }
 
 /*
-  NvmeSubsystemCreate Creates an NVMe subsystem.
+	NvmeSubsystemCreate Creates an NVMe subsystem.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the NVMe subsystem.
 * `name` - Name for NVMe subsystem. Once created, an NVMe subsytem cannot be renamed.
@@ -820,7 +821,6 @@ func (a *Client) NvmeSubsystemControllerGet(params *NvmeSubsystemControllerGetPa
 * `vserver nvme subsystem create`
 ### Learn more
 * [`DOC /protocols/nvme/subsystems`](#docs-NVMe-protocols_nvme_subsystems)
-
 */
 func (a *Client) NvmeSubsystemCreate(params *NvmeSubsystemCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -858,12 +858,12 @@ func (a *Client) NvmeSubsystemCreate(params *NvmeSubsystemCreateParams, authInfo
 }
 
 /*
-  NvmeSubsystemDelete Removes an NVMe subsystem.
+	NvmeSubsystemDelete Removes an NVMe subsystem.
+
 ### Related ONTAP commands
 * `vserver nvme subsystem delete`
 ### Learn more
 * [`DOC /protocols/nvme/subsystems`](#docs-NVMe-protocols_nvme_subsystems)
-
 */
 func (a *Client) NvmeSubsystemDelete(params *NvmeSubsystemDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -901,7 +901,8 @@ func (a *Client) NvmeSubsystemDelete(params *NvmeSubsystemDeleteParams, authInfo
 }
 
 /*
-  NvmeSubsystemGet Retrieves an NVMe subsystem.
+	NvmeSubsystemGet Retrieves an NVMe subsystem.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `subsystem_maps.*`
@@ -911,7 +912,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver nvme subsystem show`
 ### Learn more
 * [`DOC /protocols/nvme/subsystems`](#docs-NVMe-protocols_nvme_subsystems)
-
 */
 func (a *Client) NvmeSubsystemGet(params *NvmeSubsystemGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemGetOK, error) {
 	// TODO: Validate the params before sending
@@ -949,7 +949,8 @@ func (a *Client) NvmeSubsystemGet(params *NvmeSubsystemGetParams, authInfo runti
 }
 
 /*
-  NvmeSubsystemHostCollectionGet Retrieves the NVMe subsystem hosts of an NVMe subsystem.
+	NvmeSubsystemHostCollectionGet Retrieves the NVMe subsystem hosts of an NVMe subsystem.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `subsystem_maps.*`
@@ -958,7 +959,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver nvme subsystem show`
 ### Learn more
 * [`DOC /protocols/nvme/subsystems`](#docs-NVMe-protocols_nvme_subsystems)
-
 */
 func (a *Client) NvmeSubsystemHostCollectionGet(params *NvmeSubsystemHostCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -996,14 +996,14 @@ func (a *Client) NvmeSubsystemHostCollectionGet(params *NvmeSubsystemHostCollect
 }
 
 /*
-  NvmeSubsystemHostCreate Adds NVMe subsystem host(s) to an NVMe subsystem.
+	NvmeSubsystemHostCreate Adds NVMe subsystem host(s) to an NVMe subsystem.
+
 ### Required properties
 * `nqn` or `records.nqn` - NVMe host(s) NQN(s) to add to the NVMe subsystem.
 ### Related ONTAP commands
 * `vserver nvme subsystem host add`
 ### Learn more
 * [`DOC /protocols/nvme/subsystems`](#docs-NVMe-protocols_nvme_subsystems)
-
 */
 func (a *Client) NvmeSubsystemHostCreate(params *NvmeSubsystemHostCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1041,12 +1041,12 @@ func (a *Client) NvmeSubsystemHostCreate(params *NvmeSubsystemHostCreateParams, 
 }
 
 /*
-  NvmeSubsystemHostDelete Deletes an NVMe subsystem host from an NVMe subsystem.
+	NvmeSubsystemHostDelete Deletes an NVMe subsystem host from an NVMe subsystem.
+
 ### Related ONTAP commands
 * `vserver nvme subsystem host remove`
 ### Learn more
 * [`DOC /protocols/nvme/subsystems`](#docs-NVMe-protocols_nvme_subsystems)
-
 */
 func (a *Client) NvmeSubsystemHostDelete(params *NvmeSubsystemHostDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1084,12 +1084,12 @@ func (a *Client) NvmeSubsystemHostDelete(params *NvmeSubsystemHostDeleteParams, 
 }
 
 /*
-  NvmeSubsystemHostGet Retrieves an NVMe subsystem host of an NVMe subsystem.
+	NvmeSubsystemHostGet Retrieves an NVMe subsystem host of an NVMe subsystem.
+
 ### Related ONTAP commands
 * `vserver nvme subsystem host show`
 ### Learn more
 * [`DOC /protocols/nvme/subsystems`](#docs-NVMe-protocols_nvme_subsystems)
-
 */
 func (a *Client) NvmeSubsystemHostGet(params *NvmeSubsystemHostGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1127,7 +1127,8 @@ func (a *Client) NvmeSubsystemHostGet(params *NvmeSubsystemHostGetParams, authIn
 }
 
 /*
-  NvmeSubsystemMapCollectionGet Retrieves NVMe subsystem maps.
+	NvmeSubsystemMapCollectionGet Retrieves NVMe subsystem maps.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `anagrpid`
@@ -1135,7 +1136,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver nvme subsystem map show`
 ### Learn more
 * [`DOC /protocols/nvme/subsystem-maps`](#docs-NVMe-protocols_nvme_subsystem-maps)
-
 */
 func (a *Client) NvmeSubsystemMapCollectionGet(params *NvmeSubsystemMapCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemMapCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1173,7 +1173,8 @@ func (a *Client) NvmeSubsystemMapCollectionGet(params *NvmeSubsystemMapCollectio
 }
 
 /*
-  NvmeSubsystemMapCreate Creates an NVMe subsystem map.
+	NvmeSubsystemMapCreate Creates an NVMe subsystem map.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the NVMe subsystem map.
 * `namespace.uuid` or `namespace.name` - Existing NVMe namespace to map to the specified NVme subsystem.
@@ -1182,7 +1183,6 @@ func (a *Client) NvmeSubsystemMapCollectionGet(params *NvmeSubsystemMapCollectio
 * `vserver nvme subsystem map create`
 ### Learn more
 * [`DOC /protocols/nvme/subsystem-maps`](#docs-NVMe-protocols_nvme_subsystem-maps)
-
 */
 func (a *Client) NvmeSubsystemMapCreate(params *NvmeSubsystemMapCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemMapCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1220,12 +1220,12 @@ func (a *Client) NvmeSubsystemMapCreate(params *NvmeSubsystemMapCreateParams, au
 }
 
 /*
-  NvmeSubsystemMapDelete Deletes an NVMe subsystem map.
+	NvmeSubsystemMapDelete Deletes an NVMe subsystem map.
+
 ### Related ONTAP commands
 * `vserver nvme subsystem map delete`
 ### Learn more
 * [`DOC /protocols/nvme/subsystem-maps`](#docs-NVMe-protocols_nvme_subsystem-maps)
-
 */
 func (a *Client) NvmeSubsystemMapDelete(params *NvmeSubsystemMapDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemMapDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1263,7 +1263,8 @@ func (a *Client) NvmeSubsystemMapDelete(params *NvmeSubsystemMapDeleteParams, au
 }
 
 /*
-  NvmeSubsystemMapGet Retrieves an NVMe subsystem map.
+	NvmeSubsystemMapGet Retrieves an NVMe subsystem map.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `anagrpid`
@@ -1271,7 +1272,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver nvme subsystem map show`
 ### Learn more
 * [`DOC /protocols/nvme/subsystem-maps`](#docs-NVMe-protocols_nvme_subsystem-maps)
-
 */
 func (a *Client) NvmeSubsystemMapGet(params *NvmeSubsystemMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemMapGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1309,12 +1309,12 @@ func (a *Client) NvmeSubsystemMapGet(params *NvmeSubsystemMapGetParams, authInfo
 }
 
 /*
-  NvmeSubsystemModify Updates an NVMe subsystem.
+	NvmeSubsystemModify Updates an NVMe subsystem.
+
 ### Related ONTAP commands
 * `vserver nvme subsystem modify`
 ### Learn more
 * [`DOC /protocols/nvme/subsystems`](#docs-NVMe-protocols_nvme_subsystems)
-
 */
 func (a *Client) NvmeSubsystemModify(params *NvmeSubsystemModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1352,7 +1352,7 @@ func (a *Client) NvmeSubsystemModify(params *NvmeSubsystemModifyParams, authInfo
 }
 
 /*
-  PerformanceNamespaceMetricCollectionGet Retrieves historical performance metrics for an NVMe namespace.
+PerformanceNamespaceMetricCollectionGet Retrieves historical performance metrics for an NVMe namespace.
 */
 func (a *Client) PerformanceNamespaceMetricCollectionGet(params *PerformanceNamespaceMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNamespaceMetricCollectionGetOK, error) {
 	// TODO: Validate the params before sending

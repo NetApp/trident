@@ -46,14 +46,44 @@ func NewRolePrivilegeDeleteOK() *RolePrivilegeDeleteOK {
 	return &RolePrivilegeDeleteOK{}
 }
 
-/* RolePrivilegeDeleteOK describes a response with status code 200, with default header values.
+/*
+RolePrivilegeDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type RolePrivilegeDeleteOK struct {
 }
 
+// IsSuccess returns true when this role privilege delete o k response has a 2xx status code
+func (o *RolePrivilegeDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this role privilege delete o k response has a 3xx status code
+func (o *RolePrivilegeDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this role privilege delete o k response has a 4xx status code
+func (o *RolePrivilegeDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this role privilege delete o k response has a 5xx status code
+func (o *RolePrivilegeDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this role privilege delete o k response a status code equal to that given
+func (o *RolePrivilegeDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *RolePrivilegeDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeDeleteOK ", 200)
+}
+
+func (o *RolePrivilegeDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] rolePrivilegeDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewRolePrivilegeDeleteDefault(code int) *RolePrivilegeDeleteDefault {
 	}
 }
 
-/* RolePrivilegeDeleteDefault describes a response with status code -1, with default header values.
+/*
+	RolePrivilegeDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5636169 | Specified URI path is invalid or not supported. Resource-qualified endpoints are not supported. |
@@ -83,7 +115,6 @@ func NewRolePrivilegeDeleteDefault(code int) *RolePrivilegeDeleteDefault {
 | 5636186 | Expanded REST roles for granular resource control requires an effective cluster version of 9.10.1 or later. |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434893 | The SVM does not exist. |
-
 */
 type RolePrivilegeDeleteDefault struct {
 	_statusCode int
@@ -96,9 +127,39 @@ func (o *RolePrivilegeDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this role privilege delete default response has a 2xx status code
+func (o *RolePrivilegeDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this role privilege delete default response has a 3xx status code
+func (o *RolePrivilegeDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this role privilege delete default response has a 4xx status code
+func (o *RolePrivilegeDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this role privilege delete default response has a 5xx status code
+func (o *RolePrivilegeDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this role privilege delete default response a status code equal to that given
+func (o *RolePrivilegeDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *RolePrivilegeDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *RolePrivilegeDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/roles/{owner.uuid}/{name}/privileges/{path}][%d] role_privilege_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *RolePrivilegeDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

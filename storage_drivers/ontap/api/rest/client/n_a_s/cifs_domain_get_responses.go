@@ -46,7 +46,8 @@ func NewCifsDomainGetOK() *CifsDomainGetOK {
 	return &CifsDomainGetOK{}
 }
 
-/* CifsDomainGetOK describes a response with status code 200, with default header values.
+/*
+CifsDomainGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsDomainGetOK struct {
 	Payload *models.CifsDomain
 }
 
+// IsSuccess returns true when this cifs domain get o k response has a 2xx status code
+func (o *CifsDomainGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs domain get o k response has a 3xx status code
+func (o *CifsDomainGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs domain get o k response has a 4xx status code
+func (o *CifsDomainGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs domain get o k response has a 5xx status code
+func (o *CifsDomainGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs domain get o k response a status code equal to that given
+func (o *CifsDomainGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsDomainGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifsDomainGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsDomainGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifsDomainGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsDomainGetOK) GetPayload() *models.CifsDomain {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewCifsDomainGetDefault(code int) *CifsDomainGetDefault {
 	}
 }
 
-/* CifsDomainGetDefault describes a response with status code -1, with default header values.
+/*
+	CifsDomainGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 |  656463    | SVM UUID must be provided for a query on the field rediscover_trusts and reset_discovered_servers. |
-
 */
 type CifsDomainGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *CifsDomainGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs domain get default response has a 2xx status code
+func (o *CifsDomainGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs domain get default response has a 3xx status code
+func (o *CifsDomainGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs domain get default response has a 4xx status code
+func (o *CifsDomainGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs domain get default response has a 5xx status code
+func (o *CifsDomainGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs domain get default response a status code equal to that given
+func (o *CifsDomainGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsDomainGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifs_domain_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsDomainGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/domains/{svm.uuid}][%d] cifs_domain_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsDomainGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewStoragePoolDeleteParamsWithHTTPClient(client *http.Client) *StoragePoolD
 	}
 }
 
-/* StoragePoolDeleteParams contains all the parameters to send to the API endpoint
-   for the storage pool delete operation.
+/*
+StoragePoolDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the storage pool delete operation.
+
+	Typically these are written to a http.Request.
 */
 type StoragePoolDeleteParams struct {
 

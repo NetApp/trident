@@ -46,14 +46,44 @@ func NewAutoUpdateInfoModifyOK() *AutoUpdateInfoModifyOK {
 	return &AutoUpdateInfoModifyOK{}
 }
 
-/* AutoUpdateInfoModifyOK describes a response with status code 200, with default header values.
+/*
+AutoUpdateInfoModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type AutoUpdateInfoModifyOK struct {
 }
 
+// IsSuccess returns true when this auto update info modify o k response has a 2xx status code
+func (o *AutoUpdateInfoModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this auto update info modify o k response has a 3xx status code
+func (o *AutoUpdateInfoModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this auto update info modify o k response has a 4xx status code
+func (o *AutoUpdateInfoModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this auto update info modify o k response has a 5xx status code
+func (o *AutoUpdateInfoModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this auto update info modify o k response a status code equal to that given
+func (o *AutoUpdateInfoModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AutoUpdateInfoModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /support/auto-update][%d] autoUpdateInfoModifyOK ", 200)
+}
+
+func (o *AutoUpdateInfoModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /support/auto-update][%d] autoUpdateInfoModifyOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewAutoUpdateInfoModifyDefault(code int) *AutoUpdateInfoModifyDefault {
 	}
 }
 
-/* AutoUpdateInfoModifyDefault describes a response with status code -1, with default header values.
+/*
+	AutoUpdateInfoModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262179 | Unexpected argument. |
 | 131072216 | Automatic update requires AutoSupport to be enabled. |
 | 131072217 | Automatic update requires AutoSupport OnDemand to be enabled. |
 | 131072218 | Automatic update requires AutoSupport to use the HTTPS transport. |
-
 */
 type AutoUpdateInfoModifyDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *AutoUpdateInfoModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this auto update info modify default response has a 2xx status code
+func (o *AutoUpdateInfoModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this auto update info modify default response has a 3xx status code
+func (o *AutoUpdateInfoModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this auto update info modify default response has a 4xx status code
+func (o *AutoUpdateInfoModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this auto update info modify default response has a 5xx status code
+func (o *AutoUpdateInfoModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this auto update info modify default response a status code equal to that given
+func (o *AutoUpdateInfoModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AutoUpdateInfoModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /support/auto-update][%d] auto_update_info_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AutoUpdateInfoModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /support/auto-update][%d] auto_update_info_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AutoUpdateInfoModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

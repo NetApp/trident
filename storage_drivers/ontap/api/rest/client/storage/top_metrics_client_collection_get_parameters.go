@@ -53,10 +53,12 @@ func NewTopMetricsClientCollectionGetParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* TopMetricsClientCollectionGetParams contains all the parameters to send to the API endpoint
-   for the top metrics client collection get operation.
+/*
+TopMetricsClientCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the top metrics client collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type TopMetricsClientCollectionGetParams struct {
 

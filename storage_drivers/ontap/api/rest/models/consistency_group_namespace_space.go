@@ -17,7 +17,6 @@ import (
 
 // ConsistencyGroupNamespaceSpace The storage space related properties of the NVMe namespace.
 //
-//
 // swagger:model consistency_group_namespace_space
 type ConsistencyGroupNamespaceSpace struct {
 
@@ -182,7 +181,6 @@ func (m *ConsistencyGroupNamespaceSpace) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupNamespaceSpaceGuaranteeType Properties that request and report the space guarantee for the NVMe namespace.
-//
 //
 // swagger:model ConsistencyGroupNamespaceSpaceGuaranteeType
 type ConsistencyGroupNamespaceSpaceGuaranteeType struct {

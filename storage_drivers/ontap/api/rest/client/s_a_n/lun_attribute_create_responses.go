@@ -46,7 +46,8 @@ func NewLunAttributeCreateCreated() *LunAttributeCreateCreated {
 	return &LunAttributeCreateCreated{}
 }
 
-/* LunAttributeCreateCreated describes a response with status code 201, with default header values.
+/*
+LunAttributeCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type LunAttributeCreateCreated struct {
 	Payload *models.LunAttributeResponse
 }
 
+// IsSuccess returns true when this lun attribute create created response has a 2xx status code
+func (o *LunAttributeCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun attribute create created response has a 3xx status code
+func (o *LunAttributeCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun attribute create created response has a 4xx status code
+func (o *LunAttributeCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun attribute create created response has a 5xx status code
+func (o *LunAttributeCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun attribute create created response a status code equal to that given
+func (o *LunAttributeCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *LunAttributeCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lunAttributeCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *LunAttributeCreateCreated) String() string {
+	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lunAttributeCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *LunAttributeCreateCreated) GetPayload() *models.LunAttributeResponse {
 	return o.Payload
 }
@@ -80,16 +111,17 @@ func NewLunAttributeCreateDefault(code int) *LunAttributeCreateDefault {
 	}
 }
 
-/* LunAttributeCreateDefault describes a response with status code -1, with default header values.
+/*
+	LunAttributeCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374875 | The specified LUN was not found. |
 | 5374928 | An incomplete attribute name/value pair was supplied. |
 | 5374929 | The combined sizes of an attribute name and value are too large. |
 | 5374930 | The attribute already exists for the LUN. |
-
 */
 type LunAttributeCreateDefault struct {
 	_statusCode int
@@ -102,9 +134,39 @@ func (o *LunAttributeCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this lun attribute create default response has a 2xx status code
+func (o *LunAttributeCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this lun attribute create default response has a 3xx status code
+func (o *LunAttributeCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this lun attribute create default response has a 4xx status code
+func (o *LunAttributeCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this lun attribute create default response has a 5xx status code
+func (o *LunAttributeCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this lun attribute create default response a status code equal to that given
+func (o *LunAttributeCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LunAttributeCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lun_attribute_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LunAttributeCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/luns/{lun.uuid}/attributes][%d] lun_attribute_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LunAttributeCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

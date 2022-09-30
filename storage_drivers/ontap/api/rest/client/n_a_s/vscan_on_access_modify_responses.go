@@ -46,14 +46,44 @@ func NewVscanOnAccessModifyOK() *VscanOnAccessModifyOK {
 	return &VscanOnAccessModifyOK{}
 }
 
-/* VscanOnAccessModifyOK describes a response with status code 200, with default header values.
+/*
+VscanOnAccessModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type VscanOnAccessModifyOK struct {
 }
 
+// IsSuccess returns true when this vscan on access modify o k response has a 2xx status code
+func (o *VscanOnAccessModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan on access modify o k response has a 3xx status code
+func (o *VscanOnAccessModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan on access modify o k response has a 4xx status code
+func (o *VscanOnAccessModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan on access modify o k response has a 5xx status code
+func (o *VscanOnAccessModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan on access modify o k response a status code equal to that given
+func (o *VscanOnAccessModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanOnAccessModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessModifyOK ", 200)
+}
+
+func (o *VscanOnAccessModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewVscanOnAccessModifyDefault(code int) *VscanOnAccessModifyDefault {
 	}
 }
 
-/* VscanOnAccessModifyDefault describes a response with status code -1, with default header values.
+/*
+	VscanOnAccessModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 10027033   | Configurations for an On-Access policy associated with an administrative SVM cannot be modified. However, the policy can be enabled or disabled. |
@@ -83,7 +115,6 @@ func NewVscanOnAccessModifyDefault(code int) *VscanOnAccessModifyDefault {
 | 10027250   | The On-Access policy cannot be enabled/disabled. The reason for an enable policy operation failure might be that another policy is enabled. Disable the already enabled policy and then enable the policy. The reason for a disable policy operation failure might be that Vscan is enabled on the SVM. Disable the Vscan and then disable the policy. |
 | 10027253   | The number of paths specified exceeds the configured maximum number of paths. You cannot specify more than the maximum number of configured paths. |
 | 10027254   | The number of extensions specified exceeds the configured maximum number of extensions. You cannot specify more than the maximum number of configured extensions. |
-
 */
 type VscanOnAccessModifyDefault struct {
 	_statusCode int
@@ -96,9 +127,39 @@ func (o *VscanOnAccessModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan on access modify default response has a 2xx status code
+func (o *VscanOnAccessModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan on access modify default response has a 3xx status code
+func (o *VscanOnAccessModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan on access modify default response has a 4xx status code
+func (o *VscanOnAccessModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan on access modify default response has a 5xx status code
+func (o *VscanOnAccessModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan on access modify default response a status code equal to that given
+func (o *VscanOnAccessModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanOnAccessModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanOnAccessModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanOnAccessModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

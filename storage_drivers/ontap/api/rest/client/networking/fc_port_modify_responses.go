@@ -46,14 +46,44 @@ func NewFcPortModifyOK() *FcPortModifyOK {
 	return &FcPortModifyOK{}
 }
 
-/* FcPortModifyOK describes a response with status code 200, with default header values.
+/*
+FcPortModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FcPortModifyOK struct {
 }
 
+// IsSuccess returns true when this fc port modify o k response has a 2xx status code
+func (o *FcPortModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fc port modify o k response has a 3xx status code
+func (o *FcPortModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fc port modify o k response has a 4xx status code
+func (o *FcPortModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fc port modify o k response has a 5xx status code
+func (o *FcPortModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fc port modify o k response a status code equal to that given
+func (o *FcPortModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcPortModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fcPortModifyOK ", 200)
+}
+
+func (o *FcPortModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fcPortModifyOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewFcPortModifyDefault(code int) *FcPortModifyDefault {
 	}
 }
 
-/* FcPortModifyDefault describes a response with status code -1, with default header values.
+/*
+	FcPortModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374085    | The node where the Fibre Channel port is located is offline. |
 | 5374087    | The Fibre Channel port has active Fibre Channel interfaces and cannot be disabled. |
-
 */
 type FcPortModifyDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *FcPortModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fc port modify default response has a 2xx status code
+func (o *FcPortModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fc port modify default response has a 3xx status code
+func (o *FcPortModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fc port modify default response has a 4xx status code
+func (o *FcPortModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fc port modify default response has a 5xx status code
+func (o *FcPortModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fc port modify default response a status code equal to that given
+func (o *FcPortModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcPortModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fc_port_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcPortModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /network/fc/ports/{uuid}][%d] fc_port_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcPortModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

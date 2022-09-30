@@ -46,14 +46,44 @@ func NewCifsOpenFileDeleteOK() *CifsOpenFileDeleteOK {
 	return &CifsOpenFileDeleteOK{}
 }
 
-/* CifsOpenFileDeleteOK describes a response with status code 200, with default header values.
+/*
+CifsOpenFileDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type CifsOpenFileDeleteOK struct {
 }
 
+// IsSuccess returns true when this cifs open file delete o k response has a 2xx status code
+func (o *CifsOpenFileDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs open file delete o k response has a 3xx status code
+func (o *CifsOpenFileDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs open file delete o k response has a 4xx status code
+func (o *CifsOpenFileDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs open file delete o k response has a 5xx status code
+func (o *CifsOpenFileDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs open file delete o k response a status code equal to that given
+func (o *CifsOpenFileDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsOpenFileDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifsOpenFileDeleteOK ", 200)
+}
+
+func (o *CifsOpenFileDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifsOpenFileDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewCifsOpenFileDeleteDefault(code int) *CifsOpenFileDeleteDefault {
 	}
 }
 
-/* CifsOpenFileDeleteDefault describes a response with status code -1, with default header values.
+/*
+CifsOpenFileDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *CifsOpenFileDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs open file delete default response has a 2xx status code
+func (o *CifsOpenFileDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs open file delete default response has a 3xx status code
+func (o *CifsOpenFileDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs open file delete default response has a 4xx status code
+func (o *CifsOpenFileDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs open file delete default response has a 5xx status code
+func (o *CifsOpenFileDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs open file delete default response a status code equal to that given
+func (o *CifsOpenFileDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsOpenFileDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifs_open_file_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsOpenFileDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifs_open_file_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsOpenFileDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -19,7 +19,6 @@ import (
 // ConsistencyGroupLunMap A LUN map is an association between a LUN and an initiator group.<br/>
 // When a LUN is mapped to an initiator group, the initiator group's initiators are granted access to the LUN. The relationship between a LUN and an initiator group is many LUNs to many initiator groups.
 //
-//
 // swagger:model consistency_group_lun_map
 type ConsistencyGroupLunMap struct {
 
@@ -109,7 +108,6 @@ func (m *ConsistencyGroupLunMap) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupLunMapIgroup The initiator group that directly owns the initiator, which is where modification of the initiator is supported. This property will only be populated when the initiator is a member of a nested initiator group.
-//
 //
 // swagger:model ConsistencyGroupLunMapIgroup
 type ConsistencyGroupLunMapIgroup struct {

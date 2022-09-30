@@ -49,7 +49,8 @@ func NewSecurityKeyManagerMigrateAccepted() *SecurityKeyManagerMigrateAccepted {
 	return &SecurityKeyManagerMigrateAccepted{}
 }
 
-/* SecurityKeyManagerMigrateAccepted describes a response with status code 202, with default header values.
+/*
+SecurityKeyManagerMigrateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -57,9 +58,39 @@ type SecurityKeyManagerMigrateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this security key manager migrate accepted response has a 2xx status code
+func (o *SecurityKeyManagerMigrateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager migrate accepted response has a 3xx status code
+func (o *SecurityKeyManagerMigrateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager migrate accepted response has a 4xx status code
+func (o *SecurityKeyManagerMigrateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager migrate accepted response has a 5xx status code
+func (o *SecurityKeyManagerMigrateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager migrate accepted response a status code equal to that given
+func (o *SecurityKeyManagerMigrateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SecurityKeyManagerMigrateAccepted) Error() string {
 	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] securityKeyManagerMigrateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SecurityKeyManagerMigrateAccepted) String() string {
+	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] securityKeyManagerMigrateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SecurityKeyManagerMigrateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -83,9 +114,11 @@ func NewSecurityKeyManagerMigrateDefault(code int) *SecurityKeyManagerMigrateDef
 	}
 }
 
-/* SecurityKeyManagerMigrateDefault describes a response with status code -1, with default header values.
+/*
+	SecurityKeyManagerMigrateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65536886 | The specified migration option is not supported in this release. |
@@ -99,7 +132,6 @@ func NewSecurityKeyManagerMigrateDefault(code int) *SecurityKeyManagerMigrateDef
 | 65537720 | Failed to configure the Google Cloud Key Management Service for an SVM because a key manager is already configured. |
 | 65537736 | Check that the Google Cloud Key Management Service is healthy and retry the operation. |
 | 65538107 | Key migration to an IBM Key Lore key manager is not supported. |
-
 */
 type SecurityKeyManagerMigrateDefault struct {
 	_statusCode int
@@ -112,9 +144,39 @@ func (o *SecurityKeyManagerMigrateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security key manager migrate default response has a 2xx status code
+func (o *SecurityKeyManagerMigrateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security key manager migrate default response has a 3xx status code
+func (o *SecurityKeyManagerMigrateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security key manager migrate default response has a 4xx status code
+func (o *SecurityKeyManagerMigrateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security key manager migrate default response has a 5xx status code
+func (o *SecurityKeyManagerMigrateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security key manager migrate default response a status code equal to that given
+func (o *SecurityKeyManagerMigrateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityKeyManagerMigrateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] security_key_manager_migrate default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityKeyManagerMigrateDefault) String() string {
+	return fmt.Sprintf("[POST /security/key-managers/{source.uuid}/migrate][%d] security_key_manager_migrate default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityKeyManagerMigrateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }
@@ -131,7 +193,8 @@ func (o *SecurityKeyManagerMigrateDefault) readResponse(response runtime.ClientR
 	return nil
 }
 
-/*SecurityKeyManagerMigrateBody Migration destination key manager UUID
+/*
+SecurityKeyManagerMigrateBody Migration destination key manager UUID
 swagger:model SecurityKeyManagerMigrateBody
 */
 type SecurityKeyManagerMigrateBody struct {
@@ -221,7 +284,8 @@ func (o *SecurityKeyManagerMigrateBody) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-/*SecurityKeyManagerMigrateParamsBodyLinks security key manager migrate params body links
+/*
+SecurityKeyManagerMigrateParamsBodyLinks security key manager migrate params body links
 swagger:model SecurityKeyManagerMigrateParamsBodyLinks
 */
 type SecurityKeyManagerMigrateParamsBodyLinks struct {

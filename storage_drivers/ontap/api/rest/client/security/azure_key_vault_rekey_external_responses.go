@@ -46,14 +46,44 @@ func NewAzureKeyVaultRekeyExternalAccepted() *AzureKeyVaultRekeyExternalAccepted
 	return &AzureKeyVaultRekeyExternalAccepted{}
 }
 
-/* AzureKeyVaultRekeyExternalAccepted describes a response with status code 202, with default header values.
+/*
+AzureKeyVaultRekeyExternalAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type AzureKeyVaultRekeyExternalAccepted struct {
 }
 
+// IsSuccess returns true when this azure key vault rekey external accepted response has a 2xx status code
+func (o *AzureKeyVaultRekeyExternalAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this azure key vault rekey external accepted response has a 3xx status code
+func (o *AzureKeyVaultRekeyExternalAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this azure key vault rekey external accepted response has a 4xx status code
+func (o *AzureKeyVaultRekeyExternalAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this azure key vault rekey external accepted response has a 5xx status code
+func (o *AzureKeyVaultRekeyExternalAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this azure key vault rekey external accepted response a status code equal to that given
+func (o *AzureKeyVaultRekeyExternalAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *AzureKeyVaultRekeyExternalAccepted) Error() string {
+	return fmt.Sprintf("[POST /security/azure-key-vaults/{azure_key_vault.uuid}/rekey-external][%d] azureKeyVaultRekeyExternalAccepted ", 202)
+}
+
+func (o *AzureKeyVaultRekeyExternalAccepted) String() string {
 	return fmt.Sprintf("[POST /security/azure-key-vaults/{azure_key_vault.uuid}/rekey-external][%d] azureKeyVaultRekeyExternalAccepted ", 202)
 }
 
@@ -69,14 +99,15 @@ func NewAzureKeyVaultRekeyExternalDefault(code int) *AzureKeyVaultRekeyExternalD
 	}
 }
 
-/* AzureKeyVaultRekeyExternalDefault describes a response with status code -1, with default header values.
+/*
+	AzureKeyVaultRekeyExternalDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65537120 | Azure Key Vault is not configured for the given SVM. |
 | 65537547 | One or more volume encryption keys for encrypted volumes of this data SVM are stored in the key manager configured for the admin SVM. Use the REST API POST method to migrate this data SVM's keys from the admin SVM's key manager to this data SVM's key manager before running the rekey operation. |
-
 */
 type AzureKeyVaultRekeyExternalDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *AzureKeyVaultRekeyExternalDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this azure key vault rekey external default response has a 2xx status code
+func (o *AzureKeyVaultRekeyExternalDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this azure key vault rekey external default response has a 3xx status code
+func (o *AzureKeyVaultRekeyExternalDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this azure key vault rekey external default response has a 4xx status code
+func (o *AzureKeyVaultRekeyExternalDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this azure key vault rekey external default response has a 5xx status code
+func (o *AzureKeyVaultRekeyExternalDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this azure key vault rekey external default response a status code equal to that given
+func (o *AzureKeyVaultRekeyExternalDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AzureKeyVaultRekeyExternalDefault) Error() string {
 	return fmt.Sprintf("[POST /security/azure-key-vaults/{azure_key_vault.uuid}/rekey-external][%d] azure_key_vault_rekey_external default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AzureKeyVaultRekeyExternalDefault) String() string {
+	return fmt.Sprintf("[POST /security/azure-key-vaults/{azure_key_vault.uuid}/rekey-external][%d] azure_key_vault_rekey_external default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AzureKeyVaultRekeyExternalDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

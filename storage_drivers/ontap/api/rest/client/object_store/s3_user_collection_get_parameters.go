@@ -53,10 +53,12 @@ func NewS3UserCollectionGetParamsWithHTTPClient(client *http.Client) *S3UserColl
 	}
 }
 
-/* S3UserCollectionGetParams contains all the parameters to send to the API endpoint
-   for the s3 user collection get operation.
+/*
+S3UserCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 user collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type S3UserCollectionGetParams struct {
 

@@ -53,10 +53,12 @@ func NewCifsShareCollectionGetParamsWithHTTPClient(client *http.Client) *CifsSha
 	}
 }
 
-/* CifsShareCollectionGetParams contains all the parameters to send to the API endpoint
-   for the cifs share collection get operation.
+/*
+CifsShareCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs share collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsShareCollectionGetParams struct {
 

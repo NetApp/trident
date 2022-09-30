@@ -46,14 +46,44 @@ func NewNvmeSubsystemDeleteOK() *NvmeSubsystemDeleteOK {
 	return &NvmeSubsystemDeleteOK{}
 }
 
-/* NvmeSubsystemDeleteOK describes a response with status code 200, with default header values.
+/*
+NvmeSubsystemDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NvmeSubsystemDeleteOK struct {
 }
 
+// IsSuccess returns true when this nvme subsystem delete o k response has a 2xx status code
+func (o *NvmeSubsystemDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme subsystem delete o k response has a 3xx status code
+func (o *NvmeSubsystemDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme subsystem delete o k response has a 4xx status code
+func (o *NvmeSubsystemDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme subsystem delete o k response has a 5xx status code
+func (o *NvmeSubsystemDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme subsystem delete o k response a status code equal to that given
+func (o *NvmeSubsystemDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeSubsystemDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemDeleteOK ", 200)
+}
+
+func (o *NvmeSubsystemDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemDeleteOK ", 200)
 }
 
@@ -69,15 +99,16 @@ func NewNvmeSubsystemDeleteDefault(code int) *NvmeSubsystemDeleteDefault {
 	}
 }
 
-/* NvmeSubsystemDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NvmeSubsystemDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 72090001 | The NVMe subsystem does not exist. |
 | 72090023 | The NVMe subsystem contains one or more mapped namespaces. Use the `allow_delete_while_mapped` query parameter to delete an NVMe subsystem with mapped NVMe namespaces. |
 | 72090024 | The NVMe subsystem contains one or more NVMe hosts. Use the `allow_delete_with_hosts` query parameter to delete an NVMe subsystem with NVMe hosts. |
-
 */
 type NvmeSubsystemDeleteDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *NvmeSubsystemDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme subsystem delete default response has a 2xx status code
+func (o *NvmeSubsystemDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme subsystem delete default response has a 3xx status code
+func (o *NvmeSubsystemDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme subsystem delete default response has a 4xx status code
+func (o *NvmeSubsystemDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme subsystem delete default response has a 5xx status code
+func (o *NvmeSubsystemDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme subsystem delete default response a status code equal to that given
+func (o *NvmeSubsystemDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeSubsystemDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeSubsystemDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeSubsystemDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

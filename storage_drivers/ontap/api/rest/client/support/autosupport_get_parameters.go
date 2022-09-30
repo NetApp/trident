@@ -53,10 +53,12 @@ func NewAutosupportGetParamsWithHTTPClient(client *http.Client) *AutosupportGetP
 	}
 }
 
-/* AutosupportGetParams contains all the parameters to send to the API endpoint
-   for the autosupport get operation.
+/*
+AutosupportGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the autosupport get operation.
+
+	Typically these are written to a http.Request.
 */
 type AutosupportGetParams struct {
 

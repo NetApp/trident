@@ -46,7 +46,8 @@ func NewSvmPeerPermissionModifyOK() *SvmPeerPermissionModifyOK {
 	return &SvmPeerPermissionModifyOK{}
 }
 
-/* SvmPeerPermissionModifyOK describes a response with status code 200, with default header values.
+/*
+SvmPeerPermissionModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SvmPeerPermissionModifyOK struct {
 	Payload *models.SvmPeerPermission
 }
 
+// IsSuccess returns true when this svm peer permission modify o k response has a 2xx status code
+func (o *SvmPeerPermissionModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm peer permission modify o k response has a 3xx status code
+func (o *SvmPeerPermissionModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm peer permission modify o k response has a 4xx status code
+func (o *SvmPeerPermissionModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm peer permission modify o k response has a 5xx status code
+func (o *SvmPeerPermissionModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm peer permission modify o k response a status code equal to that given
+func (o *SvmPeerPermissionModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SvmPeerPermissionModifyOK) Error() string {
 	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionModifyOK  %+v", 200, o.Payload)
 }
+
+func (o *SvmPeerPermissionModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionModifyOK  %+v", 200, o.Payload)
+}
+
 func (o *SvmPeerPermissionModifyOK) GetPayload() *models.SvmPeerPermission {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSvmPeerPermissionModifyDefault(code int) *SvmPeerPermissionModifyDefault
 	}
 }
 
-/* SvmPeerPermissionModifyDefault describes a response with status code -1, with default header values.
+/*
+	SvmPeerPermissionModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 <br/>
 ```
 | Error codes | Description |
@@ -91,7 +124,6 @@ func NewSvmPeerPermissionModifyDefault(code int) *SvmPeerPermissionModifyDefault
 | 26345574    | Failed to find the SVM or volume name with UUID. |
 ```
 <br/>
-
 */
 type SvmPeerPermissionModifyDefault struct {
 	_statusCode int
@@ -104,9 +136,39 @@ func (o *SvmPeerPermissionModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm peer permission modify default response has a 2xx status code
+func (o *SvmPeerPermissionModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm peer permission modify default response has a 3xx status code
+func (o *SvmPeerPermissionModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm peer permission modify default response has a 4xx status code
+func (o *SvmPeerPermissionModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm peer permission modify default response has a 5xx status code
+func (o *SvmPeerPermissionModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm peer permission modify default response a status code equal to that given
+func (o *SvmPeerPermissionModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmPeerPermissionModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmPeerPermissionModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmPeerPermissionModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

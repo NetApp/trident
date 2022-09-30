@@ -46,7 +46,8 @@ func NewCloudStoreCreateAccepted() *CloudStoreCreateAccepted {
 	return &CloudStoreCreateAccepted{}
 }
 
-/* CloudStoreCreateAccepted describes a response with status code 202, with default header values.
+/*
+CloudStoreCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type CloudStoreCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cloud store create accepted response has a 2xx status code
+func (o *CloudStoreCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cloud store create accepted response has a 3xx status code
+func (o *CloudStoreCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cloud store create accepted response has a 4xx status code
+func (o *CloudStoreCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cloud store create accepted response has a 5xx status code
+func (o *CloudStoreCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cloud store create accepted response a status code equal to that given
+func (o *CloudStoreCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *CloudStoreCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/aggregates/{aggregate.uuid}/cloud-stores][%d] cloudStoreCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *CloudStoreCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/aggregates/{aggregate.uuid}/cloud-stores][%d] cloudStoreCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *CloudStoreCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCloudStoreCreateDefault(code int) *CloudStoreCreateDefault {
 	}
 }
 
-/* CloudStoreCreateDefault describes a response with status code -1, with default header values.
+/*
+CloudStoreCreateDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CloudStoreCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cloud store create default response has a 2xx status code
+func (o *CloudStoreCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cloud store create default response has a 3xx status code
+func (o *CloudStoreCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cloud store create default response has a 4xx status code
+func (o *CloudStoreCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cloud store create default response has a 5xx status code
+func (o *CloudStoreCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cloud store create default response a status code equal to that given
+func (o *CloudStoreCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CloudStoreCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/aggregates/{aggregate.uuid}/cloud-stores][%d] cloud_store_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CloudStoreCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/aggregates/{aggregate.uuid}/cloud-stores][%d] cloud_store_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CloudStoreCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

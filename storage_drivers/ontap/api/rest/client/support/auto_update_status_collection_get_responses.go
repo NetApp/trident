@@ -46,7 +46,8 @@ func NewAutoUpdateStatusCollectionGetOK() *AutoUpdateStatusCollectionGetOK {
 	return &AutoUpdateStatusCollectionGetOK{}
 }
 
-/* AutoUpdateStatusCollectionGetOK describes a response with status code 200, with default header values.
+/*
+AutoUpdateStatusCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AutoUpdateStatusCollectionGetOK struct {
 	Payload *models.AutoUpdateStatusResponse
 }
 
+// IsSuccess returns true when this auto update status collection get o k response has a 2xx status code
+func (o *AutoUpdateStatusCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this auto update status collection get o k response has a 3xx status code
+func (o *AutoUpdateStatusCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this auto update status collection get o k response has a 4xx status code
+func (o *AutoUpdateStatusCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this auto update status collection get o k response has a 5xx status code
+func (o *AutoUpdateStatusCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this auto update status collection get o k response a status code equal to that given
+func (o *AutoUpdateStatusCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AutoUpdateStatusCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/auto-update/updates][%d] autoUpdateStatusCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AutoUpdateStatusCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /support/auto-update/updates][%d] autoUpdateStatusCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AutoUpdateStatusCollectionGetOK) GetPayload() *models.AutoUpdateStatusResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAutoUpdateStatusCollectionGetDefault(code int) *AutoUpdateStatusCollecti
 	}
 }
 
-/* AutoUpdateStatusCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+AutoUpdateStatusCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AutoUpdateStatusCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this auto update status collection get default response has a 2xx status code
+func (o *AutoUpdateStatusCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this auto update status collection get default response has a 3xx status code
+func (o *AutoUpdateStatusCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this auto update status collection get default response has a 4xx status code
+func (o *AutoUpdateStatusCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this auto update status collection get default response has a 5xx status code
+func (o *AutoUpdateStatusCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this auto update status collection get default response a status code equal to that given
+func (o *AutoUpdateStatusCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AutoUpdateStatusCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /support/auto-update/updates][%d] auto_update_status_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AutoUpdateStatusCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /support/auto-update/updates][%d] auto_update_status_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AutoUpdateStatusCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

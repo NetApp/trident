@@ -55,10 +55,12 @@ func NewQtreeModifyParamsWithHTTPClient(client *http.Client) *QtreeModifyParams 
 	}
 }
 
-/* QtreeModifyParams contains all the parameters to send to the API endpoint
-   for the qtree modify operation.
+/*
+QtreeModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the qtree modify operation.
+
+	Typically these are written to a http.Request.
 */
 type QtreeModifyParams struct {
 

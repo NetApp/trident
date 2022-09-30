@@ -55,10 +55,12 @@ func NewFileDirectorySecurityCreateParamsWithHTTPClient(client *http.Client) *Fi
 	}
 }
 
-/* FileDirectorySecurityCreateParams contains all the parameters to send to the API endpoint
-   for the file directory security create operation.
+/*
+FileDirectorySecurityCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file directory security create operation.
+
+	Typically these are written to a http.Request.
 */
 type FileDirectorySecurityCreateParams struct {
 

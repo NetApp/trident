@@ -46,7 +46,8 @@ func NewFpolicyEngineCreateCreated() *FpolicyEngineCreateCreated {
 	return &FpolicyEngineCreateCreated{}
 }
 
-/* FpolicyEngineCreateCreated describes a response with status code 201, with default header values.
+/*
+FpolicyEngineCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type FpolicyEngineCreateCreated struct {
 	Payload *models.FpolicyEngineResponse
 }
 
+// IsSuccess returns true when this fpolicy engine create created response has a 2xx status code
+func (o *FpolicyEngineCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fpolicy engine create created response has a 3xx status code
+func (o *FpolicyEngineCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fpolicy engine create created response has a 4xx status code
+func (o *FpolicyEngineCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fpolicy engine create created response has a 5xx status code
+func (o *FpolicyEngineCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fpolicy engine create created response a status code equal to that given
+func (o *FpolicyEngineCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *FpolicyEngineCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicyEngineCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *FpolicyEngineCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicyEngineCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *FpolicyEngineCreateCreated) GetPayload() *models.FpolicyEngineResponse {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewFpolicyEngineCreateDefault(code int) *FpolicyEngineCreateDefault {
 	}
 }
 
-/* FpolicyEngineCreateDefault describes a response with status code -1, with default header values.
+/*
+	FpolicyEngineCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 9764885    | The primary secondary server has a redundant IP address |
 | 9764953    | The name of the FPolicy engine is "native" which is reserved by the system |
-
 */
 type FpolicyEngineCreateDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *FpolicyEngineCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fpolicy engine create default response has a 2xx status code
+func (o *FpolicyEngineCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fpolicy engine create default response has a 3xx status code
+func (o *FpolicyEngineCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fpolicy engine create default response has a 4xx status code
+func (o *FpolicyEngineCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fpolicy engine create default response has a 5xx status code
+func (o *FpolicyEngineCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fpolicy engine create default response a status code equal to that given
+func (o *FpolicyEngineCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FpolicyEngineCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicy_engine_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FpolicyEngineCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/fpolicy/{svm.uuid}/engines][%d] fpolicy_engine_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FpolicyEngineCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewSwitchPortGetOK() *SwitchPortGetOK {
 	return &SwitchPortGetOK{}
 }
 
-/* SwitchPortGetOK describes a response with status code 200, with default header values.
+/*
+SwitchPortGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SwitchPortGetOK struct {
 	Payload *models.SwitchPort
 }
 
+// IsSuccess returns true when this switch port get o k response has a 2xx status code
+func (o *SwitchPortGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this switch port get o k response has a 3xx status code
+func (o *SwitchPortGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this switch port get o k response has a 4xx status code
+func (o *SwitchPortGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this switch port get o k response has a 5xx status code
+func (o *SwitchPortGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this switch port get o k response a status code equal to that given
+func (o *SwitchPortGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SwitchPortGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ethernet/switch/ports/{switch}/{identity.name}/{identity.index}][%d] switchPortGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SwitchPortGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ethernet/switch/ports/{switch}/{identity.name}/{identity.index}][%d] switchPortGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SwitchPortGetOK) GetPayload() *models.SwitchPort {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSwitchPortGetDefault(code int) *SwitchPortGetDefault {
 	}
 }
 
-/* SwitchPortGetDefault describes a response with status code -1, with default header values.
+/*
+SwitchPortGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SwitchPortGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this switch port get default response has a 2xx status code
+func (o *SwitchPortGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this switch port get default response has a 3xx status code
+func (o *SwitchPortGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this switch port get default response has a 4xx status code
+func (o *SwitchPortGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this switch port get default response has a 5xx status code
+func (o *SwitchPortGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this switch port get default response a status code equal to that given
+func (o *SwitchPortGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SwitchPortGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ethernet/switch/ports/{switch}/{identity.name}/{identity.index}][%d] switch_port_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SwitchPortGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ethernet/switch/ports/{switch}/{identity.name}/{identity.index}][%d] switch_port_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SwitchPortGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

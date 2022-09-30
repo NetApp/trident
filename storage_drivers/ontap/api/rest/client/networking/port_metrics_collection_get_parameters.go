@@ -53,10 +53,12 @@ func NewPortMetricsCollectionGetParamsWithHTTPClient(client *http.Client) *PortM
 	}
 }
 
-/* PortMetricsCollectionGetParams contains all the parameters to send to the API endpoint
-   for the port metrics collection get operation.
+/*
+PortMetricsCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the port metrics collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type PortMetricsCollectionGetParams struct {
 

@@ -46,14 +46,44 @@ func NewGcpKmsRekeyInternalAccepted() *GcpKmsRekeyInternalAccepted {
 	return &GcpKmsRekeyInternalAccepted{}
 }
 
-/* GcpKmsRekeyInternalAccepted describes a response with status code 202, with default header values.
+/*
+GcpKmsRekeyInternalAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type GcpKmsRekeyInternalAccepted struct {
 }
 
+// IsSuccess returns true when this gcp kms rekey internal accepted response has a 2xx status code
+func (o *GcpKmsRekeyInternalAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this gcp kms rekey internal accepted response has a 3xx status code
+func (o *GcpKmsRekeyInternalAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this gcp kms rekey internal accepted response has a 4xx status code
+func (o *GcpKmsRekeyInternalAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this gcp kms rekey internal accepted response has a 5xx status code
+func (o *GcpKmsRekeyInternalAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this gcp kms rekey internal accepted response a status code equal to that given
+func (o *GcpKmsRekeyInternalAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *GcpKmsRekeyInternalAccepted) Error() string {
+	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/rekey-internal][%d] gcpKmsRekeyInternalAccepted ", 202)
+}
+
+func (o *GcpKmsRekeyInternalAccepted) String() string {
 	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/rekey-internal][%d] gcpKmsRekeyInternalAccepted ", 202)
 }
 
@@ -69,15 +99,16 @@ func NewGcpKmsRekeyInternalDefault(code int) *GcpKmsRekeyInternalDefault {
 	}
 }
 
-/* GcpKmsRekeyInternalDefault describes a response with status code -1, with default header values.
+/*
+	GcpKmsRekeyInternalDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65537547 | One or more volume encryption keys for encrypted volumes of this data SVM are stored in the key manager configured for the admin SVM. Use the REST API POST method to migrate this data SVM's keys from the admin SVM's key manager to this data SVM's key manager before running the rekey operation. |
 | 65537559 | There are no existing internal keys for the SVM. A rekey operation is allowed for an SVM with one or more encryption keys. |
 | 65537721 | Google Cloud KMS is not configured for the given SVM. |
-
 */
 type GcpKmsRekeyInternalDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *GcpKmsRekeyInternalDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this gcp kms rekey internal default response has a 2xx status code
+func (o *GcpKmsRekeyInternalDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this gcp kms rekey internal default response has a 3xx status code
+func (o *GcpKmsRekeyInternalDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this gcp kms rekey internal default response has a 4xx status code
+func (o *GcpKmsRekeyInternalDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this gcp kms rekey internal default response has a 5xx status code
+func (o *GcpKmsRekeyInternalDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this gcp kms rekey internal default response a status code equal to that given
+func (o *GcpKmsRekeyInternalDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GcpKmsRekeyInternalDefault) Error() string {
 	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/rekey-internal][%d] gcp_kms_rekey_internal default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GcpKmsRekeyInternalDefault) String() string {
+	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/rekey-internal][%d] gcp_kms_rekey_internal default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GcpKmsRekeyInternalDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

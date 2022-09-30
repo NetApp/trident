@@ -54,10 +54,12 @@ func NewNvmeServiceModifyParamsWithHTTPClient(client *http.Client) *NvmeServiceM
 	}
 }
 
-/* NvmeServiceModifyParams contains all the parameters to send to the API endpoint
-   for the nvme service modify operation.
+/*
+NvmeServiceModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme service modify operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeServiceModifyParams struct {
 

@@ -46,7 +46,8 @@ func NewFirmwareHistoryCollectionGetOK() *FirmwareHistoryCollectionGetOK {
 	return &FirmwareHistoryCollectionGetOK{}
 }
 
-/* FirmwareHistoryCollectionGetOK describes a response with status code 200, with default header values.
+/*
+FirmwareHistoryCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FirmwareHistoryCollectionGetOK struct {
 	Payload *models.FirmwareHistoryResponse
 }
 
+// IsSuccess returns true when this firmware history collection get o k response has a 2xx status code
+func (o *FirmwareHistoryCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this firmware history collection get o k response has a 3xx status code
+func (o *FirmwareHistoryCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this firmware history collection get o k response has a 4xx status code
+func (o *FirmwareHistoryCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this firmware history collection get o k response has a 5xx status code
+func (o *FirmwareHistoryCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this firmware history collection get o k response a status code equal to that given
+func (o *FirmwareHistoryCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FirmwareHistoryCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmwareHistoryCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FirmwareHistoryCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmwareHistoryCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FirmwareHistoryCollectionGetOK) GetPayload() *models.FirmwareHistoryResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFirmwareHistoryCollectionGetDefault(code int) *FirmwareHistoryCollection
 	}
 }
 
-/* FirmwareHistoryCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+FirmwareHistoryCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FirmwareHistoryCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this firmware history collection get default response has a 2xx status code
+func (o *FirmwareHistoryCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this firmware history collection get default response has a 3xx status code
+func (o *FirmwareHistoryCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this firmware history collection get default response has a 4xx status code
+func (o *FirmwareHistoryCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this firmware history collection get default response has a 5xx status code
+func (o *FirmwareHistoryCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this firmware history collection get default response a status code equal to that given
+func (o *FirmwareHistoryCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FirmwareHistoryCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmware_history_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FirmwareHistoryCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/firmware/history][%d] firmware_history_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FirmwareHistoryCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewNdmpNodeCollectionGetOK() *NdmpNodeCollectionGetOK {
 	return &NdmpNodeCollectionGetOK{}
 }
 
-/* NdmpNodeCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NdmpNodeCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NdmpNodeCollectionGetOK struct {
 	Payload *models.NdmpNodeResponse
 }
 
+// IsSuccess returns true when this ndmp node collection get o k response has a 2xx status code
+func (o *NdmpNodeCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ndmp node collection get o k response has a 3xx status code
+func (o *NdmpNodeCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ndmp node collection get o k response has a 4xx status code
+func (o *NdmpNodeCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ndmp node collection get o k response has a 5xx status code
+func (o *NdmpNodeCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ndmp node collection get o k response a status code equal to that given
+func (o *NdmpNodeCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NdmpNodeCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/nodes][%d] ndmpNodeCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NdmpNodeCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/nodes][%d] ndmpNodeCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NdmpNodeCollectionGetOK) GetPayload() *models.NdmpNodeResponse {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewNdmpNodeCollectionGetDefault(code int) *NdmpNodeCollectionGetDefault {
 	}
 }
 
-/* NdmpNodeCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	NdmpNodeCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 68812801    | Node-scoped operations are not allowed in an SVM-scope.|
 | 68812804    | Failed to get the node name from the specified node UUID.|
-
 */
 type NdmpNodeCollectionGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *NdmpNodeCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ndmp node collection get default response has a 2xx status code
+func (o *NdmpNodeCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ndmp node collection get default response has a 3xx status code
+func (o *NdmpNodeCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ndmp node collection get default response has a 4xx status code
+func (o *NdmpNodeCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ndmp node collection get default response has a 5xx status code
+func (o *NdmpNodeCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ndmp node collection get default response a status code equal to that given
+func (o *NdmpNodeCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NdmpNodeCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/nodes][%d] ndmp_node_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NdmpNodeCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/nodes][%d] ndmp_node_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NdmpNodeCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

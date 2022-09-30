@@ -53,10 +53,12 @@ func NewMetroclusterDrGroupGetParamsWithHTTPClient(client *http.Client) *Metrocl
 	}
 }
 
-/* MetroclusterDrGroupGetParams contains all the parameters to send to the API endpoint
-   for the metrocluster dr group get operation.
+/*
+MetroclusterDrGroupGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the metrocluster dr group get operation.
+
+	Typically these are written to a http.Request.
 */
 type MetroclusterDrGroupGetParams struct {
 

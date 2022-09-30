@@ -595,7 +595,6 @@ func (m *FcInterfaceLinks) UnmarshalBinary(b []byte) error {
 // FcInterfaceLocation The location of the FC interface is defined by the location of its port. An FC port is identified by its UUID, or a combination of its cluster node name and port name. Either the UUID or the cluster node name and port name are required for POST. To move an interface, supply either the UUID or the cluster node name and port name in a PATCH.<br/>
 // The location of an FC interface can be set using "location.home_node" and "location.home_port" during a POST or PATCH. "location.node" and "location.port" refer to the current location of the FC interface. This can be different from "location.home_node" and "location.home_port" in instances where the FC interface failed over due to an offline node.
 //
-//
 // swagger:model FcInterfaceLocation
 type FcInterfaceLocation struct {
 
@@ -1005,7 +1004,6 @@ func (m *FcInterfaceLocationHomeNodeLinks) UnmarshalBinary(b []byte) error {
 
 // FcInterfaceLocationHomePort An FC port is the physical port of an FC adapter on a cluster node that can be connected to an FC network.
 //
-//
 // swagger:model FcInterfaceLocationHomePort
 type FcInterfaceLocationHomePort struct {
 
@@ -1230,7 +1228,6 @@ func (m *FcInterfaceLocationHomePortLinks) UnmarshalBinary(b []byte) error {
 
 // FcInterfaceLocationHomePortNode The node on which the FC port is located.
 //
-//
 // swagger:model FcInterfaceLocationHomePortNode
 type FcInterfaceLocationHomePortNode struct {
 
@@ -1449,7 +1446,6 @@ func (m *FcInterfaceLocationNodeLinks) UnmarshalBinary(b []byte) error {
 }
 
 // FcInterfaceLocationPort An FC port is the physical port of an FC adapter on a cluster node that can be connected to an FC network.
-//
 //
 // swagger:model FcInterfaceLocationPort
 type FcInterfaceLocationPort struct {
@@ -1674,7 +1670,6 @@ func (m *FcInterfaceLocationPortLinks) UnmarshalBinary(b []byte) error {
 }
 
 // FcInterfaceLocationPortNode The node on which the FC port is located.
-//
 //
 // swagger:model FcInterfaceLocationPortNode
 type FcInterfaceLocationPortNode struct {

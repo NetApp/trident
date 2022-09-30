@@ -46,7 +46,8 @@ func NewNetworkEthernetBroadcastDomainGetOK() *NetworkEthernetBroadcastDomainGet
 	return &NetworkEthernetBroadcastDomainGetOK{}
 }
 
-/* NetworkEthernetBroadcastDomainGetOK describes a response with status code 200, with default header values.
+/*
+NetworkEthernetBroadcastDomainGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NetworkEthernetBroadcastDomainGetOK struct {
 	Payload *models.BroadcastDomain
 }
 
+// IsSuccess returns true when this network ethernet broadcast domain get o k response has a 2xx status code
+func (o *NetworkEthernetBroadcastDomainGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network ethernet broadcast domain get o k response has a 3xx status code
+func (o *NetworkEthernetBroadcastDomainGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network ethernet broadcast domain get o k response has a 4xx status code
+func (o *NetworkEthernetBroadcastDomainGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network ethernet broadcast domain get o k response has a 5xx status code
+func (o *NetworkEthernetBroadcastDomainGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network ethernet broadcast domain get o k response a status code equal to that given
+func (o *NetworkEthernetBroadcastDomainGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkEthernetBroadcastDomainGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains/{uuid}][%d] networkEthernetBroadcastDomainGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NetworkEthernetBroadcastDomainGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains/{uuid}][%d] networkEthernetBroadcastDomainGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NetworkEthernetBroadcastDomainGetOK) GetPayload() *models.BroadcastDomain {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNetworkEthernetBroadcastDomainGetDefault(code int) *NetworkEthernetBroad
 	}
 }
 
-/* NetworkEthernetBroadcastDomainGetDefault describes a response with status code -1, with default header values.
+/*
+NetworkEthernetBroadcastDomainGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NetworkEthernetBroadcastDomainGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ethernet broadcast domain get default response has a 2xx status code
+func (o *NetworkEthernetBroadcastDomainGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ethernet broadcast domain get default response has a 3xx status code
+func (o *NetworkEthernetBroadcastDomainGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ethernet broadcast domain get default response has a 4xx status code
+func (o *NetworkEthernetBroadcastDomainGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ethernet broadcast domain get default response has a 5xx status code
+func (o *NetworkEthernetBroadcastDomainGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ethernet broadcast domain get default response a status code equal to that given
+func (o *NetworkEthernetBroadcastDomainGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkEthernetBroadcastDomainGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains/{uuid}][%d] network_ethernet_broadcast_domain_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkEthernetBroadcastDomainGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ethernet/broadcast-domains/{uuid}][%d] network_ethernet_broadcast_domain_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkEthernetBroadcastDomainGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

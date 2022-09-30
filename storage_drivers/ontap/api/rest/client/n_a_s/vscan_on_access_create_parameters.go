@@ -55,10 +55,12 @@ func NewVscanOnAccessCreateParamsWithHTTPClient(client *http.Client) *VscanOnAcc
 	}
 }
 
-/* VscanOnAccessCreateParams contains all the parameters to send to the API endpoint
-   for the vscan on access create operation.
+/*
+VscanOnAccessCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vscan on access create operation.
+
+	Typically these are written to a http.Request.
 */
 type VscanOnAccessCreateParams struct {
 

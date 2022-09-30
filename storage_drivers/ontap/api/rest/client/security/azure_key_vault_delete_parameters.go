@@ -52,10 +52,12 @@ func NewAzureKeyVaultDeleteParamsWithHTTPClient(client *http.Client) *AzureKeyVa
 	}
 }
 
-/* AzureKeyVaultDeleteParams contains all the parameters to send to the API endpoint
-   for the azure key vault delete operation.
+/*
+AzureKeyVaultDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the azure key vault delete operation.
+
+	Typically these are written to a http.Request.
 */
 type AzureKeyVaultDeleteParams struct {
 

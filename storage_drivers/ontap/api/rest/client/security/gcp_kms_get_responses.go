@@ -46,7 +46,8 @@ func NewGcpKmsGetOK() *GcpKmsGetOK {
 	return &GcpKmsGetOK{}
 }
 
-/* GcpKmsGetOK describes a response with status code 200, with default header values.
+/*
+GcpKmsGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type GcpKmsGetOK struct {
 	Payload *models.GcpKms
 }
 
+// IsSuccess returns true when this gcp kms get o k response has a 2xx status code
+func (o *GcpKmsGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this gcp kms get o k response has a 3xx status code
+func (o *GcpKmsGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this gcp kms get o k response has a 4xx status code
+func (o *GcpKmsGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this gcp kms get o k response has a 5xx status code
+func (o *GcpKmsGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this gcp kms get o k response a status code equal to that given
+func (o *GcpKmsGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GcpKmsGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/gcp-kms/{uuid}][%d] gcpKmsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *GcpKmsGetOK) String() string {
+	return fmt.Sprintf("[GET /security/gcp-kms/{uuid}][%d] gcpKmsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *GcpKmsGetOK) GetPayload() *models.GcpKms {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewGcpKmsGetDefault(code int) *GcpKmsGetDefault {
 	}
 }
 
-/* GcpKmsGetDefault describes a response with status code -1, with default header values.
+/*
+	GcpKmsGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65537551 | Top-level internal key protection key (KEK) unavailable on one or more nodes. |
 | 65537552 | Embedded KMIP server status not available. |
 | 65537730 | The Google Cloud Key Management Service is unreachable from one or more nodes. |
-
 */
 type GcpKmsGetDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *GcpKmsGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this gcp kms get default response has a 2xx status code
+func (o *GcpKmsGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this gcp kms get default response has a 3xx status code
+func (o *GcpKmsGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this gcp kms get default response has a 4xx status code
+func (o *GcpKmsGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this gcp kms get default response has a 5xx status code
+func (o *GcpKmsGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this gcp kms get default response a status code equal to that given
+func (o *GcpKmsGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GcpKmsGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/gcp-kms/{uuid}][%d] gcp_kms_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GcpKmsGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/gcp-kms/{uuid}][%d] gcp_kms_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GcpKmsGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

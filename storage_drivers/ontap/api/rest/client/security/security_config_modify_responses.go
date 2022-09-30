@@ -46,7 +46,8 @@ func NewSecurityConfigModifyAccepted() *SecurityConfigModifyAccepted {
 	return &SecurityConfigModifyAccepted{}
 }
 
-/* SecurityConfigModifyAccepted describes a response with status code 202, with default header values.
+/*
+SecurityConfigModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SecurityConfigModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this security config modify accepted response has a 2xx status code
+func (o *SecurityConfigModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security config modify accepted response has a 3xx status code
+func (o *SecurityConfigModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security config modify accepted response has a 4xx status code
+func (o *SecurityConfigModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security config modify accepted response has a 5xx status code
+func (o *SecurityConfigModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security config modify accepted response a status code equal to that given
+func (o *SecurityConfigModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SecurityConfigModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /security][%d] securityConfigModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SecurityConfigModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /security][%d] securityConfigModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SecurityConfigModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSecurityConfigModifyDefault(code int) *SecurityConfigModifyDefault {
 	}
 }
 
-/* SecurityConfigModifyDefault describes a response with status code -1, with default header values.
+/*
+	SecurityConfigModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5636142 | This operation is not supported in a mixed-release cluster. |
@@ -93,7 +126,6 @@ func NewSecurityConfigModifyDefault(code int) *SecurityConfigModifyDefault {
 | 52559974 | Cannot enable FIPS-compliant mode because a certificate that is not FIPS-compliant is in use. |
 | 196608081 | Cannot start software encryption conversion while there are data volumes in the cluster. |
 | 196608082 | The operation is not valid when the MetroCluster is in switchover mode. |
-
 */
 type SecurityConfigModifyDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *SecurityConfigModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security config modify default response has a 2xx status code
+func (o *SecurityConfigModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security config modify default response has a 3xx status code
+func (o *SecurityConfigModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security config modify default response has a 4xx status code
+func (o *SecurityConfigModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security config modify default response has a 5xx status code
+func (o *SecurityConfigModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security config modify default response a status code equal to that given
+func (o *SecurityConfigModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityConfigModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security][%d] security_config_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityConfigModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security][%d] security_config_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityConfigModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

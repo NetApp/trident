@@ -52,10 +52,12 @@ func NewVscanOnDemandDeleteParamsWithHTTPClient(client *http.Client) *VscanOnDem
 	}
 }
 
-/* VscanOnDemandDeleteParams contains all the parameters to send to the API endpoint
-   for the vscan on demand delete operation.
+/*
+VscanOnDemandDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vscan on demand delete operation.
+
+	Typically these are written to a http.Request.
 */
 type VscanOnDemandDeleteParams struct {
 

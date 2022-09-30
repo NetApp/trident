@@ -53,10 +53,12 @@ func NewShadowcopySetCollectionGetParamsWithHTTPClient(client *http.Client) *Sha
 	}
 }
 
-/* ShadowcopySetCollectionGetParams contains all the parameters to send to the API endpoint
-   for the shadowcopy set collection get operation.
+/*
+ShadowcopySetCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the shadowcopy set collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type ShadowcopySetCollectionGetParams struct {
 

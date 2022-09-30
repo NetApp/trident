@@ -54,10 +54,12 @@ func NewUnixUserModifyParamsWithHTTPClient(client *http.Client) *UnixUserModifyP
 	}
 }
 
-/* UnixUserModifyParams contains all the parameters to send to the API endpoint
-   for the unix user modify operation.
+/*
+UnixUserModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the unix user modify operation.
+
+	Typically these are written to a http.Request.
 */
 type UnixUserModifyParams struct {
 

@@ -53,10 +53,12 @@ func NewNisGetParamsWithHTTPClient(client *http.Client) *NisGetParams {
 	}
 }
 
-/* NisGetParams contains all the parameters to send to the API endpoint
-   for the nis get operation.
+/*
+NisGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nis get operation.
+
+	Typically these are written to a http.Request.
 */
 type NisGetParams struct {
 

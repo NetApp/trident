@@ -53,10 +53,12 @@ func NewSvmSSHServerGetParamsWithHTTPClient(client *http.Client) *SvmSSHServerGe
 	}
 }
 
-/* SvmSSHServerGetParams contains all the parameters to send to the API endpoint
-   for the svm ssh server get operation.
+/*
+SvmSSHServerGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm ssh server get operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmSSHServerGetParams struct {
 

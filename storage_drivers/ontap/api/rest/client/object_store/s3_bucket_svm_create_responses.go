@@ -46,7 +46,8 @@ func NewS3BucketSvmCreateAccepted() *S3BucketSvmCreateAccepted {
 	return &S3BucketSvmCreateAccepted{}
 }
 
-/* S3BucketSvmCreateAccepted describes a response with status code 202, with default header values.
+/*
+S3BucketSvmCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type S3BucketSvmCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this s3 bucket svm create accepted response has a 2xx status code
+func (o *S3BucketSvmCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 bucket svm create accepted response has a 3xx status code
+func (o *S3BucketSvmCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 bucket svm create accepted response has a 4xx status code
+func (o *S3BucketSvmCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 bucket svm create accepted response has a 5xx status code
+func (o *S3BucketSvmCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 bucket svm create accepted response a status code equal to that given
+func (o *S3BucketSvmCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *S3BucketSvmCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/buckets][%d] s3BucketSvmCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *S3BucketSvmCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/buckets][%d] s3BucketSvmCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *S3BucketSvmCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewS3BucketSvmCreateDefault(code int) *S3BucketSvmCreateDefault {
 	}
 }
 
-/* S3BucketSvmCreateDefault describes a response with status code -1, with default header values.
+/*
+	S3BucketSvmCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error code | Message |
 | ---------- | ------- |
 | 92405777   | "Failed to create bucket \\\"{bucket name}\\\" for SVM \\\"{svm.name}\\\". Reason: {Reason of failure}. ";
@@ -104,7 +137,6 @@ func NewS3BucketSvmCreateDefault(code int) *S3BucketSvmCreateDefault {
 | 92405894   | "Statements, principals and resources list can have a maximum of 10 entries.";
 | 92405897   | "The principals specified in the access policy are not in the correct format. User name must be in between 1 and 64 characters. Valid characters for a user name are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\"=\\\", \\\",\\\", \\\".\\\", \\\"@\\\", and \\\"-\\\". ";
 | 92405898   | "The SID specified in the access policy is not valid. Valid characters for a SID are 0-9, A-Z and a-z.";
-
 */
 type S3BucketSvmCreateDefault struct {
 	_statusCode int
@@ -117,9 +149,39 @@ func (o *S3BucketSvmCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 bucket svm create default response has a 2xx status code
+func (o *S3BucketSvmCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 bucket svm create default response has a 3xx status code
+func (o *S3BucketSvmCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 bucket svm create default response has a 4xx status code
+func (o *S3BucketSvmCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 bucket svm create default response has a 5xx status code
+func (o *S3BucketSvmCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 bucket svm create default response a status code equal to that given
+func (o *S3BucketSvmCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3BucketSvmCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/buckets][%d] s3_bucket_svm_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3BucketSvmCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/buckets][%d] s3_bucket_svm_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3BucketSvmCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

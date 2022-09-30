@@ -46,7 +46,8 @@ func NewIPSubnetGetOK() *IPSubnetGetOK {
 	return &IPSubnetGetOK{}
 }
 
-/* IPSubnetGetOK describes a response with status code 200, with default header values.
+/*
+IPSubnetGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IPSubnetGetOK struct {
 	Payload *models.IPSubnet
 }
 
+// IsSuccess returns true when this ip subnet get o k response has a 2xx status code
+func (o *IPSubnetGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ip subnet get o k response has a 3xx status code
+func (o *IPSubnetGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ip subnet get o k response has a 4xx status code
+func (o *IPSubnetGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ip subnet get o k response has a 5xx status code
+func (o *IPSubnetGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ip subnet get o k response a status code equal to that given
+func (o *IPSubnetGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IPSubnetGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ip/subnets/{uuid}][%d] ipSubnetGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IPSubnetGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ip/subnets/{uuid}][%d] ipSubnetGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IPSubnetGetOK) GetPayload() *models.IPSubnet {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewIPSubnetGetDefault(code int) *IPSubnetGetDefault {
 	}
 }
 
-/* IPSubnetGetDefault describes a response with status code -1, with default header values.
+/*
+IPSubnetGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *IPSubnetGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ip subnet get default response has a 2xx status code
+func (o *IPSubnetGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ip subnet get default response has a 3xx status code
+func (o *IPSubnetGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ip subnet get default response has a 4xx status code
+func (o *IPSubnetGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ip subnet get default response has a 5xx status code
+func (o *IPSubnetGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ip subnet get default response a status code equal to that given
+func (o *IPSubnetGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IPSubnetGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ip/subnets/{uuid}][%d] ip_subnet_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IPSubnetGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ip/subnets/{uuid}][%d] ip_subnet_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IPSubnetGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

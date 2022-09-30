@@ -46,14 +46,44 @@ func NewLunMapReportingNodeDeleteOK() *LunMapReportingNodeDeleteOK {
 	return &LunMapReportingNodeDeleteOK{}
 }
 
-/* LunMapReportingNodeDeleteOK describes a response with status code 200, with default header values.
+/*
+LunMapReportingNodeDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LunMapReportingNodeDeleteOK struct {
 }
 
+// IsSuccess returns true when this lun map reporting node delete o k response has a 2xx status code
+func (o *LunMapReportingNodeDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun map reporting node delete o k response has a 3xx status code
+func (o *LunMapReportingNodeDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun map reporting node delete o k response has a 4xx status code
+func (o *LunMapReportingNodeDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun map reporting node delete o k response has a 5xx status code
+func (o *LunMapReportingNodeDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun map reporting node delete o k response a status code equal to that given
+func (o *LunMapReportingNodeDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LunMapReportingNodeDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lunMapReportingNodeDeleteOK ", 200)
+}
+
+func (o *LunMapReportingNodeDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lunMapReportingNodeDeleteOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewLunMapReportingNodeDeleteDefault(code int) *LunMapReportingNodeDeleteDef
 	}
 }
 
-/* LunMapReportingNodeDeleteDefault describes a response with status code -1, with default header values.
+/*
+	LunMapReportingNodeDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374608 | An attempt was made to delete the last reporting node for a LUN. The REST API requires that a LUN map must maintain at least one reporting node. |
 | 5374875 | The specified LUN does not exist or is not accessible to the caller. |
 | 5374878 | The specified initiator group does not exist, is not accessible to the caller, or is not in the same SVM as the specified LUN. |
 | 5374922 | The specified LUN map does not exist. |
-
 */
 type LunMapReportingNodeDeleteDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *LunMapReportingNodeDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this lun map reporting node delete default response has a 2xx status code
+func (o *LunMapReportingNodeDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this lun map reporting node delete default response has a 3xx status code
+func (o *LunMapReportingNodeDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this lun map reporting node delete default response has a 4xx status code
+func (o *LunMapReportingNodeDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this lun map reporting node delete default response has a 5xx status code
+func (o *LunMapReportingNodeDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this lun map reporting node delete default response a status code equal to that given
+func (o *LunMapReportingNodeDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LunMapReportingNodeDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lun_map_reporting_node_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LunMapReportingNodeDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}][%d] lun_map_reporting_node_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LunMapReportingNodeDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

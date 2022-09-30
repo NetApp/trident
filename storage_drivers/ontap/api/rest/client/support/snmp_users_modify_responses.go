@@ -46,14 +46,44 @@ func NewSnmpUsersModifyOK() *SnmpUsersModifyOK {
 	return &SnmpUsersModifyOK{}
 }
 
-/* SnmpUsersModifyOK describes a response with status code 200, with default header values.
+/*
+SnmpUsersModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnmpUsersModifyOK struct {
 }
 
+// IsSuccess returns true when this snmp users modify o k response has a 2xx status code
+func (o *SnmpUsersModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snmp users modify o k response has a 3xx status code
+func (o *SnmpUsersModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snmp users modify o k response has a 4xx status code
+func (o *SnmpUsersModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snmp users modify o k response has a 5xx status code
+func (o *SnmpUsersModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snmp users modify o k response a status code equal to that given
+func (o *SnmpUsersModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnmpUsersModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmpUsersModifyOK ", 200)
+}
+
+func (o *SnmpUsersModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmpUsersModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewSnmpUsersModifyDefault(code int) *SnmpUsersModifyDefault {
 	}
 }
 
-/* SnmpUsersModifyDefault describes a response with status code -1, with default header values.
+/*
+	SnmpUsersModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621475 | This operation is not allowed on a node SVM. |
@@ -81,7 +113,6 @@ func NewSnmpUsersModifyDefault(code int) *SnmpUsersModifyDefault {
 | 5832712 | Cannot modify attributes for user \"diag.\" |
 | 7077906 | Cannot use given role with this SVM because a role with that name has not been defined for the SVM. |
 | 9043999 | ONTAP failed to create an SNMPv3 user because SNMPv3 is disabled in the cluster. |
-
 */
 type SnmpUsersModifyDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *SnmpUsersModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snmp users modify default response has a 2xx status code
+func (o *SnmpUsersModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snmp users modify default response has a 3xx status code
+func (o *SnmpUsersModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snmp users modify default response has a 4xx status code
+func (o *SnmpUsersModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snmp users modify default response has a 5xx status code
+func (o *SnmpUsersModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snmp users modify default response a status code equal to that given
+func (o *SnmpUsersModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnmpUsersModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmp_users_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnmpUsersModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /support/snmp/users/{engine_id}/{name}][%d] snmp_users_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnmpUsersModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -39,7 +39,8 @@ func NewAntiRansomwareSuspectDeleteAccepted() *AntiRansomwareSuspectDeleteAccept
 	return &AntiRansomwareSuspectDeleteAccepted{}
 }
 
-/* AntiRansomwareSuspectDeleteAccepted describes a response with status code 202, with default header values.
+/*
+AntiRansomwareSuspectDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -47,9 +48,39 @@ type AntiRansomwareSuspectDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this anti ransomware suspect delete accepted response has a 2xx status code
+func (o *AntiRansomwareSuspectDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this anti ransomware suspect delete accepted response has a 3xx status code
+func (o *AntiRansomwareSuspectDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this anti ransomware suspect delete accepted response has a 4xx status code
+func (o *AntiRansomwareSuspectDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this anti ransomware suspect delete accepted response has a 5xx status code
+func (o *AntiRansomwareSuspectDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this anti ransomware suspect delete accepted response a status code equal to that given
+func (o *AntiRansomwareSuspectDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *AntiRansomwareSuspectDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /security/anti-ransomware/suspects/{volume.uuid}][%d] antiRansomwareSuspectDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *AntiRansomwareSuspectDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /security/anti-ransomware/suspects/{volume.uuid}][%d] antiRansomwareSuspectDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *AntiRansomwareSuspectDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }

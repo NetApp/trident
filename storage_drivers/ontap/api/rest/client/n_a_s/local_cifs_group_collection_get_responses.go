@@ -46,7 +46,8 @@ func NewLocalCifsGroupCollectionGetOK() *LocalCifsGroupCollectionGetOK {
 	return &LocalCifsGroupCollectionGetOK{}
 }
 
-/* LocalCifsGroupCollectionGetOK describes a response with status code 200, with default header values.
+/*
+LocalCifsGroupCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LocalCifsGroupCollectionGetOK struct {
 	Payload *models.LocalCifsGroupResponse
 }
 
+// IsSuccess returns true when this local cifs group collection get o k response has a 2xx status code
+func (o *LocalCifsGroupCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local cifs group collection get o k response has a 3xx status code
+func (o *LocalCifsGroupCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local cifs group collection get o k response has a 4xx status code
+func (o *LocalCifsGroupCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local cifs group collection get o k response has a 5xx status code
+func (o *LocalCifsGroupCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local cifs group collection get o k response a status code equal to that given
+func (o *LocalCifsGroupCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LocalCifsGroupCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] localCifsGroupCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LocalCifsGroupCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] localCifsGroupCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LocalCifsGroupCollectionGetOK) GetPayload() *models.LocalCifsGroupResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLocalCifsGroupCollectionGetDefault(code int) *LocalCifsGroupCollectionGe
 	}
 }
 
-/* LocalCifsGroupCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+LocalCifsGroupCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LocalCifsGroupCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this local cifs group collection get default response has a 2xx status code
+func (o *LocalCifsGroupCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this local cifs group collection get default response has a 3xx status code
+func (o *LocalCifsGroupCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this local cifs group collection get default response has a 4xx status code
+func (o *LocalCifsGroupCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this local cifs group collection get default response has a 5xx status code
+func (o *LocalCifsGroupCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this local cifs group collection get default response a status code equal to that given
+func (o *LocalCifsGroupCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LocalCifsGroupCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] local_cifs_group_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LocalCifsGroupCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/local-groups][%d] local_cifs_group_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LocalCifsGroupCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

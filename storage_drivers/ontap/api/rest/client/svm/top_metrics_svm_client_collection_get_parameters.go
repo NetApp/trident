@@ -53,10 +53,12 @@ func NewTopMetricsSvmClientCollectionGetParamsWithHTTPClient(client *http.Client
 	}
 }
 
-/* TopMetricsSvmClientCollectionGetParams contains all the parameters to send to the API endpoint
-   for the top metrics svm client collection get operation.
+/*
+TopMetricsSvmClientCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the top metrics svm client collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type TopMetricsSvmClientCollectionGetParams struct {
 

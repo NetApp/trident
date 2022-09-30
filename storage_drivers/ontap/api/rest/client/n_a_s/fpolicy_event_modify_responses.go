@@ -46,14 +46,44 @@ func NewFpolicyEventModifyOK() *FpolicyEventModifyOK {
 	return &FpolicyEventModifyOK{}
 }
 
-/* FpolicyEventModifyOK describes a response with status code 200, with default header values.
+/*
+FpolicyEventModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FpolicyEventModifyOK struct {
 }
 
+// IsSuccess returns true when this fpolicy event modify o k response has a 2xx status code
+func (o *FpolicyEventModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fpolicy event modify o k response has a 3xx status code
+func (o *FpolicyEventModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fpolicy event modify o k response has a 4xx status code
+func (o *FpolicyEventModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fpolicy event modify o k response has a 5xx status code
+func (o *FpolicyEventModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fpolicy event modify o k response a status code equal to that given
+func (o *FpolicyEventModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FpolicyEventModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventModifyOK ", 200)
+}
+
+func (o *FpolicyEventModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventModifyOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewFpolicyEventModifyDefault(code int) *FpolicyEventModifyDefault {
 	}
 }
 
-/* FpolicyEventModifyDefault describes a response with status code -1, with default header values.
+/*
+	FpolicyEventModifyDefault describes a response with status code -1, with default header values.
 
- | Error Code | Description |
+	| Error Code | Description |
+
 | ---------- | ----------- |
 | 9764873    | The event is a cluster event |
 | 9764929    | The file operation is not supported by the protocol |
 | 9764955    | The filter is not supported by the protocol |
 | 9764930    | The filter is not supported by any of the file operations |
 | 9764946    | The protocol is specifed without file operation or a file operation and filter pair |
-
 */
 type FpolicyEventModifyDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *FpolicyEventModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fpolicy event modify default response has a 2xx status code
+func (o *FpolicyEventModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fpolicy event modify default response has a 3xx status code
+func (o *FpolicyEventModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fpolicy event modify default response has a 4xx status code
+func (o *FpolicyEventModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fpolicy event modify default response has a 5xx status code
+func (o *FpolicyEventModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fpolicy event modify default response a status code equal to that given
+func (o *FpolicyEventModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FpolicyEventModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FpolicyEventModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FpolicyEventModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

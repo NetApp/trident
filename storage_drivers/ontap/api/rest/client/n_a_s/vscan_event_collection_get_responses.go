@@ -46,7 +46,8 @@ func NewVscanEventCollectionGetOK() *VscanEventCollectionGetOK {
 	return &VscanEventCollectionGetOK{}
 }
 
-/* VscanEventCollectionGetOK describes a response with status code 200, with default header values.
+/*
+VscanEventCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type VscanEventCollectionGetOK struct {
 	Payload *models.VscanEventResponse
 }
 
+// IsSuccess returns true when this vscan event collection get o k response has a 2xx status code
+func (o *VscanEventCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan event collection get o k response has a 3xx status code
+func (o *VscanEventCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan event collection get o k response has a 4xx status code
+func (o *VscanEventCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan event collection get o k response has a 5xx status code
+func (o *VscanEventCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan event collection get o k response a status code equal to that given
+func (o *VscanEventCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanEventCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscanEventCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *VscanEventCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscanEventCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *VscanEventCollectionGetOK) GetPayload() *models.VscanEventResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewVscanEventCollectionGetDefault(code int) *VscanEventCollectionGetDefault
 	}
 }
 
-/* VscanEventCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+VscanEventCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *VscanEventCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan event collection get default response has a 2xx status code
+func (o *VscanEventCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan event collection get default response has a 3xx status code
+func (o *VscanEventCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan event collection get default response has a 4xx status code
+func (o *VscanEventCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan event collection get default response has a 5xx status code
+func (o *VscanEventCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan event collection get default response a status code equal to that given
+func (o *VscanEventCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanEventCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscan_event_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanEventCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/events][%d] vscan_event_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanEventCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

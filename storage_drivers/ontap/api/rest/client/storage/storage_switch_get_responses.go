@@ -46,7 +46,8 @@ func NewStorageSwitchGetOK() *StorageSwitchGetOK {
 	return &StorageSwitchGetOK{}
 }
 
-/* StorageSwitchGetOK describes a response with status code 200, with default header values.
+/*
+StorageSwitchGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type StorageSwitchGetOK struct {
 	Payload *models.StorageSwitch
 }
 
+// IsSuccess returns true when this storage switch get o k response has a 2xx status code
+func (o *StorageSwitchGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this storage switch get o k response has a 3xx status code
+func (o *StorageSwitchGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this storage switch get o k response has a 4xx status code
+func (o *StorageSwitchGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this storage switch get o k response has a 5xx status code
+func (o *StorageSwitchGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this storage switch get o k response a status code equal to that given
+func (o *StorageSwitchGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *StorageSwitchGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storageSwitchGetOK  %+v", 200, o.Payload)
 }
+
+func (o *StorageSwitchGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storageSwitchGetOK  %+v", 200, o.Payload)
+}
+
 func (o *StorageSwitchGetOK) GetPayload() *models.StorageSwitch {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewStorageSwitchGetDefault(code int) *StorageSwitchGetDefault {
 	}
 }
 
-/* StorageSwitchGetDefault describes a response with status code -1, with default header values.
+/*
+StorageSwitchGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *StorageSwitchGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this storage switch get default response has a 2xx status code
+func (o *StorageSwitchGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this storage switch get default response has a 3xx status code
+func (o *StorageSwitchGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this storage switch get default response has a 4xx status code
+func (o *StorageSwitchGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this storage switch get default response has a 5xx status code
+func (o *StorageSwitchGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this storage switch get default response a status code equal to that given
+func (o *StorageSwitchGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *StorageSwitchGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storage_switch_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *StorageSwitchGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/switches/{name}][%d] storage_switch_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *StorageSwitchGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

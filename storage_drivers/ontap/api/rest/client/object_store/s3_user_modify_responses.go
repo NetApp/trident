@@ -46,7 +46,8 @@ func NewS3UserModifyOK() *S3UserModifyOK {
 	return &S3UserModifyOK{}
 }
 
-/* S3UserModifyOK describes a response with status code 200, with default header values.
+/*
+S3UserModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type S3UserModifyOK struct {
 	Payload *models.S3UserPostPatchResponse
 }
 
+// IsSuccess returns true when this s3 user modify o k response has a 2xx status code
+func (o *S3UserModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 user modify o k response has a 3xx status code
+func (o *S3UserModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 user modify o k response has a 4xx status code
+func (o *S3UserModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 user modify o k response has a 5xx status code
+func (o *S3UserModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 user modify o k response a status code equal to that given
+func (o *S3UserModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3UserModifyOK) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3UserModifyOK  %+v", 200, o.Payload)
 }
+
+func (o *S3UserModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3UserModifyOK  %+v", 200, o.Payload)
+}
+
 func (o *S3UserModifyOK) GetPayload() *models.S3UserPostPatchResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewS3UserModifyDefault(code int) *S3UserModifyDefault {
 	}
 }
 
-/* S3UserModifyDefault describes a response with status code -1, with default header values.
+/*
+	S3UserModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405792   | Failed to regenerate access-key and secret-key for user. |
-
 */
 type S3UserModifyDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *S3UserModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 user modify default response has a 2xx status code
+func (o *S3UserModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 user modify default response has a 3xx status code
+func (o *S3UserModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 user modify default response has a 4xx status code
+func (o *S3UserModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 user modify default response has a 5xx status code
+func (o *S3UserModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 user modify default response a status code equal to that given
+func (o *S3UserModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3UserModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3_user_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3UserModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3_user_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3UserModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

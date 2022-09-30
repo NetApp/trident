@@ -46,7 +46,8 @@ func NewFcZoneGetOK() *FcZoneGetOK {
 	return &FcZoneGetOK{}
 }
 
-/* FcZoneGetOK describes a response with status code 200, with default header values.
+/*
+FcZoneGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FcZoneGetOK struct {
 	Payload *models.FcZone
 }
 
+// IsSuccess returns true when this fc zone get o k response has a 2xx status code
+func (o *FcZoneGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fc zone get o k response has a 3xx status code
+func (o *FcZoneGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fc zone get o k response has a 4xx status code
+func (o *FcZoneGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fc zone get o k response has a 5xx status code
+func (o *FcZoneGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fc zone get o k response a status code equal to that given
+func (o *FcZoneGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcZoneGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones/{name}][%d] fcZoneGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FcZoneGetOK) String() string {
+	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones/{name}][%d] fcZoneGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FcZoneGetOK) GetPayload() *models.FcZone {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewFcZoneGetDefault(code int) *FcZoneGetDefault {
 	}
 }
 
-/* FcZoneGetDefault describes a response with status code -1, with default header values.
+/*
+	FcZoneGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5375053 | The Fibre Channel fabric specified by name in the request URI was not found in the FC fabric cache. |
-
 */
 type FcZoneGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *FcZoneGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fc zone get default response has a 2xx status code
+func (o *FcZoneGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fc zone get default response has a 3xx status code
+func (o *FcZoneGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fc zone get default response has a 4xx status code
+func (o *FcZoneGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fc zone get default response has a 5xx status code
+func (o *FcZoneGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fc zone get default response a status code equal to that given
+func (o *FcZoneGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcZoneGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones/{name}][%d] fc_zone_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcZoneGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/zones/{name}][%d] fc_zone_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcZoneGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

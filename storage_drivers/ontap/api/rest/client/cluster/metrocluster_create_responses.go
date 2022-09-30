@@ -46,7 +46,8 @@ func NewMetroclusterCreateAccepted() *MetroclusterCreateAccepted {
 	return &MetroclusterCreateAccepted{}
 }
 
-/* MetroclusterCreateAccepted describes a response with status code 202, with default header values.
+/*
+MetroclusterCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type MetroclusterCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this metrocluster create accepted response has a 2xx status code
+func (o *MetroclusterCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster create accepted response has a 3xx status code
+func (o *MetroclusterCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster create accepted response has a 4xx status code
+func (o *MetroclusterCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster create accepted response has a 5xx status code
+func (o *MetroclusterCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster create accepted response a status code equal to that given
+func (o *MetroclusterCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *MetroclusterCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /cluster/metrocluster][%d] metroclusterCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *MetroclusterCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /cluster/metrocluster][%d] metroclusterCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *MetroclusterCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewMetroclusterCreateDefault(code int) *MetroclusterCreateDefault {
 	}
 }
 
-/* MetroclusterCreateDefault describes a response with status code -1, with default header values.
+/*
+	MetroclusterCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
@@ -101,7 +134,6 @@ func NewMetroclusterCreateDefault(code int) *MetroclusterCreateDefault {
 | 2432848 | Setting up MetroCluster |
 | 2432849 | MetroCluster setup is complete |
 | 2432851 | Minimum number of required data aggregates for MetroCluster configuration are still not mirrored. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
-
 */
 type MetroclusterCreateDefault struct {
 	_statusCode int
@@ -114,9 +146,39 @@ func (o *MetroclusterCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster create default response has a 2xx status code
+func (o *MetroclusterCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster create default response has a 3xx status code
+func (o *MetroclusterCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster create default response has a 4xx status code
+func (o *MetroclusterCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster create default response has a 5xx status code
+func (o *MetroclusterCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster create default response a status code equal to that given
+func (o *MetroclusterCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /cluster/metrocluster][%d] metrocluster_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MetroclusterCreateDefault) String() string {
+	return fmt.Sprintf("[POST /cluster/metrocluster][%d] metrocluster_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MetroclusterCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewCifsShareGetOK() *CifsShareGetOK {
 	return &CifsShareGetOK{}
 }
 
-/* CifsShareGetOK describes a response with status code 200, with default header values.
+/*
+CifsShareGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsShareGetOK struct {
 	Payload *models.CifsShare
 }
 
+// IsSuccess returns true when this cifs share get o k response has a 2xx status code
+func (o *CifsShareGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs share get o k response has a 3xx status code
+func (o *CifsShareGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs share get o k response has a 4xx status code
+func (o *CifsShareGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs share get o k response has a 5xx status code
+func (o *CifsShareGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs share get o k response a status code equal to that given
+func (o *CifsShareGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsShareGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifsShareGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsShareGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifsShareGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsShareGetOK) GetPayload() *models.CifsShare {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsShareGetDefault(code int) *CifsShareGetDefault {
 	}
 }
 
-/* CifsShareGetDefault describes a response with status code -1, with default header values.
+/*
+CifsShareGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsShareGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs share get default response has a 2xx status code
+func (o *CifsShareGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs share get default response has a 3xx status code
+func (o *CifsShareGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs share get default response has a 4xx status code
+func (o *CifsShareGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs share get default response has a 5xx status code
+func (o *CifsShareGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs share get default response a status code equal to that given
+func (o *CifsShareGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsShareGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifs_share_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsShareGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/shares/{svm.uuid}/{name}][%d] cifs_share_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsShareGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

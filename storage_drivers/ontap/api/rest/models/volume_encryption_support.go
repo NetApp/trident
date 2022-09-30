@@ -14,7 +14,6 @@ import (
 
 // VolumeEncryptionSupport Indicates whether volume encryption is supported in the cluster.
 //
-//
 // swagger:model volume_encryption_support
 type VolumeEncryptionSupport struct {
 

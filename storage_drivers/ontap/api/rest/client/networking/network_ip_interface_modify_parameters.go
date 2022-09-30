@@ -54,10 +54,12 @@ func NewNetworkIPInterfaceModifyParamsWithHTTPClient(client *http.Client) *Netwo
 	}
 }
 
-/* NetworkIPInterfaceModifyParams contains all the parameters to send to the API endpoint
-   for the network ip interface modify operation.
+/*
+NetworkIPInterfaceModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ip interface modify operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkIPInterfaceModifyParams struct {
 

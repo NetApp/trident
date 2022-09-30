@@ -54,10 +54,12 @@ func NewIgroupInitiatorModifyParamsWithHTTPClient(client *http.Client) *IgroupIn
 	}
 }
 
-/* IgroupInitiatorModifyParams contains all the parameters to send to the API endpoint
-   for the igroup initiator modify operation.
+/*
+IgroupInitiatorModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the igroup initiator modify operation.
+
+	Typically these are written to a http.Request.
 */
 type IgroupInitiatorModifyParams struct {
 

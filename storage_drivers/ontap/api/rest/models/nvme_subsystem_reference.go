@@ -16,7 +16,6 @@ import (
 
 // NvmeSubsystemReference An NVMe subsystem maintains configuration state and NVMe namespace access control for a set of NVMe-connected hosts.
 //
-//
 // swagger:model nvme_subsystem_reference
 type NvmeSubsystemReference struct {
 

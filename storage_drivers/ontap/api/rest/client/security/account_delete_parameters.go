@@ -52,10 +52,12 @@ func NewAccountDeleteParamsWithHTTPClient(client *http.Client) *AccountDeletePar
 	}
 }
 
-/* AccountDeleteParams contains all the parameters to send to the API endpoint
-   for the account delete operation.
+/*
+AccountDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the account delete operation.
+
+	Typically these are written to a http.Request.
 */
 type AccountDeleteParams struct {
 

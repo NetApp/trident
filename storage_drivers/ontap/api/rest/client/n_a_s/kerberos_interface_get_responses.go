@@ -46,7 +46,8 @@ func NewKerberosInterfaceGetOK() *KerberosInterfaceGetOK {
 	return &KerberosInterfaceGetOK{}
 }
 
-/* KerberosInterfaceGetOK describes a response with status code 200, with default header values.
+/*
+KerberosInterfaceGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type KerberosInterfaceGetOK struct {
 	Payload *models.KerberosInterface
 }
 
+// IsSuccess returns true when this kerberos interface get o k response has a 2xx status code
+func (o *KerberosInterfaceGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this kerberos interface get o k response has a 3xx status code
+func (o *KerberosInterfaceGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this kerberos interface get o k response has a 4xx status code
+func (o *KerberosInterfaceGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this kerberos interface get o k response has a 5xx status code
+func (o *KerberosInterfaceGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this kerberos interface get o k response a status code equal to that given
+func (o *KerberosInterfaceGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *KerberosInterfaceGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceGetOK  %+v", 200, o.Payload)
 }
+
+func (o *KerberosInterfaceGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceGetOK  %+v", 200, o.Payload)
+}
+
 func (o *KerberosInterfaceGetOK) GetPayload() *models.KerberosInterface {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewKerberosInterfaceGetDefault(code int) *KerberosInterfaceGetDefault {
 	}
 }
 
-/* KerberosInterfaceGetDefault describes a response with status code -1, with default header values.
+/*
+KerberosInterfaceGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *KerberosInterfaceGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this kerberos interface get default response has a 2xx status code
+func (o *KerberosInterfaceGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this kerberos interface get default response has a 3xx status code
+func (o *KerberosInterfaceGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this kerberos interface get default response has a 4xx status code
+func (o *KerberosInterfaceGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this kerberos interface get default response has a 5xx status code
+func (o *KerberosInterfaceGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this kerberos interface get default response a status code equal to that given
+func (o *KerberosInterfaceGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *KerberosInterfaceGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *KerberosInterfaceGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *KerberosInterfaceGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

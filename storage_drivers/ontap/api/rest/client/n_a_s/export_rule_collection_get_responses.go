@@ -46,7 +46,8 @@ func NewExportRuleCollectionGetOK() *ExportRuleCollectionGetOK {
 	return &ExportRuleCollectionGetOK{}
 }
 
-/* ExportRuleCollectionGetOK describes a response with status code 200, with default header values.
+/*
+ExportRuleCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ExportRuleCollectionGetOK struct {
 	Payload *models.ExportRuleResponse
 }
 
+// IsSuccess returns true when this export rule collection get o k response has a 2xx status code
+func (o *ExportRuleCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this export rule collection get o k response has a 3xx status code
+func (o *ExportRuleCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this export rule collection get o k response has a 4xx status code
+func (o *ExportRuleCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this export rule collection get o k response has a 5xx status code
+func (o *ExportRuleCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this export rule collection get o k response a status code equal to that given
+func (o *ExportRuleCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ExportRuleCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ExportRuleCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ExportRuleCollectionGetOK) GetPayload() *models.ExportRuleResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewExportRuleCollectionGetDefault(code int) *ExportRuleCollectionGetDefault
 	}
 }
 
-/* ExportRuleCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+ExportRuleCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ExportRuleCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this export rule collection get default response has a 2xx status code
+func (o *ExportRuleCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this export rule collection get default response has a 3xx status code
+func (o *ExportRuleCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this export rule collection get default response has a 4xx status code
+func (o *ExportRuleCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this export rule collection get default response has a 5xx status code
+func (o *ExportRuleCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this export rule collection get default response a status code equal to that given
+func (o *ExportRuleCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ExportRuleCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ExportRuleCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ExportRuleCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

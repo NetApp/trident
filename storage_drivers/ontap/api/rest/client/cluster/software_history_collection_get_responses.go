@@ -46,7 +46,8 @@ func NewSoftwareHistoryCollectionGetOK() *SoftwareHistoryCollectionGetOK {
 	return &SoftwareHistoryCollectionGetOK{}
 }
 
-/* SoftwareHistoryCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SoftwareHistoryCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SoftwareHistoryCollectionGetOK struct {
 	Payload *models.SoftwareHistoryResponse
 }
 
+// IsSuccess returns true when this software history collection get o k response has a 2xx status code
+func (o *SoftwareHistoryCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this software history collection get o k response has a 3xx status code
+func (o *SoftwareHistoryCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this software history collection get o k response has a 4xx status code
+func (o *SoftwareHistoryCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this software history collection get o k response has a 5xx status code
+func (o *SoftwareHistoryCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this software history collection get o k response a status code equal to that given
+func (o *SoftwareHistoryCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SoftwareHistoryCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/software/history][%d] softwareHistoryCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SoftwareHistoryCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/software/history][%d] softwareHistoryCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SoftwareHistoryCollectionGetOK) GetPayload() *models.SoftwareHistoryResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSoftwareHistoryCollectionGetDefault(code int) *SoftwareHistoryCollection
 	}
 }
 
-/* SoftwareHistoryCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+SoftwareHistoryCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SoftwareHistoryCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this software history collection get default response has a 2xx status code
+func (o *SoftwareHistoryCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this software history collection get default response has a 3xx status code
+func (o *SoftwareHistoryCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this software history collection get default response has a 4xx status code
+func (o *SoftwareHistoryCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this software history collection get default response has a 5xx status code
+func (o *SoftwareHistoryCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this software history collection get default response a status code equal to that given
+func (o *SoftwareHistoryCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SoftwareHistoryCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/software/history][%d] software_history_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SoftwareHistoryCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/software/history][%d] software_history_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SoftwareHistoryCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewIscsiCredentialsCollectionGetOK() *IscsiCredentialsCollectionGetOK {
 	return &IscsiCredentialsCollectionGetOK{}
 }
 
-/* IscsiCredentialsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+IscsiCredentialsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IscsiCredentialsCollectionGetOK struct {
 	Payload *models.IscsiCredentialsResponse
 }
 
+// IsSuccess returns true when this iscsi credentials collection get o k response has a 2xx status code
+func (o *IscsiCredentialsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this iscsi credentials collection get o k response has a 3xx status code
+func (o *IscsiCredentialsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this iscsi credentials collection get o k response has a 4xx status code
+func (o *IscsiCredentialsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this iscsi credentials collection get o k response has a 5xx status code
+func (o *IscsiCredentialsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this iscsi credentials collection get o k response a status code equal to that given
+func (o *IscsiCredentialsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IscsiCredentialsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials][%d] iscsiCredentialsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IscsiCredentialsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials][%d] iscsiCredentialsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IscsiCredentialsCollectionGetOK) GetPayload() *models.IscsiCredentialsResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewIscsiCredentialsCollectionGetDefault(code int) *IscsiCredentialsCollecti
 	}
 }
 
-/* IscsiCredentialsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+IscsiCredentialsCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *IscsiCredentialsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this iscsi credentials collection get default response has a 2xx status code
+func (o *IscsiCredentialsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this iscsi credentials collection get default response has a 3xx status code
+func (o *IscsiCredentialsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this iscsi credentials collection get default response has a 4xx status code
+func (o *IscsiCredentialsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this iscsi credentials collection get default response has a 5xx status code
+func (o *IscsiCredentialsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this iscsi credentials collection get default response a status code equal to that given
+func (o *IscsiCredentialsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IscsiCredentialsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials][%d] iscsi_credentials_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IscsiCredentialsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/iscsi/credentials][%d] iscsi_credentials_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IscsiCredentialsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

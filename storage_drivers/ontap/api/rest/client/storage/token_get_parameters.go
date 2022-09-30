@@ -53,10 +53,12 @@ func NewTokenGetParamsWithHTTPClient(client *http.Client) *TokenGetParams {
 	}
 }
 
-/* TokenGetParams contains all the parameters to send to the API endpoint
-   for the token get operation.
+/*
+TokenGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the token get operation.
+
+	Typically these are written to a http.Request.
 */
 type TokenGetParams struct {
 

@@ -94,14 +94,14 @@ type ClientService interface {
 }
 
 /*
-  AllSvmBucketsCollectionGet Retrieves all S3 buckets for all SVMs. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+	AllSvmBucketsCollectionGet Retrieves all S3 buckets for all SVMs. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+
 ### Related ONTAP commands
 * `vserver object-store-server bucket show`
 * `vserver object-store-server bucket policy statement show`
 * `vserver object-store-server bucket policy-statement-condition show`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
-
 */
 func (a *Client) AllSvmBucketsCollectionGet(params *AllSvmBucketsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AllSvmBucketsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -139,14 +139,14 @@ func (a *Client) AllSvmBucketsCollectionGet(params *AllSvmBucketsCollectionGetPa
 }
 
 /*
-  BucketsCollectionGet Retrieves the S3 bucket's configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+	BucketsCollectionGet Retrieves the S3 bucket's configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+
 ### Related ONTAP commands
 * `vserver object-store-server bucket show`
 * `vserver object-store-server bucket policy statement show`
 * `vserver object-store-server bucket policy-statement-condition show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
-
 */
 func (a *Client) BucketsCollectionGet(params *BucketsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BucketsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -184,7 +184,7 @@ func (a *Client) BucketsCollectionGet(params *BucketsCollectionGetParams, authIn
 }
 
 /*
-  PerformanceS3MetricCollectionGet Retrieves historical performance metrics for the S3 protocol of an SVM.
+PerformanceS3MetricCollectionGet Retrieves historical performance metrics for the S3 protocol of an SVM.
 */
 func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceS3MetricCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -222,7 +222,8 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 }
 
 /*
-  S3BucketCreate Creates the S3 bucket configuration of an SVM.
+	S3BucketCreate Creates the S3 bucket configuration of an SVM.
+
 ### Important notes
 - Each SVM can have one or more bucket configurations.
 - Aggregate lists should be specified explicitly. If not specified, then the bucket is auto-provisioned as a FlexGroup volume.
@@ -256,7 +257,6 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 * `vserver object-store-server bucket policy statement create`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
-
 */
 func (a *Client) S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -294,14 +294,14 @@ func (a *Client) S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.C
 }
 
 /*
-  S3BucketDelete Deletes the S3 bucket configuration of an SVM. An access policy is also deleted on an S3 bucket "delete" command.
+	S3BucketDelete Deletes the S3 bucket configuration of an SVM. An access policy is also deleted on an S3 bucket "delete" command.
+
 ### Related ONTAP commands
 * `vserver object-store-server bucket delete`
 * `vserver object-store-server bucket policy statement delete`
 * `vserver object-store-server bucket policy-statement-condition delete`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
-
 */
 func (a *Client) S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -339,14 +339,14 @@ func (a *Client) S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.C
 }
 
 /*
-  S3BucketGet Retrieves the S3 bucket configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+	S3BucketGet Retrieves the S3 bucket configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+
 ### Related ONTAP commands
 * `vserver object-store-server bucket show`
 * `vserver object-store-server bucket policy statement show`
 * `vserver object-store-server bucket policy-statement-condition show`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
-
 */
 func (a *Client) S3BucketGet(params *S3BucketGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketGetOK, error) {
 	// TODO: Validate the params before sending
@@ -384,22 +384,23 @@ func (a *Client) S3BucketGet(params *S3BucketGetParams, authInfo runtime.ClientA
 }
 
 /*
-  S3BucketModify Updates the S3 bucket configuration of an SVM.
+	S3BucketModify Updates the S3 bucket configuration of an SVM.
+
 ### Important notes
 - The following fields can be modified for a bucket:
-  * `comment` - Any information related to the bucket.
-  * `size` - Bucket size.
-  * `policy` - An access policy for resources (buckets and objects) that defines their permissions. New policies are created after existing policies are deleted. To retain any of the existing policy statements, you need to specify those statements again. Also, policy conditions can be specified as part of a bucket policy.
-  * `qos_policy` - A QoS policy for buckets.
-  * `audit_event_selector` - Audit policy for buckets. None can be specified for both access and permission to remove an audit event selector.
-  * `versioning-state` - Versioning state of the buckets.
+  - `comment` - Any information related to the bucket.
+  - `size` - Bucket size.
+  - `policy` - An access policy for resources (buckets and objects) that defines their permissions. New policies are created after existing policies are deleted. To retain any of the existing policy statements, you need to specify those statements again. Also, policy conditions can be specified as part of a bucket policy.
+  - `qos_policy` - A QoS policy for buckets.
+  - `audit_event_selector` - Audit policy for buckets. None can be specified for both access and permission to remove an audit event selector.
+  - `versioning-state` - Versioning state of the buckets.
+
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
 * `vserver object-store-server bucket policy statement modify`
 * `vserver object-store-server bucket policy-statement-condition modify`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
-
 */
 func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -437,7 +438,8 @@ func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.C
 }
 
 /*
-  S3BucketSvmCreate Creates the S3 bucket configuration of an SVM.
+	S3BucketSvmCreate Creates the S3 bucket configuration of an SVM.
+
 ### Important notes
 - Each SVM can have one or more bucket configurations.
 - Aggregate lists should be specified explicitly. If not specified, then the bucket is auto-provisioned as a FlexGroup.
@@ -473,7 +475,6 @@ func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.C
 * `vserver object-store-server bucket policy-statement-condition create`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
-
 */
 func (a *Client) S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -511,14 +512,14 @@ func (a *Client) S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo run
 }
 
 /*
-  S3BucketSvmDelete Deletes the S3 bucket configuration of an SVM. An access policy is also deleted on an S3 bucket "delete" command.
+	S3BucketSvmDelete Deletes the S3 bucket configuration of an SVM. An access policy is also deleted on an S3 bucket "delete" command.
+
 ### Related ONTAP commands
 * `vserver object-store-server bucket delete`
 * `vserver object-store-server bucket policy statement delete`
 * `vserver object-store-server bucket policy-statement-condition delete`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
-
 */
 func (a *Client) S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -556,14 +557,14 @@ func (a *Client) S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo run
 }
 
 /*
-  S3BucketSvmGet Retrieves the S3 bucket configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+	S3BucketSvmGet Retrieves the S3 bucket configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+
 ### Related ONTAP commands
 * `vserver object-store-server bucket show`
 * `vserver object-store-server bucket policy statement show`
 * `vserver object-store-server bucket policy-statement-condition show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
-
 */
 func (a *Client) S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmGetOK, error) {
 	// TODO: Validate the params before sending
@@ -601,22 +602,23 @@ func (a *Client) S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.C
 }
 
 /*
-  S3BucketSvmModify Updates the S3 bucket configuration of an SVM.
+	S3BucketSvmModify Updates the S3 bucket configuration of an SVM.
+
 ### Important notes
 - The following fields can be modified for a bucket:
-  * `comment` - Any information related to the bucket.
-  * `size` - Bucket size.
-  * `policy` - An access policy for resources (buckets and objects) that defines their permissions. New policies are created after existing policies are deleted. To retain any of the existing policy statements, you need to specify those statements again. Policy conditions can also be modified using this API.
-  * `qos_policy` - A QoS policy for buckets.
-  * `audit_event_selector` - Audit policy for buckets.  None can be specified for both access and permission to remove audit event selector.
-  * `versioning_state` - Versioning state for buckets.
+  - `comment` - Any information related to the bucket.
+  - `size` - Bucket size.
+  - `policy` - An access policy for resources (buckets and objects) that defines their permissions. New policies are created after existing policies are deleted. To retain any of the existing policy statements, you need to specify those statements again. Policy conditions can also be modified using this API.
+  - `qos_policy` - A QoS policy for buckets.
+  - `audit_event_selector` - Audit policy for buckets.  None can be specified for both access and permission to remove audit event selector.
+  - `versioning_state` - Versioning state for buckets.
+
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
 * `vserver object-store-server bucket policy statement modify`
 * `vserver object-store-server bucket policy-statement-condition modify`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
-
 */
 func (a *Client) S3BucketSvmModify(params *S3BucketSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -654,12 +656,12 @@ func (a *Client) S3BucketSvmModify(params *S3BucketSvmModifyParams, authInfo run
 }
 
 /*
-  S3GroupCollectionGet Retrieves the S3 group's SVM configuration.
+	S3GroupCollectionGet Retrieves the S3 group's SVM configuration.
+
 ### Related ONTAP commands
 * `vserver object-store-server group show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/groups`](#docs-object-store-protocols_s3_services_{svm.uuid}_groups)
-
 */
 func (a *Client) S3GroupCollectionGet(params *S3GroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -697,7 +699,8 @@ func (a *Client) S3GroupCollectionGet(params *S3GroupCollectionGetParams, authIn
 }
 
 /*
-  S3GroupCreate Creates the S3 group configuration.
+	S3GroupCreate Creates the S3 group configuration.
+
 ### Important notes
 - Each SVM can have one or more s3 group configurations.
 ### Required properties
@@ -711,7 +714,6 @@ func (a *Client) S3GroupCollectionGet(params *S3GroupCollectionGetParams, authIn
 * `vserver object-store-server group create`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/groups`](#docs-object-store-protocols_s3_services_{svm.uuid}_groups)
-
 */
 func (a *Client) S3GroupCreate(params *S3GroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -749,12 +751,12 @@ func (a *Client) S3GroupCreate(params *S3GroupCreateParams, authInfo runtime.Cli
 }
 
 /*
-  S3GroupDelete Deletes the S3 group configuration of an SVM.
+	S3GroupDelete Deletes the S3 group configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver object-store-server group delete`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/groups`](#docs-object-store-protocols_s3_services_{svm.uuid}_groups)
-
 */
 func (a *Client) S3GroupDelete(params *S3GroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -792,12 +794,12 @@ func (a *Client) S3GroupDelete(params *S3GroupDeleteParams, authInfo runtime.Cli
 }
 
 /*
-  S3GroupGet Retrieves the S3 group configuration of an SVM.
+	S3GroupGet Retrieves the S3 group configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver object-store-server group show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/groups`](#docs-object-store-protocols_s3_services_{svm.uuid}_groups)
-
 */
 func (a *Client) S3GroupGet(params *S3GroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -835,7 +837,8 @@ func (a *Client) S3GroupGet(params *S3GroupGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  S3GroupModify Updates the S3 group configuration of an SVM.
+	S3GroupModify Updates the S3 group configuration of an SVM.
+
 ### Important notes
 - The following fields can be modified for a group:
 * `name` - Group name that needs to be modified.
@@ -847,7 +850,6 @@ func (a *Client) S3GroupGet(params *S3GroupGetParams, authInfo runtime.ClientAut
 * `vserver object-store-server group modify`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/groups`](#docs-object-store-protocols_s3_services_{svm.uuid}_groups)
-
 */
 func (a *Client) S3GroupModify(params *S3GroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -885,12 +887,12 @@ func (a *Client) S3GroupModify(params *S3GroupModifyParams, authInfo runtime.Cli
 }
 
 /*
-  S3PolicyCollectionGet Retrieves the S3 policies SVM configuration.
+	S3PolicyCollectionGet Retrieves the S3 policies SVM configuration.
+
 ### Related ONTAP commands
 * `vserver object-store-server policy show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/policies`](#docs-object-store-protocols_s3_services_{svm.uuid}_policies)
-
 */
 func (a *Client) S3PolicyCollectionGet(params *S3PolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -928,7 +930,8 @@ func (a *Client) S3PolicyCollectionGet(params *S3PolicyCollectionGetParams, auth
 }
 
 /*
-  S3PolicyCreate Creates the S3 policy configuration.
+	S3PolicyCreate Creates the S3 policy configuration.
+
 ### Important notes
 - Each SVM can have one or more s3 policy configurations.
 ### Required properties
@@ -945,7 +948,6 @@ func (a *Client) S3PolicyCollectionGet(params *S3PolicyCollectionGetParams, auth
 * `vserver object-store-server policy add-statement`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/policies`](#docs-object-store-protocols_s3_services_{svm.uuid}_policies)
-
 */
 func (a *Client) S3PolicyCreate(params *S3PolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -983,13 +985,13 @@ func (a *Client) S3PolicyCreate(params *S3PolicyCreateParams, authInfo runtime.C
 }
 
 /*
-  S3PolicyDelete Deletes the S3 policy configuration of an SVM.
+	S3PolicyDelete Deletes the S3 policy configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver object-store-server policy delete`
 * `vserver object-store-server policy delete-statement`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/policies`](#docs-object-store-protocols_s3_services_{svm.uuid}_policies)
-
 */
 func (a *Client) S3PolicyDelete(params *S3PolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1027,12 +1029,12 @@ func (a *Client) S3PolicyDelete(params *S3PolicyDeleteParams, authInfo runtime.C
 }
 
 /*
-  S3PolicyGet Retrieves the S3 policy configuration of an SVM.
+	S3PolicyGet Retrieves the S3 policy configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver object-store-server policy show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/policies`](#docs-object-store-protocols_s3_services_{svm.uuid}_policies)
-
 */
 func (a *Client) S3PolicyGet(params *S3PolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1070,17 +1072,18 @@ func (a *Client) S3PolicyGet(params *S3PolicyGetParams, authInfo runtime.ClientA
 }
 
 /*
-  S3PolicyModify Updates the S3 policy configuration of an SVM.
+	S3PolicyModify Updates the S3 policy configuration of an SVM.
+
 ### Important notes
 - The following fields can be modified for a policy:
-  * `comment` - Any information related to the policy.
-  * `statements` - Specifies the array of policy statements.
+  - `comment` - Any information related to the policy.
+  - `statements` - Specifies the array of policy statements.
+
 ### Related ONTAP commands
 * `vserver object-store-server policy modify`
 * `vserver object-store-server policy modify-statement`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/policies`](#docs-object-store-protocols_s3_services_{svm.uuid}_policies)
-
 */
 func (a *Client) S3PolicyModify(params *S3PolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1118,7 +1121,8 @@ func (a *Client) S3PolicyModify(params *S3PolicyModifyParams, authInfo runtime.C
 }
 
 /*
-  S3ServiceCollectionGet Retrieves the S3 server configuration for all SVMs. Note that in order to retrieve S3 bucket policy conditions, 'fields' option should be set to '**'.
+	S3ServiceCollectionGet Retrieves the S3 server configuration for all SVMs. Note that in order to retrieve S3 bucket policy conditions, 'fields' option should be set to '**'.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
@@ -1127,7 +1131,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver object-store-server show`
 ### Learn more
 * [`DOC /protocols/s3/services`](#docs-object-store-protocols_s3_services)
-
 */
 func (a *Client) S3ServiceCollectionGet(params *S3ServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1165,7 +1168,8 @@ func (a *Client) S3ServiceCollectionGet(params *S3ServiceCollectionGetParams, au
 }
 
 /*
-  S3ServiceCreate Creates an S3 server, users, and buckets configurations.
+	S3ServiceCreate Creates an S3 server, users, and buckets configurations.
+
 ### Important notes
 - Each SVM can have one S3 server configuration.
 - One or more buckets and users can also be created using this end-point.
@@ -1187,7 +1191,6 @@ func (a *Client) S3ServiceCollectionGet(params *S3ServiceCollectionGetParams, au
 * `vserver object-store-server user create`
 ### Learn more
 * [`DOC /protocols/s3/services`](#docs-object-store-protocols_s3_services)
-
 */
 func (a *Client) S3ServiceCreate(params *S3ServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1225,12 +1228,12 @@ func (a *Client) S3ServiceCreate(params *S3ServiceCreateParams, authInfo runtime
 }
 
 /*
-  S3ServiceDelete Deletes the S3 server configuration of an SVM. If the 'delete_all' parameter is set to false, only the S3 server is deleted. Otherwise S3 users and buckets present on the SVM are also deleted. Note that only empty buckets can be deleted. This endpoint returns the S3 server delete job-uuid in response. To monitor the job status follow /api/cluster/jobs/<job-uuid>.
+	S3ServiceDelete Deletes the S3 server configuration of an SVM. If the 'delete_all' parameter is set to false, only the S3 server is deleted. Otherwise S3 users and buckets present on the SVM are also deleted. Note that only empty buckets can be deleted. This endpoint returns the S3 server delete job-uuid in response. To monitor the job status follow /api/cluster/jobs/<job-uuid>.
+
 ### Related ONTAP commands
 * `vserver object-store-server delete`
 ### Learn more
 * [`DOC /protocols/s3/services`](#docs-object-store-protocols_s3_services)
-
 */
 func (a *Client) S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1268,12 +1271,12 @@ func (a *Client) S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime
 }
 
 /*
-  S3ServiceGet Retrieves the S3 Server configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+	S3ServiceGet Retrieves the S3 Server configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+
 ### Related ONTAP commands
 * `vserver object-store-server show`
 ### Learn more
 * [`DOC /protocols/s3/services`](#docs-object-store-protocols_s3_services)
-
 */
 func (a *Client) S3ServiceGet(params *S3ServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1311,12 +1314,12 @@ func (a *Client) S3ServiceGet(params *S3ServiceGetParams, authInfo runtime.Clien
 }
 
 /*
-  S3ServiceModify Updates the S3 Server configuration of an SVM.
+	S3ServiceModify Updates the S3 Server configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver object-store-server modify`
 ### Learn more
 * [`DOC /protocols/s3/services`](#docs-object-store-protocols_s3_services)
-
 */
 func (a *Client) S3ServiceModify(params *S3ServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1354,12 +1357,12 @@ func (a *Client) S3ServiceModify(params *S3ServiceModifyParams, authInfo runtime
 }
 
 /*
-  S3UserCollectionGet Retrieves the S3 user's SVM configuration.
+	S3UserCollectionGet Retrieves the S3 user's SVM configuration.
+
 ### Related ONTAP commands
 * `vserver object-store-server user show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/users`](#docs-object-store-protocols_s3_services_{svm.uuid}_users)
-
 */
 func (a *Client) S3UserCollectionGet(params *S3UserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1397,7 +1400,8 @@ func (a *Client) S3UserCollectionGet(params *S3UserCollectionGetParams, authInfo
 }
 
 /*
-  S3UserCreate Creates the S3 user configuration.
+	S3UserCreate Creates the S3 user configuration.
+
 ### Important notes
 - Each SVM can have one or more user configurations.
 - If user creation is successful, a user access_key and secret_key is returned as part of the response.
@@ -1410,7 +1414,6 @@ func (a *Client) S3UserCollectionGet(params *S3UserCollectionGetParams, authInfo
 * `vserver object-store-server user create`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/users`](#docs-object-store-protocols_s3_services_{svm.uuid}_users)
-
 */
 func (a *Client) S3UserCreate(params *S3UserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1448,12 +1451,12 @@ func (a *Client) S3UserCreate(params *S3UserCreateParams, authInfo runtime.Clien
 }
 
 /*
-  S3UserDelete Deletes the S3 user configuration of an SVM.
+	S3UserDelete Deletes the S3 user configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver object-store-server user delete`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/users`](#docs-object-store-protocols_s3_services_{svm.uuid}_users)
-
 */
 func (a *Client) S3UserDelete(params *S3UserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1491,12 +1494,12 @@ func (a *Client) S3UserDelete(params *S3UserDeleteParams, authInfo runtime.Clien
 }
 
 /*
-  S3UserGet Retrieves the S3 user configuration of an SVM.
+	S3UserGet Retrieves the S3 user configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver object-store-server user show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/users`](#docs-object-store-protocols_s3_services_{svm.uuid}_users)
-
 */
 func (a *Client) S3UserGet(params *S3UserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1534,7 +1537,8 @@ func (a *Client) S3UserGet(params *S3UserGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  S3UserModify Updates the S3 user configuration of an SVM.
+	S3UserModify Updates the S3 user configuration of an SVM.
+
 ### Important notes
 - User access_key and secret_key pair can be regenerated using the PATCH operation.
 - User access_key and secret_key is returned in a PATCH operation if the "regenerate_keys" field is specified as true.
@@ -1546,7 +1550,6 @@ func (a *Client) S3UserGet(params *S3UserGetParams, authInfo runtime.ClientAuthI
 * `vserver object-store-server user regenerate-keys`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/users`](#docs-object-store-protocols_s3_services_{svm.uuid}_users)
-
 */
 func (a *Client) S3UserModify(params *S3UserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3UserModifyOK, error) {
 	// TODO: Validate the params before sending

@@ -53,10 +53,12 @@ func NewAutosupportMessageCollectionGetParamsWithHTTPClient(client *http.Client)
 	}
 }
 
-/* AutosupportMessageCollectionGetParams contains all the parameters to send to the API endpoint
-   for the autosupport message collection get operation.
+/*
+AutosupportMessageCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the autosupport message collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type AutosupportMessageCollectionGetParams struct {
 

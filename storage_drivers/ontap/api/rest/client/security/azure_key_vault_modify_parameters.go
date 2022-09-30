@@ -55,10 +55,12 @@ func NewAzureKeyVaultModifyParamsWithHTTPClient(client *http.Client) *AzureKeyVa
 	}
 }
 
-/* AzureKeyVaultModifyParams contains all the parameters to send to the API endpoint
-   for the azure key vault modify operation.
+/*
+AzureKeyVaultModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the azure key vault modify operation.
+
+	Typically these are written to a http.Request.
 */
 type AzureKeyVaultModifyParams struct {
 

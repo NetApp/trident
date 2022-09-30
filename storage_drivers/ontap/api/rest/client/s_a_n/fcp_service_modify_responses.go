@@ -46,14 +46,44 @@ func NewFcpServiceModifyOK() *FcpServiceModifyOK {
 	return &FcpServiceModifyOK{}
 }
 
-/* FcpServiceModifyOK describes a response with status code 200, with default header values.
+/*
+FcpServiceModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FcpServiceModifyOK struct {
 }
 
+// IsSuccess returns true when this fcp service modify o k response has a 2xx status code
+func (o *FcpServiceModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fcp service modify o k response has a 3xx status code
+func (o *FcpServiceModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fcp service modify o k response has a 4xx status code
+func (o *FcpServiceModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fcp service modify o k response has a 5xx status code
+func (o *FcpServiceModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fcp service modify o k response a status code equal to that given
+func (o *FcpServiceModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcpServiceModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/san/fcp/services/{svm.uuid}][%d] fcpServiceModifyOK ", 200)
+}
+
+func (o *FcpServiceModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/san/fcp/services/{svm.uuid}][%d] fcpServiceModifyOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewFcpServiceModifyDefault(code int) *FcpServiceModifyDefault {
 	}
 }
 
-/* FcpServiceModifyDefault describes a response with status code -1, with default header values.
+/*
+	FcpServiceModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | An SVM with the specified UUID does not exist. |
 | 5374083 | There is no Fibre Channel Protocol service for the specified SVM. |
-
 */
 type FcpServiceModifyDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *FcpServiceModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fcp service modify default response has a 2xx status code
+func (o *FcpServiceModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fcp service modify default response has a 3xx status code
+func (o *FcpServiceModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fcp service modify default response has a 4xx status code
+func (o *FcpServiceModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fcp service modify default response has a 5xx status code
+func (o *FcpServiceModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fcp service modify default response a status code equal to that given
+func (o *FcpServiceModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcpServiceModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/san/fcp/services/{svm.uuid}][%d] fcp_service_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcpServiceModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/san/fcp/services/{svm.uuid}][%d] fcp_service_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcpServiceModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

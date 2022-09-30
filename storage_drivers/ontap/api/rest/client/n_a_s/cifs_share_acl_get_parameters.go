@@ -53,10 +53,12 @@ func NewCifsShareACLGetParamsWithHTTPClient(client *http.Client) *CifsShareACLGe
 	}
 }
 
-/* CifsShareACLGetParams contains all the parameters to send to the API endpoint
-   for the cifs share acl get operation.
+/*
+CifsShareACLGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs share acl get operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsShareACLGetParams struct {
 

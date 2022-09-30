@@ -46,7 +46,8 @@ func NewNetworkEthernetPortGetOK() *NetworkEthernetPortGetOK {
 	return &NetworkEthernetPortGetOK{}
 }
 
-/* NetworkEthernetPortGetOK describes a response with status code 200, with default header values.
+/*
+NetworkEthernetPortGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NetworkEthernetPortGetOK struct {
 	Payload *models.Port
 }
 
+// IsSuccess returns true when this network ethernet port get o k response has a 2xx status code
+func (o *NetworkEthernetPortGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network ethernet port get o k response has a 3xx status code
+func (o *NetworkEthernetPortGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network ethernet port get o k response has a 4xx status code
+func (o *NetworkEthernetPortGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network ethernet port get o k response has a 5xx status code
+func (o *NetworkEthernetPortGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network ethernet port get o k response a status code equal to that given
+func (o *NetworkEthernetPortGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkEthernetPortGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}][%d] networkEthernetPortGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NetworkEthernetPortGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}][%d] networkEthernetPortGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NetworkEthernetPortGetOK) GetPayload() *models.Port {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNetworkEthernetPortGetDefault(code int) *NetworkEthernetPortGetDefault {
 	}
 }
 
-/* NetworkEthernetPortGetDefault describes a response with status code -1, with default header values.
+/*
+NetworkEthernetPortGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NetworkEthernetPortGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ethernet port get default response has a 2xx status code
+func (o *NetworkEthernetPortGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ethernet port get default response has a 3xx status code
+func (o *NetworkEthernetPortGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ethernet port get default response has a 4xx status code
+func (o *NetworkEthernetPortGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ethernet port get default response has a 5xx status code
+func (o *NetworkEthernetPortGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ethernet port get default response a status code equal to that given
+func (o *NetworkEthernetPortGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkEthernetPortGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}][%d] network_ethernet_port_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkEthernetPortGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ethernet/ports/{uuid}][%d] network_ethernet_port_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkEthernetPortGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

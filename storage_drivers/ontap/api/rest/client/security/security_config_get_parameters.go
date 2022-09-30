@@ -53,10 +53,12 @@ func NewSecurityConfigGetParamsWithHTTPClient(client *http.Client) *SecurityConf
 	}
 }
 
-/* SecurityConfigGetParams contains all the parameters to send to the API endpoint
-   for the security config get operation.
+/*
+SecurityConfigGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security config get operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityConfigGetParams struct {
 

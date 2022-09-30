@@ -46,7 +46,8 @@ func NewMediatorGetOK() *MediatorGetOK {
 	return &MediatorGetOK{}
 }
 
-/* MediatorGetOK describes a response with status code 200, with default header values.
+/*
+MediatorGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type MediatorGetOK struct {
 	Payload *models.Mediator
 }
 
+// IsSuccess returns true when this mediator get o k response has a 2xx status code
+func (o *MediatorGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this mediator get o k response has a 3xx status code
+func (o *MediatorGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this mediator get o k response has a 4xx status code
+func (o *MediatorGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this mediator get o k response has a 5xx status code
+func (o *MediatorGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this mediator get o k response a status code equal to that given
+func (o *MediatorGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MediatorGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/mediators/{uuid}][%d] mediatorGetOK  %+v", 200, o.Payload)
 }
+
+func (o *MediatorGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/mediators/{uuid}][%d] mediatorGetOK  %+v", 200, o.Payload)
+}
+
 func (o *MediatorGetOK) GetPayload() *models.Mediator {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewMediatorGetDefault(code int) *MediatorGetDefault {
 	}
 }
 
-/* MediatorGetDefault describes a response with status code -1, with default header values.
+/*
+MediatorGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *MediatorGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this mediator get default response has a 2xx status code
+func (o *MediatorGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this mediator get default response has a 3xx status code
+func (o *MediatorGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this mediator get default response has a 4xx status code
+func (o *MediatorGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this mediator get default response has a 5xx status code
+func (o *MediatorGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this mediator get default response a status code equal to that given
+func (o *MediatorGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MediatorGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/mediators/{uuid}][%d] mediator_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MediatorGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/mediators/{uuid}][%d] mediator_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MediatorGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

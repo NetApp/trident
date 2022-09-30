@@ -53,10 +53,12 @@ func NewCapacityPoolGetParamsWithHTTPClient(client *http.Client) *CapacityPoolGe
 	}
 }
 
-/* CapacityPoolGetParams contains all the parameters to send to the API endpoint
-   for the capacity pool get operation.
+/*
+CapacityPoolGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the capacity pool get operation.
+
+	Typically these are written to a http.Request.
 */
 type CapacityPoolGetParams struct {
 

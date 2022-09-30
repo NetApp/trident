@@ -46,14 +46,44 @@ func NewNetworkIPRouteDeleteOK() *NetworkIPRouteDeleteOK {
 	return &NetworkIPRouteDeleteOK{}
 }
 
-/* NetworkIPRouteDeleteOK describes a response with status code 200, with default header values.
+/*
+NetworkIPRouteDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NetworkIPRouteDeleteOK struct {
 }
 
+// IsSuccess returns true when this network Ip route delete o k response has a 2xx status code
+func (o *NetworkIPRouteDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip route delete o k response has a 3xx status code
+func (o *NetworkIPRouteDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip route delete o k response has a 4xx status code
+func (o *NetworkIPRouteDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip route delete o k response has a 5xx status code
+func (o *NetworkIPRouteDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip route delete o k response a status code equal to that given
+func (o *NetworkIPRouteDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkIPRouteDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] networkIpRouteDeleteOK ", 200)
+}
+
+func (o *NetworkIPRouteDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] networkIpRouteDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewNetworkIPRouteDeleteDefault(code int) *NetworkIPRouteDeleteDefault {
 	}
 }
 
-/* NetworkIPRouteDeleteDefault describes a response with status code -1, with default header values.
+/*
+NetworkIPRouteDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *NetworkIPRouteDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ip route delete default response has a 2xx status code
+func (o *NetworkIPRouteDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ip route delete default response has a 3xx status code
+func (o *NetworkIPRouteDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ip route delete default response has a 4xx status code
+func (o *NetworkIPRouteDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ip route delete default response has a 5xx status code
+func (o *NetworkIPRouteDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ip route delete default response a status code equal to that given
+func (o *NetworkIPRouteDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkIPRouteDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] network_ip_route_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkIPRouteDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /network/ip/routes/{uuid}][%d] network_ip_route_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkIPRouteDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewIscsiSessionGetOK() *IscsiSessionGetOK {
 	return &IscsiSessionGetOK{}
 }
 
-/* IscsiSessionGetOK describes a response with status code 200, with default header values.
+/*
+IscsiSessionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IscsiSessionGetOK struct {
 	Payload *models.IscsiSession
 }
 
+// IsSuccess returns true when this iscsi session get o k response has a 2xx status code
+func (o *IscsiSessionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this iscsi session get o k response has a 3xx status code
+func (o *IscsiSessionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this iscsi session get o k response has a 4xx status code
+func (o *IscsiSessionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this iscsi session get o k response has a 5xx status code
+func (o *IscsiSessionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this iscsi session get o k response a status code equal to that given
+func (o *IscsiSessionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IscsiSessionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions/{svm.uuid}/{tpgroup}/{tsih}][%d] iscsiSessionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IscsiSessionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions/{svm.uuid}/{tpgroup}/{tsih}][%d] iscsiSessionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IscsiSessionGetOK) GetPayload() *models.IscsiSession {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewIscsiSessionGetDefault(code int) *IscsiSessionGetDefault {
 	}
 }
 
-/* IscsiSessionGetDefault describes a response with status code -1, with default header values.
+/*
+	IscsiSessionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | An SVM with the specified UUID does not exist. |
-
 */
 type IscsiSessionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *IscsiSessionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this iscsi session get default response has a 2xx status code
+func (o *IscsiSessionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this iscsi session get default response has a 3xx status code
+func (o *IscsiSessionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this iscsi session get default response has a 4xx status code
+func (o *IscsiSessionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this iscsi session get default response has a 5xx status code
+func (o *IscsiSessionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this iscsi session get default response a status code equal to that given
+func (o *IscsiSessionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IscsiSessionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions/{svm.uuid}/{tpgroup}/{tsih}][%d] iscsi_session_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IscsiSessionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/iscsi/sessions/{svm.uuid}/{tpgroup}/{tsih}][%d] iscsi_session_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IscsiSessionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

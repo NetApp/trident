@@ -53,10 +53,12 @@ func NewSplitStatusCollectionGetParamsWithHTTPClient(client *http.Client) *Split
 	}
 }
 
-/* SplitStatusCollectionGetParams contains all the parameters to send to the API endpoint
-   for the split status collection get operation.
+/*
+SplitStatusCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the split status collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type SplitStatusCollectionGetParams struct {
 

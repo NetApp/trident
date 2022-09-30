@@ -46,7 +46,8 @@ func NewNvmeNamespaceCreateCreated() *NvmeNamespaceCreateCreated {
 	return &NvmeNamespaceCreateCreated{}
 }
 
-/* NvmeNamespaceCreateCreated describes a response with status code 201, with default header values.
+/*
+NvmeNamespaceCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type NvmeNamespaceCreateCreated struct {
 	Payload *models.NvmeNamespaceResponse
 }
 
+// IsSuccess returns true when this nvme namespace create created response has a 2xx status code
+func (o *NvmeNamespaceCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme namespace create created response has a 3xx status code
+func (o *NvmeNamespaceCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme namespace create created response has a 4xx status code
+func (o *NvmeNamespaceCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme namespace create created response has a 5xx status code
+func (o *NvmeNamespaceCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme namespace create created response a status code equal to that given
+func (o *NvmeNamespaceCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *NvmeNamespaceCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /storage/namespaces][%d] nvmeNamespaceCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *NvmeNamespaceCreateCreated) String() string {
+	return fmt.Sprintf("[POST /storage/namespaces][%d] nvmeNamespaceCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *NvmeNamespaceCreateCreated) GetPayload() *models.NvmeNamespaceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewNvmeNamespaceCreateDefault(code int) *NvmeNamespaceCreateDefault {
 	}
 }
 
-/* NvmeNamespaceCreateDefault describes a response with status code -1, with default header values.
+/*
+	NvmeNamespaceCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 917927 | The specified volume was not found. |
@@ -123,7 +156,6 @@ func NewNvmeNamespaceCreateDefault(code int) *NvmeNamespaceCreateDefault {
 | 72090033 | The `clone.source.uuid` property is not supported when specifying a source NVMe namespace from a Snapshot copy. |
 | 72090039 | The property cannot be specified at the same time when creating an NVMe namespace as a clone. The `target` property of the error object identifies the other property given with clone. |
 | 72090040 | The property cannot be specified when converting a LUN into an NVMe namespace. The `target` property of the error object identifies the property. |
-
 */
 type NvmeNamespaceCreateDefault struct {
 	_statusCode int
@@ -136,9 +168,39 @@ func (o *NvmeNamespaceCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme namespace create default response has a 2xx status code
+func (o *NvmeNamespaceCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme namespace create default response has a 3xx status code
+func (o *NvmeNamespaceCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme namespace create default response has a 4xx status code
+func (o *NvmeNamespaceCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme namespace create default response has a 5xx status code
+func (o *NvmeNamespaceCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme namespace create default response a status code equal to that given
+func (o *NvmeNamespaceCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeNamespaceCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/namespaces][%d] nvme_namespace_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeNamespaceCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/namespaces][%d] nvme_namespace_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeNamespaceCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

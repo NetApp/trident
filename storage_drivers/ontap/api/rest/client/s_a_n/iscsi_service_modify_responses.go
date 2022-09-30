@@ -46,14 +46,44 @@ func NewIscsiServiceModifyOK() *IscsiServiceModifyOK {
 	return &IscsiServiceModifyOK{}
 }
 
-/* IscsiServiceModifyOK describes a response with status code 200, with default header values.
+/*
+IscsiServiceModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IscsiServiceModifyOK struct {
 }
 
+// IsSuccess returns true when this iscsi service modify o k response has a 2xx status code
+func (o *IscsiServiceModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this iscsi service modify o k response has a 3xx status code
+func (o *IscsiServiceModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this iscsi service modify o k response has a 4xx status code
+func (o *IscsiServiceModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this iscsi service modify o k response has a 5xx status code
+func (o *IscsiServiceModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this iscsi service modify o k response a status code equal to that given
+func (o *IscsiServiceModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IscsiServiceModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceModifyOK ", 200)
+}
+
+func (o *IscsiServiceModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceModifyOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewIscsiServiceModifyDefault(code int) *IscsiServiceModifyDefault {
 	}
 }
 
-/* IscsiServiceModifyDefault describes a response with status code -1, with default header values.
+/*
+	IscsiServiceModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | An SVM with the specified UUID does not exist. |
 | 5374078 | The SVM does not have an iSCSI service. |
-
 */
 type IscsiServiceModifyDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *IscsiServiceModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this iscsi service modify default response has a 2xx status code
+func (o *IscsiServiceModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this iscsi service modify default response has a 3xx status code
+func (o *IscsiServiceModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this iscsi service modify default response has a 4xx status code
+func (o *IscsiServiceModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this iscsi service modify default response has a 5xx status code
+func (o *IscsiServiceModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this iscsi service modify default response a status code equal to that given
+func (o *IscsiServiceModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IscsiServiceModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IscsiServiceModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IscsiServiceModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

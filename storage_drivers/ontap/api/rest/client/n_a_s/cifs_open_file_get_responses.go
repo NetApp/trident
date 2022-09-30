@@ -46,7 +46,8 @@ func NewCifsOpenFileGetOK() *CifsOpenFileGetOK {
 	return &CifsOpenFileGetOK{}
 }
 
-/* CifsOpenFileGetOK describes a response with status code 200, with default header values.
+/*
+CifsOpenFileGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsOpenFileGetOK struct {
 	Payload *models.CifsOpenFile
 }
 
+// IsSuccess returns true when this cifs open file get o k response has a 2xx status code
+func (o *CifsOpenFileGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs open file get o k response has a 3xx status code
+func (o *CifsOpenFileGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs open file get o k response has a 4xx status code
+func (o *CifsOpenFileGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs open file get o k response has a 5xx status code
+func (o *CifsOpenFileGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs open file get o k response a status code equal to that given
+func (o *CifsOpenFileGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsOpenFileGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifsOpenFileGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsOpenFileGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifsOpenFileGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsOpenFileGetOK) GetPayload() *models.CifsOpenFile {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsOpenFileGetDefault(code int) *CifsOpenFileGetDefault {
 	}
 }
 
-/* CifsOpenFileGetDefault describes a response with status code -1, with default header values.
+/*
+CifsOpenFileGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsOpenFileGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs open file get default response has a 2xx status code
+func (o *CifsOpenFileGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs open file get default response has a 3xx status code
+func (o *CifsOpenFileGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs open file get default response has a 4xx status code
+func (o *CifsOpenFileGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs open file get default response has a 5xx status code
+func (o *CifsOpenFileGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs open file get default response a status code equal to that given
+func (o *CifsOpenFileGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsOpenFileGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifs_open_file_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsOpenFileGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/session/files/{node.uuid}/{svm.uuid}/{identifier}/{connection.identifier}/{session.identifier}][%d] cifs_open_file_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsOpenFileGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewVolumeEfficiencyPolicyCollectionGetParamsWithHTTPClient(client *http.Cli
 	}
 }
 
-/* VolumeEfficiencyPolicyCollectionGetParams contains all the parameters to send to the API endpoint
-   for the volume efficiency policy collection get operation.
+/*
+VolumeEfficiencyPolicyCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the volume efficiency policy collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type VolumeEfficiencyPolicyCollectionGetParams struct {
 

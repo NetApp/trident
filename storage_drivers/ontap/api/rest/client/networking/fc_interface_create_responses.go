@@ -46,7 +46,8 @@ func NewFcInterfaceCreateCreated() *FcInterfaceCreateCreated {
 	return &FcInterfaceCreateCreated{}
 }
 
-/* FcInterfaceCreateCreated describes a response with status code 201, with default header values.
+/*
+FcInterfaceCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type FcInterfaceCreateCreated struct {
 	Payload *models.FcInterfaceResponse
 }
 
+// IsSuccess returns true when this fc interface create created response has a 2xx status code
+func (o *FcInterfaceCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fc interface create created response has a 3xx status code
+func (o *FcInterfaceCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fc interface create created response has a 4xx status code
+func (o *FcInterfaceCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fc interface create created response has a 5xx status code
+func (o *FcInterfaceCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fc interface create created response a status code equal to that given
+func (o *FcInterfaceCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *FcInterfaceCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fcInterfaceCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *FcInterfaceCreateCreated) String() string {
+	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fcInterfaceCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *FcInterfaceCreateCreated) GetPayload() *models.FcInterfaceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewFcInterfaceCreateDefault(code int) *FcInterfaceCreateDefault {
 	}
 }
 
-/* FcInterfaceCreateDefault describes a response with status code -1, with default header values.
+/*
+	FcInterfaceCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1966140 | An interface with the same name already exists. |
@@ -98,7 +131,6 @@ func NewFcInterfaceCreateDefault(code int) *FcInterfaceCreateDefault {
 | 72089652 | An NVMe service must be created before creating a Fibre Channel interface using the NVMe over FC data protocol. |
 | 72089672 | The specified Fibre Channel port does not support the NVMe over FC data protocol. |
 | 72089900 | A Fibre Channel interface with the _fc\_nvme_ protocol cannot be created in an SVM that is configured for a SAN protocol. |
-
 */
 type FcInterfaceCreateDefault struct {
 	_statusCode int
@@ -111,9 +143,39 @@ func (o *FcInterfaceCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fc interface create default response has a 2xx status code
+func (o *FcInterfaceCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fc interface create default response has a 3xx status code
+func (o *FcInterfaceCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fc interface create default response has a 4xx status code
+func (o *FcInterfaceCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fc interface create default response has a 5xx status code
+func (o *FcInterfaceCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fc interface create default response a status code equal to that given
+func (o *FcInterfaceCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcInterfaceCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fc_interface_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcInterfaceCreateDefault) String() string {
+	return fmt.Sprintf("[POST /network/fc/interfaces][%d] fc_interface_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcInterfaceCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

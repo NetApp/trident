@@ -55,10 +55,12 @@ func NewIscsiCredentialsCreateParamsWithHTTPClient(client *http.Client) *IscsiCr
 	}
 }
 
-/* IscsiCredentialsCreateParams contains all the parameters to send to the API endpoint
-   for the iscsi credentials create operation.
+/*
+IscsiCredentialsCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the iscsi credentials create operation.
+
+	Typically these are written to a http.Request.
 */
 type IscsiCredentialsCreateParams struct {
 

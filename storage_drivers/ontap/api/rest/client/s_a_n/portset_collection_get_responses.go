@@ -46,7 +46,8 @@ func NewPortsetCollectionGetOK() *PortsetCollectionGetOK {
 	return &PortsetCollectionGetOK{}
 }
 
-/* PortsetCollectionGetOK describes a response with status code 200, with default header values.
+/*
+PortsetCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type PortsetCollectionGetOK struct {
 	Payload *models.PortsetResponse
 }
 
+// IsSuccess returns true when this portset collection get o k response has a 2xx status code
+func (o *PortsetCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this portset collection get o k response has a 3xx status code
+func (o *PortsetCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this portset collection get o k response has a 4xx status code
+func (o *PortsetCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this portset collection get o k response has a 5xx status code
+func (o *PortsetCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this portset collection get o k response a status code equal to that given
+func (o *PortsetCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *PortsetCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portsetCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *PortsetCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portsetCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *PortsetCollectionGetOK) GetPayload() *models.PortsetResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewPortsetCollectionGetDefault(code int) *PortsetCollectionGetDefault {
 	}
 }
 
-/* PortsetCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+PortsetCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *PortsetCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this portset collection get default response has a 2xx status code
+func (o *PortsetCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this portset collection get default response has a 3xx status code
+func (o *PortsetCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this portset collection get default response has a 4xx status code
+func (o *PortsetCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this portset collection get default response has a 5xx status code
+func (o *PortsetCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this portset collection get default response a status code equal to that given
+func (o *PortsetCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *PortsetCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portset_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *PortsetCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/portsets][%d] portset_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *PortsetCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

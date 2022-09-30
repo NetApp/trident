@@ -54,10 +54,12 @@ func NewAccountModifyParamsWithHTTPClient(client *http.Client) *AccountModifyPar
 	}
 }
 
-/* AccountModifyParams contains all the parameters to send to the API endpoint
-   for the account modify operation.
+/*
+AccountModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the account modify operation.
+
+	Typically these are written to a http.Request.
 */
 type AccountModifyParams struct {
 

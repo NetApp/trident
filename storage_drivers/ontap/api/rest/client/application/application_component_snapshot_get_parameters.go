@@ -53,10 +53,12 @@ func NewApplicationComponentSnapshotGetParamsWithHTTPClient(client *http.Client)
 	}
 }
 
-/* ApplicationComponentSnapshotGetParams contains all the parameters to send to the API endpoint
-   for the application component snapshot get operation.
+/*
+ApplicationComponentSnapshotGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the application component snapshot get operation.
+
+	Typically these are written to a http.Request.
 */
 type ApplicationComponentSnapshotGetParams struct {
 

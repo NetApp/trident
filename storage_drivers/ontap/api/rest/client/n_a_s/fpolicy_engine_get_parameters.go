@@ -53,10 +53,12 @@ func NewFpolicyEngineGetParamsWithHTTPClient(client *http.Client) *FpolicyEngine
 	}
 }
 
-/* FpolicyEngineGetParams contains all the parameters to send to the API endpoint
-   for the fpolicy engine get operation.
+/*
+FpolicyEngineGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fpolicy engine get operation.
+
+	Typically these are written to a http.Request.
 */
 type FpolicyEngineGetParams struct {
 

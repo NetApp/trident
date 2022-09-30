@@ -46,7 +46,8 @@ func NewCloudTargetCreateAccepted() *CloudTargetCreateAccepted {
 	return &CloudTargetCreateAccepted{}
 }
 
-/* CloudTargetCreateAccepted describes a response with status code 202, with default header values.
+/*
+CloudTargetCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type CloudTargetCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cloud target create accepted response has a 2xx status code
+func (o *CloudTargetCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cloud target create accepted response has a 3xx status code
+func (o *CloudTargetCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cloud target create accepted response has a 4xx status code
+func (o *CloudTargetCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cloud target create accepted response has a 5xx status code
+func (o *CloudTargetCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cloud target create accepted response a status code equal to that given
+func (o *CloudTargetCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *CloudTargetCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /cloud/targets][%d] cloudTargetCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *CloudTargetCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /cloud/targets][%d] cloudTargetCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *CloudTargetCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCloudTargetCreateDefault(code int) *CloudTargetCreateDefault {
 	}
 }
 
-/* CloudTargetCreateDefault describes a response with status code -1, with default header values.
+/*
+CloudTargetCreateDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CloudTargetCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cloud target create default response has a 2xx status code
+func (o *CloudTargetCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cloud target create default response has a 3xx status code
+func (o *CloudTargetCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cloud target create default response has a 4xx status code
+func (o *CloudTargetCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cloud target create default response has a 5xx status code
+func (o *CloudTargetCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cloud target create default response a status code equal to that given
+func (o *CloudTargetCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CloudTargetCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /cloud/targets][%d] cloud_target_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CloudTargetCreateDefault) String() string {
+	return fmt.Sprintf("[POST /cloud/targets][%d] cloud_target_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CloudTargetCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewQuotaRuleDeleteAccepted() *QuotaRuleDeleteAccepted {
 	return &QuotaRuleDeleteAccepted{}
 }
 
-/* QuotaRuleDeleteAccepted describes a response with status code 202, with default header values.
+/*
+QuotaRuleDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type QuotaRuleDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this quota rule delete accepted response has a 2xx status code
+func (o *QuotaRuleDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this quota rule delete accepted response has a 3xx status code
+func (o *QuotaRuleDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this quota rule delete accepted response has a 4xx status code
+func (o *QuotaRuleDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this quota rule delete accepted response has a 5xx status code
+func (o *QuotaRuleDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this quota rule delete accepted response a status code equal to that given
+func (o *QuotaRuleDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *QuotaRuleDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /storage/quota/rules/{uuid}][%d] quotaRuleDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *QuotaRuleDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /storage/quota/rules/{uuid}][%d] quotaRuleDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *QuotaRuleDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,16 +111,17 @@ func NewQuotaRuleDeleteDefault(code int) *QuotaRuleDeleteDefault {
 	}
 }
 
-/* QuotaRuleDeleteDefault describes a response with status code -1, with default header values.
+/*
+	QuotaRuleDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5308545 | The specified quota rule UUID is invalid. |
 | 5308561 | Failed to obtain volume quota state or invalid quota state obtained for volume. |
 | 5308569 | Quota policy rule delete operation succeeded, but quota resize failed due to internal error. |
 | 5308572 | Quota policy rule delete operation succeeded, however the rule is still being enforced. To stop enforcing the rule, disable quotas and enable them again for this volume. |
-
 */
 type QuotaRuleDeleteDefault struct {
 	_statusCode int
@@ -102,9 +134,39 @@ func (o *QuotaRuleDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this quota rule delete default response has a 2xx status code
+func (o *QuotaRuleDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this quota rule delete default response has a 3xx status code
+func (o *QuotaRuleDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this quota rule delete default response has a 4xx status code
+func (o *QuotaRuleDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this quota rule delete default response has a 5xx status code
+func (o *QuotaRuleDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this quota rule delete default response a status code equal to that given
+func (o *QuotaRuleDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QuotaRuleDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/quota/rules/{uuid}][%d] quota_rule_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QuotaRuleDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/quota/rules/{uuid}][%d] quota_rule_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QuotaRuleDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

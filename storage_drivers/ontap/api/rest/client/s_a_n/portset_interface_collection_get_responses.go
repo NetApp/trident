@@ -46,7 +46,8 @@ func NewPortsetInterfaceCollectionGetOK() *PortsetInterfaceCollectionGetOK {
 	return &PortsetInterfaceCollectionGetOK{}
 }
 
-/* PortsetInterfaceCollectionGetOK describes a response with status code 200, with default header values.
+/*
+PortsetInterfaceCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type PortsetInterfaceCollectionGetOK struct {
 	Payload *models.PortsetInterfaceResponse
 }
 
+// IsSuccess returns true when this portset interface collection get o k response has a 2xx status code
+func (o *PortsetInterfaceCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this portset interface collection get o k response has a 3xx status code
+func (o *PortsetInterfaceCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this portset interface collection get o k response has a 4xx status code
+func (o *PortsetInterfaceCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this portset interface collection get o k response has a 5xx status code
+func (o *PortsetInterfaceCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this portset interface collection get o k response a status code equal to that given
+func (o *PortsetInterfaceCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *PortsetInterfaceCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces][%d] portsetInterfaceCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *PortsetInterfaceCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces][%d] portsetInterfaceCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *PortsetInterfaceCollectionGetOK) GetPayload() *models.PortsetInterfaceResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewPortsetInterfaceCollectionGetDefault(code int) *PortsetInterfaceCollecti
 	}
 }
 
-/* PortsetInterfaceCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	PortsetInterfaceCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374908 | The portset specified in the URI does not exist. |
-
 */
 type PortsetInterfaceCollectionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *PortsetInterfaceCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this portset interface collection get default response has a 2xx status code
+func (o *PortsetInterfaceCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this portset interface collection get default response has a 3xx status code
+func (o *PortsetInterfaceCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this portset interface collection get default response has a 4xx status code
+func (o *PortsetInterfaceCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this portset interface collection get default response has a 5xx status code
+func (o *PortsetInterfaceCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this portset interface collection get default response a status code equal to that given
+func (o *PortsetInterfaceCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *PortsetInterfaceCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces][%d] portset_interface_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *PortsetInterfaceCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/portsets/{portset.uuid}/interfaces][%d] portset_interface_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *PortsetInterfaceCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

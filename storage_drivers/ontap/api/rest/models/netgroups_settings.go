@@ -15,7 +15,6 @@ import (
 
 // NetgroupsSettings Netgroups cache setting.
 //
-//
 // swagger:model netgroups_settings
 type NetgroupsSettings struct {
 

@@ -16,7 +16,6 @@ import (
 
 // LunMapReportingNode A cluster node from which network paths to the LUN are advertised by ONTAP via the SAN protocols.
 //
-//
 // swagger:model lun_map_reporting_node
 type LunMapReportingNode struct {
 
@@ -198,7 +197,6 @@ func (m *LunMapReportingNode) UnmarshalBinary(b []byte) error {
 }
 
 // LunMapReportingNodeIgroup The initiator group of the LUN map of the reporting node.
-//
 //
 // swagger:model LunMapReportingNodeIgroup
 type LunMapReportingNodeIgroup struct {
@@ -518,7 +516,6 @@ func (m *LunMapReportingNodeLinks) UnmarshalBinary(b []byte) error {
 }
 
 // LunMapReportingNodeLun The LUN of the LUN map of the reporting node.
-//
 //
 // swagger:model LunMapReportingNodeLun
 type LunMapReportingNodeLun struct {

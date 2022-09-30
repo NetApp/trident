@@ -46,7 +46,8 @@ func NewSnaplockFingerprintOperationGetOK() *SnaplockFingerprintOperationGetOK {
 	return &SnaplockFingerprintOperationGetOK{}
 }
 
-/* SnaplockFingerprintOperationGetOK describes a response with status code 200, with default header values.
+/*
+SnaplockFingerprintOperationGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnaplockFingerprintOperationGetOK struct {
 	Payload *models.SnaplockFileFingerprint
 }
 
+// IsSuccess returns true when this snaplock fingerprint operation get o k response has a 2xx status code
+func (o *SnaplockFingerprintOperationGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock fingerprint operation get o k response has a 3xx status code
+func (o *SnaplockFingerprintOperationGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock fingerprint operation get o k response has a 4xx status code
+func (o *SnaplockFingerprintOperationGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock fingerprint operation get o k response has a 5xx status code
+func (o *SnaplockFingerprintOperationGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock fingerprint operation get o k response a status code equal to that given
+func (o *SnaplockFingerprintOperationGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnaplockFingerprintOperationGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/file-fingerprints/{id}][%d] snaplockFingerprintOperationGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnaplockFingerprintOperationGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/file-fingerprints/{id}][%d] snaplockFingerprintOperationGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnaplockFingerprintOperationGetOK) GetPayload() *models.SnaplockFileFingerprint {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewSnaplockFingerprintOperationGetDefault(code int) *SnaplockFingerprintOpe
 	}
 }
 
-/* SnaplockFingerprintOperationGetDefault describes a response with status code -1, with default header values.
+/*
+	SnaplockFingerprintOperationGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 14090441    | Invalid key values. Provide session ID or Vserver UUID and volume UUID  |
 | 14090449    | File fingerprint operation has not completed  |
-
 */
 type SnaplockFingerprintOperationGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *SnaplockFingerprintOperationGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock fingerprint operation get default response has a 2xx status code
+func (o *SnaplockFingerprintOperationGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock fingerprint operation get default response has a 3xx status code
+func (o *SnaplockFingerprintOperationGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock fingerprint operation get default response has a 4xx status code
+func (o *SnaplockFingerprintOperationGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock fingerprint operation get default response has a 5xx status code
+func (o *SnaplockFingerprintOperationGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock fingerprint operation get default response a status code equal to that given
+func (o *SnaplockFingerprintOperationGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockFingerprintOperationGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/file-fingerprints/{id}][%d] snaplock_fingerprint_operation_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockFingerprintOperationGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/file-fingerprints/{id}][%d] snaplock_fingerprint_operation_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockFingerprintOperationGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

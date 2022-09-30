@@ -46,7 +46,8 @@ func NewS3ServiceDeleteOK() *S3ServiceDeleteOK {
 	return &S3ServiceDeleteOK{}
 }
 
-/* S3ServiceDeleteOK describes a response with status code 200, with default header values.
+/*
+S3ServiceDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type S3ServiceDeleteOK struct {
 	Payload *models.S3ServiceDeleteResponse
 }
 
+// IsSuccess returns true when this s3 service delete o k response has a 2xx status code
+func (o *S3ServiceDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 service delete o k response has a 3xx status code
+func (o *S3ServiceDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 service delete o k response has a 4xx status code
+func (o *S3ServiceDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 service delete o k response has a 5xx status code
+func (o *S3ServiceDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 service delete o k response a status code equal to that given
+func (o *S3ServiceDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3ServiceDeleteOK) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}][%d] s3ServiceDeleteOK  %+v", 200, o.Payload)
 }
+
+func (o *S3ServiceDeleteOK) String() string {
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}][%d] s3ServiceDeleteOK  %+v", 200, o.Payload)
+}
+
 func (o *S3ServiceDeleteOK) GetPayload() *models.S3ServiceDeleteResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewS3ServiceDeleteDefault(code int) *S3ServiceDeleteDefault {
 	}
 }
 
-/* S3ServiceDeleteDefault describes a response with status code -1, with default header values.
+/*
+	S3ServiceDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405864   | An error occurs when deleting an S3 user or bucket. The reason for failure is detailed in the error message. Follow the error codes specified for the user or bucket endpoints to see details for the failure. |
-
 */
 type S3ServiceDeleteDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *S3ServiceDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 service delete default response has a 2xx status code
+func (o *S3ServiceDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 service delete default response has a 3xx status code
+func (o *S3ServiceDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 service delete default response has a 4xx status code
+func (o *S3ServiceDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 service delete default response has a 5xx status code
+func (o *S3ServiceDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 service delete default response a status code equal to that given
+func (o *S3ServiceDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3ServiceDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}][%d] s3_service_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3ServiceDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}][%d] s3_service_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3ServiceDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

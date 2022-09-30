@@ -46,14 +46,44 @@ func NewDNSDeleteOK() *DNSDeleteOK {
 	return &DNSDeleteOK{}
 }
 
-/* DNSDeleteOK describes a response with status code 200, with default header values.
+/*
+DNSDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type DNSDeleteOK struct {
 }
 
+// IsSuccess returns true when this dns delete o k response has a 2xx status code
+func (o *DNSDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this dns delete o k response has a 3xx status code
+func (o *DNSDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this dns delete o k response has a 4xx status code
+func (o *DNSDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this dns delete o k response has a 5xx status code
+func (o *DNSDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this dns delete o k response a status code equal to that given
+func (o *DNSDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *DNSDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /name-services/dns/{svm.uuid}][%d] dnsDeleteOK ", 200)
+}
+
+func (o *DNSDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /name-services/dns/{svm.uuid}][%d] dnsDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewDNSDeleteDefault(code int) *DNSDeleteDefault {
 	}
 }
 
-/* DNSDeleteDefault describes a response with status code -1, with default header values.
+/*
+DNSDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *DNSDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this dns delete default response has a 2xx status code
+func (o *DNSDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this dns delete default response has a 3xx status code
+func (o *DNSDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this dns delete default response has a 4xx status code
+func (o *DNSDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this dns delete default response has a 5xx status code
+func (o *DNSDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this dns delete default response a status code equal to that given
+func (o *DNSDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *DNSDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /name-services/dns/{svm.uuid}][%d] dns_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *DNSDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /name-services/dns/{svm.uuid}][%d] dns_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *DNSDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

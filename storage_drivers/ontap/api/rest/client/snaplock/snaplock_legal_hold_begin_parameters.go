@@ -55,10 +55,12 @@ func NewSnaplockLegalHoldBeginParamsWithHTTPClient(client *http.Client) *Snaploc
 	}
 }
 
-/* SnaplockLegalHoldBeginParams contains all the parameters to send to the API endpoint
-   for the snaplock legal hold begin operation.
+/*
+SnaplockLegalHoldBeginParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock legal hold begin operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockLegalHoldBeginParams struct {
 

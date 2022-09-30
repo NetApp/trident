@@ -52,10 +52,12 @@ func NewLdapSchemaDeleteParamsWithHTTPClient(client *http.Client) *LdapSchemaDel
 	}
 }
 
-/* LdapSchemaDeleteParams contains all the parameters to send to the API endpoint
-   for the ldap schema delete operation.
+/*
+LdapSchemaDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ldap schema delete operation.
+
+	Typically these are written to a http.Request.
 */
 type LdapSchemaDeleteParams struct {
 

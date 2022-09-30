@@ -46,7 +46,8 @@ func NewSecurityConfigGetOK() *SecurityConfigGetOK {
 	return &SecurityConfigGetOK{}
 }
 
-/* SecurityConfigGetOK describes a response with status code 200, with default header values.
+/*
+SecurityConfigGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SecurityConfigGetOK struct {
 	Payload *models.SecurityConfig
 }
 
+// IsSuccess returns true when this security config get o k response has a 2xx status code
+func (o *SecurityConfigGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security config get o k response has a 3xx status code
+func (o *SecurityConfigGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security config get o k response has a 4xx status code
+func (o *SecurityConfigGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security config get o k response has a 5xx status code
+func (o *SecurityConfigGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security config get o k response a status code equal to that given
+func (o *SecurityConfigGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityConfigGetOK) Error() string {
 	return fmt.Sprintf("[GET /security][%d] securityConfigGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SecurityConfigGetOK) String() string {
+	return fmt.Sprintf("[GET /security][%d] securityConfigGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SecurityConfigGetOK) GetPayload() *models.SecurityConfig {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSecurityConfigGetDefault(code int) *SecurityConfigGetDefault {
 	}
 }
 
-/* SecurityConfigGetDefault describes a response with status code -1, with default header values.
+/*
+SecurityConfigGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SecurityConfigGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security config get default response has a 2xx status code
+func (o *SecurityConfigGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security config get default response has a 3xx status code
+func (o *SecurityConfigGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security config get default response has a 4xx status code
+func (o *SecurityConfigGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security config get default response has a 5xx status code
+func (o *SecurityConfigGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security config get default response a status code equal to that given
+func (o *SecurityConfigGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityConfigGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security][%d] security_config_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityConfigGetDefault) String() string {
+	return fmt.Sprintf("[GET /security][%d] security_config_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityConfigGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

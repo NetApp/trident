@@ -673,7 +673,6 @@ func (m *ConsistencyGroupChild) UnmarshalBinary(b []byte) error {
 // A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, and moved to a different volume. LUNs support the assignment of a quality of service (QoS) policy for performance management or a QoS policy can be assigned to the volume containing the LUN. See the LUN object model to learn more about each of the properties supported by the LUN REST API.<br/>
 // A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the Fibre Channel Protocol or a TCP/IP network using iSCSI.
 //
-//
 // swagger:model ConsistencyGroupChildLunsItems0
 type ConsistencyGroupChildLunsItems0 struct {
 
@@ -1248,7 +1247,6 @@ func (m *ConsistencyGroupChildLunsItems0) UnmarshalBinary(b []byte) error {
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
 // Persistent reservations for the patched LUN are also preserved.
 //
-//
 // swagger:model ConsistencyGroupChildLunsItems0Clone
 type ConsistencyGroupChildLunsItems0Clone struct {
 
@@ -1337,7 +1335,6 @@ func (m *ConsistencyGroupChildLunsItems0Clone) UnmarshalBinary(b []byte) error {
 // Valid in POST to create a new LUN as a clone of the source.<br/>
 // Valid in PATCH to overwrite an existing LUN's data as a clone of another.
 //
-//
 // swagger:model ConsistencyGroupChildLunsItems0CloneSource
 type ConsistencyGroupChildLunsItems0CloneSource struct {
 
@@ -1382,7 +1379,6 @@ func (m *ConsistencyGroupChildLunsItems0CloneSource) UnmarshalBinary(b []byte) e
 
 // ConsistencyGroupChildLunsItems0LunMapsItems0 A LUN map is an association between a LUN and an initiator group.<br/>
 // When a LUN is mapped to an initiator group, the initiator group's initiators are granted access to the LUN. The relationship between a LUN and an initiator group is many LUNs to many initiator groups.
-//
 //
 // swagger:model ConsistencyGroupChildLunsItems0LunMapsItems0
 type ConsistencyGroupChildLunsItems0LunMapsItems0 struct {
@@ -1473,7 +1469,6 @@ func (m *ConsistencyGroupChildLunsItems0LunMapsItems0) UnmarshalBinary(b []byte)
 }
 
 // ConsistencyGroupChildLunsItems0LunMapsItems0Igroup The initiator group that directly owns the initiator, which is where modification of the initiator is supported. This property will only be populated when the initiator is a member of a nested initiator group.
-//
 //
 // swagger:model ConsistencyGroupChildLunsItems0LunMapsItems0Igroup
 type ConsistencyGroupChildLunsItems0LunMapsItems0Igroup struct {
@@ -2291,7 +2286,6 @@ func (m *ConsistencyGroupChildLunsItems0Qos) UnmarshalBinary(b []byte) error {
 
 // ConsistencyGroupChildLunsItems0QosPolicy The QoS policy
 //
-//
 // swagger:model ConsistencyGroupChildLunsItems0QosPolicy
 type ConsistencyGroupChildLunsItems0QosPolicy struct {
 
@@ -2401,7 +2395,6 @@ func (m *ConsistencyGroupChildLunsItems0QosPolicy) UnmarshalBinary(b []byte) err
 }
 
 // ConsistencyGroupChildLunsItems0Space The storage space related properties of the LUN.
-//
 //
 // swagger:model ConsistencyGroupChildLunsItems0Space
 type ConsistencyGroupChildLunsItems0Space struct {
@@ -2524,7 +2517,6 @@ func (m *ConsistencyGroupChildLunsItems0Space) UnmarshalBinary(b []byte) error {
 
 // ConsistencyGroupChildLunsItems0SpaceGuarantee Properties that request and report the space guarantee for the LUN.
 //
-//
 // swagger:model ConsistencyGroupChildLunsItems0SpaceGuarantee
 type ConsistencyGroupChildLunsItems0SpaceGuarantee struct {
 
@@ -2570,7 +2562,6 @@ func (m *ConsistencyGroupChildLunsItems0SpaceGuarantee) UnmarshalBinary(b []byte
 // In ONTAP, an NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 // An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
-//
 //
 // swagger:model ConsistencyGroupChildNamespacesItems0
 type ConsistencyGroupChildNamespacesItems0 struct {
@@ -3008,7 +2999,6 @@ func (m *ConsistencyGroupChildNamespacesItems0ProvisioningOptions) UnmarshalBina
 // There is an added cost to retrieving property values for `subsystem_map`.
 // They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter.
 //
-//
 // swagger:model ConsistencyGroupChildNamespacesItems0SubsystemMapItems0
 type ConsistencyGroupChildNamespacesItems0SubsystemMapItems0 struct {
 
@@ -3149,7 +3139,6 @@ func (m *ConsistencyGroupChildNamespacesItems0SubsystemMapItems0) UnmarshalBinar
 }
 
 // ConsistencyGroupChildParentConsistencyGroup The parent consistency group.
-//
 //
 // swagger:model ConsistencyGroupChildParentConsistencyGroup
 type ConsistencyGroupChildParentConsistencyGroup struct {
@@ -3385,7 +3374,6 @@ func (m *ConsistencyGroupChildProvisioningOptions) UnmarshalBinary(b []byte) err
 
 // ConsistencyGroupChildProvisioningOptionsStorageService Determines the placement of any storage object created during this operation.
 //
-//
 // swagger:model ConsistencyGroupChildProvisioningOptionsStorageService
 type ConsistencyGroupChildProvisioningOptionsStorageService struct {
 
@@ -3586,7 +3574,6 @@ func (m *ConsistencyGroupChildQos) UnmarshalBinary(b []byte) error {
 
 // ConsistencyGroupChildQosPolicy The QoS policy
 //
-//
 // swagger:model ConsistencyGroupChildQosPolicy
 type ConsistencyGroupChildQosPolicy struct {
 
@@ -3696,7 +3683,6 @@ func (m *ConsistencyGroupChildQosPolicy) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupChildRestoreTo Use to restore a consistency group to a previous Snapshot copy
-//
 //
 // swagger:model ConsistencyGroupChildRestoreTo
 type ConsistencyGroupChildRestoreTo struct {
@@ -3824,7 +3810,6 @@ func (m *ConsistencyGroupChildRestoreToSnapshot) UnmarshalBinary(b []byte) error
 
 // ConsistencyGroupChildSpace Space information for the consistency group.
 //
-//
 // swagger:model ConsistencyGroupChildSpace
 type ConsistencyGroupChildSpace struct {
 
@@ -3873,7 +3858,6 @@ func (m *ConsistencyGroupChildSpace) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupChildSvm The Storage Virtual Machine (SVM) in which the consistency group is located.
-//
 //
 // swagger:model ConsistencyGroupChildSvm
 type ConsistencyGroupChildSvm struct {
@@ -4056,7 +4040,6 @@ func (m *ConsistencyGroupChildSvmLinks) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupChildTiering The tiering placement and policy definitions for volumes in this consistency group.
-//
 //
 // swagger:model ConsistencyGroupChildTiering
 type ConsistencyGroupChildTiering struct {
@@ -5489,7 +5472,6 @@ func (m *ConsistencyGroupChildVolumesItems0ProvisioningOptions) UnmarshalBinary(
 
 // ConsistencyGroupChildVolumesItems0ProvisioningOptionsStorageService Determines the placement of any storage object created during this operation.
 //
-//
 // swagger:model ConsistencyGroupChildVolumesItems0ProvisioningOptionsStorageService
 type ConsistencyGroupChildVolumesItems0ProvisioningOptionsStorageService struct {
 
@@ -5604,7 +5586,6 @@ func (m *ConsistencyGroupChildVolumesItems0ProvisioningOptionsStorageService) Un
 
 // ConsistencyGroupChildVolumesItems0Qos The QoS policy for this volume.
 //
-//
 // swagger:model ConsistencyGroupChildVolumesItems0Qos
 type ConsistencyGroupChildVolumesItems0Qos struct {
 
@@ -5690,7 +5671,6 @@ func (m *ConsistencyGroupChildVolumesItems0Qos) UnmarshalBinary(b []byte) error 
 }
 
 // ConsistencyGroupChildVolumesItems0QosPolicy The QoS policy
-//
 //
 // swagger:model ConsistencyGroupChildVolumesItems0QosPolicy
 type ConsistencyGroupChildVolumesItems0QosPolicy struct {
@@ -5844,7 +5824,6 @@ func (m *ConsistencyGroupChildVolumesItems0Space) UnmarshalBinary(b []byte) erro
 }
 
 // ConsistencyGroupChildVolumesItems0Tiering The tiering placement and policy definitions for this volume.
-//
 //
 // swagger:model ConsistencyGroupChildVolumesItems0Tiering
 type ConsistencyGroupChildVolumesItems0Tiering struct {

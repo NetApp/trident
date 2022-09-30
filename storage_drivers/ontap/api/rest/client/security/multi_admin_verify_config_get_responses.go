@@ -46,7 +46,8 @@ func NewMultiAdminVerifyConfigGetOK() *MultiAdminVerifyConfigGetOK {
 	return &MultiAdminVerifyConfigGetOK{}
 }
 
-/* MultiAdminVerifyConfigGetOK describes a response with status code 200, with default header values.
+/*
+MultiAdminVerifyConfigGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type MultiAdminVerifyConfigGetOK struct {
 	Payload *models.MultiAdminVerifyConfig
 }
 
+// IsSuccess returns true when this multi admin verify config get o k response has a 2xx status code
+func (o *MultiAdminVerifyConfigGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this multi admin verify config get o k response has a 3xx status code
+func (o *MultiAdminVerifyConfigGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this multi admin verify config get o k response has a 4xx status code
+func (o *MultiAdminVerifyConfigGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this multi admin verify config get o k response has a 5xx status code
+func (o *MultiAdminVerifyConfigGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this multi admin verify config get o k response a status code equal to that given
+func (o *MultiAdminVerifyConfigGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MultiAdminVerifyConfigGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/multi-admin-verify][%d] multiAdminVerifyConfigGetOK  %+v", 200, o.Payload)
 }
+
+func (o *MultiAdminVerifyConfigGetOK) String() string {
+	return fmt.Sprintf("[GET /security/multi-admin-verify][%d] multiAdminVerifyConfigGetOK  %+v", 200, o.Payload)
+}
+
 func (o *MultiAdminVerifyConfigGetOK) GetPayload() *models.MultiAdminVerifyConfig {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewMultiAdminVerifyConfigGetDefault(code int) *MultiAdminVerifyConfigGetDef
 	}
 }
 
-/* MultiAdminVerifyConfigGetDefault describes a response with status code -1, with default header values.
+/*
+MultiAdminVerifyConfigGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *MultiAdminVerifyConfigGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this multi admin verify config get default response has a 2xx status code
+func (o *MultiAdminVerifyConfigGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this multi admin verify config get default response has a 3xx status code
+func (o *MultiAdminVerifyConfigGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this multi admin verify config get default response has a 4xx status code
+func (o *MultiAdminVerifyConfigGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this multi admin verify config get default response has a 5xx status code
+func (o *MultiAdminVerifyConfigGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this multi admin verify config get default response a status code equal to that given
+func (o *MultiAdminVerifyConfigGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MultiAdminVerifyConfigGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/multi-admin-verify][%d] multi_admin_verify_config_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MultiAdminVerifyConfigGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/multi-admin-verify][%d] multi_admin_verify_config_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MultiAdminVerifyConfigGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

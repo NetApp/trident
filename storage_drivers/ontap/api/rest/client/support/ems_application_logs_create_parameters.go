@@ -55,10 +55,12 @@ func NewEmsApplicationLogsCreateParamsWithHTTPClient(client *http.Client) *EmsAp
 	}
 }
 
-/* EmsApplicationLogsCreateParams contains all the parameters to send to the API endpoint
-   for the ems application logs create operation.
+/*
+EmsApplicationLogsCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ems application logs create operation.
+
+	Typically these are written to a http.Request.
 */
 type EmsApplicationLogsCreateParams struct {
 

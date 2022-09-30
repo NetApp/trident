@@ -53,10 +53,12 @@ func NewCloudTargetCollectionGetParamsWithHTTPClient(client *http.Client) *Cloud
 	}
 }
 
-/* CloudTargetCollectionGetParams contains all the parameters to send to the API endpoint
-   for the cloud target collection get operation.
+/*
+CloudTargetCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cloud target collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type CloudTargetCollectionGetParams struct {
 

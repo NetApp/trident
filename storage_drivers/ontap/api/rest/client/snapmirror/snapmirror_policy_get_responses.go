@@ -46,7 +46,8 @@ func NewSnapmirrorPolicyGetOK() *SnapmirrorPolicyGetOK {
 	return &SnapmirrorPolicyGetOK{}
 }
 
-/* SnapmirrorPolicyGetOK describes a response with status code 200, with default header values.
+/*
+SnapmirrorPolicyGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnapmirrorPolicyGetOK struct {
 	Payload *models.SnapmirrorPolicy
 }
 
+// IsSuccess returns true when this snapmirror policy get o k response has a 2xx status code
+func (o *SnapmirrorPolicyGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror policy get o k response has a 3xx status code
+func (o *SnapmirrorPolicyGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror policy get o k response has a 4xx status code
+func (o *SnapmirrorPolicyGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror policy get o k response has a 5xx status code
+func (o *SnapmirrorPolicyGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror policy get o k response a status code equal to that given
+func (o *SnapmirrorPolicyGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnapmirrorPolicyGetOK) Error() string {
 	return fmt.Sprintf("[GET /snapmirror/policies/{uuid}][%d] snapmirrorPolicyGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnapmirrorPolicyGetOK) String() string {
+	return fmt.Sprintf("[GET /snapmirror/policies/{uuid}][%d] snapmirrorPolicyGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnapmirrorPolicyGetOK) GetPayload() *models.SnapmirrorPolicy {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewSnapmirrorPolicyGetDefault(code int) *SnapmirrorPolicyGetDefault {
 	}
 }
 
-/* SnapmirrorPolicyGetDefault describes a response with status code -1, with default header values.
+/*
+	SnapmirrorPolicyGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 13303842    | SnapMirror policy is not supported.|
-
 */
 type SnapmirrorPolicyGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *SnapmirrorPolicyGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapmirror policy get default response has a 2xx status code
+func (o *SnapmirrorPolicyGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapmirror policy get default response has a 3xx status code
+func (o *SnapmirrorPolicyGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapmirror policy get default response has a 4xx status code
+func (o *SnapmirrorPolicyGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapmirror policy get default response has a 5xx status code
+func (o *SnapmirrorPolicyGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapmirror policy get default response a status code equal to that given
+func (o *SnapmirrorPolicyGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapmirrorPolicyGetDefault) Error() string {
 	return fmt.Sprintf("[GET /snapmirror/policies/{uuid}][%d] snapmirror_policy_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapmirrorPolicyGetDefault) String() string {
+	return fmt.Sprintf("[GET /snapmirror/policies/{uuid}][%d] snapmirror_policy_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapmirrorPolicyGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

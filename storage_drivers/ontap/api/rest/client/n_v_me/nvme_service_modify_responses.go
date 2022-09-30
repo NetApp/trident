@@ -46,14 +46,44 @@ func NewNvmeServiceModifyOK() *NvmeServiceModifyOK {
 	return &NvmeServiceModifyOK{}
 }
 
-/* NvmeServiceModifyOK describes a response with status code 200, with default header values.
+/*
+NvmeServiceModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NvmeServiceModifyOK struct {
 }
 
+// IsSuccess returns true when this nvme service modify o k response has a 2xx status code
+func (o *NvmeServiceModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme service modify o k response has a 3xx status code
+func (o *NvmeServiceModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme service modify o k response has a 4xx status code
+func (o *NvmeServiceModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme service modify o k response has a 5xx status code
+func (o *NvmeServiceModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme service modify o k response a status code equal to that given
+func (o *NvmeServiceModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeServiceModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceModifyOK ", 200)
+}
+
+func (o *NvmeServiceModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceModifyOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewNvmeServiceModifyDefault(code int) *NvmeServiceModifyDefault {
 	}
 }
 
-/* NvmeServiceModifyDefault describes a response with status code -1, with default header values.
+/*
+	NvmeServiceModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1115127 | The cluster lacks a valid NVMe license. |
 | 2621462 | The supplied SVM does not exist. |
 | 5374893 | The SVM is stopped. The SVM must be running to create an NVMe service. |
 | 72089651 | The supplied SVM does not have an NVMe service. |
-
 */
 type NvmeServiceModifyDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *NvmeServiceModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme service modify default response has a 2xx status code
+func (o *NvmeServiceModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme service modify default response has a 3xx status code
+func (o *NvmeServiceModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme service modify default response has a 4xx status code
+func (o *NvmeServiceModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme service modify default response has a 5xx status code
+func (o *NvmeServiceModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme service modify default response a status code equal to that given
+func (o *NvmeServiceModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeServiceModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvme_service_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeServiceModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/nvme/services/{svm.uuid}][%d] nvme_service_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeServiceModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

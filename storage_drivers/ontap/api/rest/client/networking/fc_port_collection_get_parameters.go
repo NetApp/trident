@@ -53,10 +53,12 @@ func NewFcPortCollectionGetParamsWithHTTPClient(client *http.Client) *FcPortColl
 	}
 }
 
-/* FcPortCollectionGetParams contains all the parameters to send to the API endpoint
-   for the fc port collection get operation.
+/*
+FcPortCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fc port collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type FcPortCollectionGetParams struct {
 

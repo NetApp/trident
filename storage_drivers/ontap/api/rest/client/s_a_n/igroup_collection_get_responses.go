@@ -46,7 +46,8 @@ func NewIgroupCollectionGetOK() *IgroupCollectionGetOK {
 	return &IgroupCollectionGetOK{}
 }
 
-/* IgroupCollectionGetOK describes a response with status code 200, with default header values.
+/*
+IgroupCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IgroupCollectionGetOK struct {
 	Payload *models.IgroupResponse
 }
 
+// IsSuccess returns true when this igroup collection get o k response has a 2xx status code
+func (o *IgroupCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup collection get o k response has a 3xx status code
+func (o *IgroupCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup collection get o k response has a 4xx status code
+func (o *IgroupCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup collection get o k response has a 5xx status code
+func (o *IgroupCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup collection get o k response a status code equal to that given
+func (o *IgroupCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IgroupCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroupCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IgroupCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroupCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IgroupCollectionGetOK) GetPayload() *models.IgroupResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewIgroupCollectionGetDefault(code int) *IgroupCollectionGetDefault {
 	}
 }
 
-/* IgroupCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+IgroupCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *IgroupCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup collection get default response has a 2xx status code
+func (o *IgroupCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup collection get default response has a 3xx status code
+func (o *IgroupCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup collection get default response has a 4xx status code
+func (o *IgroupCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup collection get default response has a 5xx status code
+func (o *IgroupCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup collection get default response a status code equal to that given
+func (o *IgroupCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroup_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/igroups][%d] igroup_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

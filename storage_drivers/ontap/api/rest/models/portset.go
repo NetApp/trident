@@ -587,7 +587,6 @@ func (m *PortsetIgroupsItems0Links) UnmarshalBinary(b []byte) error {
 
 // PortsetInterfacesItems0 A container for either a Fibre Channel network interface or an IP network interface. On POST `fc` and `ip` are mutually exclusive.
 //
-//
 // swagger:model PortsetInterfacesItems0
 type PortsetInterfacesItems0 struct {
 
@@ -776,7 +775,6 @@ func (m *PortsetInterfacesItems0) UnmarshalBinary(b []byte) error {
 }
 
 // PortsetInterfacesItems0Fc An FC interface.
-//
 //
 // swagger:model PortsetInterfacesItems0Fc
 type PortsetInterfacesItems0Fc struct {

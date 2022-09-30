@@ -252,7 +252,8 @@ type ClientService interface {
 }
 
 /*
-  AggregateCollectionGet Retrieves the collection of aggregates for the entire cluster.
+	AggregateCollectionGet Retrieves the collection of aggregates for the entire cluster.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `metric.*`
@@ -263,7 +264,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `statistics.*`
 ### Related ONTAP commands
 * `storage aggregate show`
-
 */
 func (a *Client) AggregateCollectionGet(params *AggregateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -301,7 +301,8 @@ func (a *Client) AggregateCollectionGet(params *AggregateCollectionGetParams, au
 }
 
 /*
-  AggregateCreate Automatically creates aggregates based on an optimal layout recommended by the system. Alternatively, properties can be provided to create an aggregate according to the requested specification. This request starts a job and returns a link to that job.
+	AggregateCreate Automatically creates aggregates based on an optimal layout recommended by the system. Alternatively, properties can be provided to create an aggregate according to the requested specification. This request starts a job and returns a link to that job.
+
 POST operations will be blocked while one or more nodes in the cluster are simulating or implementing automatic aggregate creation.
 ### Required properties
 Properties are not required for this API. The following properties are only required if you want to specify properties for aggregate creation:
@@ -319,7 +320,6 @@ If not specified in POST, the following default values are assigned. The remaini
 ```
 POST /api/storage/aggregates {"node": {"name": "node1"}, "name": "test", "block_storage": {"primary": {"disk_count": "10"}}}
 ```
-
 */
 func (a *Client) AggregateCreate(params *AggregateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -357,10 +357,10 @@ func (a *Client) AggregateCreate(params *AggregateCreateParams, authInfo runtime
 }
 
 /*
-  AggregateDelete Deletes the aggregate specified by the UUID. This request starts a job and returns a link to that job.
+	AggregateDelete Deletes the aggregate specified by the UUID. This request starts a job and returns a link to that job.
+
 ### Related ONTAP commands
 * `storage aggregate delete`
-
 */
 func (a *Client) AggregateDelete(params *AggregateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -398,7 +398,8 @@ func (a *Client) AggregateDelete(params *AggregateDeleteParams, authInfo runtime
 }
 
 /*
-  AggregateGet Retrieves the aggregate specified by the UUID. The recommend query cannot be used for this operation.
+	AggregateGet Retrieves the aggregate specified by the UUID. The recommend query cannot be used for this operation.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `metric.*`
@@ -409,7 +410,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `statistics.*`
 ### Related ONTAP commands
 * `storage aggregate show`
-
 */
 func (a *Client) AggregateGet(params *AggregateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateGetOK, error) {
 	// TODO: Validate the params before sending
@@ -447,14 +447,14 @@ func (a *Client) AggregateGet(params *AggregateGetParams, authInfo runtime.Clien
 }
 
 /*
-  AggregateModify Updates the aggregate specified by the UUID with the properties in the body. This request starts a job and returns a link to that job.
+	AggregateModify Updates the aggregate specified by the UUID with the properties in the body. This request starts a job and returns a link to that job.
+
 ### Related ONTAP commands
 * `storage aggregate add-disks`
 * `storage aggregate mirror`
 * `storage aggregate modify`
 * `storage aggregate relocation start`
 * `storage aggregate rename`
-
 */
 func (a *Client) AggregateModify(params *AggregateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregateModifyOK, *AggregateModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -494,7 +494,7 @@ func (a *Client) AggregateModify(params *AggregateModifyParams, authInfo runtime
 }
 
 /*
-  AggregatePerformanceMetricsCollectionGet Retrieves historical performance metrics for an aggregate.
+AggregatePerformanceMetricsCollectionGet Retrieves historical performance metrics for an aggregate.
 */
 func (a *Client) AggregatePerformanceMetricsCollectionGet(params *AggregatePerformanceMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AggregatePerformanceMetricsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -532,10 +532,10 @@ func (a *Client) AggregatePerformanceMetricsCollectionGet(params *AggregatePerfo
 }
 
 /*
-  CloudStoreCollectionGet Retrieves the collection of cloud stores used by an aggregate.
+	CloudStoreCollectionGet Retrieves the collection of cloud stores used by an aggregate.
+
 ### Related ONTAP commands
 * `storage aggregate object-store show`
-
 */
 func (a *Client) CloudStoreCollectionGet(params *CloudStoreCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudStoreCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -573,7 +573,8 @@ func (a *Client) CloudStoreCollectionGet(params *CloudStoreCollectionGetParams, 
 }
 
 /*
-  CloudStoreCreate Attaches an object store to an aggregate, or adds a second object store as a mirror.
+	CloudStoreCreate Attaches an object store to an aggregate, or adds a second object store as a mirror.
+
 ### Required properties
 * `target.uuid` or `target.name` - UUID or name of the cloud target.
 ### Recommended optional properties
@@ -587,7 +588,6 @@ func (a *Client) CloudStoreCollectionGet(params *CloudStoreCollectionGetParams, 
 ### Related ONTAP commands
 * `storage aggregate object-store attach`
 * `storage aggregate object-store mirror`
-
 */
 func (a *Client) CloudStoreCreate(params *CloudStoreCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudStoreCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -625,10 +625,10 @@ func (a *Client) CloudStoreCreate(params *CloudStoreCreateParams, authInfo runti
 }
 
 /*
-  CloudStoreDelete Removes the specified cloud target from the aggregate. Only removal of a mirror is allowed. The primary cannot be removed. This request starts a job and returns a link to that job.
+	CloudStoreDelete Removes the specified cloud target from the aggregate. Only removal of a mirror is allowed. The primary cannot be removed. This request starts a job and returns a link to that job.
+
 ### Related ONTAP commands
 * `storage aggregate object-store unmirror`
-
 */
 func (a *Client) CloudStoreDelete(params *CloudStoreDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudStoreDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -666,10 +666,10 @@ func (a *Client) CloudStoreDelete(params *CloudStoreDeleteParams, authInfo runti
 }
 
 /*
-  CloudStoreGet Retrieves the cloud store for the aggregate using the specified cloud target UUID.
+	CloudStoreGet Retrieves the cloud store for the aggregate using the specified cloud target UUID.
+
 ### Related ONTAP commands
 * `storage aggregate object-store show`
-
 */
 func (a *Client) CloudStoreGet(params *CloudStoreGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudStoreGetOK, error) {
 	// TODO: Validate the params before sending
@@ -707,10 +707,10 @@ func (a *Client) CloudStoreGet(params *CloudStoreGetParams, authInfo runtime.Cli
 }
 
 /*
-  CloudStoreModify Updates the cloud store specified by the UUID with the fields in the body. This request starts a job and returns a link to that job.
+	CloudStoreModify Updates the cloud store specified by the UUID with the fields in the body. This request starts a job and returns a link to that job.
+
 ### Related ONTAP commands
 * `storage aggregate object-store modify`
-
 */
 func (a *Client) CloudStoreModify(params *CloudStoreModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudStoreModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -748,12 +748,12 @@ func (a *Client) CloudStoreModify(params *CloudStoreModifyParams, authInfo runti
 }
 
 /*
-  DiskCollectionGet Retrieves a collection of disks.
+	DiskCollectionGet Retrieves a collection of disks.
+
 ### Related ONTAP commands
 * `storage disk show`
 ### Learn more
 * [`DOC /storage/disks`](#docs-storage-storage_disks)
-
 */
 func (a *Client) DiskCollectionGet(params *DiskCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DiskCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -791,12 +791,12 @@ func (a *Client) DiskCollectionGet(params *DiskCollectionGetParams, authInfo run
 }
 
 /*
-  DiskGet Retrieves a specific disk.
+	DiskGet Retrieves a specific disk.
+
 ### Related ONTAP commands
 * `storage disk show`
 ### Learn more
 * [`DOC /storage/disks`](#docs-storage-storage_disks)
-
 */
 func (a *Client) DiskGet(params *DiskGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DiskGetOK, error) {
 	// TODO: Validate the params before sending
@@ -834,7 +834,8 @@ func (a *Client) DiskGet(params *DiskGetParams, authInfo runtime.ClientAuthInfoW
 }
 
 /*
-  DiskModify Updates disk ownership, changes authentication keys, or sanitizes disks.
+	DiskModify Updates disk ownership, changes authentication keys, or sanitizes disks.
+
 ### Related ONTAP commands
 * `storage disk assign`
 * `storage disk removeowner`
@@ -844,7 +845,6 @@ func (a *Client) DiskGet(params *DiskGetParams, authInfo runtime.ClientAuthInfoW
 * `storage disk unfail`
 ### Learn more
 * [`DOC /storage/disks`](#docs-storage-storage_disks)
-
 */
 func (a *Client) DiskModify(params *DiskModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DiskModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -882,7 +882,8 @@ func (a *Client) DiskModify(params *DiskModifyParams, authInfo runtime.ClientAut
 }
 
 /*
-  FileCloneCreate Creates a clone of the file.
+	FileCloneCreate Creates a clone of the file.
+
 ### Required Properties
 * `source_path`
 * `destination_path`
@@ -902,20 +903,21 @@ If set to `autodelete`, the cloned file is deleted when the volumes are full.<br
 # The API:
 curl -X POST "https://<mgmt_ip>/api/storage/file/clone" -H "accept: application/hal+json" -d '{"volume": {"name": "vol1",  "uuid": "40e0fdc5-c28f-11eb-8270-005056bbeb0b"}, "source_path": "f1", "destination_path": "f2_c1"}'
 # The response:
-{
-  "job": {
-    "uuid": "0d025fd9-c4dc-11eb-adb5-005056bbeb0b",
-    "_links": {
-       "self": {
-         "href": "/api/cluster/jobs/0d025fd9-c4dc-11eb-adb5-005056bbeb0b"
-       }
-    }
-  }
-}
+
+	{
+	  "job": {
+	    "uuid": "0d025fd9-c4dc-11eb-adb5-005056bbeb0b",
+	    "_links": {
+	       "self": {
+	         "href": "/api/cluster/jobs/0d025fd9-c4dc-11eb-adb5-005056bbeb0b"
+	       }
+	    }
+	  }
+	}
+
 ```
 ### Learn More
 * [`DOC /storage/file/clone`]
-
 */
 func (a *Client) FileCloneCreate(params *FileCloneCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileCloneCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -953,7 +955,8 @@ func (a *Client) FileCloneCreate(params *FileCloneCreateParams, authInfo runtime
 }
 
 /*
-  FileCopyCreate Starts a file copy operation. Only supported on flexible volumes.
+	FileCopyCreate Starts a file copy operation. Only supported on flexible volumes.
+
 ## Required properties
 * `files_to_copy` - List of files with the destination they are to be copied to.
 ## Default property values
@@ -972,18 +975,19 @@ The POST request is used to copy file(s).
 # The call:
 curl -X POST  "https://<mgmt-ip>/api/storage/file/copy" -H "accept: application/hal+json" -d '{"files_to_copy":[{"source":{"volume":{"name":"vol_a"},"svm":{"name":"vs0"},"path":"d1/src_f1"},"destination":{"volume":{"name":"vol_a"},"svm":{"name":"vs0"},"path":"d1/dst_f1"}}, {"source":{"volume":{"name":"vol_a"},"svm":{"name":"vs0"},"path":"d1/src_f2"},"destination":{"volume":{"name":"vol_a"},"svm":{"name":"vs0"},"path":"d1/dst_f2"}}]}'
 # The response:
-{
-  "job": {
-    "uuid": "b89bc5dd-94a3-11e8-a7a3-0050568edf84",
-    "_links": {
-       "self": {
-         "href": "/api/cluster/jobs/b89bc5dd-94a3-11e8-a7a3-0050568edf84"
-       }
-     }
-   }
-}
-```
 
+	{
+	  "job": {
+	    "uuid": "b89bc5dd-94a3-11e8-a7a3-0050568edf84",
+	    "_links": {
+	       "self": {
+	         "href": "/api/cluster/jobs/b89bc5dd-94a3-11e8-a7a3-0050568edf84"
+	       }
+	     }
+	   }
+	}
+
+```
 */
 func (a *Client) FileCopyCreate(params *FileCopyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileCopyCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1021,7 +1025,7 @@ func (a *Client) FileCopyCreate(params *FileCopyCreateParams, authInfo runtime.C
 }
 
 /*
-  FileDelete Deletes an existing file or directory. Query-based DELETE operations are not supported.
+FileDelete Deletes an existing file or directory. Query-based DELETE operations are not supported.
 */
 func (a *Client) FileDelete(params *FileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDeleteOK, *FileDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1061,13 +1065,13 @@ func (a *Client) FileDelete(params *FileDeleteParams, authInfo runtime.ClientAut
 }
 
 /*
-  FileInfoCollectionGet Retrieves a list of files and directories for a given directory or returns only the properties of a single given directory or file of a volume.
+	FileInfoCollectionGet Retrieves a list of files and directories for a given directory or returns only the properties of a single given directory or file of a volume.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties.  They are not included by default in GET results and must be explicitly requested using the `fields` query property. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-  * `analytics`
-  * `qos_policy.name`
-  * `qos_policy.uuid`
-
+  - `analytics`
+  - `qos_policy.name`
+  - `qos_policy.uuid`
 */
 func (a *Client) FileInfoCollectionGet(params *FileInfoCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileInfoCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1105,7 +1109,7 @@ func (a *Client) FileInfoCollectionGet(params *FileInfoCollectionGetParams, auth
 }
 
 /*
-  FileInfoCreate Creates a new file with the supplied data, creates a new directory or creates a new symlink.
+FileInfoCreate Creates a new file with the supplied data, creates a new directory or creates a new symlink.
 */
 func (a *Client) FileInfoCreate(params *FileInfoCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileInfoCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1143,7 +1147,7 @@ func (a *Client) FileInfoCreate(params *FileInfoCreateParams, authInfo runtime.C
 }
 
 /*
-  FileInfoModify Writes to an existing file with the supplied data or modifies the size, name, space reservation information, QoS policy, or hole range information of a file. Query-based PATCH operations are not supported.
+FileInfoModify Writes to an existing file with the supplied data or modifies the size, name, space reservation information, QoS policy, or hole range information of a file. Query-based PATCH operations are not supported.
 */
 func (a *Client) FileInfoModify(params *FileInfoModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileInfoModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1181,11 +1185,11 @@ func (a *Client) FileInfoModify(params *FileInfoModifyParams, authInfo runtime.C
 }
 
 /*
-  FileMoveCollectionGet Retrieves all ongoing file move operations in the cluster.
+	FileMoveCollectionGet Retrieves all ongoing file move operations in the cluster.
+
 ### Related ONTAP commands
 * `volume file move show`
 * `volume rebalance file-move show`
-
 */
 func (a *Client) FileMoveCollectionGet(params *FileMoveCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1223,8 +1227,9 @@ func (a *Client) FileMoveCollectionGet(params *FileMoveCollectionGetParams, auth
 }
 
 /*
-  FileMoveCreate Starts a file move operation. This API can be used to move files from one FlexVol volume to another FlexVol volume or within a FlexGroup volume for capacity rebalancing.
-For a FlexGroup volume file move operation, only one source file can be specified in files_to_move. The source volume is the FlexGroup volume. The destination volume is the destination FlexGroup volume constituent to move the file to. When ``automatic`` is true, destination volume is not required. The source path is the path to the file to be moved within the FlexGroup volume. If the destination path is specified, it must be the same as the source path.
+	FileMoveCreate Starts a file move operation. This API can be used to move files from one FlexVol volume to another FlexVol volume or within a FlexGroup volume for capacity rebalancing.
+
+For a FlexGroup volume file move operation, only one source file can be specified in files_to_move. The source volume is the FlexGroup volume. The destination volume is the destination FlexGroup volume constituent to move the file to. When “automatic“ is true, destination volume is not required. The source path is the path to the file to be moved within the FlexGroup volume. If the destination path is specified, it must be the same as the source path.
 ## Required properties for file move operation
 * `files_to_move` - List of files with the destination they are to be moved to.
 ## Optional properties for file move operation
@@ -1236,7 +1241,6 @@ For a FlexGroup volume file move operation, only one source file can be specifie
 ## Related ONTAP commands
 * `volume file move start`
 * `volume rebalance file-move start`
-
 */
 func (a *Client) FileMoveCreate(params *FileMoveCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1274,7 +1278,8 @@ func (a *Client) FileMoveCreate(params *FileMoveCreateParams, authInfo runtime.C
 }
 
 /*
-  FlexcacheCollectionGet Retrieves FlexCache in the cluster.
+	FlexcacheCollectionGet Retrieves FlexCache in the cluster.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `origins.ip_address` - IP address of origin.
@@ -1288,7 +1293,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `volume flexcache show`
 ### Learn more
 * [`DOC /storage/flexcache/flexcaches`](#docs-storage-storage_flexcache_flexcaches)
-
 */
 func (a *Client) FlexcacheCollectionGet(params *FlexcacheCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1326,7 +1330,8 @@ func (a *Client) FlexcacheCollectionGet(params *FlexcacheCollectionGetParams, au
 }
 
 /*
-  FlexcacheCreate Creates a FlexCache in the cluster.
+	FlexcacheCreate Creates a FlexCache in the cluster.
+
 ### Required properties
 * `name` - Name of FlexCache volume.
 * `origins.volume.name` or `origins.volume.uuid` - Name or UUID of origin volume.
@@ -1350,7 +1355,6 @@ If not specified in POST, the following default property values are assigned:
 * `volume flexcache prepopulate start`
 ### Learn more
 * [`DOC /storage/flexcache/flexcaches`](#docs-storage-storage_flexcache_flexcaches)
-
 */
 func (a *Client) FlexcacheCreate(params *FlexcacheCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1388,12 +1392,12 @@ func (a *Client) FlexcacheCreate(params *FlexcacheCreateParams, authInfo runtime
 }
 
 /*
-  FlexcacheDelete Deletes a FlexCache. If a FlexCache volume is online, it is offlined before deletion.
+	FlexcacheDelete Deletes a FlexCache. If a FlexCache volume is online, it is offlined before deletion.
+
 ### Related ONTAP commands
 * `volume flexcache delete`
 ### Learn more
 * [`DOC /storage/flexcache/flexcaches`](#docs-storage-storage_flexcache_flexcaches)
-
 */
 func (a *Client) FlexcacheDelete(params *FlexcacheDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1431,7 +1435,8 @@ func (a *Client) FlexcacheDelete(params *FlexcacheDeleteParams, authInfo runtime
 }
 
 /*
-  FlexcacheGet Retrieves attributes of the FlexCache in the cluster.
+	FlexcacheGet Retrieves attributes of the FlexCache in the cluster.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are included by default in GET. The recommended method to use this API is to filter and retrieve only the required fields. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `origins.ip_address` - IP address of origin.
@@ -1445,7 +1450,6 @@ There is an added cost to retrieving values for these properties. They are inclu
 * `volume flexcache show`
 ### Learn more
 * [`DOC /storage/flexcache/flexcaches`](#docs-storage-storage_flexcache_flexcaches)
-
 */
 func (a *Client) FlexcacheGet(params *FlexcacheGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1483,7 +1487,8 @@ func (a *Client) FlexcacheGet(params *FlexcacheGetParams, authInfo runtime.Clien
 }
 
 /*
-  FlexcacheModify Prepopulates a FlexCache volume in the cluster.
+	FlexcacheModify Prepopulates a FlexCache volume in the cluster.
+
 ### Required properties
 * `uuid` - FlexCache volume UUID.
 * `prepopulate.dir_paths` - List of directory-paths to be prepopulated for the FlexCache volume.
@@ -1496,7 +1501,6 @@ If not specified in PATCH, the following default property value is assigned:
 * `volume flexcache prepopulate start`
 ### Learn more
 * [`DOC /storage/flexcache/flexcaches`](#docs-storage-storage_flexcache_flexcaches)
-
 */
 func (a *Client) FlexcacheModify(params *FlexcacheModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1534,7 +1538,8 @@ func (a *Client) FlexcacheModify(params *FlexcacheModifyParams, authInfo runtime
 }
 
 /*
-  FlexcacheOriginCollectionGet Retrieves origin of FlexCache in the cluster.
+	FlexcacheOriginCollectionGet Retrieves origin of FlexCache in the cluster.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `flexcaches.ip_address` - IP address of FlexCache.
@@ -1545,7 +1550,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `volume flexcache origin show-caches`
 ### Learn more
 * [`DOC /storage/flexcache/origins`](#docs-storage-storage_flexcache_origins)
-
 */
 func (a *Client) FlexcacheOriginCollectionGet(params *FlexcacheOriginCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheOriginCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1583,7 +1587,8 @@ func (a *Client) FlexcacheOriginCollectionGet(params *FlexcacheOriginCollectionG
 }
 
 /*
-  FlexcacheOriginGet Retrieves attributes of the origin of a FlexCache in the cluster.
+	FlexcacheOriginGet Retrieves attributes of the origin of a FlexCache in the cluster.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are included by default in GET results. The recommended method to use this API is to filter and retrieve only the required fields. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `flexcaches.ip_address` - IP address of FlexCache.
@@ -1595,7 +1600,6 @@ There is an added cost to retrieving values for these properties. They are inclu
 * `volume flexcache origin show-caches`
 ### Learn more
 * [`DOC /storage/flexcache/origins`](#docs-storage-storage_flexcache_origins)
-
 */
 func (a *Client) FlexcacheOriginGet(params *FlexcacheOriginGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheOriginGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1633,7 +1637,8 @@ func (a *Client) FlexcacheOriginGet(params *FlexcacheOriginGetParams, authInfo r
 }
 
 /*
-  FlexcacheOriginModify Modifies origin options for a origin volume in the cluster.
+	FlexcacheOriginModify Modifies origin options for a origin volume in the cluster.
+
 ### Required properties
 * `uuid` - Origin volume UUID.
 * `block_level_invalidation` - Value for the Block Level Invalidation flag - options {true|false}.
@@ -1641,7 +1646,6 @@ func (a *Client) FlexcacheOriginGet(params *FlexcacheOriginGetParams, authInfo r
 * `volume flexcache origin config modify`
 ### Learn more
 * [`DOC /storage/flexcache/origins`](#docs-storage-storage_flexcache_origins)
-
 */
 func (a *Client) FlexcacheOriginModify(params *FlexcacheOriginModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheOriginModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1679,10 +1683,10 @@ func (a *Client) FlexcacheOriginModify(params *FlexcacheOriginModifyParams, auth
 }
 
 /*
-  PlexCollectionGet Retrieves the collection of plexes for the specified aggregate.
+	PlexCollectionGet Retrieves the collection of plexes for the specified aggregate.
+
 ### Related ONTAP commands
 * `storage aggregate plex show`
-
 */
 func (a *Client) PlexCollectionGet(params *PlexCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PlexCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1720,10 +1724,10 @@ func (a *Client) PlexCollectionGet(params *PlexCollectionGetParams, authInfo run
 }
 
 /*
-  PlexGet Retrieves the plex specified by the aggregate UUID and plex name.
+	PlexGet Retrieves the plex specified by the aggregate UUID and plex name.
+
 ### Related ONTAP commands
 * `storage aggregate plex show`
-
 */
 func (a *Client) PlexGet(params *PlexGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PlexGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1761,12 +1765,12 @@ func (a *Client) PlexGet(params *PlexGetParams, authInfo runtime.ClientAuthInfoW
 }
 
 /*
-  PortCollectionGet Retrieves a collection of storage ports.
+	PortCollectionGet Retrieves a collection of storage ports.
+
 ### Related ONTAP commands
 * `storage port show`
 ### Learn more
 * [`DOC /storage/ports`](#docs-storage-storage_ports)
-
 */
 func (a *Client) PortCollectionGet(params *PortCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1804,12 +1808,12 @@ func (a *Client) PortCollectionGet(params *PortCollectionGetParams, authInfo run
 }
 
 /*
-  PortGet Retrieves a specific storage port.
+	PortGet Retrieves a specific storage port.
+
 ### Related ONTAP commands
 * `storage port show`
 ### Learn more
 * [`DOC /storage/ports`](#docs-storage-storage_ports)
-
 */
 func (a *Client) PortGet(params *PortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1847,7 +1851,7 @@ func (a *Client) PortGet(params *PortGetParams, authInfo runtime.ClientAuthInfoW
 }
 
 /*
-  QosPolicyCollectionGet Retrieves a collection of QoS policies.
+QosPolicyCollectionGet Retrieves a collection of QoS policies.
 */
 func (a *Client) QosPolicyCollectionGet(params *QosPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosPolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1885,7 +1889,8 @@ func (a *Client) QosPolicyCollectionGet(params *QosPolicyCollectionGetParams, au
 }
 
 /*
-  QosPolicyCreate Creates a QoS policy.
+	QosPolicyCreate Creates a QoS policy.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - The existing SVM owning the QoS policy.
 * `name` - The name of the QoS policy.
@@ -1895,7 +1900,6 @@ func (a *Client) QosPolicyCollectionGet(params *QosPolicyCollectionGetParams, au
 ### Related ONTAP commands
 * `qos policy-group create`
 * `qos adaptive-policy-group create`
-
 */
 func (a *Client) QosPolicyCreate(params *QosPolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosPolicyCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1933,11 +1937,11 @@ func (a *Client) QosPolicyCreate(params *QosPolicyCreateParams, authInfo runtime
 }
 
 /*
-  QosPolicyDelete Deletes a QoS policy. All QoS workloads associated with the policy are removed.
+	QosPolicyDelete Deletes a QoS policy. All QoS workloads associated with the policy are removed.
+
 ### Related ONTAP commands
 * `qos policy-group delete`
 * `qos adaptive-policy-group delete`
-
 */
 func (a *Client) QosPolicyDelete(params *QosPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosPolicyDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1975,11 +1979,11 @@ func (a *Client) QosPolicyDelete(params *QosPolicyDeleteParams, authInfo runtime
 }
 
 /*
-  QosPolicyGet Retrieves a specific QoS policy.
+	QosPolicyGet Retrieves a specific QoS policy.
+
 ### Related ONTAP commands
 * `qos policy-group show`
 * `qos adaptive-policy-group show`
-
 */
 func (a *Client) QosPolicyGet(params *QosPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosPolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2017,11 +2021,11 @@ func (a *Client) QosPolicyGet(params *QosPolicyGetParams, authInfo runtime.Clien
 }
 
 /*
-  QosPolicyModify Update a specific QoS policy.
+	QosPolicyModify Update a specific QoS policy.
+
 ### Related ONTAP commands
 * `qos policy-group modify`
 * `qos adaptive-policy-group modify`
-
 */
 func (a *Client) QosPolicyModify(params *QosPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosPolicyModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2059,7 +2063,7 @@ func (a *Client) QosPolicyModify(params *QosPolicyModifyParams, authInfo runtime
 }
 
 /*
-  QosWorkloadCollectionGet Retrieves a collection of QoS workloads.
+QosWorkloadCollectionGet Retrieves a collection of QoS workloads.
 */
 func (a *Client) QosWorkloadCollectionGet(params *QosWorkloadCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosWorkloadCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2097,10 +2101,10 @@ func (a *Client) QosWorkloadCollectionGet(params *QosWorkloadCollectionGetParams
 }
 
 /*
-  QosWorkloadGet Retrieves a specific QoS workload.
+	QosWorkloadGet Retrieves a specific QoS workload.
+
 ### Related ONTAP command
 * `qos workload show`
-
 */
 func (a *Client) QosWorkloadGet(params *QosWorkloadGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosWorkloadGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2138,14 +2142,14 @@ func (a *Client) QosWorkloadGet(params *QosWorkloadGetParams, authInfo runtime.C
 }
 
 /*
-  QtreeCollectionGet Retrieves qtrees configured for all FlexVol volumes or FlexGroup volumes. <br/>
+	QtreeCollectionGet Retrieves qtrees configured for all FlexVol volumes or FlexGroup volumes. <br/>
+
 Use the `fields` query parameter to retrieve all properties of the qtree. If the `fields` query parameter is not used, then GET returns the qtree `name` and qtree `id` only.
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 ### Related ONTAP commands
 * `qtree show`
-
 */
 func (a *Client) QtreeCollectionGet(params *QtreeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QtreeCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2183,7 +2187,8 @@ func (a *Client) QtreeCollectionGet(params *QtreeCollectionGetParams, authInfo r
 }
 
 /*
-  QtreeCreate Creates a qtree in a FlexVol volume or a FlexGroup volume. <br/>
+	QtreeCreate Creates a qtree in a FlexVol volume or a FlexGroup volume. <br/>
+
 After a qtree is created, the new qtree is assigned an identifier. This identifier is obtained using a qtree GET request. This identifier is used in the API path for the qtree PATCH and DELETE operations.
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the qtree.
@@ -2196,7 +2201,6 @@ If not specified in POST, the values are inherited from the volume.
 * `export_policy.name or export_policy.id` - Export policy of the SVM for the qtree.
 ### Related ONTAP commands
 * `qtree create`
-
 */
 func (a *Client) QtreeCreate(params *QtreeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QtreeCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2234,10 +2238,10 @@ func (a *Client) QtreeCreate(params *QtreeCreateParams, authInfo runtime.ClientA
 }
 
 /*
-  QtreeDelete Deletes a qtree.
+	QtreeDelete Deletes a qtree.
+
 ### Related ONTAP commands
 * `qtree delete`
-
 */
 func (a *Client) QtreeDelete(params *QtreeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QtreeDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2275,13 +2279,13 @@ func (a *Client) QtreeDelete(params *QtreeDeleteParams, authInfo runtime.ClientA
 }
 
 /*
-  QtreeGet Retrieves properties for a specific qtree identified by the `volume.uuid` and the `id` in the API path.
+	QtreeGet Retrieves properties for a specific qtree identified by the `volume.uuid` and the `id` in the API path.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 ### Related ONTAP commands
 * `qtree show`
-
 */
 func (a *Client) QtreeGet(params *QtreeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QtreeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2319,11 +2323,11 @@ func (a *Client) QtreeGet(params *QtreeGetParams, authInfo runtime.ClientAuthInf
 }
 
 /*
-  QtreeModify Updates properties for a specific qtree.
+	QtreeModify Updates properties for a specific qtree.
+
 ### Related ONTAP commands
 * `qtree modify`
 * `qtree rename`
-
 */
 func (a *Client) QtreeModify(params *QtreeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QtreeModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2361,10 +2365,10 @@ func (a *Client) QtreeModify(params *QtreeModifyParams, authInfo runtime.ClientA
 }
 
 /*
-  QuotaReportCollectionGet Retrieves the quota report records for all FlexVol volumes and FlexGroup volumes.
+	QuotaReportCollectionGet Retrieves the quota report records for all FlexVol volumes and FlexGroup volumes.
+
 ### Related ONTAP commands
 * `quota report`
-
 */
 func (a *Client) QuotaReportCollectionGet(params *QuotaReportCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QuotaReportCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2402,10 +2406,10 @@ func (a *Client) QuotaReportCollectionGet(params *QuotaReportCollectionGetParams
 }
 
 /*
-  QuotaReportGet Retrieves a specific quota report record.
+	QuotaReportGet Retrieves a specific quota report record.
+
 ### Related ONTAP commands
 * `quota report`
-
 */
 func (a *Client) QuotaReportGet(params *QuotaReportGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QuotaReportGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2443,10 +2447,10 @@ func (a *Client) QuotaReportGet(params *QuotaReportGetParams, authInfo runtime.C
 }
 
 /*
-  QuotaRuleCollectionGet Retrieves quota policy rules configured for all FlexVol volumes and FlexGroup volumes.
+	QuotaRuleCollectionGet Retrieves quota policy rules configured for all FlexVol volumes and FlexGroup volumes.
+
 ### Related ONTAP commands
 * `quota policy rule show`
-
 */
 func (a *Client) QuotaRuleCollectionGet(params *QuotaRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QuotaRuleCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2484,7 +2488,8 @@ func (a *Client) QuotaRuleCollectionGet(params *QuotaRuleCollectionGetParams, au
 }
 
 /*
-  QuotaRuleCreate Creates a quota policy rule for a FlexVol or a FlexGroup volume.<br/>
+	QuotaRuleCreate Creates a quota policy rule for a FlexVol or a FlexGroup volume.<br/>
+
 Important notes:
 * Unlike CLI/ONTAPI, the `quota policy` input is not needed for POST.
 ### Required properties
@@ -2502,7 +2507,6 @@ Important notes:
 * `user_mapping` - Specifies the user_mapping. This property is valid only for quota policy rules of type `user`.
 ### Related ONTAP commands
 * `quota policy rule create`
-
 */
 func (a *Client) QuotaRuleCreate(params *QuotaRuleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QuotaRuleCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2540,10 +2544,10 @@ func (a *Client) QuotaRuleCreate(params *QuotaRuleCreateParams, authInfo runtime
 }
 
 /*
-  QuotaRuleDelete Deletes a quota policy rule.
+	QuotaRuleDelete Deletes a quota policy rule.
+
 ### Related ONTAP commands
 * `quota policy rule delete`
-
 */
 func (a *Client) QuotaRuleDelete(params *QuotaRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QuotaRuleDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2581,10 +2585,10 @@ func (a *Client) QuotaRuleDelete(params *QuotaRuleDeleteParams, authInfo runtime
 }
 
 /*
-  QuotaRuleGet Retrieves properties for a specific quota policy rule.
+	QuotaRuleGet Retrieves properties for a specific quota policy rule.
+
 ### Related ONTAP commands
 * `quota policy rule show`
-
 */
 func (a *Client) QuotaRuleGet(params *QuotaRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QuotaRuleGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2622,7 +2626,8 @@ func (a *Client) QuotaRuleGet(params *QuotaRuleGetParams, authInfo runtime.Clien
 }
 
 /*
-  QuotaRuleModify Updates properties of a specific quota policy rule. <br>
+	QuotaRuleModify Updates properties of a specific quota policy rule. <br>
+
 Important notes:
 * The quota resize functionality is supported with the PATCH operation.
 * Quota resize allows you to modify the quota limits, directly in the filesystem.
@@ -2631,7 +2636,6 @@ Important notes:
 ### Related ONTAP commands
 * `quota policy rule modify`
 * `quota resize`
-
 */
 func (a *Client) QuotaRuleModify(params *QuotaRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QuotaRuleModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2669,7 +2673,8 @@ func (a *Client) QuotaRuleModify(params *QuotaRuleModifyParams, authInfo runtime
 }
 
 /*
-  ShelfCollectionGet Retrieves a collection of shelves.
+	ShelfCollectionGet Retrieves a collection of shelves.
+
 ### Related ONTAP commands
 * `storage shelf show`
 * `storage shelf port show`
@@ -2678,7 +2683,6 @@ func (a *Client) QuotaRuleModify(params *QuotaRuleModifyParams, authInfo runtime
 * `storage shelf acp show`
 ### Learn more
 * [`DOC /storage/shelves`](#docs-storage-storage_shelves)
-
 */
 func (a *Client) ShelfCollectionGet(params *ShelfCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShelfCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2716,7 +2720,8 @@ func (a *Client) ShelfCollectionGet(params *ShelfCollectionGetParams, authInfo r
 }
 
 /*
-  ShelfGet Retrieves a specific shelf.
+	ShelfGet Retrieves a specific shelf.
+
 ### Related ONTAP commands
 * `storage shelf show`
 * `storage shelf port show`
@@ -2725,7 +2730,6 @@ func (a *Client) ShelfCollectionGet(params *ShelfCollectionGetParams, authInfo r
 * `storage shelf acp show`
 ### Learn more
 * [`DOC /storage/shelves`](#docs-storage-storage_shelves)
-
 */
 func (a *Client) ShelfGet(params *ShelfGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShelfGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2763,12 +2767,12 @@ func (a *Client) ShelfGet(params *ShelfGetParams, authInfo runtime.ClientAuthInf
 }
 
 /*
-  ShelfModify Updates a shelf location LED.
+	ShelfModify Updates a shelf location LED.
+
 ### Related ONTAP commands
 * `storage shelf location-led modify`
 ### Learn more
 * [`DOC /storage/shelves`](#docs-storage-storage_shelves)
-
 */
 func (a *Client) ShelfModify(params *ShelfModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShelfModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2806,7 +2810,8 @@ func (a *Client) ShelfModify(params *ShelfModifyParams, authInfo runtime.ClientA
 }
 
 /*
-  SnapshotCollectionGet Retrieves a collection of volume Snapshot copies.
+	SnapshotCollectionGet Retrieves a collection of volume Snapshot copies.
+
 ### Expensive properties
 There is an added cost to retrieving the amount of reclaimable space for Snapshot copies, as the calculation is done on demand based on the list of Snapshot copies provided.
 * `reclaimable_space`
@@ -2815,7 +2820,6 @@ There is an added cost to retrieving the amount of reclaimable space for Snapsho
 * `snapshot compute-reclaimable`
 ### Learn more
 * [`DOC /storage/volumes/{volume.uuid}/snapshots`](#docs-storage-storage_volumes_{volume.uuid}_snapshots)
-
 */
 func (a *Client) SnapshotCollectionGet(params *SnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2853,7 +2857,8 @@ func (a *Client) SnapshotCollectionGet(params *SnapshotCollectionGetParams, auth
 }
 
 /*
-  SnapshotCreate Creates a volume Snapshot copy.
+	SnapshotCreate Creates a volume Snapshot copy.
+
 ### Required properties
 * `name` - Name of the Snapshot copy to be created.
 ### Recommended optional properties
@@ -2864,7 +2869,6 @@ func (a *Client) SnapshotCollectionGet(params *SnapshotCollectionGetParams, auth
 * `snapshot create`
 ### Learn more
 * [`DOC /storage/volumes/{volume.uuid}/snapshots`](#docs-storage-storage_volumes_{volume.uuid}_snapshots)
-
 */
 func (a *Client) SnapshotCreate(params *SnapshotCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2902,12 +2906,12 @@ func (a *Client) SnapshotCreate(params *SnapshotCreateParams, authInfo runtime.C
 }
 
 /*
-  SnapshotDelete Deletes a Volume Snapshot copy.
+	SnapshotDelete Deletes a Volume Snapshot copy.
+
 ### Related ONTAP commands
 * `snapshot delete`
 ### Learn more
 * [`DOC /storage/volumes/{volume.uuid}/snapshots`](#docs-storage-storage_volumes_{volume.uuid}_snapshots)
-
 */
 func (a *Client) SnapshotDelete(params *SnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2945,12 +2949,12 @@ func (a *Client) SnapshotDelete(params *SnapshotDeleteParams, authInfo runtime.C
 }
 
 /*
-  SnapshotGet Retrieves details of a specific volume Snapshot copy.
+	SnapshotGet Retrieves details of a specific volume Snapshot copy.
+
 ### Related ONTAP commands
 * `snapshot show`
 ### Learn more
 * [`DOC /storage/volumes/{volume.uuid}/snapshots`](#docs-storage-storage_volumes_{volume.uuid}_snapshots)
-
 */
 func (a *Client) SnapshotGet(params *SnapshotGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2988,13 +2992,13 @@ func (a *Client) SnapshotGet(params *SnapshotGetParams, authInfo runtime.ClientA
 }
 
 /*
-  SnapshotModify Updates a Volume Snapshot copy.
+	SnapshotModify Updates a Volume Snapshot copy.
+
 ### Related ONTAP commands
 * `snapshot modify`
 * `snapshot rename`
 ### Learn more
 * [`DOC /storage/volumes/{volume.uuid}/snapshots`](#docs-storage-storage_volumes_{volume.uuid}_snapshots)
-
 */
 func (a *Client) SnapshotModify(params *SnapshotModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3032,12 +3036,12 @@ func (a *Client) SnapshotModify(params *SnapshotModifyParams, authInfo runtime.C
 }
 
 /*
-  SnapshotPolicyCollectionGet Retrieves a collection of Snapshot copy policies.
+	SnapshotPolicyCollectionGet Retrieves a collection of Snapshot copy policies.
+
 ### Related ONTAP commands
 * `snapshot policy show`
 ### Learn more
 * [`DOC /storage/snapshot-policies`](#docs-storage-storage_snapshot-policies)
-
 */
 func (a *Client) SnapshotPolicyCollectionGet(params *SnapshotPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3075,7 +3079,8 @@ func (a *Client) SnapshotPolicyCollectionGet(params *SnapshotPolicyCollectionGet
 }
 
 /*
-  SnapshotPolicyCreate Creates a Snapshot copy policy.
+	SnapshotPolicyCreate Creates a Snapshot copy policy.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the Snapshot copy policy.
 * `name` - Name for the Snapshot copy policy.
@@ -3091,7 +3096,6 @@ If not specified in POST, the following default property values are assigned:
 * `snapshot policy create`
 ### Learn more
 * [`DOC /storage/snapshot-policies`](#docs-storage-storage_snapshot-policies)
-
 */
 func (a *Client) SnapshotPolicyCreate(params *SnapshotPolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3129,12 +3133,12 @@ func (a *Client) SnapshotPolicyCreate(params *SnapshotPolicyCreateParams, authIn
 }
 
 /*
-  SnapshotPolicyDelete Deletes a Snapshot copy policy
+	SnapshotPolicyDelete Deletes a Snapshot copy policy
+
 ### Related ONTAP commands
 * `snapshot policy delete`
 ### Learn more
 * [`DOC /storage/snapshot-policies`](#docs-storage-storage_snapshot-policies)
-
 */
 func (a *Client) SnapshotPolicyDelete(params *SnapshotPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3172,12 +3176,12 @@ func (a *Client) SnapshotPolicyDelete(params *SnapshotPolicyDeleteParams, authIn
 }
 
 /*
-  SnapshotPolicyGet Retrieves details of a specific Snapshot copy policy.
+	SnapshotPolicyGet Retrieves details of a specific Snapshot copy policy.
+
 ### Related ONTAP commands
 * `snapshot policy show`
 ### Learn more
 * [`DOC /storage/snapshot-policies`](#docs-storage-storage_snapshot-policies)
-
 */
 func (a *Client) SnapshotPolicyGet(params *SnapshotPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3215,14 +3219,14 @@ func (a *Client) SnapshotPolicyGet(params *SnapshotPolicyGetParams, authInfo run
 }
 
 /*
-  SnapshotPolicyModify Updates a Snapshot copy policy
+	SnapshotPolicyModify Updates a Snapshot copy policy
+
 ### Related ONTAP commands
 * `snapshot policy modify`
 * `snapshot policy modify-schedule`
 * `snapshot policy add-schedule`
 ### Learn more
 * [`DOC /storage/snapshot-policies`](#docs-storage-storage_snapshot-policies)
-
 */
 func (a *Client) SnapshotPolicyModify(params *SnapshotPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3260,12 +3264,12 @@ func (a *Client) SnapshotPolicyModify(params *SnapshotPolicyModifyParams, authIn
 }
 
 /*
-  SnapshotPolicyScheduleCollectionGet Retrieves a collection of Snapshot copy policy schedules.
+	SnapshotPolicyScheduleCollectionGet Retrieves a collection of Snapshot copy policy schedules.
+
 ### Related ONTAP commands
 * `snapshot policy show`
 ### Learn more
 * [`DOC /storage/snapshot-policies/{snapshot_policy.uuid}/schedules`](#docs-storage-storage_snapshot-policies_{snapshot_policy.uuid}_schedules)
-
 */
 func (a *Client) SnapshotPolicyScheduleCollectionGet(params *SnapshotPolicyScheduleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyScheduleCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3303,7 +3307,8 @@ func (a *Client) SnapshotPolicyScheduleCollectionGet(params *SnapshotPolicySched
 }
 
 /*
-  SnapshotPolicyScheduleCreate Adds a schedule to a Snapshot copy policy.
+	SnapshotPolicyScheduleCreate Adds a schedule to a Snapshot copy policy.
+
 ### Required properties
 * `schedule.uuid` or `schedule.name` - Schedule at which Snapshot copies are captured on the volume.
 * `count` - Number of Snapshot copies to maintain for this schedule.
@@ -3316,7 +3321,6 @@ If not specified in POST, the following default property values are assigned:
 * `snapshot policy add-schedule`
 ### Learn more
 * [`DOC /storage/snapshot-policies/{snapshot_policy.uuid}/schedules`](#docs-storage-storage_snapshot-policies_{snapshot_policy.uuid}_schedules)
-
 */
 func (a *Client) SnapshotPolicyScheduleCreate(params *SnapshotPolicyScheduleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyScheduleCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3354,12 +3358,12 @@ func (a *Client) SnapshotPolicyScheduleCreate(params *SnapshotPolicyScheduleCrea
 }
 
 /*
-  SnapshotPolicyScheduleDelete Deletes a schedule from a Snapshot copy policy
+	SnapshotPolicyScheduleDelete Deletes a schedule from a Snapshot copy policy
+
 ### Related ONTAP commands
 * `snapshot policy remove-schedule`
 ### Learn more
 * [`DOC /storage/snapshot-policies/{snapshot_policy.uuid}/schedules`](#docs-storage-storage_snapshot-policies_{snapshot_policy.uuid}_schedules)
-
 */
 func (a *Client) SnapshotPolicyScheduleDelete(params *SnapshotPolicyScheduleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyScheduleDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3397,12 +3401,12 @@ func (a *Client) SnapshotPolicyScheduleDelete(params *SnapshotPolicyScheduleDele
 }
 
 /*
-  SnapshotPolicyScheduleGet Retrieves details of a specific Snapshot copy policy schedule.
+	SnapshotPolicyScheduleGet Retrieves details of a specific Snapshot copy policy schedule.
+
 ### Related ONTAP commands
 * `snapshot policy show`
 ### Learn more
 * [`DOC /storage/snapshot-policies/{snapshot_policy.uuid}/schedules`](#docs-storage-storage_snapshot-policies_{snapshot_policy.uuid}_schedules)
-
 */
 func (a *Client) SnapshotPolicyScheduleGet(params *SnapshotPolicyScheduleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyScheduleGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3440,12 +3444,12 @@ func (a *Client) SnapshotPolicyScheduleGet(params *SnapshotPolicyScheduleGetPara
 }
 
 /*
-  SnapshotPolicyScheduleModify Updates a Snapshot copy policy schedule
+	SnapshotPolicyScheduleModify Updates a Snapshot copy policy schedule
+
 ### Related ONTAP commands
 * `snapshot policy modify-schedule`
 ### Learn more
 * [`DOC /storage/snapshot-policies/{snapshot_policy.uuid}/schedules`](#docs-storage-storage_snapshot-policies_{snapshot_policy.uuid}_schedules)
-
 */
 func (a *Client) SnapshotPolicyScheduleModify(params *SnapshotPolicyScheduleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyScheduleModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3483,7 +3487,8 @@ func (a *Client) SnapshotPolicyScheduleModify(params *SnapshotPolicyScheduleModi
 }
 
 /*
-  SplitLoadCollectionGet Retrieves the clone split load of a node.
+	SplitLoadCollectionGet Retrieves the clone split load of a node.
+
 ### Related Ontap Commands
 * `volume file clone split load show`
 ### Retrieving file clone split load related information
@@ -3494,64 +3499,65 @@ The GET operation can be used to retrieve information about clone split load dat
 # The call:
 curl -X GET "https://<mgmt_ip>/api/storage/file/clone/split-loads" -H "accept: application/hal+json"
 # The response:
-{
-  "records": [
-    {
-      "node": {
-        "uuid": "158d592f-a829-11eb-a47b-005056bb46d7",
-        "name": "node1",
-        "_links": {
-          "self": {
-            "href": "/api/cluster/nodes/158d592f-a829-11eb-a47b-005056bb46d7"
-          }
-        }
-      },
-      "load": {
-        "maximum": 35184372088832,
-        "current": 0,
-        "token_reserved": 0,
-        "allowable": 35184372088832
-      },
-      "_links": {
-        "self": {
-          "href": "/api/storage/file/clone/split-loads/158d592f-a829-11eb-a47b-005056bb46d7"
-        }
-      }
-    },
-    {
-      "node": {
-        "uuid": "9686b8d1-a828-11eb-80d8-005056bbe7b6",
-        "name": "node2",
-        "_links": {
-          "self": {
-            "href": "/api/cluster/nodes/9686b8d1-a828-11eb-80d8-005056bbe7b6"
-          }
-        }
-      },
-      "load": {
-        "maximum": 35184372088832,
-        "current": 0,
-        "token_reserved": 0,
-        "allowable": 35184372088832
-      },
-      "_links": {
-        "self": {
-          "href": "/api/storage/file/clone/split-loads/9686b8d1-a828-11eb-80d8-005056bbe7b6"
-        }
-      }
-    }
-  ],
-  "num_records": 2,
-  "_links":
-    "self": {
-      "href": "/api/storage/file/clone/split-loads"
-    }
-  }
-}
+
+	{
+	  "records": [
+	    {
+	      "node": {
+	        "uuid": "158d592f-a829-11eb-a47b-005056bb46d7",
+	        "name": "node1",
+	        "_links": {
+	          "self": {
+	            "href": "/api/cluster/nodes/158d592f-a829-11eb-a47b-005056bb46d7"
+	          }
+	        }
+	      },
+	      "load": {
+	        "maximum": 35184372088832,
+	        "current": 0,
+	        "token_reserved": 0,
+	        "allowable": 35184372088832
+	      },
+	      "_links": {
+	        "self": {
+	          "href": "/api/storage/file/clone/split-loads/158d592f-a829-11eb-a47b-005056bb46d7"
+	        }
+	      }
+	    },
+	    {
+	      "node": {
+	        "uuid": "9686b8d1-a828-11eb-80d8-005056bbe7b6",
+	        "name": "node2",
+	        "_links": {
+	          "self": {
+	            "href": "/api/cluster/nodes/9686b8d1-a828-11eb-80d8-005056bbe7b6"
+	          }
+	        }
+	      },
+	      "load": {
+	        "maximum": 35184372088832,
+	        "current": 0,
+	        "token_reserved": 0,
+	        "allowable": 35184372088832
+	      },
+	      "_links": {
+	        "self": {
+	          "href": "/api/storage/file/clone/split-loads/9686b8d1-a828-11eb-80d8-005056bbe7b6"
+	        }
+	      }
+	    }
+	  ],
+	  "num_records": 2,
+	  "_links":
+	    "self": {
+	      "href": "/api/storage/file/clone/split-loads"
+	    }
+	  }
+	}
+
 ```
 ### Learn More
 * [`DOC /storage/file/clone`]
-
 */
 func (a *Client) SplitLoadCollectionGet(params *SplitLoadCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitLoadCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3589,7 +3595,7 @@ func (a *Client) SplitLoadCollectionGet(params *SplitLoadCollectionGetParams, au
 }
 
 /*
-  SplitLoadGet Retrieve Volume File Clone Split Load REST
+SplitLoadGet Retrieve Volume File Clone Split Load REST
 */
 func (a *Client) SplitLoadGet(params *SplitLoadGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitLoadGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3627,7 +3633,8 @@ func (a *Client) SplitLoadGet(params *SplitLoadGetParams, authInfo runtime.Clien
 }
 
 /*
-  SplitLoadModify Updates the maximum split load.
+	SplitLoadModify Updates the maximum split load.
+
 ### Related Ontap command
 * `volume file clone split load modify`
 ### Learn More
@@ -3637,7 +3644,6 @@ func (a *Client) SplitLoadGet(params *SplitLoadGetParams, authInfo runtime.Clien
 curl -X PATCH "https://<mgmt_IP>/api/storage/file/clone/split-loads/9686b8d1-a828-11eb-80d8-005056bbe7b6" -d '{"load": {"maximum": "16TB" } }'
 # The response to successful patch is empty body
 ```
-
 */
 func (a *Client) SplitLoadModify(params *SplitLoadModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitLoadModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3675,7 +3681,8 @@ func (a *Client) SplitLoadModify(params *SplitLoadModifyParams, authInfo runtime
 }
 
 /*
-  SplitStatusCollectionGet Retrieves file clone split status of all volumes in the node.
+	SplitStatusCollectionGet Retrieves file clone split status of all volumes in the node.
+
 ### Learn More
 * [`DOC /storage/file/clone`]
 ```
@@ -3684,60 +3691,61 @@ func (a *Client) SplitLoadModify(params *SplitLoadModifyParams, authInfo runtime
 # The call:
 curl -X GET "https://<mgmt_ip>/api/storage/file/clone/split-status" -H "accept: application/hal+json"
 # The response:
-{
-  "records": [
-    {
-      "volume": {
-        "uuid": "ac559964-57a3-40cf-b5cb-f3cb99151a7d",
-        "name": "vol1",
-        "_links": {
-          "self": {
-            "href": "/api/storage/volumes/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
-          }
-        }
-      },
-      "svm": {
-        "name": "vs1"
-      },
-      "pending_splits": 0,
-      "unsplit_clone_size": 0,
-      "_links": {
-        "self": {
-          "href": "/api/storage/file/clone/split-status/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
-        }
-      }
-    },
-    {
-      "volume": {
-        "uuid": "32d95d48-d8b7-11eb-a41d-005056bb3837",
-        "name": "vs1_root",
-        "_links": {
-          "self": {
-            "href": "/api/storage/volumes/32d95d48-d8b7-11eb-a41d-005056bb3837"
-          }
-        }
-      },
-      "svm": {
-        "name": "vs1"
-      },
-      "pending_splits": 0,
-      "unsplit_clone_size": 0,
-      "_links": {
-        "self": {
-          "href": "/api/storage/file/clone/split-status/32d95d48-d8b7-11eb-a41d-005056bb3837"
-        }
-      }
-    }
-  ],
-  "num_records": 2,
-  "_links": {
-    "self": {
-      "href": "/api/storage/file/clone/split-status"
-    }
-  }
-}
-```
 
+	{
+	  "records": [
+	    {
+	      "volume": {
+	        "uuid": "ac559964-57a3-40cf-b5cb-f3cb99151a7d",
+	        "name": "vol1",
+	        "_links": {
+	          "self": {
+	            "href": "/api/storage/volumes/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
+	          }
+	        }
+	      },
+	      "svm": {
+	        "name": "vs1"
+	      },
+	      "pending_splits": 0,
+	      "unsplit_clone_size": 0,
+	      "_links": {
+	        "self": {
+	          "href": "/api/storage/file/clone/split-status/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
+	        }
+	      }
+	    },
+	    {
+	      "volume": {
+	        "uuid": "32d95d48-d8b7-11eb-a41d-005056bb3837",
+	        "name": "vs1_root",
+	        "_links": {
+	          "self": {
+	            "href": "/api/storage/volumes/32d95d48-d8b7-11eb-a41d-005056bb3837"
+	          }
+	        }
+	      },
+	      "svm": {
+	        "name": "vs1"
+	      },
+	      "pending_splits": 0,
+	      "unsplit_clone_size": 0,
+	      "_links": {
+	        "self": {
+	          "href": "/api/storage/file/clone/split-status/32d95d48-d8b7-11eb-a41d-005056bb3837"
+	        }
+	      }
+	    }
+	  ],
+	  "num_records": 2,
+	  "_links": {
+	    "self": {
+	      "href": "/api/storage/file/clone/split-status"
+	    }
+	  }
+	}
+
+```
 */
 func (a *Client) SplitStatusCollectionGet(params *SplitStatusCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitStatusCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3775,7 +3783,8 @@ func (a *Client) SplitStatusCollectionGet(params *SplitStatusCollectionGetParams
 }
 
 /*
-  SplitStatusGet Retrieves file clone split status of all volumes in the node.
+	SplitStatusGet Retrieves file clone split status of all volumes in the node.
+
 ### Related Ontap commands
 * `volume file clone split status`
 ### Learn More
@@ -3790,29 +3799,30 @@ The GET operation retrieves information about split processes in the volume.<br\
 # The call:
 curl -X GET "https://<mgmt_ip>/api/storage/file/clone/split-status/ac559964-57a3-40cf-b5cb-f3cb99151a7d" -H "accept: application/hal+json"
 # The response:
-{
-  "volume": {
-    "uuid": "ac559964-57a3-40cf-b5cb-f3cb99151a7d",
-    "name": "vol1",
-    "_links": {
-      "self": {
-        "href": "/api/storage/volumes/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
-      }
-    }
-  },
-  "svm": {
-    "name": "vs1"
-  },
-  "pending_splits": 0,
-  "unsplit_clone_size": 0,
-  "_links": {
-    "self": {
-      "href": "/api/storage/file/clone/split-status/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
-    }
-  }
-}
-```
 
+	{
+	  "volume": {
+	    "uuid": "ac559964-57a3-40cf-b5cb-f3cb99151a7d",
+	    "name": "vol1",
+	    "_links": {
+	      "self": {
+	        "href": "/api/storage/volumes/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
+	      }
+	    }
+	  },
+	  "svm": {
+	    "name": "vs1"
+	  },
+	  "pending_splits": 0,
+	  "unsplit_clone_size": 0,
+	  "_links": {
+	    "self": {
+	      "href": "/api/storage/file/clone/split-status/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
+	    }
+	  }
+	}
+
+```
 */
 func (a *Client) SplitStatusGet(params *SplitStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitStatusGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3850,12 +3860,12 @@ func (a *Client) SplitStatusGet(params *SplitStatusGetParams, authInfo runtime.C
 }
 
 /*
-  StorageBridgeCollectionGet Retrieves a collection of bridges.
+	StorageBridgeCollectionGet Retrieves a collection of bridges.
+
 ### Related ONTAP commands
 * `storage bridge show`
 ### Learn more
 * [`DOC /storage/bridges`](#docs-storage-storage_bridges)
-
 */
 func (a *Client) StorageBridgeCollectionGet(params *StorageBridgeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageBridgeCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3893,12 +3903,12 @@ func (a *Client) StorageBridgeCollectionGet(params *StorageBridgeCollectionGetPa
 }
 
 /*
-  StorageBridgeGet Retrieves a specific bridge
+	StorageBridgeGet Retrieves a specific bridge
+
 ### Related ONTAP commands
 * `storage bridge show`
 ### Learn more
 * [`DOC /storage/bridges`](#docs-storage-storage_bridges)
-
 */
 func (a *Client) StorageBridgeGet(params *StorageBridgeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageBridgeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3936,9 +3946,9 @@ func (a *Client) StorageBridgeGet(params *StorageBridgeGetParams, authInfo runti
 }
 
 /*
-  StorageClusterGet Reports cluster wide storage details across different tiers. By default, this endpoint returns all fields.
-Supports the following roles: admin, and readonly.
+	StorageClusterGet Reports cluster wide storage details across different tiers. By default, this endpoint returns all fields.
 
+Supports the following roles: admin, and readonly.
 */
 func (a *Client) StorageClusterGet(params *StorageClusterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageClusterGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3976,10 +3986,10 @@ func (a *Client) StorageClusterGet(params *StorageClusterGetParams, authInfo run
 }
 
 /*
-  StoragePoolCollectionGet Retrieves the collection of storage pools for the entire cluster.
+	StoragePoolCollectionGet Retrieves the collection of storage pools for the entire cluster.
+
 ### Related ONTAP commands
 * `storage pool show`
-
 */
 func (a *Client) StoragePoolCollectionGet(params *StoragePoolCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4017,7 +4027,8 @@ func (a *Client) StoragePoolCollectionGet(params *StoragePoolCollectionGetParams
 }
 
 /*
-  StoragePoolCreate Creates a new storage pool using available solid state capacity attached to the nodes specified.
+	StoragePoolCreate Creates a new storage pool using available solid state capacity attached to the nodes specified.
+
 ### Required properties
 The following properties are required in the POST body:
 * `name` - Name of the new storage pool.
@@ -4029,7 +4040,6 @@ The following properties are required in the POST body:
 ```
 POST /api/storage/pools {"nodes": [{"name": "node1"}, {"name": "node2"}], "name": "storage_pool_1", "capacity": {"disk_count": "4"}}
 ```
-
 */
 func (a *Client) StoragePoolCreate(params *StoragePoolCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolCreateCreated, *StoragePoolCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -4069,10 +4079,10 @@ func (a *Client) StoragePoolCreate(params *StoragePoolCreateParams, authInfo run
 }
 
 /*
-  StoragePoolDelete Deletes the storage pool specified by the UUID. This request starts a job and returns a link to that job.
+	StoragePoolDelete Deletes the storage pool specified by the UUID. This request starts a job and returns a link to that job.
+
 ### Related ONTAP commands
 * `storage pool delete`
-
 */
 func (a *Client) StoragePoolDelete(params *StoragePoolDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -4110,10 +4120,10 @@ func (a *Client) StoragePoolDelete(params *StoragePoolDeleteParams, authInfo run
 }
 
 /*
-  StoragePoolGet Retrieves the storage pool specified by the UUID.
+	StoragePoolGet Retrieves the storage pool specified by the UUID.
+
 ### Related ONTAP commands
 * `storage pool show -storage-pool-uuid`
-
 */
 func (a *Client) StoragePoolGet(params *StoragePoolGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4151,12 +4161,12 @@ func (a *Client) StoragePoolGet(params *StoragePoolGetParams, authInfo runtime.C
 }
 
 /*
-  StoragePoolModify Updates the storage pool specified by the UUID with the properties in the body. This request starts a job and returns a link to that job.
+	StoragePoolModify Updates the storage pool specified by the UUID with the properties in the body. This request starts a job and returns a link to that job.
+
 ### Related ONTAP commands
 * `storage pool rename`
 * `storage pool reassign`
 * `storage pool add`
-
 */
 func (a *Client) StoragePoolModify(params *StoragePoolModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePoolModifyOK, *StoragePoolModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -4196,14 +4206,14 @@ func (a *Client) StoragePoolModify(params *StoragePoolModifyParams, authInfo run
 }
 
 /*
-  StoragePortModify Updates a storage port.
+	StoragePortModify Updates a storage port.
+
 ### Related ONTAP commands
 * `storage port modify`
 * `storage port enable`
 * `storage port disable`
 ### Learn more
 * [`DOC /storage/ports`](#docs-storage-storage_ports)
-
 */
 func (a *Client) StoragePortModify(params *StoragePortModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StoragePortModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -4241,12 +4251,12 @@ func (a *Client) StoragePortModify(params *StoragePortModifyParams, authInfo run
 }
 
 /*
-  StorageSwitchCollectionGet Retrieves a collection of storage switches.
+	StorageSwitchCollectionGet Retrieves a collection of storage switches.
+
 ### Related ONTAP commands
 * `storage switch show`
 ### Learn more
 * [`DOC /storage/switches`](#docs-storage-storage_switches)
-
 */
 func (a *Client) StorageSwitchCollectionGet(params *StorageSwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageSwitchCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4284,12 +4294,12 @@ func (a *Client) StorageSwitchCollectionGet(params *StorageSwitchCollectionGetPa
 }
 
 /*
-  StorageSwitchGet Retrieves a specific storage switch.
+	StorageSwitchGet Retrieves a specific storage switch.
+
 ### Related ONTAP commands
 * `storage switch show`
 ### Learn more
 * [`DOC /storage/switches`](#docs-storage-storage_switches)
-
 */
 func (a *Client) StorageSwitchGet(params *StorageSwitchGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageSwitchGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4327,12 +4337,12 @@ func (a *Client) StorageSwitchGet(params *StorageSwitchGetParams, authInfo runti
 }
 
 /*
-  TapeDeviceCollectionGet Retrieves a collection of tape devices.
+	TapeDeviceCollectionGet Retrieves a collection of tape devices.
+
 ### Related ONTAP commands
 * `storage tape show`
 ### Learn more
 * [`DOC /storage/tape-devices`](#docs-storage-storage_tape-devices)
-
 */
 func (a *Client) TapeDeviceCollectionGet(params *TapeDeviceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TapeDeviceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4370,12 +4380,12 @@ func (a *Client) TapeDeviceCollectionGet(params *TapeDeviceCollectionGetParams, 
 }
 
 /*
-  TapeDeviceGet Retrieves a specific tape device.
+	TapeDeviceGet Retrieves a specific tape device.
+
 ### Related ONTAP commands
 * `storage tape show`
 ### Learn more
 * [`DOC /storage/tape-devices`](#docs-storage-storage_tape-devices)
-
 */
 func (a *Client) TapeDeviceGet(params *TapeDeviceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TapeDeviceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4413,7 +4423,8 @@ func (a *Client) TapeDeviceGet(params *TapeDeviceGetParams, authInfo runtime.Cli
 }
 
 /*
-  TapeDeviceModify Updates a specific tape device.
+	TapeDeviceModify Updates a specific tape device.
+
 ### Related ONTAP commands
 * `storage tape alias-set`
 * `storage tape alias-clear`
@@ -4422,7 +4433,6 @@ func (a *Client) TapeDeviceGet(params *TapeDeviceGetParams, authInfo runtime.Cli
 * `storage tape position`
 ### Learn more
 * [`DOC /storage/tape-devices`](#docs-storage-storage_tape-devices)
-
 */
 func (a *Client) TapeDeviceModify(params *TapeDeviceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TapeDeviceModifyOK, *TapeDeviceModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -4462,7 +4472,8 @@ func (a *Client) TapeDeviceModify(params *TapeDeviceModifyParams, authInfo runti
 }
 
 /*
-  TokenCollectionGet Retrieves information for the specified token.
+	TokenCollectionGet Retrieves information for the specified token.
+
 ### Related Ontap command
 * `volume file clone token show`
 ### Learn More
@@ -4474,40 +4485,41 @@ func (a *Client) TapeDeviceModify(params *TapeDeviceModifyParams, authInfo runti
 # The call:
 curl -X GET "https://<mgmt_ip>/api/storage/file/clone/tokens" -H "accept: application/hal+json"
 # The response:
-{
-  "records": [
-    {
-      "node": {
-        "uuid": "97255711-a1ad-11eb-92b2-0050568eb2ca",
-        "name": "node1",
-        "_links": {
-          "self": {
-            "href": "/api/cluster/nodes/97255711-a1ad-11eb-92b2-0050568eb2ca"
-          }
-        }
-      },
-      "uuid": "905c42ce-a74b-11eb-bd86-0050568ec7ae",
-      "reserve_size": 10240,
-      "expiry_time": {
-        "limit": "PT1H10M",
-        "left": "PT1H9M"
-      },
-      "_links": {
-        "self": {
-          "href": "/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca/905c42ce-a74b-11eb-bd86-0050568ec7ae"
-        }
-      }
-    }
-  ],
-  "num_records": 1,
-  "_links": {
-    "self": {
-      "href": "/api/storage/file/clone/tokens"
-    }
-  }
-}
-```
 
+	{
+	  "records": [
+	    {
+	      "node": {
+	        "uuid": "97255711-a1ad-11eb-92b2-0050568eb2ca",
+	        "name": "node1",
+	        "_links": {
+	          "self": {
+	            "href": "/api/cluster/nodes/97255711-a1ad-11eb-92b2-0050568eb2ca"
+	          }
+	        }
+	      },
+	      "uuid": "905c42ce-a74b-11eb-bd86-0050568ec7ae",
+	      "reserve_size": 10240,
+	      "expiry_time": {
+	        "limit": "PT1H10M",
+	        "left": "PT1H9M"
+	      },
+	      "_links": {
+	        "self": {
+	          "href": "/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca/905c42ce-a74b-11eb-bd86-0050568ec7ae"
+	        }
+	      }
+	    }
+	  ],
+	  "num_records": 1,
+	  "_links": {
+	    "self": {
+	      "href": "/api/storage/file/clone/tokens"
+	    }
+	  }
+	}
+
+```
 */
 func (a *Client) TokenCollectionGet(params *TokenCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4545,7 +4557,8 @@ func (a *Client) TokenCollectionGet(params *TokenCollectionGetParams, authInfo r
 }
 
 /*
-  TokenCreate Creates a new token to reserve the split load.
+	TokenCreate Creates a new token to reserve the split load.
+
 ### Required Properties
 * `node.uuid`
 * `reserve-size`
@@ -4564,25 +4577,26 @@ There is a limit on the amount of clone data that can undergo a split at a point
 # The call
 curl -X POST "https://<mgmt_ip>/api/storage/file/clone/tokens" -H "accept: application/hal+json" -d '{"node": {"uuid": "97255711-a1ad-11eb-92b2-0050568eb2ca"}, "reserve_size": "40M", "expiry_time": { "limit": "4200"} }'
 # The response
-{
-  "num_records": 1,
-  "records": [
-    {
-      "node": {
-        "name": "node1"
-      },
-      "uuid": "286f6ae4-c94d-11eb-adb5-005056bbeb0b",
-      "reserve_size": 41943040,
-      "_links": {
-        "self": {
-          "href": "/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca"
-        }
-      }
-    }
-  ]
-}
-```
 
+	{
+	  "num_records": 1,
+	  "records": [
+	    {
+	      "node": {
+	        "name": "node1"
+	      },
+	      "uuid": "286f6ae4-c94d-11eb-adb5-005056bbeb0b",
+	      "reserve_size": 41943040,
+	      "_links": {
+	        "self": {
+	          "href": "/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca"
+	        }
+	      }
+	    }
+	  ]
+	}
+
+```
 */
 func (a *Client) TokenCreate(params *TokenCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -4620,7 +4634,8 @@ func (a *Client) TokenCreate(params *TokenCreateParams, authInfo runtime.ClientA
 }
 
 /*
-  TokenDelete Deletes a specific file clone token.
+	TokenDelete Deletes a specific file clone token.
+
 ### Related Ontap command
 * `volume file clone token delete`
 ### Delete specific clone token.
@@ -4633,7 +4648,6 @@ curl -X DELETE "https://<mgmt_ip>/api/storage/file/clone/tokens/97255711-a1ad-11
 ```
 ### Learn More
 * [`DOC /storage/file/clone`]
-
 */
 func (a *Client) TokenDelete(params *TokenDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -4671,7 +4685,8 @@ func (a *Client) TokenDelete(params *TokenDeleteParams, authInfo runtime.ClientA
 }
 
 /*
-  TokenGet Retrieves a file clone token
+	TokenGet Retrieves a file clone token
+
 ### Related Ontap command
 * `volume file clone token show`
 ### Retrieve information for single token.
@@ -4679,32 +4694,33 @@ func (a *Client) TokenDelete(params *TokenDeleteParams, authInfo runtime.ClientA
 # The call:
 curl -X GET "https://<mgmt_ip>/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca/905c42ce-a74b-11eb-bd86-0050568ec7ae"
 # The response:
-{
-  "node": {
-    "uuid": "97255711-a1ad-11eb-92b2-0050568eb2ca",
-    "name": "node1",
-    "_links": {
-      "self": {
-        "href": "/api/cluster/nodes/97255711-a1ad-11eb-92b2-0050568eb2ca"
-      }
-    }
-  },
-  "uuid": "905c42ce-a74b-11eb-bd86-0050568ec7ae",
-  "reserve_size": 41943040,
-  "expiry_time": {
-    "limit": "PT1H10M",
-    "left": "PT1H9M"
-  },
-  "_links": {
-    "self": {
-      "href": "/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca/905c42ce-a74b-11eb-bd86-0050568ec7ae"
-    }
-  }
-}
+
+	{
+	  "node": {
+	    "uuid": "97255711-a1ad-11eb-92b2-0050568eb2ca",
+	    "name": "node1",
+	    "_links": {
+	      "self": {
+	        "href": "/api/cluster/nodes/97255711-a1ad-11eb-92b2-0050568eb2ca"
+	      }
+	    }
+	  },
+	  "uuid": "905c42ce-a74b-11eb-bd86-0050568ec7ae",
+	  "reserve_size": 41943040,
+	  "expiry_time": {
+	    "limit": "PT1H10M",
+	    "left": "PT1H9M"
+	  },
+	  "_links": {
+	    "self": {
+	      "href": "/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca/905c42ce-a74b-11eb-bd86-0050568ec7ae"
+	    }
+	  }
+	}
+
 ```
 ### Learn More
 * [`DOC /storage/file/clone`]
-
 */
 func (a *Client) TokenGet(params *TokenGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4742,7 +4758,8 @@ func (a *Client) TokenGet(params *TokenGetParams, authInfo runtime.ClientAuthInf
 }
 
 /*
-  TokenModify Updates a file clone token.
+	TokenModify Updates a file clone token.
+
 ### Related Ontap commands
 * `volume file clone token modify`
 ### Modify clone token
@@ -4754,7 +4771,6 @@ curl -X PATCH "https://<mgmt_ip>/api/storage/file/clone/tokens/97255711-a1ad-11e
 ```
 ### Learn More
 * [`DOC /storage/file/clone`]
-
 */
 func (a *Client) TokenModify(params *TokenModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -4792,7 +4808,7 @@ func (a *Client) TokenModify(params *TokenModifyParams, authInfo runtime.ClientA
 }
 
 /*
-  TopMetricsClientCollectionGet Retrieves a list of clients with the most IO activity.
+TopMetricsClientCollectionGet Retrieves a list of clients with the most IO activity.
 */
 func (a *Client) TopMetricsClientCollectionGet(params *TopMetricsClientCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsClientCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4830,7 +4846,7 @@ func (a *Client) TopMetricsClientCollectionGet(params *TopMetricsClientCollectio
 }
 
 /*
-  TopMetricsDirectoryCollectionGet Retrieves a list of directories with the greatest value performance metric or capacity metric.
+TopMetricsDirectoryCollectionGet Retrieves a list of directories with the greatest value performance metric or capacity metric.
 */
 func (a *Client) TopMetricsDirectoryCollectionGet(params *TopMetricsDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsDirectoryCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4868,7 +4884,7 @@ func (a *Client) TopMetricsDirectoryCollectionGet(params *TopMetricsDirectoryCol
 }
 
 /*
-  TopMetricsFileCollectionGet Retrieves a list of files with the most IO activity.
+TopMetricsFileCollectionGet Retrieves a list of files with the most IO activity.
 */
 func (a *Client) TopMetricsFileCollectionGet(params *TopMetricsFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsFileCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4906,7 +4922,7 @@ func (a *Client) TopMetricsFileCollectionGet(params *TopMetricsFileCollectionGet
 }
 
 /*
-  TopMetricsUserCollectionGet Retrieves a list of users with the most IO activity.
+TopMetricsUserCollectionGet Retrieves a list of users with the most IO activity.
 */
 func (a *Client) TopMetricsUserCollectionGet(params *TopMetricsUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsUserCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4944,7 +4960,8 @@ func (a *Client) TopMetricsUserCollectionGet(params *TopMetricsUserCollectionGet
 }
 
 /*
-  VolumeCollectionGet Retrieves volumes.
+	VolumeCollectionGet Retrieves volumes.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `is_svm_root`
@@ -5066,7 +5083,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `security anti-ransomware volume show`
 * `security anti-ransomware volume space show`
 * `volume file async-delete client show`
-
 */
 func (a *Client) VolumeCollectionGet(params *VolumeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5104,7 +5120,8 @@ func (a *Client) VolumeCollectionGet(params *VolumeCollectionGetParams, authInfo
 }
 
 /*
-  VolumeCreate Creates a volume on a specified SVM and storage aggregates.
+	VolumeCreate Creates a volume on a specified SVM and storage aggregates.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the volume.
 * `name` - Name of the volume.
@@ -5121,7 +5138,6 @@ func (a *Client) VolumeCollectionGet(params *VolumeCollectionGetParams, authInfo
 ### Related ONTAP commands
 * `volume create`
 * `volume clone create`
-
 */
 func (a *Client) VolumeCreate(params *VolumeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -5159,11 +5175,11 @@ func (a *Client) VolumeCreate(params *VolumeCreateParams, authInfo runtime.Clien
 }
 
 /*
-  VolumeDelete Deletes a volume. If the UUID belongs to a volume, all of its blocks are freed and returned to its containing aggregate. If a volume is online, it is offlined before deletion. If a volume is mounted, unmount the volume by specifying the nas.path as empty before deleting it using the DELETE operation.
+	VolumeDelete Deletes a volume. If the UUID belongs to a volume, all of its blocks are freed and returned to its containing aggregate. If a volume is online, it is offlined before deletion. If a volume is mounted, unmount the volume by specifying the nas.path as empty before deleting it using the DELETE operation.
+
 ### Related ONTAP commands
 * `volume delete`
 * `volume clone delete`
-
 */
 func (a *Client) VolumeDelete(params *VolumeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -5201,12 +5217,12 @@ func (a *Client) VolumeDelete(params *VolumeDeleteParams, authInfo runtime.Clien
 }
 
 /*
-  VolumeEfficiencyPolicyCollectionGet Retrieves a collection of volume efficiency policies.
+	VolumeEfficiencyPolicyCollectionGet Retrieves a collection of volume efficiency policies.
+
 ### Related ONTAP commands
 * `volume efficiency policy show`
 ### Learn more
 * [`DOC /storage/volume-efficiency-policies`](#docs-storage-storage_volume-efficiency-policies)
-
 */
 func (a *Client) VolumeEfficiencyPolicyCollectionGet(params *VolumeEfficiencyPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeEfficiencyPolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5244,7 +5260,8 @@ func (a *Client) VolumeEfficiencyPolicyCollectionGet(params *VolumeEfficiencyPol
 }
 
 /*
-  VolumeEfficiencyPolicyCreate Creates a volume efficiency policy.
+	VolumeEfficiencyPolicyCreate Creates a volume efficiency policy.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the volume efficiency policy.
 * `name` - Name for the volume efficiency policy.
@@ -5265,7 +5282,6 @@ If not specified in POST, the following default property values are assigned:
 * `volume efficiency policy create`
 ### Learn more
 * [`DOC /storage/volume-efficiency-policies`](#docs-storage-storage_volume-efficiency-policies)
-
 */
 func (a *Client) VolumeEfficiencyPolicyCreate(params *VolumeEfficiencyPolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeEfficiencyPolicyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -5303,12 +5319,12 @@ func (a *Client) VolumeEfficiencyPolicyCreate(params *VolumeEfficiencyPolicyCrea
 }
 
 /*
-  VolumeEfficiencyPolicyDelete Deletes a volume efficiency policy.
+	VolumeEfficiencyPolicyDelete Deletes a volume efficiency policy.
+
 ### Related ONTAP commands
 * `volume efficiency policy modify`
 ### Learn more
 * [`DOC /storage/volume-efficiency-policies`](#docs-storage-storage_volume-efficiency-policies)
-
 */
 func (a *Client) VolumeEfficiencyPolicyDelete(params *VolumeEfficiencyPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeEfficiencyPolicyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -5346,12 +5362,12 @@ func (a *Client) VolumeEfficiencyPolicyDelete(params *VolumeEfficiencyPolicyDele
 }
 
 /*
-  VolumeEfficiencyPolicyGet Retrieves the details of the specified volume efficiency policy.
+	VolumeEfficiencyPolicyGet Retrieves the details of the specified volume efficiency policy.
+
 ### Related ONTAP commands
 * `volume efficiency policy show`
 ### Learn more
 * [`DOC /storage/volume-efficiency-policies`](#docs-storage-storage_volume-efficiency-policies)
-
 */
 func (a *Client) VolumeEfficiencyPolicyGet(params *VolumeEfficiencyPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeEfficiencyPolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5389,12 +5405,12 @@ func (a *Client) VolumeEfficiencyPolicyGet(params *VolumeEfficiencyPolicyGetPara
 }
 
 /*
-  VolumeEfficiencyPolicyModify Updates a volume efficiency policy.
+	VolumeEfficiencyPolicyModify Updates a volume efficiency policy.
+
 ### Related ONTAP commands
 * `volume efficiency policy modify`
 ### Learn more
 * [`DOC /storage/volume-efficiency-policies`](#docs-storage-storage_volume-efficiency-policies)
-
 */
 func (a *Client) VolumeEfficiencyPolicyModify(params *VolumeEfficiencyPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeEfficiencyPolicyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -5432,7 +5448,8 @@ func (a *Client) VolumeEfficiencyPolicyModify(params *VolumeEfficiencyPolicyModi
 }
 
 /*
-  VolumeGet Retrieves a volume. The GET API can be used to retrieve the quota state for a FlexVol or a FlexGroup volume.
+	VolumeGet Retrieves a volume. The GET API can be used to retrieve the quota state for a FlexVol or a FlexGroup volume.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `is_svm_root`
@@ -5527,7 +5544,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `security anti-ransomware volume attack generate-report`
 * `security anti-ransomware volume space show`
 * `volume file async-delete client show`
-
 */
 func (a *Client) VolumeGet(params *VolumeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5565,7 +5581,7 @@ func (a *Client) VolumeGet(params *VolumeGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  VolumeMetricsCollectionGet Retrieves historical performance metrics for a volume.
+VolumeMetricsCollectionGet Retrieves historical performance metrics for a volume.
 */
 func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeMetricsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5603,7 +5619,8 @@ func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetPa
 }
 
 /*
-  VolumeModify Updates the attributes of a volume. For movement, use the "validate_only" field on the request to validate but not perform the operation. The PATCH API can be used to enable or disable quotas for a FlexVol or a FlexGroup volume.  An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline removes its junction path.
+	VolumeModify Updates the attributes of a volume. For movement, use the "validate_only" field on the request to validate but not perform the operation. The PATCH API can be used to enable or disable quotas for a FlexVol or a FlexGroup volume.  An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline removes its junction path.
+
 <br>A PATCH request for volume encryption performs conversion/rekey operations asynchronously. You can retrieve the conversion/rekey progress details by calling a GET request on the corresponding volume endpoint.
 ### Optional properties
 * `queue_for_encryption` - Queue volumes for encryption when `encryption.enabled=true`.  If this option is not provided or is false, conversion of volumes starts immediately. When there are volumes in the queue and less than four encryptions are running, volumes are encrypted in the order in which they are queued.
@@ -5628,7 +5645,6 @@ func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetPa
 * `security anti-ransomware volume resume`
 * `volume file async-delete client disable`
 * `volume file async-delete client enable`
-
 */
 func (a *Client) VolumeModify(params *VolumeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeModifyAccepted, error) {
 	// TODO: Validate the params before sending

@@ -54,10 +54,12 @@ func NewS3PolicyModifyParamsWithHTTPClient(client *http.Client) *S3PolicyModifyP
 	}
 }
 
-/* S3PolicyModifyParams contains all the parameters to send to the API endpoint
-   for the s3 policy modify operation.
+/*
+S3PolicyModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 policy modify operation.
+
+	Typically these are written to a http.Request.
 */
 type S3PolicyModifyParams struct {
 

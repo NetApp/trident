@@ -53,10 +53,12 @@ func NewNodeMetricsCollectionGetParamsWithHTTPClient(client *http.Client) *NodeM
 	}
 }
 
-/* NodeMetricsCollectionGetParams contains all the parameters to send to the API endpoint
-   for the node metrics collection get operation.
+/*
+NodeMetricsCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the node metrics collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type NodeMetricsCollectionGetParams struct {
 

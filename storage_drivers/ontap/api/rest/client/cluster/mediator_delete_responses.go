@@ -46,7 +46,8 @@ func NewMediatorDeleteAccepted() *MediatorDeleteAccepted {
 	return &MediatorDeleteAccepted{}
 }
 
-/* MediatorDeleteAccepted describes a response with status code 202, with default header values.
+/*
+MediatorDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type MediatorDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this mediator delete accepted response has a 2xx status code
+func (o *MediatorDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this mediator delete accepted response has a 3xx status code
+func (o *MediatorDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this mediator delete accepted response has a 4xx status code
+func (o *MediatorDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this mediator delete accepted response has a 5xx status code
+func (o *MediatorDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this mediator delete accepted response a status code equal to that given
+func (o *MediatorDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *MediatorDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediatorDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *MediatorDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediatorDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *MediatorDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewMediatorDeleteDefault(code int) *MediatorDeleteDefault {
 	}
 }
 
-/* MediatorDeleteDefault describes a response with status code -1, with default header values.
+/*
+	MediatorDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 13369377    | Mediator field "mediator.id" does not exist.|
-
 */
 type MediatorDeleteDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *MediatorDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this mediator delete default response has a 2xx status code
+func (o *MediatorDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this mediator delete default response has a 3xx status code
+func (o *MediatorDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this mediator delete default response has a 4xx status code
+func (o *MediatorDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this mediator delete default response has a 5xx status code
+func (o *MediatorDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this mediator delete default response a status code equal to that given
+func (o *MediatorDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MediatorDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediator_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MediatorDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /cluster/mediators/{uuid}][%d] mediator_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MediatorDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

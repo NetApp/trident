@@ -53,10 +53,12 @@ func NewSnapshotPolicyCollectionGetParamsWithHTTPClient(client *http.Client) *Sn
 	}
 }
 
-/* SnapshotPolicyCollectionGetParams contains all the parameters to send to the API endpoint
-   for the snapshot policy collection get operation.
+/*
+SnapshotPolicyCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snapshot policy collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type SnapshotPolicyCollectionGetParams struct {
 

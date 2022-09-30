@@ -46,7 +46,8 @@ func NewCifsSearchPathCreateCreated() *CifsSearchPathCreateCreated {
 	return &CifsSearchPathCreateCreated{}
 }
 
-/* CifsSearchPathCreateCreated describes a response with status code 201, with default header values.
+/*
+CifsSearchPathCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type CifsSearchPathCreateCreated struct {
 	Payload *models.CifsSearchPathResponse
 }
 
+// IsSuccess returns true when this cifs search path create created response has a 2xx status code
+func (o *CifsSearchPathCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs search path create created response has a 3xx status code
+func (o *CifsSearchPathCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs search path create created response has a 4xx status code
+func (o *CifsSearchPathCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs search path create created response has a 5xx status code
+func (o *CifsSearchPathCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs search path create created response a status code equal to that given
+func (o *CifsSearchPathCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *CifsSearchPathCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifsSearchPathCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *CifsSearchPathCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifsSearchPathCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *CifsSearchPathCreateCreated) GetPayload() *models.CifsSearchPathResponse {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewCifsSearchPathCreateDefault(code int) *CifsSearchPathCreateDefault {
 	}
 }
 
-/* CifsSearchPathCreateDefault describes a response with status code -1, with default header values.
+/*
+	CifsSearchPathCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 655551     | Invalid home-directory search-path path    |
 | 655462     | The specified path is an invalid file-type |
-
 */
 type CifsSearchPathCreateDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *CifsSearchPathCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs search path create default response has a 2xx status code
+func (o *CifsSearchPathCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs search path create default response has a 3xx status code
+func (o *CifsSearchPathCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs search path create default response has a 4xx status code
+func (o *CifsSearchPathCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs search path create default response has a 5xx status code
+func (o *CifsSearchPathCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs search path create default response a status code equal to that given
+func (o *CifsSearchPathCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsSearchPathCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifs_search_path_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsSearchPathCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/home-directory/search-paths][%d] cifs_search_path_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsSearchPathCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewUnixUserModifyOK() *UnixUserModifyOK {
 	return &UnixUserModifyOK{}
 }
 
-/* UnixUserModifyOK describes a response with status code 200, with default header values.
+/*
+UnixUserModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type UnixUserModifyOK struct {
 }
 
+// IsSuccess returns true when this unix user modify o k response has a 2xx status code
+func (o *UnixUserModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix user modify o k response has a 3xx status code
+func (o *UnixUserModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix user modify o k response has a 4xx status code
+func (o *UnixUserModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix user modify o k response has a 5xx status code
+func (o *UnixUserModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix user modify o k response a status code equal to that given
+func (o *UnixUserModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixUserModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserModifyOK ", 200)
+}
+
+func (o *UnixUserModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserModifyOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewUnixUserModifyDefault(code int) *UnixUserModifyDefault {
 	}
 }
 
-/* UnixUserModifyDefault describes a response with status code -1, with default header values.
+/*
+	UnixUserModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 23724128   | The specified Unix user full-name contains invalid character ':' |
 | 23724089   | The specified UNIX user full-name is too long. Maximum supported length is 256 characters. |
 | 23724055   | Internal error. Failed to modify the UNIX user for the SVM. Verify that the cluster is healthy, then try the command again. |
 | 23724090   | Configuring individual entries is not supported because file-only configuration is enabled. |
-
 */
 type UnixUserModifyDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *UnixUserModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix user modify default response has a 2xx status code
+func (o *UnixUserModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix user modify default response has a 3xx status code
+func (o *UnixUserModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix user modify default response has a 4xx status code
+func (o *UnixUserModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix user modify default response has a 5xx status code
+func (o *UnixUserModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix user modify default response a status code equal to that given
+func (o *UnixUserModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixUserModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixUserModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixUserModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

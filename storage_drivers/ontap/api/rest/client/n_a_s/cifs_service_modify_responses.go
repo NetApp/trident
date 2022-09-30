@@ -46,7 +46,8 @@ func NewCifsServiceModifyAccepted() *CifsServiceModifyAccepted {
 	return &CifsServiceModifyAccepted{}
 }
 
-/* CifsServiceModifyAccepted describes a response with status code 202, with default header values.
+/*
+CifsServiceModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type CifsServiceModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cifs service modify accepted response has a 2xx status code
+func (o *CifsServiceModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs service modify accepted response has a 3xx status code
+func (o *CifsServiceModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs service modify accepted response has a 4xx status code
+func (o *CifsServiceModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs service modify accepted response has a 5xx status code
+func (o *CifsServiceModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs service modify accepted response a status code equal to that given
+func (o *CifsServiceModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *CifsServiceModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/cifs/services/{svm.uuid}][%d] cifsServiceModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *CifsServiceModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /protocols/cifs/services/{svm.uuid}][%d] cifsServiceModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *CifsServiceModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewCifsServiceModifyDefault(code int) *CifsServiceModifyDefault {
 	}
 }
 
-/* CifsServiceModifyDefault describes a response with status code -1, with default header values.
+/*
+	CifsServiceModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4915251    | STARTTLS and LDAPS cannot be used together.|
-
 */
 type CifsServiceModifyDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *CifsServiceModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs service modify default response has a 2xx status code
+func (o *CifsServiceModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs service modify default response has a 3xx status code
+func (o *CifsServiceModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs service modify default response has a 4xx status code
+func (o *CifsServiceModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs service modify default response has a 5xx status code
+func (o *CifsServiceModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs service modify default response a status code equal to that given
+func (o *CifsServiceModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsServiceModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/cifs/services/{svm.uuid}][%d] cifs_service_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsServiceModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/cifs/services/{svm.uuid}][%d] cifs_service_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsServiceModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

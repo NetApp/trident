@@ -46,7 +46,8 @@ func NewLoginMessagesGetOK() *LoginMessagesGetOK {
 	return &LoginMessagesGetOK{}
 }
 
-/* LoginMessagesGetOK describes a response with status code 200, with default header values.
+/*
+LoginMessagesGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LoginMessagesGetOK struct {
 	Payload *models.LoginMessages
 }
 
+// IsSuccess returns true when this login messages get o k response has a 2xx status code
+func (o *LoginMessagesGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this login messages get o k response has a 3xx status code
+func (o *LoginMessagesGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this login messages get o k response has a 4xx status code
+func (o *LoginMessagesGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this login messages get o k response has a 5xx status code
+func (o *LoginMessagesGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this login messages get o k response a status code equal to that given
+func (o *LoginMessagesGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LoginMessagesGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/login/messages/{uuid}][%d] loginMessagesGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LoginMessagesGetOK) String() string {
+	return fmt.Sprintf("[GET /security/login/messages/{uuid}][%d] loginMessagesGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LoginMessagesGetOK) GetPayload() *models.LoginMessages {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLoginMessagesGetDefault(code int) *LoginMessagesGetDefault {
 	}
 }
 
-/* LoginMessagesGetDefault describes a response with status code -1, with default header values.
+/*
+LoginMessagesGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LoginMessagesGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this login messages get default response has a 2xx status code
+func (o *LoginMessagesGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this login messages get default response has a 3xx status code
+func (o *LoginMessagesGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this login messages get default response has a 4xx status code
+func (o *LoginMessagesGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this login messages get default response has a 5xx status code
+func (o *LoginMessagesGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this login messages get default response a status code equal to that given
+func (o *LoginMessagesGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LoginMessagesGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/login/messages/{uuid}][%d] login_messages_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LoginMessagesGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/login/messages/{uuid}][%d] login_messages_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LoginMessagesGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

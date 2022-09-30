@@ -53,10 +53,12 @@ func NewS3BucketSvmGetParamsWithHTTPClient(client *http.Client) *S3BucketSvmGetP
 	}
 }
 
-/* S3BucketSvmGetParams contains all the parameters to send to the API endpoint
-   for the s3 bucket svm get operation.
+/*
+S3BucketSvmGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 bucket svm get operation.
+
+	Typically these are written to a http.Request.
 */
 type S3BucketSvmGetParams struct {
 

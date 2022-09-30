@@ -46,14 +46,44 @@ func NewSnaplockRetentionOperationDeleteOK() *SnaplockRetentionOperationDeleteOK
 	return &SnaplockRetentionOperationDeleteOK{}
 }
 
-/* SnaplockRetentionOperationDeleteOK describes a response with status code 200, with default header values.
+/*
+SnaplockRetentionOperationDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnaplockRetentionOperationDeleteOK struct {
 }
 
+// IsSuccess returns true when this snaplock retention operation delete o k response has a 2xx status code
+func (o *SnaplockRetentionOperationDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock retention operation delete o k response has a 3xx status code
+func (o *SnaplockRetentionOperationDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock retention operation delete o k response has a 4xx status code
+func (o *SnaplockRetentionOperationDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock retention operation delete o k response has a 5xx status code
+func (o *SnaplockRetentionOperationDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock retention operation delete o k response a status code equal to that given
+func (o *SnaplockRetentionOperationDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnaplockRetentionOperationDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplockRetentionOperationDeleteOK ", 200)
+}
+
+func (o *SnaplockRetentionOperationDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplockRetentionOperationDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewSnaplockRetentionOperationDeleteDefault(code int) *SnaplockRetentionOper
 	}
 }
 
-/* SnaplockRetentionOperationDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SnaplockRetentionOperationDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 14090541    | A completed or failed operation cannot be aborted |
-
 */
 type SnaplockRetentionOperationDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *SnaplockRetentionOperationDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock retention operation delete default response has a 2xx status code
+func (o *SnaplockRetentionOperationDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock retention operation delete default response has a 3xx status code
+func (o *SnaplockRetentionOperationDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock retention operation delete default response has a 4xx status code
+func (o *SnaplockRetentionOperationDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock retention operation delete default response has a 5xx status code
+func (o *SnaplockRetentionOperationDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock retention operation delete default response a status code equal to that given
+func (o *SnaplockRetentionOperationDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockRetentionOperationDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplock_retention_operation_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockRetentionOperationDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/snaplock/event-retention/operations/{id}][%d] snaplock_retention_operation_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockRetentionOperationDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

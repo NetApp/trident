@@ -53,10 +53,12 @@ func NewClusterNtpServersDeleteParamsWithHTTPClient(client *http.Client) *Cluste
 	}
 }
 
-/* ClusterNtpServersDeleteParams contains all the parameters to send to the API endpoint
-   for the cluster ntp servers delete operation.
+/*
+ClusterNtpServersDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster ntp servers delete operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterNtpServersDeleteParams struct {
 

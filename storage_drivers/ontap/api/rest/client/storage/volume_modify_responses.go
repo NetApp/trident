@@ -46,7 +46,8 @@ func NewVolumeModifyAccepted() *VolumeModifyAccepted {
 	return &VolumeModifyAccepted{}
 }
 
-/* VolumeModifyAccepted describes a response with status code 202, with default header values.
+/*
+VolumeModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type VolumeModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this volume modify accepted response has a 2xx status code
+func (o *VolumeModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume modify accepted response has a 3xx status code
+func (o *VolumeModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume modify accepted response has a 4xx status code
+func (o *VolumeModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume modify accepted response has a 5xx status code
+func (o *VolumeModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume modify accepted response a status code equal to that given
+func (o *VolumeModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *VolumeModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volumeModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *VolumeModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volumeModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *VolumeModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 	}
 }
 
-/* VolumeModifyDefault describes a response with status code -1, with default header values.
+/*
+	VolumeModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 787141 | The specified \"aggregates.name\" and \"aggregates.uuid\" refer to different aggregates. |
@@ -116,7 +149,6 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 111411205 | File system analytics requires an effective cluster version of 9.8 or later. |
 | 111411206 | The specified \"analytics.state\" is invalid. |
 | 111411207 | File system analytics cannot be enabled on volumes that contain LUNs. |
-
 */
 type VolumeModifyDefault struct {
 	_statusCode int
@@ -129,9 +161,39 @@ func (o *VolumeModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this volume modify default response has a 2xx status code
+func (o *VolumeModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this volume modify default response has a 3xx status code
+func (o *VolumeModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this volume modify default response has a 4xx status code
+func (o *VolumeModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this volume modify default response has a 5xx status code
+func (o *VolumeModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this volume modify default response a status code equal to that given
+func (o *VolumeModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VolumeModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volume_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VolumeModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/volumes/{uuid}][%d] volume_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VolumeModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

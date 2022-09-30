@@ -354,12 +354,12 @@ type ClientService interface {
 }
 
 /*
-  AuditCollectionGet Retrieves audit configurations.
+	AuditCollectionGet Retrieves audit configurations.
+
 ### Related ONTAP commands
 * `vserver audit show`
 ### Learn more
 * [`DOC /protocols/audit`](#docs-NAS-protocols_audit)
-
 */
 func (a *Client) AuditCollectionGet(params *AuditCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -397,7 +397,8 @@ func (a *Client) AuditCollectionGet(params *AuditCollectionGetParams, authInfo r
 }
 
 /*
-  AuditCreate Creates an audit configuration.
+	AuditCreate Creates an audit configuration.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM to which audit configuration is to be created.
 * `log_path` - Path in the owning SVM namespace that is used to store audit logs.
@@ -422,7 +423,6 @@ If not specified in POST, the following default property values are assigned:
 * `vserver audit enable`
 ### Learn more
 * [`DOC /protocols/audit`](#docs-NAS-protocols_audit)
-
 */
 func (a *Client) AuditCreate(params *AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -460,13 +460,13 @@ func (a *Client) AuditCreate(params *AuditCreateParams, authInfo runtime.ClientA
 }
 
 /*
-  AuditDelete Deletes an audit configuration.
+	AuditDelete Deletes an audit configuration.
+
 ### Related ONTAP commands
 * `vserver audit disable`
 * `vserver audit delete`
 ### Learn more
 * [`DOC /protocols/audit`](#docs-NAS-protocols_audit)
-
 */
 func (a *Client) AuditDelete(params *AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -504,12 +504,12 @@ func (a *Client) AuditDelete(params *AuditDeleteParams, authInfo runtime.ClientA
 }
 
 /*
-  AuditGet Retrieves an audit configuration for an SVM.
+	AuditGet Retrieves an audit configuration for an SVM.
+
 ### Related ONTAP commands
 * `vserver audit show`
 ### Learn more
 * [`DOC /protocols/audit`](#docs-NAS-protocols_audit)
-
 */
 func (a *Client) AuditGet(params *AuditGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditGetOK, error) {
 	// TODO: Validate the params before sending
@@ -547,12 +547,12 @@ func (a *Client) AuditGet(params *AuditGetParams, authInfo runtime.ClientAuthInf
 }
 
 /*
-  AuditModify Updates an audit configuration for an SVM.
+	AuditModify Updates an audit configuration for an SVM.
+
 ### Related ONTAP commands
 * `vserver audit modify`
 ### Learn more
 * [`DOC /protocols/audit`](#docs-NAS-protocols_audit)
-
 */
 func (a *Client) AuditModify(params *AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -590,7 +590,7 @@ func (a *Client) AuditModify(params *AuditModifyParams, authInfo runtime.ClientA
 }
 
 /*
-  CifsCollectionPerformanceMetricsGet Retrieves historical performance metrics for the CIFS protocol of an SVM.
+CifsCollectionPerformanceMetricsGet Retrieves historical performance metrics for the CIFS protocol of an SVM.
 */
 func (a *Client) CifsCollectionPerformanceMetricsGet(params *CifsCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsCollectionPerformanceMetricsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -628,12 +628,13 @@ func (a *Client) CifsCollectionPerformanceMetricsGet(params *CifsCollectionPerfo
 }
 
 /*
-  CifsConnectionCollectionGet Retrieves the CIFS connection information for all SVMs.
+	CifsConnectionCollectionGet Retrieves the CIFS connection information for all SVMs.
+
 ### Related ONTAP commands
-  * `vserver cifs connection show`
+  - `vserver cifs connection show`
+
 ### Learn more
 * [`DOC /protocols/cifs/connections`](#docs-NAS-protocols_cifs_connections)
-
 */
 func (a *Client) CifsConnectionCollectionGet(params *CifsConnectionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsConnectionCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -671,7 +672,8 @@ func (a *Client) CifsConnectionCollectionGet(params *CifsConnectionCollectionGet
 }
 
 /*
-  CifsDomainCollectionGet Retrieves the CIFS domain-related information of all SVMs.
+	CifsDomainCollectionGet Retrieves the CIFS domain-related information of all SVMs.
+
 ### Related ONTAP commands
 * `vserver cifs domain preferred-dc show`
 * `vserver cifs domain trusts show`
@@ -680,7 +682,6 @@ func (a *Client) CifsConnectionCollectionGet(params *CifsConnectionCollectionGet
 * `vserver cifs domain schedule show`
 ### Learn more
 * [`DOC /protocols/cifs/domains`](#docs-NAS-protocols_cifs_domains)
-
 */
 func (a *Client) CifsDomainCollectionGet(params *CifsDomainCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -718,7 +719,8 @@ func (a *Client) CifsDomainCollectionGet(params *CifsDomainCollectionGetParams, 
 }
 
 /*
-  CifsDomainGet Retrieves the CIFS domain-related information of the specified SVM.
+	CifsDomainGet Retrieves the CIFS domain-related information of the specified SVM.
+
 ### Important notes
 GET operation with query parameter `rediscover_trusts` and `reset_discovered_servers` returns available CIFS domain configurations and also triggers trusts rediscovery and discovered servers reset asynchronously for that SVM.
 ### Related ONTAP commands
@@ -729,7 +731,6 @@ GET operation with query parameter `rediscover_trusts` and `reset_discovered_ser
 * `vserver cifs domain schedule show`
 ### Learn more
 * [`DOC /protocols/cifs/domains/{svm.uuid}`](#docs-NAS-protocols_cifs_domains_{svm.uuid})
-
 */
 func (a *Client) CifsDomainGet(params *CifsDomainGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainGetOK, error) {
 	// TODO: Validate the params before sending
@@ -767,12 +768,12 @@ func (a *Client) CifsDomainGet(params *CifsDomainGetParams, authInfo runtime.Cli
 }
 
 /*
-  CifsDomainPreferredDcCollectionGet Retrieves the CIFS domain preferred DC configuration of an SVM.
+	CifsDomainPreferredDcCollectionGet Retrieves the CIFS domain preferred DC configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver cifs domain preferred-dc show`
 ### Learn more
 * [`DOC /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers`](#docs-NAS-protocols_cifs_domains_{svm.uuid}_preferred-domain-controllers)
-
 */
 func (a *Client) CifsDomainPreferredDcCollectionGet(params *CifsDomainPreferredDcCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -810,7 +811,8 @@ func (a *Client) CifsDomainPreferredDcCollectionGet(params *CifsDomainPreferredD
 }
 
 /*
-  CifsDomainPreferredDcCreate Creates a CIFS preferred DC configuration for an SVM.
+	CifsDomainPreferredDcCreate Creates a CIFS preferred DC configuration for an SVM.
+
 ### Important notes
 * In the case of bulk POST requests, the create operation should be performed serially since there can be interdependence between records. In order to avoid issues, it is advisable to always use the query parameter "serial_records=true".
 ### Required properties
@@ -823,7 +825,6 @@ func (a *Client) CifsDomainPreferredDcCollectionGet(params *CifsDomainPreferredD
 * `vserver cifs domain preferred-dc add`
 ### Learn more
 * [`DOC /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers`](#docs-NAS-protocols_cifs_domains_{svm.uuid}_preferred-domain-controllers)
-
 */
 func (a *Client) CifsDomainPreferredDcCreate(params *CifsDomainPreferredDcCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -861,12 +862,12 @@ func (a *Client) CifsDomainPreferredDcCreate(params *CifsDomainPreferredDcCreate
 }
 
 /*
-  CifsDomainPreferredDcDelete Deletes the CIFS domain preferred DC configuration of the specified SVM and domain.
+	CifsDomainPreferredDcDelete Deletes the CIFS domain preferred DC configuration of the specified SVM and domain.
+
 ### Related ONTAP commands
 * `vserver cifs domain preferred-dc delete`
 ### Learn more
 * [`DOC /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers`](#docs-NAS-protocols_cifs_domains_{svm.uuid}_preferred-domain-controllers)
-
 */
 func (a *Client) CifsDomainPreferredDcDelete(params *CifsDomainPreferredDcDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -904,12 +905,12 @@ func (a *Client) CifsDomainPreferredDcDelete(params *CifsDomainPreferredDcDelete
 }
 
 /*
-  CifsDomainPreferredDcGet Retrieves the CIFS domain preferred DC configuration of an SVM.
+	CifsDomainPreferredDcGet Retrieves the CIFS domain preferred DC configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver cifs domain preferred-dc show`
 ### Learn more
 * [`DOC /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers`](#docs-NAS-protocols_cifs_domains_{svm.uuid}_preferred-domain-controllers)
-
 */
 func (a *Client) CifsDomainPreferredDcGet(params *CifsDomainPreferredDcGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcGetOK, error) {
 	// TODO: Validate the params before sending
@@ -947,12 +948,12 @@ func (a *Client) CifsDomainPreferredDcGet(params *CifsDomainPreferredDcGetParams
 }
 
 /*
-  CifsHomedirSearchPathGet Retrieves a CIFS home directory search path of an SVM.
+	CifsHomedirSearchPathGet Retrieves a CIFS home directory search path of an SVM.
+
 ### Related ONTAP commands
 * `cifs server home-directory search-path show`
 ### Learn more
 * [`DOC /protocols/cifs/home-directory/search-paths`](#docs-NAS-protocols_cifs_home-directory_search-paths)
-
 */
 func (a *Client) CifsHomedirSearchPathGet(params *CifsHomedirSearchPathGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsHomedirSearchPathGetOK, error) {
 	// TODO: Validate the params before sending
@@ -990,7 +991,7 @@ func (a *Client) CifsHomedirSearchPathGet(params *CifsHomedirSearchPathGetParams
 }
 
 /*
-  CifsOpenFileCollectionGet Retrieves CIFS Open Files
+CifsOpenFileCollectionGet Retrieves CIFS Open Files
 */
 func (a *Client) CifsOpenFileCollectionGet(params *CifsOpenFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1028,10 +1029,10 @@ func (a *Client) CifsOpenFileCollectionGet(params *CifsOpenFileCollectionGetPara
 }
 
 /*
-  CifsOpenFileDelete Closes open files identified by svm.uuid, file.identifier, connection.identifier and session_id.
+	CifsOpenFileDelete Closes open files identified by svm.uuid, file.identifier, connection.identifier and session_id.
+
 ### Learn more
 * [`DOC /protocols/cifs/session/files`](#docs-NAS-protocols_cifs_session_files)
-
 */
 func (a *Client) CifsOpenFileDelete(params *CifsOpenFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1069,7 +1070,7 @@ func (a *Client) CifsOpenFileDelete(params *CifsOpenFileDeleteParams, authInfo r
 }
 
 /*
-  CifsOpenFileGet Retrieves specific CIFS Open File
+CifsOpenFileGet Retrieves specific CIFS Open File
 */
 func (a *Client) CifsOpenFileGet(params *CifsOpenFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsOpenFileGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1107,12 +1108,12 @@ func (a *Client) CifsOpenFileGet(params *CifsOpenFileGetParams, authInfo runtime
 }
 
 /*
-  CifsSearchPathCollectionGet Retrieves CIFS home directory search paths.
+	CifsSearchPathCollectionGet Retrieves CIFS home directory search paths.
+
 ### Related ONTAP commands
 * `cifs server home-directory search-path show`
 ### Learn more
 * [`DOC /protocols/cifs/home-directory/search-paths`](#docs-NAS-protocols_cifs_home-directory_search-paths)
-
 */
 func (a *Client) CifsSearchPathCollectionGet(params *CifsSearchPathCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1150,7 +1151,8 @@ func (a *Client) CifsSearchPathCollectionGet(params *CifsSearchPathCollectionGet
 }
 
 /*
-  CifsSearchPathCreate Creates a home directory search path.
+	CifsSearchPathCreate Creates a home directory search path.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the home directory search path.
 * `path` - Path in the owning SVM namespace that is used to search for home directories.
@@ -1158,7 +1160,6 @@ func (a *Client) CifsSearchPathCollectionGet(params *CifsSearchPathCollectionGet
 * `cifs server home-directory search-path add`
 ### Learn more
 * [`DOC /protocols/cifs/home-directory/search-paths`](#docs-NAS-protocols_cifs_home-directory_search-paths)
-
 */
 func (a *Client) CifsSearchPathCreate(params *CifsSearchPathCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1196,12 +1197,12 @@ func (a *Client) CifsSearchPathCreate(params *CifsSearchPathCreateParams, authIn
 }
 
 /*
-  CifsSearchPathDelete Deletes a CIFS home directory search path.
+	CifsSearchPathDelete Deletes a CIFS home directory search path.
+
 ### Related ONTAP commands
 * `cifs server home-directory search-path remove`
 ### Learn more
 * [`DOC /protocols/cifs/home-directory/search-paths`](#docs-NAS-protocols_cifs_home-directory_search-paths)
-
 */
 func (a *Client) CifsSearchPathDelete(params *CifsSearchPathDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1239,12 +1240,12 @@ func (a *Client) CifsSearchPathDelete(params *CifsSearchPathDeleteParams, authIn
 }
 
 /*
-  CifsSearchPathModify Reorders a CIFS home directory search path.
+	CifsSearchPathModify Reorders a CIFS home directory search path.
+
 ### Related ONTAP commands
 * `cifs server home-directory search-path reorder`
 ### Learn more
 * [`DOC /protocols/cifs/home-directory/search-paths`](#docs-NAS-protocols_cifs_home-directory_search-paths)
-
 */
 func (a *Client) CifsSearchPathModify(params *CifsSearchPathModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1282,7 +1283,8 @@ func (a *Client) CifsSearchPathModify(params *CifsSearchPathModifyParams, authIn
 }
 
 /*
-  CifsServiceCollectionGet Retrieves CIFS servers.
+	CifsServiceCollectionGet Retrieves CIFS servers.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
@@ -1293,7 +1295,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver cifs server security show`
 ### Learn more
 * [`DOC /protocols/cifs/services`](#docs-NAS-protocols_cifs_services)
-
 */
 func (a *Client) CifsServiceCollectionGet(params *CifsServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1331,7 +1332,8 @@ func (a *Client) CifsServiceCollectionGet(params *CifsServiceCollectionGetParams
 }
 
 /*
-  CifsServiceCreate Creates a CIFS server. Each SVM can have one CIFS server.</br>
+	CifsServiceCreate Creates a CIFS server. Each SVM can have one CIFS server.</br>
+
 ### Important notes
 - The CIFS server name might or might not be the same as the SVM name.
 - The CIFS server name can contain up to 15 characters.
@@ -1367,7 +1369,6 @@ If not specified in POST, the following default property values are assigned:
 * `vserver cifs server add-netbios-aliases`
 ### Learn more
 * [`DOC /protocols/cifs/services`](#docs-NAS-protocols_cifs_services)
-
 */
 func (a *Client) CifsServiceCreate(params *CifsServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1405,7 +1406,8 @@ func (a *Client) CifsServiceCreate(params *CifsServiceCreateParams, authInfo run
 }
 
 /*
-  CifsServiceDelete Deletes a CIFS server and related CIFS configurations.<br/>
+	CifsServiceDelete Deletes a CIFS server and related CIFS configurations.<br/>
+
 If "force" field is set along with user login credentials, the local CIFS configuration will be deleted irrespective of any communication errors. The default value for this field is false.
 If "force" field alone is set without passing the user login credentials, the local CIFS configuration will be deleted by not making any request to Active Directory, but the option will be enable only for the VseverDR enabled SVMs. The default value for this field is false.
 ### Related ONTAP commands
@@ -1413,7 +1415,6 @@ If "force" field alone is set without passing the user login credentials, the lo
 * `vserver cifs remove-netbios-aliases`
 ### Learn more
 * [`DOC /protocols/cifs/services`](#docs-NAS-protocols_cifs_services)
-
 */
 func (a *Client) CifsServiceDelete(params *CifsServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1451,14 +1452,14 @@ func (a *Client) CifsServiceDelete(params *CifsServiceDeleteParams, authInfo run
 }
 
 /*
-  CifsServiceGet Retrieves a CIFS server.
+	CifsServiceGet Retrieves a CIFS server.
+
 ### Related ONTAP commands
 * `vserver cifs server show`
 * `vserver cifs server options show`
 * `vserver cifs server security show`
 ### Learn more
 * [`DOC /protocols/cifs/services`](#docs-NAS-protocols_cifs_services)
-
 */
 func (a *Client) CifsServiceGet(params *CifsServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1496,7 +1497,8 @@ func (a *Client) CifsServiceGet(params *CifsServiceGetParams, authInfo runtime.C
 }
 
 /*
-  CifsServiceModify Updates both the mandatory and optional parameters of the CIFS configuration. Ensure the CIFS server is administratively disabled when renaming the CIFS server or modifying the <i>ad_domain</i> properties.
+	CifsServiceModify Updates both the mandatory and optional parameters of the CIFS configuration. Ensure the CIFS server is administratively disabled when renaming the CIFS server or modifying the <i>ad_domain</i> properties.
+
 ### Related ONTAP commands
 * `vserver cifs server modify`
 * `vserver cifs server options modify`
@@ -1505,7 +1507,6 @@ func (a *Client) CifsServiceGet(params *CifsServiceGetParams, authInfo runtime.C
 * `vserver cifs server remove-netbios-aliases`
 ### Learn more
 * [`DOC /protocols/cifs/services`](#docs-NAS-protocols_cifs_services)
-
 */
 func (a *Client) CifsServiceModify(params *CifsServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1543,12 +1544,13 @@ func (a *Client) CifsServiceModify(params *CifsServiceModifyParams, authInfo run
 }
 
 /*
-  CifsSessionCollectionGet Retrieves the CIFS sessions information for all SVMs.
+	CifsSessionCollectionGet Retrieves the CIFS sessions information for all SVMs.
+
 ### Related ONTAP commands
-  * `vserver cifs session show -active-volumes`
+  - `vserver cifs session show -active-volumes`
+
 ### Learn more
 * [`DOC /protocols/cifs/sessions`](#docs-NAS-protocols_cifs_sessions)
-
 */
 func (a *Client) CifsSessionCollectionGet(params *CifsSessionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1586,14 +1588,14 @@ func (a *Client) CifsSessionCollectionGet(params *CifsSessionCollectionGetParams
 }
 
 /*
-  CifsSessionDelete Deletes SMB session information on a node for an SVM.
+	CifsSessionDelete Deletes SMB session information on a node for an SVM.
+
 * To delete the specific SMB session information, pass the relavant SMB session's identifier and connection Id.
 * To delete all the SMB session information on specific node and SVM, pass the both SMB session's identifier and connection Id as zero(0)
 * To delete all the SMB session information on specific connection, pass the specific SMB session's Identifier value as zero(0).
 * To delete all the SMB session information on specific Identifier alone is not allowed.
 ### Learn more
 * [`DOC /protocols/cifs/sessions`](#docs-NAS-protocols_cifs_sessions)
-
 */
 func (a *Client) CifsSessionDelete(params *CifsSessionDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1631,10 +1633,10 @@ func (a *Client) CifsSessionDelete(params *CifsSessionDeleteParams, authInfo run
 }
 
 /*
-  CifsSessionGet Retrieves specific SMB session information for a specific SMB connection in a node on an SVM.
+	CifsSessionGet Retrieves specific SMB session information for a specific SMB connection in a node on an SVM.
+
 ### Learn more
 * [`DOC /protocols/cifs/sessions`](#docs-NAS-protocols_cifs_sessions)
-
 */
 func (a *Client) CifsSessionGet(params *CifsSessionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1672,12 +1674,12 @@ func (a *Client) CifsSessionGet(params *CifsSessionGetParams, authInfo runtime.C
 }
 
 /*
-  CifsShareACLCollectionGet Retrieves the share-level ACL on a CIFS share.
+	CifsShareACLCollectionGet Retrieves the share-level ACL on a CIFS share.
+
 ### Related ONTAP commands
 * `vserver cifs share access-control show`
 ### Learn more
 * [`DOC /protocols/cifs/shares/{svm.uuid}/{share}/acls`](#docs-NAS-protocols_cifs_shares_{svm.uuid}_{share}_acls)
-
 */
 func (a *Client) CifsShareACLCollectionGet(params *CifsShareACLCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1715,7 +1717,8 @@ func (a *Client) CifsShareACLCollectionGet(params *CifsShareACLCollectionGetPara
 }
 
 /*
-  CifsShareACLCreate Creates a share-level ACL on a CIFS share.
+	CifsShareACLCreate Creates a share-level ACL on a CIFS share.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the share acl.
 * `share` - Existing CIFS share in which to create the share acl.
@@ -1727,7 +1730,6 @@ func (a *Client) CifsShareACLCollectionGet(params *CifsShareACLCollectionGetPara
 * `vserver cifs share access-control create`
 ### Learn more
 * [`DOC /protocols/cifs/shares/{svm.uuid}/{share}/acls`](#docs-NAS-protocols_cifs_shares_{svm.uuid}_{share}_acls)
-
 */
 func (a *Client) CifsShareACLCreate(params *CifsShareACLCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1765,12 +1767,12 @@ func (a *Client) CifsShareACLCreate(params *CifsShareACLCreateParams, authInfo r
 }
 
 /*
-  CifsShareACLDelete Deletes a share-level ACL on a CIFS share.
+	CifsShareACLDelete Deletes a share-level ACL on a CIFS share.
+
 ### Related ONTAP commands
 * `vserver cifs share access-control delete`
 ### Learn more
 * [`DOC /protocols/cifs/shares/{svm.uuid}/{share}/acls`](#docs-NAS-protocols_cifs_shares_{svm.uuid}_{share}_acls)
-
 */
 func (a *Client) CifsShareACLDelete(params *CifsShareACLDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1808,12 +1810,12 @@ func (a *Client) CifsShareACLDelete(params *CifsShareACLDeleteParams, authInfo r
 }
 
 /*
-  CifsShareACLGet Retrieves the share-level ACL on CIFS share for a specified user or group.
+	CifsShareACLGet Retrieves the share-level ACL on CIFS share for a specified user or group.
+
 ### Related ONTAP commands
 * `vserver cifs share access-control show`
 ### Learn more
 * [`DOC /protocols/cifs/shares/{svm.uuid}/{share}/acls`](#docs-NAS-protocols_cifs_shares_{svm.uuid}_{share}_acls)
-
 */
 func (a *Client) CifsShareACLGet(params *CifsShareACLGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1851,12 +1853,12 @@ func (a *Client) CifsShareACLGet(params *CifsShareACLGetParams, authInfo runtime
 }
 
 /*
-  CifsShareACLModify Updates a share-level ACL on a CIFS share.
+	CifsShareACLModify Updates a share-level ACL on a CIFS share.
+
 ### Related ONTAP commands
 * `vserver cifs share access-control modify`
 ### Learn more
 * [`DOC /protocols/cifs/shares/{svm.uuid}/{share}/acls`](#docs-NAS-protocols_cifs_shares_{svm.uuid}_{share}_acls)
-
 */
 func (a *Client) CifsShareACLModify(params *CifsShareACLModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1894,13 +1896,13 @@ func (a *Client) CifsShareACLModify(params *CifsShareACLModifyParams, authInfo r
 }
 
 /*
-  CifsShareCollectionGet Retrieves CIFS shares.
+	CifsShareCollectionGet Retrieves CIFS shares.
+
 ### Related ONTAP commands
 * `vserver cifs share show`
 * `vserver cifs share properties show`
 ### Learn more
 * [`DOC /protocols/cifs/shares`](#docs-NAS-protocols_cifs_shares)
-
 */
 func (a *Client) CifsShareCollectionGet(params *CifsShareCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1938,7 +1940,8 @@ func (a *Client) CifsShareCollectionGet(params *CifsShareCollectionGetParams, au
 }
 
 /*
-  CifsShareCreate Creates a CIFS share.
+	CifsShareCreate Creates a CIFS share.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the CIFS share.
 * `name` - Name of the CIFS share.
@@ -1960,7 +1963,6 @@ If not specified in POST, the following default property values are assigned:
 * `vserver cifs share access-control create`
 ### Learn more
 * [`DOC /protocols/cifs/shares`](#docs-NAS-protocols_cifs_shares)
-
 */
 func (a *Client) CifsShareCreate(params *CifsShareCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1998,12 +2000,12 @@ func (a *Client) CifsShareCreate(params *CifsShareCreateParams, authInfo runtime
 }
 
 /*
-  CifsShareDelete Deletes a CIFS share.
+	CifsShareDelete Deletes a CIFS share.
+
 ### Related ONTAP commands
 * `vserver cifs share delete`
 ### Learn more
 * [`DOC /protocols/cifs/shares`](#docs-NAS-protocols_cifs_shares)
-
 */
 func (a *Client) CifsShareDelete(params *CifsShareDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2041,13 +2043,13 @@ func (a *Client) CifsShareDelete(params *CifsShareDeleteParams, authInfo runtime
 }
 
 /*
-  CifsShareGet Retrieves a CIFS share.
+	CifsShareGet Retrieves a CIFS share.
+
 ### Related ONTAP commands
 * `vserver cifs share show`
 * `vserver cifs share properties show`
 ### Learn more
 * [`DOC /protocols/cifs/shares`](#docs-NAS-protocols_cifs_shares)
-
 */
 func (a *Client) CifsShareGet(params *CifsShareGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2085,14 +2087,14 @@ func (a *Client) CifsShareGet(params *CifsShareGetParams, authInfo runtime.Clien
 }
 
 /*
-  CifsShareModify Updates a CIFS share.
+	CifsShareModify Updates a CIFS share.
+
 ### Related ONTAP commands
 * `vserver cifs share modify`
 * `vserver cifs share properties add`
 * `vserver cifs share properties remove`
 ### Learn more
 * [`DOC /protocols/cifs/shares`](#docs-NAS-protocols_cifs_shares)
-
 */
 func (a *Client) CifsShareModify(params *CifsShareModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2130,12 +2132,12 @@ func (a *Client) CifsShareModify(params *CifsShareModifyParams, authInfo runtime
 }
 
 /*
-  CifsSymlinkMappingCollectionGet Retrieves UNIX symbolic link mappings for CIFS clients.
+	CifsSymlinkMappingCollectionGet Retrieves UNIX symbolic link mappings for CIFS clients.
+
 ### Related ONTAP commands
 * `vserver cifs symlink show`
 ### Learn more
 * [`DOC /protocols/cifs/unix-symlink-mapping`](#docs-NAS-protocols_cifs_unix-symlink-mapping)
-
 */
 func (a *Client) CifsSymlinkMappingCollectionGet(params *CifsSymlinkMappingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2173,7 +2175,8 @@ func (a *Client) CifsSymlinkMappingCollectionGet(params *CifsSymlinkMappingColle
 }
 
 /*
-  CifsSymlinkMappingCreate Creates a UNIX symbolic link mapping for a CIFS client.
+	CifsSymlinkMappingCreate Creates a UNIX symbolic link mapping for a CIFS client.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the CIFS unix-symlink-mapping.
 * `unix_path` - UNIX path to which the CIFS symlink mapping to be created.
@@ -2187,7 +2190,6 @@ func (a *Client) CifsSymlinkMappingCollectionGet(params *CifsSymlinkMappingColle
 * `vserver cifs symlink create`
 ### Learn more
 * [`DOC /protocols/cifs/unix-symlink-mapping`](#docs-NAS-protocols_cifs_unix-symlink-mapping)
-
 */
 func (a *Client) CifsSymlinkMappingCreate(params *CifsSymlinkMappingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2225,12 +2227,12 @@ func (a *Client) CifsSymlinkMappingCreate(params *CifsSymlinkMappingCreateParams
 }
 
 /*
-  CifsSymlinkMappingDelete Deletes the UNIX symbolic link mapping for CIFS clients.
+	CifsSymlinkMappingDelete Deletes the UNIX symbolic link mapping for CIFS clients.
+
 ### Related ONTAP commands
 * `vserver cifs symlink delete`
 ### Learn more
 * [`DOC /protocols/cifs/unix-symlink-mapping`](#docs-NAS-protocols_cifs_unix-symlink-mapping)
-
 */
 func (a *Client) CifsSymlinkMappingDelete(params *CifsSymlinkMappingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2268,12 +2270,12 @@ func (a *Client) CifsSymlinkMappingDelete(params *CifsSymlinkMappingDeleteParams
 }
 
 /*
-  CifsSymlinkMappingGet Retrieves a UNIX symbolic link mapping for CIFS clients.
+	CifsSymlinkMappingGet Retrieves a UNIX symbolic link mapping for CIFS clients.
+
 ### Related ONTAP commands
 * `vserver cifs symlink show`
 ### Learn more
 * [`DOC /protocols/cifs/unix-symlink-mapping`](#docs-NAS-protocols_cifs_unix-symlink-mapping)
-
 */
 func (a *Client) CifsSymlinkMappingGet(params *CifsSymlinkMappingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2311,12 +2313,12 @@ func (a *Client) CifsSymlinkMappingGet(params *CifsSymlinkMappingGetParams, auth
 }
 
 /*
-  CifsSymlinkMappingModify Updates the UNIX symbolic link mapping for CIFS clients.
+	CifsSymlinkMappingModify Updates the UNIX symbolic link mapping for CIFS clients.
+
 ### Related ONTAP commands
 * `vserver cifs symlink modify`
 ### Learn more
 * [`DOC /protocols/cifs/unix-symlink-mapping`](#docs-NAS-protocols_cifs_unix-symlink-mapping)
-
 */
 func (a *Client) CifsSymlinkMappingModify(params *CifsSymlinkMappingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2354,10 +2356,10 @@ func (a *Client) CifsSymlinkMappingModify(params *CifsSymlinkMappingModifyParams
 }
 
 /*
-  ClientLockCollectionGet Retrieves locks details.
+	ClientLockCollectionGet Retrieves locks details.
+
 ### Related ONTAP commands
 * `vserver locks  show`
-
 */
 func (a *Client) ClientLockCollectionGet(params *ClientLockCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2395,10 +2397,10 @@ func (a *Client) ClientLockCollectionGet(params *ClientLockCollectionGetParams, 
 }
 
 /*
-  ClientLockDelete Deletes locks of given parameter.
+	ClientLockDelete Deletes locks of given parameter.
+
 ### Related ONTAP commands
 * `vserver locks break`
-
 */
 func (a *Client) ClientLockDelete(params *ClientLockDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2436,10 +2438,10 @@ func (a *Client) ClientLockDelete(params *ClientLockDeleteParams, authInfo runti
 }
 
 /*
-  ClientLockGet Retrieves the lock for a specific UUID.
+	ClientLockGet Retrieves the lock for a specific UUID.
+
 ### Related ONTAP commands
 * `vserver locks show`
-
 */
 func (a *Client) ClientLockGet(params *ClientLockGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2477,10 +2479,10 @@ func (a *Client) ClientLockGet(params *ClientLockGetParams, authInfo runtime.Cli
 }
 
 /*
-  EffectivePermissionGet Retrieves effective security permissions on a file.
+	EffectivePermissionGet Retrieves effective security permissions on a file.
+
 ### Related ONTAP commands
 * `vserver security file-directory show-effective-permissions`
-
 */
 func (a *Client) EffectivePermissionGet(params *EffectivePermissionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EffectivePermissionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2518,13 +2520,13 @@ func (a *Client) EffectivePermissionGet(params *EffectivePermissionGetParams, au
 }
 
 /*
-  ExportPolicyCollectionGet Retrieves export policies.
+	ExportPolicyCollectionGet Retrieves export policies.
+
 ### Related ONTAP commands
 * `vserver export-policy show`
 * `vserver export-policy rule show`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportPolicyCollectionGet(params *ExportPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2562,7 +2564,8 @@ func (a *Client) ExportPolicyCollectionGet(params *ExportPolicyCollectionGetPara
 }
 
 /*
-  ExportPolicyCreate Creates an export policy. An SVM can have any number of export policies to define rules for which clients can access data exported by the SVM. A policy with no rules prohibits access.
+	ExportPolicyCreate Creates an export policy. An SVM can have any number of export policies to define rules for which clients can access data exported by the SVM. A policy with no rules prohibits access.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create an export policy.
 * `name`  - Name of the export policy.
@@ -2573,7 +2576,6 @@ func (a *Client) ExportPolicyCollectionGet(params *ExportPolicyCollectionGetPara
 * `vserver export-policy rule create`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportPolicyCreate(params *ExportPolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2611,12 +2613,12 @@ func (a *Client) ExportPolicyCreate(params *ExportPolicyCreateParams, authInfo r
 }
 
 /*
-  ExportPolicyDelete Deletes an export policy.
+	ExportPolicyDelete Deletes an export policy.
+
 ### Related ONTAP commands
 * `vserver export-policy delete`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportPolicyDelete(params *ExportPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2654,13 +2656,13 @@ func (a *Client) ExportPolicyDelete(params *ExportPolicyDeleteParams, authInfo r
 }
 
 /*
-  ExportPolicyGet Retrieves an export policy.
+	ExportPolicyGet Retrieves an export policy.
+
 ### Related ONTAP commands
 * `vserver export-policy show`
 * `vserver export-policy rule show`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportPolicyGet(params *ExportPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2698,14 +2700,14 @@ func (a *Client) ExportPolicyGet(params *ExportPolicyGetParams, authInfo runtime
 }
 
 /*
-  ExportPolicyModify Updates the properties of an export policy to change an export policy name or replace all export policy rules.
+	ExportPolicyModify Updates the properties of an export policy to change an export policy name or replace all export policy rules.
+
 ### Related ONTAP commands
 * `vserver export-policy rename`
 * `vserver export-policy rule delete`
 * `vserver export-policy rule create`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportPolicyModify(params *ExportPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2743,7 +2745,8 @@ func (a *Client) ExportPolicyModify(params *ExportPolicyModifyParams, authInfo r
 }
 
 /*
-  ExportRuleClientsCreate Creates an export policy rule client
+	ExportRuleClientsCreate Creates an export policy rule client
+
 ### Required properties
 * `policy.id` - Existing export policy that contains export policy rules for the client being added.
 * `index`  - Existing export policy rule for which to create an export client.
@@ -2752,7 +2755,6 @@ func (a *Client) ExportPolicyModify(params *ExportPolicyModifyParams, authInfo r
 * `vserver export-policy rule add-clientmatches`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportRuleClientsCreate(params *ExportRuleClientsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleClientsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2790,12 +2792,12 @@ func (a *Client) ExportRuleClientsCreate(params *ExportRuleClientsCreateParams, 
 }
 
 /*
-  ExportRuleClientsDelete Deletes an export policy client
+	ExportRuleClientsDelete Deletes an export policy client
+
 ### Related ONTAP commands
 * `vserver export-policy rule remove-clientmatches`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportRuleClientsDelete(params *ExportRuleClientsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleClientsDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2833,10 +2835,10 @@ func (a *Client) ExportRuleClientsDelete(params *ExportRuleClientsDeleteParams, 
 }
 
 /*
-  ExportRuleClientsGet Retrieves export policy rule clients.
+	ExportRuleClientsGet Retrieves export policy rule clients.
+
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportRuleClientsGet(params *ExportRuleClientsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleClientsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2874,12 +2876,12 @@ func (a *Client) ExportRuleClientsGet(params *ExportRuleClientsGetParams, authIn
 }
 
 /*
-  ExportRuleCollectionGet Retrieves export policy rules.
+	ExportRuleCollectionGet Retrieves export policy rules.
+
 ### Related ONTAP commands
 * `vserver export-policy rule show`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportRuleCollectionGet(params *ExportRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2917,7 +2919,8 @@ func (a *Client) ExportRuleCollectionGet(params *ExportRuleCollectionGetParams, 
 }
 
 /*
-  ExportRuleCreate Creates an export policy rule.
+	ExportRuleCreate Creates an export policy rule.
+
 ### Required properties
 * `policy.id`  - Existing export policy for which to create an export rule.
 * `clients.match`  - List of clients (hostnames, ipaddresses, netgroups, domains) to which the export rule applies.
@@ -2936,7 +2939,6 @@ If not specified in POST, the following default property values are assigned:
 * `vserver export-policy rule create`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportRuleCreate(params *ExportRuleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2974,12 +2976,12 @@ func (a *Client) ExportRuleCreate(params *ExportRuleCreateParams, authInfo runti
 }
 
 /*
-  ExportRuleDelete Deletes an export policy rule.
+	ExportRuleDelete Deletes an export policy rule.
+
 ### Related ONTAP commands
 * `vserver export-policy rule delete`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportRuleDelete(params *ExportRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3017,12 +3019,12 @@ func (a *Client) ExportRuleDelete(params *ExportRuleDeleteParams, authInfo runti
 }
 
 /*
-  ExportRuleGet Retrieves an export policy rule
+	ExportRuleGet Retrieves an export policy rule
+
 ### Related ONTAP commands
 * `vserver export-policy rule show`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportRuleGet(params *ExportRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3060,13 +3062,13 @@ func (a *Client) ExportRuleGet(params *ExportRuleGetParams, authInfo runtime.Cli
 }
 
 /*
-  ExportRuleModify Updates the properties of an export policy rule to change an export policy rule's index or fields.
+	ExportRuleModify Updates the properties of an export policy rule to change an export policy rule's index or fields.
+
 ### Related ONTAP commands
 * `vserver export-policy rule modify`
 * `vserver export-policy rule setindex`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
-
 */
 func (a *Client) ExportRuleModify(params *ExportRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3104,7 +3106,8 @@ func (a *Client) ExportRuleModify(params *ExportRuleModifyParams, authInfo runti
 }
 
 /*
-  FileDirectorySecurityACLCreate Adds the new SACL/DACL ACE.
+	FileDirectorySecurityACLCreate Adds the new SACL/DACL ACE.
+
 You must keep the following points in mind while using these endpoints:
 * SLAG applies to all files and/or directories in a volume hence, inheritance is not required to be propagated.
 * Set access_control field to slag while adding SLAG ACE.
@@ -3113,7 +3116,6 @@ You must keep the following points in mind while using these endpoints:
 ### Related ONTAP commands
 * `vserver security file-directory ntfs dacl add`
 * `vserver security file-directory ntfs sacl add`
-
 */
 func (a *Client) FileDirectorySecurityACLCreate(params *FileDirectorySecurityACLCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3151,7 +3153,8 @@ func (a *Client) FileDirectorySecurityACLCreate(params *FileDirectorySecurityACL
 }
 
 /*
-  FileDirectorySecurityACLDelete Deletes the SACL/DACL ACL
+	FileDirectorySecurityACLDelete Deletes the SACL/DACL ACL
+
 You must keep the following points in mind while using these endpoints:
 * SLAG applies to all files and/or directories in a volume hence, inheritance is not required to be propagated.
 * Set access_control field to slag while deleting SLAG ACE.
@@ -3160,7 +3163,6 @@ You must keep the following points in mind while using these endpoints:
 ### Related ONTAP commands
 * `vserver security file-directory ntfs dacl remove`
 * `vserver security file-directory ntfs sacl remove`
-
 */
 func (a *Client) FileDirectorySecurityACLDelete(params *FileDirectorySecurityACLDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3198,7 +3200,8 @@ func (a *Client) FileDirectorySecurityACLDelete(params *FileDirectorySecurityACL
 }
 
 /*
-  FileDirectorySecurityACLModify Updates the SACLs/DACLs
+	FileDirectorySecurityACLModify Updates the SACLs/DACLs
+
 You must keep the following points in mind while using these endpoints:
 * SLAG applies to all files and/or directories in a volume hence, inheritance is not required to be propagated.
 * Set access_control field to slag while updating SLAG ACE.
@@ -3207,7 +3210,6 @@ You must keep the following points in mind while using these endpoints:
 ### Related ONTAP commands
 * `vserver security file-directory ntfs dacl modify`
 * `vserver security file-directory ntfs sacl modify`
-
 */
 func (a *Client) FileDirectorySecurityACLModify(params *FileDirectorySecurityACLModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3245,7 +3247,8 @@ func (a *Client) FileDirectorySecurityACLModify(params *FileDirectorySecurityACL
 }
 
 /*
-  FileDirectorySecurityCreate Applies an SD  to the given path.
+	FileDirectorySecurityCreate Applies an SD  to the given path.
+
 You must keep the following points in mind while using these endpoints:
 * Either SLAG ACL/s or file-directory ACL/s can be configured in one API call. Both cannot be configured in the same API call.
 * SLAG applies to all files and/or directories in a volume hence, inheritance is not required to be propagated.
@@ -3259,7 +3262,6 @@ You must keep the following points in mind while using these endpoints:
 * `vserver security file-directory policy create`
 * `vserver security file-directory policy task add`
 * `vserver security file-directory apply`
-
 */
 func (a *Client) FileDirectorySecurityCreate(params *FileDirectorySecurityCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3297,10 +3299,10 @@ func (a *Client) FileDirectorySecurityCreate(params *FileDirectorySecurityCreate
 }
 
 /*
-  FileDirectorySecurityDelete Remove all SLAG ACLs for specified path. Bulk deletion is supported only for SLAG
+	FileDirectorySecurityDelete Remove all SLAG ACLs for specified path. Bulk deletion is supported only for SLAG
+
 # Related ONTAP Commands
 * `vserver security file-directory remove-slag`
-
 */
 func (a *Client) FileDirectorySecurityDelete(params *FileDirectorySecurityDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3338,10 +3340,10 @@ func (a *Client) FileDirectorySecurityDelete(params *FileDirectorySecurityDelete
 }
 
 /*
-  FileDirectorySecurityGet Retrieves  file permissions
+	FileDirectorySecurityGet Retrieves  file permissions
+
 ### Related ONTAP commands
 * `vserver security file-directory show`
-
 */
 func (a *Client) FileDirectorySecurityGet(params *FileDirectorySecurityGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3379,10 +3381,10 @@ func (a *Client) FileDirectorySecurityGet(params *FileDirectorySecurityGetParams
 }
 
 /*
-  FileDirectorySecurityModify Updates SD specific Information. For example, owner, group and control-flags. SD specific information of SLAG ACLs is not modifiable.
+	FileDirectorySecurityModify Updates SD specific Information. For example, owner, group and control-flags. SD specific information of SLAG ACLs is not modifiable.
+
 ### Related ONTAP commands
 * `vserver security file-directory ntfs modify`
-
 */
 func (a *Client) FileDirectorySecurityModify(params *FileDirectorySecurityModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -3420,7 +3422,8 @@ func (a *Client) FileDirectorySecurityModify(params *FileDirectorySecurityModify
 }
 
 /*
-  FpolicyCollectionGet Retrieves an FPolicy configuration.
+	FpolicyCollectionGet Retrieves an FPolicy configuration.
+
 ### Related ONTAP commands
 * `fpolicy show`
 * `fpolicy policy show`
@@ -3429,7 +3432,6 @@ func (a *Client) FileDirectorySecurityModify(params *FileDirectorySecurityModify
 * `fpolicy policy external-engine show`
 ### Learn more
 * [`DOC /protocols/fpolicy`](#docs-NAS-protocols_fpolicy)
-
 */
 func (a *Client) FpolicyCollectionGet(params *FpolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3467,13 +3469,13 @@ func (a *Client) FpolicyCollectionGet(params *FpolicyCollectionGetParams, authIn
 }
 
 /*
-  FpolicyConnectionCollectionGet Retrieves the statuses of FPolicy servers.
+	FpolicyConnectionCollectionGet Retrieves the statuses of FPolicy servers.
+
 ### Related ONTAP commands
 * `vserver fpolicy show-engine`
 * `vserver fpolicy show-passthrough-read-connection`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/connections`](#docs-NAS-protocols_fpolicy_{svm.uuid}_connections)
-
 */
 func (a *Client) FpolicyConnectionCollectionGet(params *FpolicyConnectionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3511,12 +3513,12 @@ func (a *Client) FpolicyConnectionCollectionGet(params *FpolicyConnectionCollect
 }
 
 /*
-  FpolicyConnectionGet Retrieves the status of an FPolicy server.
+	FpolicyConnectionGet Retrieves the status of an FPolicy server.
+
 ### Related ONTAP commands
 * `vserver fpolicy show-engine`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/connections`](#docs-NAS-protocols_fpolicy_{svm.uuid}_connections)
-
 */
 func (a *Client) FpolicyConnectionGet(params *FpolicyConnectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3554,13 +3556,13 @@ func (a *Client) FpolicyConnectionGet(params *FpolicyConnectionGetParams, authIn
 }
 
 /*
-  FpolicyConnectionModify Updates the status of an FPolicy server.
+	FpolicyConnectionModify Updates the status of an FPolicy server.
+
 ### Related ONTAP commands
 * `vserver fpolicy engine-connect`
 * `vserver fpolicy engine-disconnect`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/connections`](#docs-NAS-protocols_fpolicy_{svm.uuid}_connections)
-
 */
 func (a *Client) FpolicyConnectionModify(params *FpolicyConnectionModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3598,7 +3600,8 @@ func (a *Client) FpolicyConnectionModify(params *FpolicyConnectionModifyParams, 
 }
 
 /*
-  FpolicyCreate Creates an FPolicy configuration.
+	FpolicyCreate Creates an FPolicy configuration.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the FPolicy configuration.
 ### Recommended optional properties
@@ -3622,7 +3625,6 @@ If not specified in POST, the following default property values are assigned:
 * `fpolicy enable`
 ### Learn more
 * [`DOC /protocols/fpolicy`](#docs-NAS-protocols_fpolicy)
-
 */
 func (a *Client) FpolicyCreate(params *FpolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3660,7 +3662,8 @@ func (a *Client) FpolicyCreate(params *FpolicyCreateParams, authInfo runtime.Cli
 }
 
 /*
-  FpolicyDelete Deletes the FPolicy configuration for the specified SVM. Before deleting the FPolicy configuration, ensure that all policies belonging to the SVM are disabled.
+	FpolicyDelete Deletes the FPolicy configuration for the specified SVM. Before deleting the FPolicy configuration, ensure that all policies belonging to the SVM are disabled.
+
 ### Related ONTAP commands
 * `fpolicy delete`
 * `fpolicy policy scope delete`
@@ -3669,7 +3672,6 @@ func (a *Client) FpolicyCreate(params *FpolicyCreateParams, authInfo runtime.Cli
 * `fpolicy policy external-engine delete`
 ### Learn more
 * [`DOC /protocols/fpolicy`](#docs-NAS-protocols_fpolicy)
-
 */
 func (a *Client) FpolicyDelete(params *FpolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3707,12 +3709,12 @@ func (a *Client) FpolicyDelete(params *FpolicyDeleteParams, authInfo runtime.Cli
 }
 
 /*
-  FpolicyEngineCollectionGet Retrieves FPolicy engine configurations of all the engines for a specified SVM. ONTAP allows creation of cluster-level FPolicy engines that act as a template for all the SVMs belonging to the cluster. These cluster-level FPolicy engines are also retrieved for the specified SVM.
+	FpolicyEngineCollectionGet Retrieves FPolicy engine configurations of all the engines for a specified SVM. ONTAP allows creation of cluster-level FPolicy engines that act as a template for all the SVMs belonging to the cluster. These cluster-level FPolicy engines are also retrieved for the specified SVM.
+
 ### Related ONTAP commands
 * `fpolicy policy external-engine show`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/engines`](#docs-NAS-protocols_fpolicy_{svm.uuid}_engines)
-
 */
 func (a *Client) FpolicyEngineCollectionGet(params *FpolicyEngineCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3750,7 +3752,8 @@ func (a *Client) FpolicyEngineCollectionGet(params *FpolicyEngineCollectionGetPa
 }
 
 /*
-  FpolicyEngineCreate Creates an FPolicy engine configuration for a specified SVM. FPolicy engine creation is allowed only on data SVMs.
+	FpolicyEngineCreate Creates an FPolicy engine configuration for a specified SVM. FPolicy engine creation is allowed only on data SVMs.
+
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the FPolicy engine.
 * `name` - Name of external engine.
@@ -3765,7 +3768,6 @@ func (a *Client) FpolicyEngineCollectionGet(params *FpolicyEngineCollectionGetPa
 * `fpolicy policy external-engine create`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/engines`](#docs-NAS-protocols_fpolicy_{svm.uuid}_engines)
-
 */
 func (a *Client) FpolicyEngineCreate(params *FpolicyEngineCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3803,12 +3805,12 @@ func (a *Client) FpolicyEngineCreate(params *FpolicyEngineCreateParams, authInfo
 }
 
 /*
-  FpolicyEngineDelete Deletes the FPolicy external engine configuration. Deletion of an FPolicy engine that is attached to one or more FPolicy policies is not allowed.
+	FpolicyEngineDelete Deletes the FPolicy external engine configuration. Deletion of an FPolicy engine that is attached to one or more FPolicy policies is not allowed.
+
 ### Related ONTAP commands
 * `fpolicy policy external-engine modify`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/engines`](#docs-NAS-protocols_fpolicy_{svm.uuid}_engines)
-
 */
 func (a *Client) FpolicyEngineDelete(params *FpolicyEngineDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3846,12 +3848,12 @@ func (a *Client) FpolicyEngineDelete(params *FpolicyEngineDeleteParams, authInfo
 }
 
 /*
-  FpolicyEngineGet Retrieves a particular FPolicy engine configuration of a specifed SVM. A cluster-level FPolicy engine configuration cannot be retrieved for a data SVM.
+	FpolicyEngineGet Retrieves a particular FPolicy engine configuration of a specifed SVM. A cluster-level FPolicy engine configuration cannot be retrieved for a data SVM.
+
 ### Related ONTAP commands
 * `fpolicy policy external-engine show`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/engines`](#docs-NAS-protocols_fpolicy_{svm.uuid}_engines)
-
 */
 func (a *Client) FpolicyEngineGet(params *FpolicyEngineGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3889,12 +3891,12 @@ func (a *Client) FpolicyEngineGet(params *FpolicyEngineGetParams, authInfo runti
 }
 
 /*
-  FpolicyEngineModify Updates a specific FPolicy engine configuration of an SVM. Modification of an FPolicy engine that is attached to one or more enabled FPolicy policies is not allowed.
+	FpolicyEngineModify Updates a specific FPolicy engine configuration of an SVM. Modification of an FPolicy engine that is attached to one or more enabled FPolicy policies is not allowed.
+
 ### Related ONTAP commands
 * `fpolicy policy external-engine modify`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/engines`](#docs-NAS-protocols_fpolicy_{svm.uuid}_engines)
-
 */
 func (a *Client) FpolicyEngineModify(params *FpolicyEngineModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEngineModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3932,12 +3934,12 @@ func (a *Client) FpolicyEngineModify(params *FpolicyEngineModifyParams, authInfo
 }
 
 /*
-  FpolicyEventCollectionGet Retrieves FPolicy event configurations for all events for a specified SVM. ONTAP allows the creation of cluster-level FPolicy events that act as a template for all the data SVMs belonging to the cluster. These cluster-level FPolicy events are also retrieved for the specified SVM.
+	FpolicyEventCollectionGet Retrieves FPolicy event configurations for all events for a specified SVM. ONTAP allows the creation of cluster-level FPolicy events that act as a template for all the data SVMs belonging to the cluster. These cluster-level FPolicy events are also retrieved for the specified SVM.
+
 ### Related ONTAP commands
 * `fpolicy policy event show`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/events`](#docs-NAS-protocols_fpolicy_{svm.uuid}_events)
-
 */
 func (a *Client) FpolicyEventCollectionGet(params *FpolicyEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3975,7 +3977,8 @@ func (a *Client) FpolicyEventCollectionGet(params *FpolicyEventCollectionGetPara
 }
 
 /*
-  FpolicyEventCreate Creates an FPolicy event configuration for a specified SVM. FPolicy event creation is allowed only on data SVMs. When a protocol is specified, you must specify a file operation or a file operation and filters.
+	FpolicyEventCreate Creates an FPolicy event configuration for a specified SVM. FPolicy event creation is allowed only on data SVMs. When a protocol is specified, you must specify a file operation or a file operation and filters.
+
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the FPolicy event.
 * `name` - Name of the FPolicy event.
@@ -3992,7 +3995,6 @@ If not specified in POST, the following default property values are assigned:
 * `fpolicy policy event create`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/events`](#docs-NAS-protocols_fpolicy_{svm.uuid}_events)
-
 */
 func (a *Client) FpolicyEventCreate(params *FpolicyEventCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -4030,12 +4032,12 @@ func (a *Client) FpolicyEventCreate(params *FpolicyEventCreateParams, authInfo r
 }
 
 /*
-  FpolicyEventDelete Deletes a specific FPolicy event configuration for an SVM. A cluster-level FPolicy event configuration cannot be modified for a data SVM through REST. An FPolicy event that is attached to an FPolicy policy cannot be deleted.
+	FpolicyEventDelete Deletes a specific FPolicy event configuration for an SVM. A cluster-level FPolicy event configuration cannot be modified for a data SVM through REST. An FPolicy event that is attached to an FPolicy policy cannot be deleted.
+
 ### Related ONTAP commands
 * `fpolicy policy event delete`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/events`](#docs-NAS-protocols_fpolicy_{svm.uuid}_events)
-
 */
 func (a *Client) FpolicyEventDelete(params *FpolicyEventDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -4073,12 +4075,12 @@ func (a *Client) FpolicyEventDelete(params *FpolicyEventDeleteParams, authInfo r
 }
 
 /*
-  FpolicyEventModify Updates a specific FPolicy event configuration for an SVM. A cluster-level FPolicy event configuration cannot be modified for a data SVM through REST. When the file operations and filters fields are modified, the previous values are retained and new values are added to the list of previous values. To remove a particular file operation or filter, set its value to false in the request.
+	FpolicyEventModify Updates a specific FPolicy event configuration for an SVM. A cluster-level FPolicy event configuration cannot be modified for a data SVM through REST. When the file operations and filters fields are modified, the previous values are retained and new values are added to the list of previous values. To remove a particular file operation or filter, set its value to false in the request.
+
 ### Related ONTAP commands
 * `fpolicy policy event modify`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/events`](#docs-NAS-protocols_fpolicy_{svm.uuid}_events)
-
 */
 func (a *Client) FpolicyEventModify(params *FpolicyEventModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -4116,12 +4118,12 @@ func (a *Client) FpolicyEventModify(params *FpolicyEventModifyParams, authInfo r
 }
 
 /*
-  FpolicyEventsGet Retrieves a specific FPolicy event configuration for an SVM. A cluster-level FPolicy event configuration cannot be retrieved for a data SVM through a REST API.
+	FpolicyEventsGet Retrieves a specific FPolicy event configuration for an SVM. A cluster-level FPolicy event configuration cannot be retrieved for a data SVM through a REST API.
+
 ### Related ONTAP commands
 * `fpolicy policy event show`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/events`](#docs-NAS-protocols_fpolicy_{svm.uuid}_events)
-
 */
 func (a *Client) FpolicyEventsGet(params *FpolicyEventsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyEventsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4159,7 +4161,8 @@ func (a *Client) FpolicyEventsGet(params *FpolicyEventsGetParams, authInfo runti
 }
 
 /*
-  FpolicyGet Retrieves an FPolicy configuration of an SVM.
+	FpolicyGet Retrieves an FPolicy configuration of an SVM.
+
 ### Related ONTAP commands
 * `fpolicy show`
 * `fpolicy policy show`
@@ -4168,7 +4171,6 @@ func (a *Client) FpolicyEventsGet(params *FpolicyEventsGetParams, authInfo runti
 * `fpolicy policy external-engine show`
 ### Learn more
 * [`DOC /protocols/fpolicy`](#docs-NAS-protocols_fpolicy)
-
 */
 func (a *Client) FpolicyGet(params *FpolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4206,13 +4208,13 @@ func (a *Client) FpolicyGet(params *FpolicyGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  FpolicyPolicyCollectionGet Retrieves the FPolicy policy configuration of an SVM. ONTAP allows the creation of a cluster level FPolicy policy that acts as a template for all the data SVMs belonging to the cluster. This cluster level FPolicy policy is also retrieved for the specified SVM.
+	FpolicyPolicyCollectionGet Retrieves the FPolicy policy configuration of an SVM. ONTAP allows the creation of a cluster level FPolicy policy that acts as a template for all the data SVMs belonging to the cluster. This cluster level FPolicy policy is also retrieved for the specified SVM.
+
 ### Related ONTAP commands
 * `fpolicy policy show`
 * `fpolicy policy scope show`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/policies`](#docs-NAS-protocols_fpolicy_{svm.uuid}_policies)
-
 */
 func (a *Client) FpolicyPolicyCollectionGet(params *FpolicyPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4250,7 +4252,8 @@ func (a *Client) FpolicyPolicyCollectionGet(params *FpolicyPolicyCollectionGetPa
 }
 
 /*
-  FpolicyPolicyCreate Creates an FPolicy policy configuration for the specified SVM. To create an FPolicy policy, you must specify the policy scope and the FPolicy events to be monitored.
+	FpolicyPolicyCreate Creates an FPolicy policy configuration for the specified SVM. To create an FPolicy policy, you must specify the policy scope and the FPolicy events to be monitored.
+
 </br>Important notes:
 * A single policy can monitor multiple events.
 * An FPolicy engine is an optional field whose default value is set to native. A native engine can be used to simply block the file access based on the file extensions specified in the policy scope.
@@ -4271,7 +4274,6 @@ func (a *Client) FpolicyPolicyCollectionGet(params *FpolicyPolicyCollectionGetPa
 * `fpolicy enable`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/policies`](#docs-NAS-protocols_fpolicy_{svm.uuid}_policies)
-
 */
 func (a *Client) FpolicyPolicyCreate(params *FpolicyPolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -4309,13 +4311,13 @@ func (a *Client) FpolicyPolicyCreate(params *FpolicyPolicyCreateParams, authInfo
 }
 
 /*
-  FpolicyPolicyDelete Deletes a particular FPolicy policy configuration for a specified SVM. To delete a policy, you must first disable the policy.
+	FpolicyPolicyDelete Deletes a particular FPolicy policy configuration for a specified SVM. To delete a policy, you must first disable the policy.
+
 ### Related ONTAP commands
 * `fpolicy policy scope delete`
 * `fpolicy policy delete`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/policies`](#docs-NAS-protocols_fpolicy_{svm.uuid}_policies)
-
 */
 func (a *Client) FpolicyPolicyDelete(params *FpolicyPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -4353,14 +4355,14 @@ func (a *Client) FpolicyPolicyDelete(params *FpolicyPolicyDeleteParams, authInfo
 }
 
 /*
-  FpolicyPolicyGet Retrieves a particular FPolicy policy configuration for a specified SVM. Cluster-level FPolicy policy configuration details cannot be retrieved for a data SVM.
+	FpolicyPolicyGet Retrieves a particular FPolicy policy configuration for a specified SVM. Cluster-level FPolicy policy configuration details cannot be retrieved for a data SVM.
+
 ### Related ONTAP commands
 * `fpolicy policy show`
 * `fpolicy policy scope show`
 * `fpolicy show`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/policies`](#docs-NAS-protocols_fpolicy_{svm.uuid}_policies)
-
 */
 func (a *Client) FpolicyPolicyGet(params *FpolicyPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4398,7 +4400,8 @@ func (a *Client) FpolicyPolicyGet(params *FpolicyPolicyGetParams, authInfo runti
 }
 
 /*
-  FpolicyPolicyModify Updates a particular FPolicy policy configuration for a specified SVM. PATCH can be used to enable or disable the policy. When enabling a policy, you must specify the policy priority. The policy priority of the policy is not required when disabling the policy. If the policy is enabled, the FPolicy policy engine cannot be modified.
+	FpolicyPolicyModify Updates a particular FPolicy policy configuration for a specified SVM. PATCH can be used to enable or disable the policy. When enabling a policy, you must specify the policy priority. The policy priority of the policy is not required when disabling the policy. If the policy is enabled, the FPolicy policy engine cannot be modified.
+
 ### Related ONTAP commands
 * `fpolicy policy modify`
 * `fpolicy policy scope modify`
@@ -4406,7 +4409,6 @@ func (a *Client) FpolicyPolicyGet(params *FpolicyPolicyGetParams, authInfo runti
 * `fpolicy disable`
 ### Learn more
 * [`DOC /protocols/fpolicy/{svm.uuid}/policies`](#docs-NAS-protocols_fpolicy_{svm.uuid}_policies)
-
 */
 func (a *Client) FpolicyPolicyModify(params *FpolicyPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -4444,12 +4446,12 @@ func (a *Client) FpolicyPolicyModify(params *FpolicyPolicyModifyParams, authInfo
 }
 
 /*
-  KerberosInterfaceCollectionGet Retrieves Kerberos interfaces.
+	KerberosInterfaceCollectionGet Retrieves Kerberos interfaces.
+
 ### Related ONTAP commands
 * `vserver nfs kerberos interface show`
 ### Learn more
 * [`DOC /protocols/nfs/kerberos/interfaces`](#docs-NAS-protocols_nfs_kerberos_interfaces)
-
 */
 func (a *Client) KerberosInterfaceCollectionGet(params *KerberosInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosInterfaceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4487,12 +4489,12 @@ func (a *Client) KerberosInterfaceCollectionGet(params *KerberosInterfaceCollect
 }
 
 /*
-  KerberosInterfaceGet Retrieves a Kerberos interface.
+	KerberosInterfaceGet Retrieves a Kerberos interface.
+
 ### Related ONTAP commands
 * `vserver nfs kerberos interface show`
 ### Learn more
 * [`DOC /protocols/nfs/kerberos/interfaces`](#docs-NAS-protocols_nfs_kerberos_interfaces)
-
 */
 func (a *Client) KerberosInterfaceGet(params *KerberosInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosInterfaceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4530,14 +4532,14 @@ func (a *Client) KerberosInterfaceGet(params *KerberosInterfaceGetParams, authIn
 }
 
 /*
-  KerberosInterfaceModify Updates the properties of a Kerberos interface.
+	KerberosInterfaceModify Updates the properties of a Kerberos interface.
+
 ### Related ONTAP commands
 * `vserver nfs kerberos interface modify`
 * `vserver nfs kerberos interface enable`
 * `vserver nfs kerberos interface disable`
 ### Learn more
 * [`DOC /protocols/nfs/kerberos/interfaces`](#docs-NAS-protocols_nfs_kerberos_interfaces)
-
 */
 func (a *Client) KerberosInterfaceModify(params *KerberosInterfaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosInterfaceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -4575,12 +4577,12 @@ func (a *Client) KerberosInterfaceModify(params *KerberosInterfaceModifyParams, 
 }
 
 /*
-  KerberosRealmCollectionGet Retrieves Kerberos realms.
+	KerberosRealmCollectionGet Retrieves Kerberos realms.
+
 ### Related ONTAP commands
 * `vserver nfs kerberos realm show`
 ### Learn more
 * [`DOC /protocols/nfs/kerberos/realms`](#docs-NAS-protocols_nfs_kerberos_realms)
-
 */
 func (a *Client) KerberosRealmCollectionGet(params *KerberosRealmCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4618,7 +4620,8 @@ func (a *Client) KerberosRealmCollectionGet(params *KerberosRealmCollectionGetPa
 }
 
 /*
-  KerberosRealmCreate Creates a Kerberos realm.
+	KerberosRealmCreate Creates a Kerberos realm.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM on which to create the Kerberos realm.
 * `name` - Base name for the Kerberos realm.
@@ -4634,7 +4637,6 @@ If not specified in POST, the following default property value is assigned:
 * `vserver nfs kerberos realm create`
 ### Learn more
 * [`DOC /protocols/nfs/kerberos/realms`](#docs-NAS-protocols_nfs_kerberos_realms)
-
 */
 func (a *Client) KerberosRealmCreate(params *KerberosRealmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -4672,11 +4674,11 @@ func (a *Client) KerberosRealmCreate(params *KerberosRealmCreateParams, authInfo
 }
 
 /*
-  KerberosRealmDelete Deletes a Kerberos realm.
+	KerberosRealmDelete Deletes a Kerberos realm.
+
 * `vserver nfs kerberos realm delete`
 ### Learn more
 * [`DOC /protocols/nfs/kerberos/realms`](#docs-NAS-protocols_nfs_kerberos_realms)
-
 */
 func (a *Client) KerberosRealmDelete(params *KerberosRealmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -4714,11 +4716,11 @@ func (a *Client) KerberosRealmDelete(params *KerberosRealmDeleteParams, authInfo
 }
 
 /*
-  KerberosRealmGet Retrieves a Kerberos realm.
+	KerberosRealmGet Retrieves a Kerberos realm.
+
 * `vserver nfs kerberos realm show`
 ### Learn more
 * [`DOC /protocols/nfs/kerberos/realms`](#docs-NAS-protocols_nfs_kerberos_realms)
-
 */
 func (a *Client) KerberosRealmGet(params *KerberosRealmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4756,11 +4758,11 @@ func (a *Client) KerberosRealmGet(params *KerberosRealmGetParams, authInfo runti
 }
 
 /*
-  KerberosRealmModify Updates the properties of a Kerberos realm.
+	KerberosRealmModify Updates the properties of a Kerberos realm.
+
 * `vserver nfs kerberos realm modify`
 ### Learn more
 * [`DOC /protocols/nfs/kerberos/realms`](#docs-NAS-protocols_nfs_kerberos_realms)
-
 */
 func (a *Client) KerberosRealmModify(params *KerberosRealmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -4798,7 +4800,8 @@ func (a *Client) KerberosRealmModify(params *KerberosRealmModifyParams, authInfo
 }
 
 /*
-  LocalCifsGroupCollectionGet Retrieves the local groups for all of the SVMs.
+	LocalCifsGroupCollectionGet Retrieves the local groups for all of the SVMs.
+
 ### Advanced properties
 * `members`
 ### Related ONTAP commands
@@ -4806,7 +4809,6 @@ func (a *Client) KerberosRealmModify(params *KerberosRealmModifyParams, authInfo
 * `vserver cifs users-and-groups local-group show-members`
 ### Learn more
 * [`DOC /protocols/cifs/local-groups`](#docs-NAS-protocols_cifs_local-groups)
-
 */
 func (a *Client) LocalCifsGroupCollectionGet(params *LocalCifsGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4844,7 +4846,8 @@ func (a *Client) LocalCifsGroupCollectionGet(params *LocalCifsGroupCollectionGet
 }
 
 /*
-  LocalCifsGroupCreate Creates the local group configuration for the specified SVM.
+	LocalCifsGroupCreate Creates the local group configuration for the specified SVM.
+
 ### Important notes
 * The group name can contain up to 256 characters.
 * The group name cannot be terminated by a period.
@@ -4856,7 +4859,6 @@ func (a *Client) LocalCifsGroupCollectionGet(params *LocalCifsGroupCollectionGet
 * `vserver cifs users-and-groups local-group create`
 ### Learn more
 * [`DOC /protocols/cifs/local-groups`](#docs-NAS-protocols_cifs_local-groups)
-
 */
 func (a *Client) LocalCifsGroupCreate(params *LocalCifsGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -4894,12 +4896,12 @@ func (a *Client) LocalCifsGroupCreate(params *LocalCifsGroupCreateParams, authIn
 }
 
 /*
-  LocalCifsGroupDelete Deletes a local group configuration for the specified SVM.
+	LocalCifsGroupDelete Deletes a local group configuration for the specified SVM.
+
 ### Related ONTAP commands
 * `vserver cifs users-and-groups local-group delete`
 ### Learn more
 * [`DOC /protocols/cifs/local-groups`](#docs-NAS-protocols_cifs_local-groups)
-
 */
 func (a *Client) LocalCifsGroupDelete(params *LocalCifsGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -4937,7 +4939,8 @@ func (a *Client) LocalCifsGroupDelete(params *LocalCifsGroupDeleteParams, authIn
 }
 
 /*
-  LocalCifsGroupGet Retrieves local group information for the specified group and SVM.
+	LocalCifsGroupGet Retrieves local group information for the specified group and SVM.
+
 ### Advanced properties
 * `members`
 ### Related ONTAP commands
@@ -4945,7 +4948,6 @@ func (a *Client) LocalCifsGroupDelete(params *LocalCifsGroupDeleteParams, authIn
 * `vserver cifs users-and-groups local-group show-members`
 ### Learn more
 * [`DOC /protocols/cifs/local-groups`](#docs-NAS-protocols_cifs_local-groups)
-
 */
 func (a *Client) LocalCifsGroupGet(params *LocalCifsGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4983,12 +4985,12 @@ func (a *Client) LocalCifsGroupGet(params *LocalCifsGroupGetParams, authInfo run
 }
 
 /*
-  LocalCifsGroupMembersBulkDelete Deletes the local users, Active Directory users and/or Active Directory groups from the specified local group and SVM.
+	LocalCifsGroupMembersBulkDelete Deletes the local users, Active Directory users and/or Active Directory groups from the specified local group and SVM.
+
 ### Related ONTAP commands
 * `vserver cifs users-and-groups local-group remove-members`
 ### Learn more
 * [`DOC /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members`](#docs-NAS-protocols_cifs_local-groups_{svm.uuid}_{local_cifs_group.sid}_members)
-
 */
 func (a *Client) LocalCifsGroupMembersBulkDelete(params *LocalCifsGroupMembersBulkDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersBulkDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -5026,12 +5028,12 @@ func (a *Client) LocalCifsGroupMembersBulkDelete(params *LocalCifsGroupMembersBu
 }
 
 /*
-  LocalCifsGroupMembersCollectionGet Retrieves local users, Active Directory users and Active Directory groups which are members of the specified local group and SVM.
+	LocalCifsGroupMembersCollectionGet Retrieves local users, Active Directory users and Active Directory groups which are members of the specified local group and SVM.
+
 ### Related ONTAP commands
 * `vserver cifs users-and-groups local-group show-members`
 ### Learn more
 * [`DOC /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members`](#docs-NAS-protocols_cifs_local-groups_{svm.uuid}_{local_cifs_group.sid}_members)
-
 */
 func (a *Client) LocalCifsGroupMembersCollectionGet(params *LocalCifsGroupMembersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5069,7 +5071,8 @@ func (a *Client) LocalCifsGroupMembersCollectionGet(params *LocalCifsGroupMember
 }
 
 /*
-  LocalCifsGroupMembersCreate Adds local users, Active Directory users and Active Directory groups to the specified local group and SVM.
+	LocalCifsGroupMembersCreate Adds local users, Active Directory users and Active Directory groups to the specified local group and SVM.
+
 ### Important note
 * Specified members are appended to the existing list of members.
 ### Required properties
@@ -5080,7 +5083,6 @@ func (a *Client) LocalCifsGroupMembersCollectionGet(params *LocalCifsGroupMember
 * `vserver cifs users-and-groups local-group add-members`
 ### Learn more
 * [`DOC /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members`](#docs-NAS-protocols_cifs_local-groups_{svm.uuid}_{local_cifs_group.sid}_members)
-
 */
 func (a *Client) LocalCifsGroupMembersCreate(params *LocalCifsGroupMembersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -5118,12 +5120,12 @@ func (a *Client) LocalCifsGroupMembersCreate(params *LocalCifsGroupMembersCreate
 }
 
 /*
-  LocalCifsGroupMembersDelete Deletes the local user, Active Directory user and/or Active Directory group from the specified local group and SVM.
+	LocalCifsGroupMembersDelete Deletes the local user, Active Directory user and/or Active Directory group from the specified local group and SVM.
+
 ### Related ONTAP commands
 * `vserver cifs users-and-groups local-group remove-members`
 ### Learn more
 * [`DOC /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members`](#docs-NAS-protocols_cifs_local-groups_{svm.uuid}_{local_cifs_group.sid}_members)
-
 */
 func (a *Client) LocalCifsGroupMembersDelete(params *LocalCifsGroupMembersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -5161,12 +5163,12 @@ func (a *Client) LocalCifsGroupMembersDelete(params *LocalCifsGroupMembersDelete
 }
 
 /*
-  LocalCifsGroupMembersGet Retrieves local user, Active Directory user and Active Directory group which is member of the specified local group and SVM.
+	LocalCifsGroupMembersGet Retrieves local user, Active Directory user and Active Directory group which is member of the specified local group and SVM.
+
 ### Related ONTAP commands
 * `vserver cifs users-and-groups local-group show-members`
 ### Learn more
 * [`DOC /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members`](#docs-NAS-protocols_cifs_local-groups_{svm.uuid}_{local_cifs_group.sid}_members)
-
 */
 func (a *Client) LocalCifsGroupMembersGet(params *LocalCifsGroupMembersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5204,13 +5206,13 @@ func (a *Client) LocalCifsGroupMembersGet(params *LocalCifsGroupMembersGetParams
 }
 
 /*
-  LocalCifsGroupModify Updates the local group information of the specified group in the specified SVM. This API can also be used to rename a local group.
+	LocalCifsGroupModify Updates the local group information of the specified group in the specified SVM. This API can also be used to rename a local group.
+
 ### Related ONTAP commands
 * `vserver cifs users-and-groups local-group modify`
 * `vserver cifs users-and-groups local-group rename`
 ### Learn more
 * [`DOC /protocols/cifs/local-groups`](#docs-NAS-protocols_cifs_local-groups)
-
 */
 func (a *Client) LocalCifsGroupModify(params *LocalCifsGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -5248,7 +5250,8 @@ func (a *Client) LocalCifsGroupModify(params *LocalCifsGroupModifyParams, authIn
 }
 
 /*
-  LocalCifsUserCollectionGet Retrieves local users for all of the SVMs. Local groups to which this user belongs to are also displayed.
+	LocalCifsUserCollectionGet Retrieves local users for all of the SVMs. Local groups to which this user belongs to are also displayed.
+
 ### Advanced properties
 * `membership`
 ### Related ONTAP commands
@@ -5256,7 +5259,6 @@ func (a *Client) LocalCifsGroupModify(params *LocalCifsGroupModifyParams, authIn
 * `vserver cifs users-and-groups local-user show-membership`
 ### Learn more
 * [`DOC /protocols/cifs/local-users`](#docs-NAS-protocols_cifs_local-users)
-
 */
 func (a *Client) LocalCifsUserCollectionGet(params *LocalCifsUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5294,7 +5296,8 @@ func (a *Client) LocalCifsUserCollectionGet(params *LocalCifsUserCollectionGetPa
 }
 
 /*
-  LocalCifsUserCreate Creates the local user configuration for an SVM.<br/>
+	LocalCifsUserCreate Creates the local user configuration for an SVM.<br/>
+
 ### Important notes
 * The user name can contain up to 20 characters.
 * The user name cannot be terminated by a period.
@@ -5305,6 +5308,7 @@ func (a *Client) LocalCifsUserCollectionGet(params *LocalCifsUserCollectionGetPa
   - English lowercase characters (a through z)
   - Base 10 digits (0 through 9)
   - Special characters: ~ ! @ \# 0 ^ & * _ - + = ` ? | ( ) [ ] : ; \" \' < > , . ? /
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the local user.
 * `name` - Name of the local user.
@@ -5316,7 +5320,6 @@ If not specified in POST, the following default property value is assigned:
 * `vserver cifs users-and-groups local-user create`
 ### Learn more
 * [`DOC /protocols/cifs/local-users`](#docs-NAS-protocols_cifs_local-users)
-
 */
 func (a *Client) LocalCifsUserCreate(params *LocalCifsUserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -5354,12 +5357,12 @@ func (a *Client) LocalCifsUserCreate(params *LocalCifsUserCreateParams, authInfo
 }
 
 /*
-  LocalCifsUserDelete Deletes a local user configuration for the specified SVM.
+	LocalCifsUserDelete Deletes a local user configuration for the specified SVM.
+
 ### Related ONTAP commands
 * `vserver cifs users-and-groups local-user delete`
 ### Learn more
 * [`DOC /protocols/cifs/local-users`](#docs-NAS-protocols_cifs_local-users)
-
 */
 func (a *Client) LocalCifsUserDelete(params *LocalCifsUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -5397,7 +5400,8 @@ func (a *Client) LocalCifsUserDelete(params *LocalCifsUserDeleteParams, authInfo
 }
 
 /*
-  LocalCifsUserGet Retrieves local user information for the specified user and SVM.
+	LocalCifsUserGet Retrieves local user information for the specified user and SVM.
+
 ### Advanced properties
 * `membership`
 ### Related ONTAP commands
@@ -5405,7 +5409,6 @@ func (a *Client) LocalCifsUserDelete(params *LocalCifsUserDeleteParams, authInfo
 * `vserver cifs users-and-groups local-user show-membership`
 ### Learn more
 * [`DOC /protocols/cifs/local-users`](#docs-NAS-protocols_cifs_local-users)
-
 */
 func (a *Client) LocalCifsUserGet(params *LocalCifsUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5443,14 +5446,14 @@ func (a *Client) LocalCifsUserGet(params *LocalCifsUserGetParams, authInfo runti
 }
 
 /*
-  LocalCifsUserModify Updates local user information for the specified user and SVM. The PATCH endpoint is also used to rename a user and to set the password for the user.
+	LocalCifsUserModify Updates local user information for the specified user and SVM. The PATCH endpoint is also used to rename a user and to set the password for the user.
+
 ### Related ONTAP commands
 * `vserver cifs users-and-groups local-user modify`
 * `vserver cifs users-and-groups local-user rename`
 * `vserver cifs users-and-groups local-user set-password`
 ### Learn more
 * [`DOC /protocols/cifs/local-users`](#docs-NAS-protocols_cifs_local-users)
-
 */
 func (a *Client) LocalCifsUserModify(params *LocalCifsUserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -5488,7 +5491,8 @@ func (a *Client) LocalCifsUserModify(params *LocalCifsUserModifyParams, authInfo
 }
 
 /*
-  LocalCifsUsersAndGroupsImportCreate Loads CIFS local users,groups and group memberships file from the specified URL.<br/>
+	LocalCifsUsersAndGroupsImportCreate Loads CIFS local users,groups and group memberships file from the specified URL.<br/>
+
 ### Important notes
 Existing CIFS local users, groups, and group memberships will be replaced with the contents of the file.
 ### Required properties
@@ -5499,7 +5503,6 @@ Existing CIFS local users, groups, and group memberships will be replaced with t
 - import_uri.password
 ### Related ONTAP commands
 * `vserver cifs users-and-groups import load-from-uri`
-
 */
 func (a *Client) LocalCifsUsersAndGroupsImportCreate(params *LocalCifsUsersAndGroupsImportCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -5537,11 +5540,11 @@ func (a *Client) LocalCifsUsersAndGroupsImportCreate(params *LocalCifsUsersAndGr
 }
 
 /*
-  LocalCifsUsersAndGroupsImportGet Retrieves information about the import operation status of the CIFS local users,
+	LocalCifsUsersAndGroupsImportGet Retrieves information about the import operation status of the CIFS local users,
+
 groups, and group memberships.
 ### Related ONTAP commands
 * `vserver cifs users-and-groups import get-status`
-
 */
 func (a *Client) LocalCifsUsersAndGroupsImportGet(params *LocalCifsUsersAndGroupsImportGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5579,7 +5582,8 @@ func (a *Client) LocalCifsUsersAndGroupsImportGet(params *LocalCifsUsersAndGroup
 }
 
 /*
-  LocalCifsUsersAndGroupsImportModify Upload the status of the bulk-import of the specified SVM to the specified URI.
+	LocalCifsUsersAndGroupsImportModify Upload the status of the bulk-import of the specified SVM to the specified URI.
+
 ### Important notes
 * Only the status of the last bulk-import will be uploaded and not the status of the previous bulk-imports.
 ### Required properties
@@ -5589,7 +5593,6 @@ func (a *Client) LocalCifsUsersAndGroupsImportGet(params *LocalCifsUsersAndGroup
 - status_uri.password - Password of the specified URI.
 ### Related ONTAP commands
 * `vserver cifs users-and-groups import get-status`
-
 */
 func (a *Client) LocalCifsUsersAndGroupsImportModify(params *LocalCifsUsersAndGroupsImportModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUsersAndGroupsImportModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -5627,12 +5630,12 @@ func (a *Client) LocalCifsUsersAndGroupsImportModify(params *LocalCifsUsersAndGr
 }
 
 /*
-  NetbiosCollectionGet Retrieves NetBIOS information.
+	NetbiosCollectionGet Retrieves NetBIOS information.
+
 ### Related ONTAP commands
 * ` vserver cifs nbstat`
 ### Learn more
 * [`DOC /protocols/cifs/netbios`](#docs-NAS-protocols_cifs_netbios)
-
 */
 func (a *Client) NetbiosCollectionGet(params *NetbiosCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetbiosCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5670,11 +5673,11 @@ func (a *Client) NetbiosCollectionGet(params *NetbiosCollectionGetParams, authIn
 }
 
 /*
-  NfsClientsGet Retrieves the NFS configuration of SVMs.
+	NfsClientsGet Retrieves the NFS configuration of SVMs.
+
 ### Expensive properties
 export_policy.id is expensive field. It is not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `export_policy.id`
-
 */
 func (a *Client) NfsClientsGet(params *NfsClientsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5712,8 +5715,7 @@ func (a *Client) NfsClientsGet(params *NfsClientsGetParams, authInfo runtime.Cli
 }
 
 /*
-  NfsClientsMapGet Retrieves NFS clients information.
-
+NfsClientsMapGet Retrieves NFS clients information.
 */
 func (a *Client) NfsClientsMapGet(params *NfsClientsMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsMapGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5751,7 +5753,8 @@ func (a *Client) NfsClientsMapGet(params *NfsClientsMapGetParams, authInfo runti
 }
 
 /*
-  NfsCollectionGet Retrieves the NFS configuration of SVMs.
+	NfsCollectionGet Retrieves the NFS configuration of SVMs.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
@@ -5784,7 +5787,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver nfs status`
 ### Learn more
 * [`DOC /protocols/nfs/services`](#docs-NAS-protocols_nfs_services)
-
 */
 func (a *Client) NfsCollectionGet(params *NfsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5822,7 +5824,7 @@ func (a *Client) NfsCollectionGet(params *NfsCollectionGetParams, authInfo runti
 }
 
 /*
-  NfsCollectionPerformanceMetricsGet Retrieves historical performance metrics for the NFS protocol of an SVM.
+NfsCollectionPerformanceMetricsGet Retrieves historical performance metrics for the NFS protocol of an SVM.
 */
 func (a *Client) NfsCollectionPerformanceMetricsGet(params *NfsCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsCollectionPerformanceMetricsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5860,7 +5862,8 @@ func (a *Client) NfsCollectionPerformanceMetricsGet(params *NfsCollectionPerform
 }
 
 /*
-  NfsCreate Creates an NFS configuration for an SVM.
+	NfsCreate Creates an NFS configuration for an SVM.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM for which to create the NFS configuration.
 ### Default property values
@@ -5928,7 +5931,6 @@ If not specified in POST, the following default property values are assigned:
 * `export-policy access-cache config show`
 ### Learn more
 * [`DOC /protocols/nfs/services`](#docs-NAS-protocols_nfs_services)
-
 */
 func (a *Client) NfsCreate(params *NfsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -5966,12 +5968,12 @@ func (a *Client) NfsCreate(params *NfsCreateParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  NfsDelete Deletes the NFS configuration of an SVM.
+	NfsDelete Deletes the NFS configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver nfs delete`
 ### Learn more
 * [`DOC /protocols/nfs/services`](#docs-NAS-protocols_nfs_services)
-
 */
 func (a *Client) NfsDelete(params *NfsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -6009,13 +6011,13 @@ func (a *Client) NfsDelete(params *NfsDeleteParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  NfsGet Retrieves the NFS configuration of an SVM.
+	NfsGet Retrieves the NFS configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver nfs show`
 * `vserver nfs status`
 ### Learn more
 * [`DOC /protocols/nfs/services`](#docs-NAS-protocols_nfs_services)
-
 */
 func (a *Client) NfsGet(params *NfsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6053,7 +6055,8 @@ func (a *Client) NfsGet(params *NfsGetParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-  NfsModify Updates the NFS configuration of an SVM.
+	NfsModify Updates the NFS configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver nfs modify`
 * `vserver nfs on`
@@ -6062,7 +6065,6 @@ func (a *Client) NfsGet(params *NfsGetParams, authInfo runtime.ClientAuthInfoWri
 * `vserver nfs stop`
 ### Learn more
 * [`DOC /protocols/nfs/services`](#docs-NAS-protocols_nfs_services)
-
 */
 func (a *Client) NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -6100,7 +6102,8 @@ func (a *Client) NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  S3AuditCreate Creates an S3 audit configuration.
+	S3AuditCreate Creates an S3 audit configuration.
+
 ### Required properties
 * `log_path` - Path in the owning SVM namespace that is used to store audit logs.
 ### Default property values
@@ -6118,7 +6121,6 @@ If not specified in POST, the following default property values are assigned:
 * `vserver object-store-server audit enable`
 ### Learn more
 * [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
-
 */
 func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -6156,13 +6158,13 @@ func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.Cli
 }
 
 /*
-  S3AuditDelete Deletes an S3 audit configuration.
+	S3AuditDelete Deletes an S3 audit configuration.
+
 ### Related ONTAP commands
 * `vserver object-store-server audit disable`
 * `vserver object-store-server audit delete`
 ### Learn more
 * [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
-
 */
 func (a *Client) S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -6200,12 +6202,12 @@ func (a *Client) S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.Cli
 }
 
 /*
-  S3AuditGet Retrieves S3 audit configurations.
+	S3AuditGet Retrieves S3 audit configurations.
+
 ### Related ONTAP commands
 * `vserver object-store-server audit show`
 ### Learn more
 * [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
-
 */
 func (a *Client) S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6243,14 +6245,14 @@ func (a *Client) S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  S3AuditModify Updates an S3 audit configuration for an SVM.
+	S3AuditModify Updates an S3 audit configuration for an SVM.
+
 ### Important notes
 * `events` - Not specifying either data or management is equivalent to setting it to false.
 ### Related ONTAP commands
 * `vserver object-store-server audit modify`
 ### Learn more
 * [`DOC /protocols/audit/{svm.uuid}/object-store`](#docs-NAS-protocols_audit_{svm.uuid}_object-store)
-
 */
 func (a *Client) S3AuditModify(params *S3AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -6288,12 +6290,12 @@ func (a *Client) S3AuditModify(params *S3AuditModifyParams, authInfo runtime.Cli
 }
 
 /*
-  ShadowcopyCollectionGet Retrieves Shadowcopies
+	ShadowcopyCollectionGet Retrieves Shadowcopies
+
 ### Related ONTAP commands
 * `vserver cifs shadowcopy show-shares`
 ### Learn more
 * [`DOC /protocols/cifs/shadow-copies`](#docs-NAS-protocols_cifs_shadow-copies)
-
 */
 func (a *Client) ShadowcopyCollectionGet(params *ShadowcopyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6331,12 +6333,12 @@ func (a *Client) ShadowcopyCollectionGet(params *ShadowcopyCollectionGetParams, 
 }
 
 /*
-  ShadowcopyGet Retrieves a Shadowcopy
+	ShadowcopyGet Retrieves a Shadowcopy
+
 ### Related ONTAP commands
 * `vserver cifs shadowcopy show-shares`
 ### Learn more
 * [`DOC /protocols/cifs/shadow-copies`](#docs-NAS-protocols_cifs_shadow-copies)
-
 */
 func (a *Client) ShadowcopyGet(params *ShadowcopyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6374,10 +6376,10 @@ func (a *Client) ShadowcopyGet(params *ShadowcopyGetParams, authInfo runtime.Cli
 }
 
 /*
-  ShadowcopyModify Specify list Files to be added as a part of Shadowcopy creation
+	ShadowcopyModify Specify list Files to be added as a part of Shadowcopy creation
+
 ### Learn more
 * [`DOC /protocols/cifs/shadow-copies`](#docs-NAS-protocols_cifs_shadow-copies)
-
 */
 func (a *Client) ShadowcopyModify(params *ShadowcopyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -6415,12 +6417,12 @@ func (a *Client) ShadowcopyModify(params *ShadowcopyModifyParams, authInfo runti
 }
 
 /*
-  ShadowcopySetCollectionGet Retrieves Shadowcopy Sets.
+	ShadowcopySetCollectionGet Retrieves Shadowcopy Sets.
+
 ### Related ONTAP commands
 * `vserver cifs shadowcopy show-sets`
 ### Learn more
 * [`DOC /protocols/cifs/shadow-copies`](#docs-NAS-protocols_cifs_shadow-copies)
-
 */
 func (a *Client) ShadowcopySetCollectionGet(params *ShadowcopySetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6458,12 +6460,12 @@ func (a *Client) ShadowcopySetCollectionGet(params *ShadowcopySetCollectionGetPa
 }
 
 /*
-  ShadowcopySetGet Retrieves a Shadowcopy set
+	ShadowcopySetGet Retrieves a Shadowcopy set
+
 ### Related ONTAP commands
 * `vserver cifs shadowcopy show-sets`
 ### Learn more
 * [`DOC /protocols/cifs/shadow-copies`](#docs-NAS-protocols_cifs_shadow-copies)
-
 */
 func (a *Client) ShadowcopySetGet(params *ShadowcopySetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6501,10 +6503,10 @@ func (a *Client) ShadowcopySetGet(params *ShadowcopySetGetParams, authInfo runti
 }
 
 /*
-  ShadowcopySetModify Updates a Shadowcopy set
+	ShadowcopySetModify Updates a Shadowcopy set
+
 ### Learn more
 * [`DOC /protocols/cifs/shadowcopy`](#docs-NAS-protocols_cifs_shadowcopy)
-
 */
 func (a *Client) ShadowcopySetModify(params *ShadowcopySetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShadowcopySetModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -6542,12 +6544,12 @@ func (a *Client) ShadowcopySetModify(params *ShadowcopySetModifyParams, authInfo
 }
 
 /*
-  UserGroupPrivilegesCollectionGet Retrieves privileges of the specified local or Active Directory user or group and SVM.
+	UserGroupPrivilegesCollectionGet Retrieves privileges of the specified local or Active Directory user or group and SVM.
+
 ### Related ONTAP commands
 * `vserver cifs users-and-groups privilege show`
 ### Learn more
 * [`DOC /protocols/cifs/users-and-groups/privileges`](#docs-NAS-protocols_cifs_users-and-groups_privileges)
-
 */
 func (a *Client) UserGroupPrivilegesCollectionGet(params *UserGroupPrivilegesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6585,7 +6587,8 @@ func (a *Client) UserGroupPrivilegesCollectionGet(params *UserGroupPrivilegesCol
 }
 
 /*
-  UserGroupPrivilegesCreate Adds privileges to the specified local or Active Directory user or group and SVM.
+	UserGroupPrivilegesCreate Adds privileges to the specified local or Active Directory user or group and SVM.
+
 ### Important note
 * Specified privileges are appended to the existing list of privileges.
 ### Required properties
@@ -6596,7 +6599,6 @@ func (a *Client) UserGroupPrivilegesCollectionGet(params *UserGroupPrivilegesCol
 * `vserver cifs users-and-groups privilege add-privilege`
 ### Learn more
 * [`DOC /protocols/cifs/users-and-groups/privileges`](#docs-NAS-protocols_cifs_users-and-groups_privileges)
-
 */
 func (a *Client) UserGroupPrivilegesCreate(params *UserGroupPrivilegesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -6634,12 +6636,12 @@ func (a *Client) UserGroupPrivilegesCreate(params *UserGroupPrivilegesCreatePara
 }
 
 /*
-  UserGroupPrivilegesGet Retrieves privileges of the specified local or Active Directory user or group and SVM.
+	UserGroupPrivilegesGet Retrieves privileges of the specified local or Active Directory user or group and SVM.
+
 ### Related ONTAP commands
 * `vserver cifs users-and-groups privilege show`
 ### Learn more
 * [`DOC /protocols/cifs/users-and-groups/privileges`](#docs-NAS-protocols_cifs_users-and-groups_privileges)
-
 */
 func (a *Client) UserGroupPrivilegesGet(params *UserGroupPrivilegesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6677,7 +6679,8 @@ func (a *Client) UserGroupPrivilegesGet(params *UserGroupPrivilegesGetParams, au
 }
 
 /*
-  UserGroupPrivilegesModify Updates privileges of the specified local or Active Directory user or group and SVM.
+	UserGroupPrivilegesModify Updates privileges of the specified local or Active Directory user or group and SVM.
+
 ### Important note
 * Specified privileges will replace all the existing privileges associated with the user or group.
 * To reset privileges associated with the user or group, specify the privileges list as empty.
@@ -6685,7 +6688,6 @@ func (a *Client) UserGroupPrivilegesGet(params *UserGroupPrivilegesGetParams, au
 * `vserver cifs users-and-groups privilege reset-privilege`
 ### Learn more
 * [`DOC /protocols/cifs/users-and-groups/privileges`](#docs-NAS-protocols_cifs_users-and-groups_privileges)
-
 */
 func (a *Client) UserGroupPrivilegesModify(params *UserGroupPrivilegesModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -6723,7 +6725,8 @@ func (a *Client) UserGroupPrivilegesModify(params *UserGroupPrivilegesModifyPara
 }
 
 /*
-  VscanCollectionGet Retrieves the Vscan configuration.
+	VscanCollectionGet Retrieves the Vscan configuration.
+
 This includes scanner-pools, On-Access policies, On-Demand policies, and information about whether a Vscan is enabled or disabled on an SVM.<br/>
 Important notes:
 * You can enable only one Vscan configuration at a time for an SVM.
@@ -6741,7 +6744,6 @@ Important notes:
 ### Learn more
 * [`DOC /protocols/vscan`](#docs-NAS-protocols_vscan)
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
-
 */
 func (a *Client) VscanCollectionGet(params *VscanCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6779,7 +6781,8 @@ func (a *Client) VscanCollectionGet(params *VscanCollectionGetParams, authInfo r
 }
 
 /*
-  VscanConfigDelete Deletes a Vscan configuration.<br/>
+	VscanConfigDelete Deletes a Vscan configuration.<br/>
+
 Important notes:
 * The Vscan DELETE endpoint deletes all of the Vscan configuration of an SVM. It first disables the Vscan and then deletes all of the SVM scanner-pools, On-Access policies, and On-Demand policies.
 * Disable the active Vscan On-Access policy on an SVM before performing the Vscan delete operation on that SVM.
@@ -6790,7 +6793,6 @@ Important notes:
 ### Learn more
 * [`DOC /protocols/vscan`](#docs-NAS-protocols_vscan)
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
-
 */
 func (a *Client) VscanConfigDelete(params *VscanConfigDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanConfigDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -6828,7 +6830,8 @@ func (a *Client) VscanConfigDelete(params *VscanConfigDeleteParams, authInfo run
 }
 
 /*
-  VscanCreate Creates a Vscan configuration, which includes a list of scanner-pools, Vscan On-Access policies and Vscan On-Demand policies. Defines whether the Vscan configuration you create is enabled or disabled for a specified SVM.<br/>
+	VscanCreate Creates a Vscan configuration, which includes a list of scanner-pools, Vscan On-Access policies and Vscan On-Demand policies. Defines whether the Vscan configuration you create is enabled or disabled for a specified SVM.<br/>
+
 Important notes:
 * You can enable only one Vscan configuration at a time for an SVM.
 * There needs to be at least one active scanner-pool and one enabled On-Access policy to enable Vscan successfully.
@@ -6855,7 +6858,6 @@ If not specified in POST, the following default property value is assigned:
 ### Learn more
 * [`DOC /protocols/vscan`](#docs-NAS-protocols_vscan)
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
-
 */
 func (a *Client) VscanCreate(params *VscanCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -6893,10 +6895,10 @@ func (a *Client) VscanCreate(params *VscanCreateParams, authInfo runtime.ClientA
 }
 
 /*
-  VscanEventCollectionGet Retrieves Vscan events, which are generated by the cluster to capture important events.
+	VscanEventCollectionGet Retrieves Vscan events, which are generated by the cluster to capture important events.
+
 ### Related ONTAP commands
 * `vserver vscan show-events`
-
 */
 func (a *Client) VscanEventCollectionGet(params *VscanEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanEventCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6934,7 +6936,8 @@ func (a *Client) VscanEventCollectionGet(params *VscanEventCollectionGetParams, 
 }
 
 /*
-  VscanGet Retrieves the Vscan configuration for a specified SVM.
+	VscanGet Retrieves the Vscan configuration for a specified SVM.
+
 This includes scanner-pools, On-Access policies, On-Demand policies, and information about whether a Vscan is enabled or disabled on an SVM.<br/>
 Important note:
 * You can enable only one Vscan configuration at a time for an SVM.
@@ -6951,7 +6954,6 @@ Important note:
 ### Learn more
 * [`DOC /protocols/vscan`](#docs-NAS-protocols_vscan)
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
-
 */
 func (a *Client) VscanGet(params *VscanGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6989,7 +6991,8 @@ func (a *Client) VscanGet(params *VscanGetParams, authInfo runtime.ClientAuthInf
 }
 
 /*
-  VscanModify Updates the Vscan configuration of an SVM. Allows you to either enable or disable a Vscan, and allows you to clear the Vscan cache that stores the past scanning data for an SVM.<br/>
+	VscanModify Updates the Vscan configuration of an SVM. Allows you to either enable or disable a Vscan, and allows you to clear the Vscan cache that stores the past scanning data for an SVM.<br/>
+
 Important note:
 * The Vscan PATCH endpoint does not allow you to modify scanner-pools, On-Demand policies or On-Access policies. Those modifications can only be done through their respective endpoints.
 ### Related ONTAP commands
@@ -6999,7 +7002,6 @@ Important note:
 ### Learn more
 * [`DOC /protocols/vscan`](#docs-NAS-protocols_vscan)
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
-
 */
 func (a *Client) VscanModify(params *VscanModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -7037,7 +7039,8 @@ func (a *Client) VscanModify(params *VscanModifyParams, authInfo runtime.ClientA
 }
 
 /*
-  VscanOnAccessCreate Creates a Vscan On-Access policy. Created only on a data SVM.
+	VscanOnAccessCreate Creates a Vscan On-Access policy. Created only on a data SVM.
+
 </b>Important notes:
 * You must enable the policy on an SVM before its files can be scanned.
 * You can enable only one On-Access policy at a time on an SVM. By default, the policy is enabled on creation. * If the Vscan On-Access policy has been created successfully on an SVM but cannot be enabled due to an error, the Vscan On-Access policy configurations are saved. The Vscan On-Access policy is then enabled using the PATCH operation.
@@ -7062,7 +7065,6 @@ If not specified in POST, the following default property values are assigned:
 * `vserver vscan on-access-policy paths-to-exclude add`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/on-access-policies`](#docs-NAS-protocols_vscan_{svm.uuid}_on-access-policies)
-
 */
 func (a *Client) VscanOnAccessCreate(params *VscanOnAccessCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -7100,12 +7102,12 @@ func (a *Client) VscanOnAccessCreate(params *VscanOnAccessCreateParams, authInfo
 }
 
 /*
-  VscanOnAccessDelete Deletes the anti-virus On-Access policy configuration.
+	VscanOnAccessDelete Deletes the anti-virus On-Access policy configuration.
+
 ### Related ONTAP commands
 * `vserver vscan on-access-policy delete`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/on-access-policies`](#docs-NAS-protocols_vscan_{svm.uuid}_on-access-policies)
-
 */
 func (a *Client) VscanOnAccessDelete(params *VscanOnAccessDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -7143,7 +7145,8 @@ func (a *Client) VscanOnAccessDelete(params *VscanOnAccessDeleteParams, authInfo
 }
 
 /*
-  VscanOnAccessGet Retrieves the Vscan On-Access policy configuration of an SVM.
+	VscanOnAccessGet Retrieves the Vscan On-Access policy configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver vscan on-access-policy show`
 * `vserver vscan on-access-policy file-ext-to-include show`
@@ -7151,7 +7154,6 @@ func (a *Client) VscanOnAccessDelete(params *VscanOnAccessDeleteParams, authInfo
 * `vserver vscan on-access-policy paths-to-exclude show`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/on-access-policies`](#docs-NAS-protocols_vscan_{svm.uuid}_on-access-policies)
-
 */
 func (a *Client) VscanOnAccessGet(params *VscanOnAccessGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessGetOK, error) {
 	// TODO: Validate the params before sending
@@ -7189,7 +7191,8 @@ func (a *Client) VscanOnAccessGet(params *VscanOnAccessGetParams, authInfo runti
 }
 
 /*
-  VscanOnAccessModify Updates the Vscan On-Access policy configuration and/or enables/disables the Vscan On-Access policy of an SVM. You cannot modify the configurations for an On-Access policy associated with an administrative SVM, although you can encable and disable the policy associated with an administrative SVM.
+	VscanOnAccessModify Updates the Vscan On-Access policy configuration and/or enables/disables the Vscan On-Access policy of an SVM. You cannot modify the configurations for an On-Access policy associated with an administrative SVM, although you can encable and disable the policy associated with an administrative SVM.
+
 ### Related ONTAP commands
 * `vserver vscan on-access-policy modify`
 * `vserver vscan on-access-policy enable`
@@ -7202,7 +7205,6 @@ func (a *Client) VscanOnAccessGet(params *VscanOnAccessGetParams, authInfo runti
 * `vserver vscan on-access-policy paths-to-exclude remove`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/on-access-policies`](#docs-NAS-protocols_vscan_{svm.uuid}_on-access-policies)
-
 */
 func (a *Client) VscanOnAccessModify(params *VscanOnAccessModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -7240,7 +7242,8 @@ func (a *Client) VscanOnAccessModify(params *VscanOnAccessModifyParams, authInfo
 }
 
 /*
-  VscanOnAccessPolicyCollectionGet Retrieves the Vscan On-Access policy.
+	VscanOnAccessPolicyCollectionGet Retrieves the Vscan On-Access policy.
+
 ### Related ONTAP commands
 * `vserver vscan on-access-policy show`
 * `vserver vscan on-access-policy file-ext-to-include show`
@@ -7248,7 +7251,6 @@ func (a *Client) VscanOnAccessModify(params *VscanOnAccessModifyParams, authInfo
 * `vserver vscan on-access-policy paths-to-exclude show`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/on-access-policies`](#docs-NAS-protocols_vscan_{svm.uuid}_on-access-policies)
-
 */
 func (a *Client) VscanOnAccessPolicyCollectionGet(params *VscanOnAccessPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnAccessPolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -7286,11 +7288,13 @@ func (a *Client) VscanOnAccessPolicyCollectionGet(params *VscanOnAccessPolicyCol
 }
 
 /*
-  VscanOnDemandCreate Creates a Vscan On-Demand policy. Created only on a data SVM.
+	VscanOnDemandCreate Creates a Vscan On-Demand policy. Created only on a data SVM.
+
 </br> Important notes:
-  * Only one policy can be scheduled at a time on an SVM. Use schedule name or schedule uuid to schedule an On-Demand policy.
-  * Scanning must be enabled on the SVM before the policy is scheduled to run.
-  * The exclude_extensions setting overrides the include_extensions setting. Set scan_without_extension to true to scan files without extensions.
+  - Only one policy can be scheduled at a time on an SVM. Use schedule name or schedule uuid to schedule an On-Demand policy.
+  - Scanning must be enabled on the SVM before the policy is scheduled to run.
+  - The exclude_extensions setting overrides the include_extensions setting. Set scan_without_extension to true to scan files without extensions.
+
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the Vscan On-Demand policy.
 * `name` - Name of the Vscan On-Demand policy. Maximum length is 256 characters.
@@ -7308,7 +7312,6 @@ If not specified in POST, the following default property values are assigned:
 * `vserver vscan on-demand-task schedule`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/on-demand-policies`](#docs-NAS-protocols_vscan_{svm.uuid}_on-demand-policies)
-
 */
 func (a *Client) VscanOnDemandCreate(params *VscanOnDemandCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -7346,12 +7349,12 @@ func (a *Client) VscanOnDemandCreate(params *VscanOnDemandCreateParams, authInfo
 }
 
 /*
-  VscanOnDemandDelete Deletes the Vscan On-Demand configuration.
+	VscanOnDemandDelete Deletes the Vscan On-Demand configuration.
+
 ### Related ONTAP commands
 * `vserver vscan on-demand-task delete`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/on-demand-policies`](#docs-NAS-protocols_vscan_{svm.uuid}_on-demand-policies)
-
 */
 func (a *Client) VscanOnDemandDelete(params *VscanOnDemandDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -7389,12 +7392,12 @@ func (a *Client) VscanOnDemandDelete(params *VscanOnDemandDeleteParams, authInfo
 }
 
 /*
-  VscanOnDemandGet Retrieves the Vscan On-Demand configuration of an SVM.
+	VscanOnDemandGet Retrieves the Vscan On-Demand configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver vscan on-demand-task show`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/on-demand-policies`](#docs-NAS-protocols_vscan_{svm.uuid}_on-demand-policies)
-
 */
 func (a *Client) VscanOnDemandGet(params *VscanOnDemandGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandGetOK, error) {
 	// TODO: Validate the params before sending
@@ -7432,14 +7435,14 @@ func (a *Client) VscanOnDemandGet(params *VscanOnDemandGetParams, authInfo runti
 }
 
 /*
-  VscanOnDemandModify Updates the Vscan On-Demand policy configuration of an SVM. Use schedule name or schedule UUID to schedule an On-Demand scan.
+	VscanOnDemandModify Updates the Vscan On-Demand policy configuration of an SVM. Use schedule name or schedule UUID to schedule an On-Demand scan.
+
 ### Related ONTAP commands
 * `vserver vscan on-demand-task modify`
 * `vserver vscan on-demand-task schedule`
 * `vserver vscan on-demand-task unschedule`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/on-demand-policies`](#docs-NAS-protocols_vscan_{svm.uuid}_on-demand-policies)
-
 */
 func (a *Client) VscanOnDemandModify(params *VscanOnDemandModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -7477,12 +7480,12 @@ func (a *Client) VscanOnDemandModify(params *VscanOnDemandModifyParams, authInfo
 }
 
 /*
-  VscanOnDemandPolicyCollectionGet Retrieves the Vscan On-Demand policy.
+	VscanOnDemandPolicyCollectionGet Retrieves the Vscan On-Demand policy.
+
 ### Related ONTAP commands
 * `vserver vscan on-demand-task show`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/on-demand-policies`](#docs-NAS-protocols_vscan_{svm.uuid}_on-demand-policies)
-
 */
 func (a *Client) VscanOnDemandPolicyCollectionGet(params *VscanOnDemandPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanOnDemandPolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -7520,14 +7523,14 @@ func (a *Client) VscanOnDemandPolicyCollectionGet(params *VscanOnDemandPolicyCol
 }
 
 /*
-  VscanScannerCollectionGet Retrieves the Vscan scanner-pool configuration of an SVM.
+	VscanScannerCollectionGet Retrieves the Vscan scanner-pool configuration of an SVM.
+
 ### Related ONTAP commands
 * `vserver vscan scanner-pool show`
 * `vserver vscan scanner-pool privileged-users show`
 * `vserver vscan scanner-pool servers show`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
-
 */
 func (a *Client) VscanScannerCollectionGet(params *VscanScannerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -7565,7 +7568,8 @@ func (a *Client) VscanScannerCollectionGet(params *VscanScannerCollectionGetPara
 }
 
 /*
-  VscanScannerCreate Creates a Vscan scanner-pool configuration for a specified SVM. You can create a scanner-pool with all fields specified or only mandatory fields specified.<br/>
+	VscanScannerCreate Creates a Vscan scanner-pool configuration for a specified SVM. You can create a scanner-pool with all fields specified or only mandatory fields specified.<br/>
+
 Important notes:
 * A scanner-pool must have servers and privileged users specified.
 * If the role or cluster is not specified, the scanner-pool is created on the local cluster with the role set as primary.
@@ -7590,7 +7594,6 @@ If not specified in POST, the following default property values are assigned:
 * `vserver vscan scanner-pool servers add`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
-
 */
 func (a *Client) VscanScannerCreate(params *VscanScannerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -7628,7 +7631,8 @@ func (a *Client) VscanScannerCreate(params *VscanScannerCreateParams, authInfo r
 }
 
 /*
-  VscanScannerDelete Deletes a Vscan scanner-pool configuration.<br/>
+	VscanScannerDelete Deletes a Vscan scanner-pool configuration.<br/>
+
 Important notes:
 * The Vscan scanner-pool DELETE endpoint deletes all of the Vscan scanner-pools for a specified SVM.
 * If a Vscan is enabled, it requires at least one scanner-pool to be in the active state. Therefore, disable Vscan on the specified SVM so all the scanner-pools configured on that SVM can be deleted.
@@ -7636,7 +7640,6 @@ Important notes:
 * `vserver vscan scanner-pool delete`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
-
 */
 func (a *Client) VscanScannerDelete(params *VscanScannerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -7674,7 +7677,8 @@ func (a *Client) VscanScannerDelete(params *VscanScannerDeleteParams, authInfo r
 }
 
 /*
-  VscanScannerModify Updates the Vscan scanner-pool configuration of an SVM.<br/>
+	VscanScannerModify Updates the Vscan scanner-pool configuration of an SVM.<br/>
+
 Important notes:
 * Along with servers and privileged-users, the role of a scanner-pool can also be updated with the cluster on which a scanner-pool is allowed.
 * If role is specified and cluster isn't, then role is applied to the local cluster.
@@ -7687,7 +7691,6 @@ Important notes:
 * `vserver vscan scanner-pool servers add`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
-
 */
 func (a *Client) VscanScannerModify(params *VscanScannerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -7725,14 +7728,14 @@ func (a *Client) VscanScannerModify(params *VscanScannerModifyParams, authInfo r
 }
 
 /*
-  VscanScannerPoolGet Retrieves the configuration of a specified scanner-pool of an SVM.
+	VscanScannerPoolGet Retrieves the configuration of a specified scanner-pool of an SVM.
+
 ### Related ONTAP commands
 * `vserver vscan scanner-pool show`
 * `vserver vscan scanner-pool privileged-users show`
 * `vserver vscan scanner-pool servers show`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
-
 */
 func (a *Client) VscanScannerPoolGet(params *VscanScannerPoolGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanScannerPoolGetOK, error) {
 	// TODO: Validate the params before sending
@@ -7770,12 +7773,12 @@ func (a *Client) VscanScannerPoolGet(params *VscanScannerPoolGetParams, authInfo
 }
 
 /*
-  VscanServerStatusGet Retrieves a Vscan server status.
+	VscanServerStatusGet Retrieves a Vscan server status.
+
 ### Related ONTAP commands
 * `vserver vscan connection-status show-all`
 ### Learn more
 * [`DOC /protocols/vscan/server-status`](#docs-NAS-protocols_vscan_server-status)
-
 */
 func (a *Client) VscanServerStatusGet(params *VscanServerStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanServerStatusGetOK, error) {
 	// TODO: Validate the params before sending

@@ -55,10 +55,12 @@ func NewNisCreateParamsWithHTTPClient(client *http.Client) *NisCreateParams {
 	}
 }
 
-/* NisCreateParams contains all the parameters to send to the API endpoint
-   for the nis create operation.
+/*
+NisCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nis create operation.
+
+	Typically these are written to a http.Request.
 */
 type NisCreateParams struct {
 

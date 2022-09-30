@@ -46,7 +46,8 @@ func NewClusterNtpServersCollectionGetOK() *ClusterNtpServersCollectionGetOK {
 	return &ClusterNtpServersCollectionGetOK{}
 }
 
-/* ClusterNtpServersCollectionGetOK describes a response with status code 200, with default header values.
+/*
+ClusterNtpServersCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ClusterNtpServersCollectionGetOK struct {
 	Payload *models.NtpServerResponse
 }
 
+// IsSuccess returns true when this cluster ntp servers collection get o k response has a 2xx status code
+func (o *ClusterNtpServersCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ntp servers collection get o k response has a 3xx status code
+func (o *ClusterNtpServersCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ntp servers collection get o k response has a 4xx status code
+func (o *ClusterNtpServersCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ntp servers collection get o k response has a 5xx status code
+func (o *ClusterNtpServersCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ntp servers collection get o k response a status code equal to that given
+func (o *ClusterNtpServersCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterNtpServersCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] clusterNtpServersCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ClusterNtpServersCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] clusterNtpServersCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ClusterNtpServersCollectionGetOK) GetPayload() *models.NtpServerResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewClusterNtpServersCollectionGetDefault(code int) *ClusterNtpServersCollec
 	}
 }
 
-/* ClusterNtpServersCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+ClusterNtpServersCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ClusterNtpServersCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ntp servers collection get default response has a 2xx status code
+func (o *ClusterNtpServersCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ntp servers collection get default response has a 3xx status code
+func (o *ClusterNtpServersCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ntp servers collection get default response has a 4xx status code
+func (o *ClusterNtpServersCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ntp servers collection get default response has a 5xx status code
+func (o *ClusterNtpServersCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ntp servers collection get default response a status code equal to that given
+func (o *ClusterNtpServersCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNtpServersCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] cluster_ntp_servers_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNtpServersCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/ntp/servers][%d] cluster_ntp_servers_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNtpServersCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -55,10 +55,12 @@ func NewWebModifyParamsWithHTTPClient(client *http.Client) *WebModifyParams {
 	}
 }
 
-/* WebModifyParams contains all the parameters to send to the API endpoint
-   for the web modify operation.
+/*
+WebModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the web modify operation.
+
+	Typically these are written to a http.Request.
 */
 type WebModifyParams struct {
 

@@ -53,10 +53,12 @@ func NewCifsSessionDeleteParamsWithHTTPClient(client *http.Client) *CifsSessionD
 	}
 }
 
-/* CifsSessionDeleteParams contains all the parameters to send to the API endpoint
-   for the cifs session delete operation.
+/*
+CifsSessionDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs session delete operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsSessionDeleteParams struct {
 

@@ -17,7 +17,6 @@ import (
 // There is an added cost to retrieving property values for `subsystem_map`.
 // They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter.
 //
-//
 // swagger:model consistency_group_namespace_subsystem_map
 type ConsistencyGroupNamespaceSubsystemMap struct {
 

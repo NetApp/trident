@@ -17,7 +17,6 @@ import (
 
 // FcSwitchPort A Fibre Channel switch port.
 //
-//
 // swagger:model fc_switch_port
 type FcSwitchPort struct {
 
@@ -470,7 +469,6 @@ func (m *FcSwitchPort) UnmarshalBinary(b []byte) error {
 }
 
 // FcSwitchPortAttachedDevice The Fibre Channel (FC) device attached to the FC switch port.
-//
 //
 // swagger:model FcSwitchPortAttachedDevice
 type FcSwitchPortAttachedDevice struct {

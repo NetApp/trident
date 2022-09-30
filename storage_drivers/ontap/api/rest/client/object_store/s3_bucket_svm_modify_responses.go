@@ -46,7 +46,8 @@ func NewS3BucketSvmModifyAccepted() *S3BucketSvmModifyAccepted {
 	return &S3BucketSvmModifyAccepted{}
 }
 
-/* S3BucketSvmModifyAccepted describes a response with status code 202, with default header values.
+/*
+S3BucketSvmModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type S3BucketSvmModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this s3 bucket svm modify accepted response has a 2xx status code
+func (o *S3BucketSvmModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 bucket svm modify accepted response has a 3xx status code
+func (o *S3BucketSvmModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 bucket svm modify accepted response has a 4xx status code
+func (o *S3BucketSvmModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 bucket svm modify accepted response has a 5xx status code
+func (o *S3BucketSvmModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 bucket svm modify accepted response a status code equal to that given
+func (o *S3BucketSvmModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *S3BucketSvmModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/buckets/{uuid}][%d] s3BucketSvmModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *S3BucketSvmModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/buckets/{uuid}][%d] s3BucketSvmModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *S3BucketSvmModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewS3BucketSvmModifyDefault(code int) *S3BucketSvmModifyDefault {
 	}
 }
 
-/* S3BucketSvmModifyDefault describes a response with status code -1, with default header values.
+/*
+	S3BucketSvmModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error code | Message |
 | ---------- | ------- |
 | 92405778   | "Failed to modify bucket \\\"{bucket name}\\\" for SVM \\\"{svm.name}\\\". Reason: {Reason for failure}. ";
@@ -96,7 +129,6 @@ func NewS3BucketSvmModifyDefault(code int) *S3BucketSvmModifyDefault {
 | 92405894   | "Statements, principals and resources list can have a maximum of 10 entries.";
 | 92405897   | "The principals specified in the access policy are not in the correct format. User name must be in between 1 and 64 characters. Valid characters for a user name are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\"=\\\", \\\",\\\", \\\".\\\", \\\"@\\\", and \\\"-\\\". ";
 | 92405898   | "The SID specified in the access policy is not valid. Valid characters for a SID are 0-9, A-Z and a-z.";
-
 */
 type S3BucketSvmModifyDefault struct {
 	_statusCode int
@@ -109,9 +141,39 @@ func (o *S3BucketSvmModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 bucket svm modify default response has a 2xx status code
+func (o *S3BucketSvmModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 bucket svm modify default response has a 3xx status code
+func (o *S3BucketSvmModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 bucket svm modify default response has a 4xx status code
+func (o *S3BucketSvmModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 bucket svm modify default response has a 5xx status code
+func (o *S3BucketSvmModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 bucket svm modify default response a status code equal to that given
+func (o *S3BucketSvmModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3BucketSvmModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/buckets/{uuid}][%d] s3_bucket_svm_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3BucketSvmModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/buckets/{uuid}][%d] s3_bucket_svm_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3BucketSvmModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

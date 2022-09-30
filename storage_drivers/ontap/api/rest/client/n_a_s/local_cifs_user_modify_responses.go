@@ -46,14 +46,44 @@ func NewLocalCifsUserModifyOK() *LocalCifsUserModifyOK {
 	return &LocalCifsUserModifyOK{}
 }
 
-/* LocalCifsUserModifyOK describes a response with status code 200, with default header values.
+/*
+LocalCifsUserModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LocalCifsUserModifyOK struct {
 }
 
+// IsSuccess returns true when this local cifs user modify o k response has a 2xx status code
+func (o *LocalCifsUserModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local cifs user modify o k response has a 3xx status code
+func (o *LocalCifsUserModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local cifs user modify o k response has a 4xx status code
+func (o *LocalCifsUserModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local cifs user modify o k response has a 5xx status code
+func (o *LocalCifsUserModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local cifs user modify o k response a status code equal to that given
+func (o *LocalCifsUserModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LocalCifsUserModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserModifyOK ", 200)
+}
+
+func (o *LocalCifsUserModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewLocalCifsUserModifyDefault(code int) *LocalCifsUserModifyDefault {
 	}
 }
 
-/* LocalCifsUserModifyDefault describes a response with status code -1, with default header values.
+/*
+	LocalCifsUserModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 655661     | The user name should not exceed 20 characters. Also full_name and description should not exceed 256 characters. |
@@ -81,7 +113,6 @@ func NewLocalCifsUserModifyDefault(code int) *LocalCifsUserModifyDefault {
 | 655732     | Failed to rename a user. The error code returned details the failure along with the reason for the failure. Take corrective actions as per the specified reason. |
 | 655733     | The specified password does not meet the password complexity requirements. |
 | 655737     | To rename an existing user, the local domain specified in name must match the local domain of the user to be renamed. |
-
 */
 type LocalCifsUserModifyDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *LocalCifsUserModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this local cifs user modify default response has a 2xx status code
+func (o *LocalCifsUserModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this local cifs user modify default response has a 3xx status code
+func (o *LocalCifsUserModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this local cifs user modify default response has a 4xx status code
+func (o *LocalCifsUserModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this local cifs user modify default response has a 5xx status code
+func (o *LocalCifsUserModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this local cifs user modify default response a status code equal to that given
+func (o *LocalCifsUserModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LocalCifsUserModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LocalCifsUserModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LocalCifsUserModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -55,10 +55,12 @@ func NewSoftwarePackageCreateParamsWithHTTPClient(client *http.Client) *Software
 	}
 }
 
-/* SoftwarePackageCreateParams contains all the parameters to send to the API endpoint
-   for the software package create operation.
+/*
+SoftwarePackageCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the software package create operation.
+
+	Typically these are written to a http.Request.
 */
 type SoftwarePackageCreateParams struct {
 

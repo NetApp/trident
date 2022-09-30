@@ -46,14 +46,44 @@ func NewSecurityCertificateDeleteOK() *SecurityCertificateDeleteOK {
 	return &SecurityCertificateDeleteOK{}
 }
 
-/* SecurityCertificateDeleteOK describes a response with status code 200, with default header values.
+/*
+SecurityCertificateDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SecurityCertificateDeleteOK struct {
 }
 
+// IsSuccess returns true when this security certificate delete o k response has a 2xx status code
+func (o *SecurityCertificateDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security certificate delete o k response has a 3xx status code
+func (o *SecurityCertificateDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security certificate delete o k response has a 4xx status code
+func (o *SecurityCertificateDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security certificate delete o k response has a 5xx status code
+func (o *SecurityCertificateDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security certificate delete o k response a status code equal to that given
+func (o *SecurityCertificateDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityCertificateDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] securityCertificateDeleteOK ", 200)
+}
+
+func (o *SecurityCertificateDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] securityCertificateDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewSecurityCertificateDeleteDefault(code int) *SecurityCertificateDeleteDef
 	}
 }
 
-/* SecurityCertificateDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SecurityCertificateDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 3735644    | Cannot delete server-chain certificate. Reason: There is a corresponding server certificate for it. |
@@ -81,7 +113,6 @@ func NewSecurityCertificateDeleteDefault(code int) *SecurityCertificateDeleteDef
 | 3735589    | Cannot delete certificate. |
 | 3735590    | Cannot delete certificate. Failed to remove SSL configuration for the certificate. |
 | 3735683    | Cannot remove this certificate while external key manager is configured. |
-
 */
 type SecurityCertificateDeleteDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *SecurityCertificateDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security certificate delete default response has a 2xx status code
+func (o *SecurityCertificateDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security certificate delete default response has a 3xx status code
+func (o *SecurityCertificateDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security certificate delete default response has a 4xx status code
+func (o *SecurityCertificateDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security certificate delete default response has a 5xx status code
+func (o *SecurityCertificateDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security certificate delete default response a status code equal to that given
+func (o *SecurityCertificateDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityCertificateDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] security_certificate_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityCertificateDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/certificates/{uuid}][%d] security_certificate_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityCertificateDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

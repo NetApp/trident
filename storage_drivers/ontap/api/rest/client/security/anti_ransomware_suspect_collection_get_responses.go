@@ -46,7 +46,8 @@ func NewAntiRansomwareSuspectCollectionGetOK() *AntiRansomwareSuspectCollectionG
 	return &AntiRansomwareSuspectCollectionGetOK{}
 }
 
-/* AntiRansomwareSuspectCollectionGetOK describes a response with status code 200, with default header values.
+/*
+AntiRansomwareSuspectCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AntiRansomwareSuspectCollectionGetOK struct {
 	Payload *models.AntiRansomwareSuspectResponse
 }
 
+// IsSuccess returns true when this anti ransomware suspect collection get o k response has a 2xx status code
+func (o *AntiRansomwareSuspectCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this anti ransomware suspect collection get o k response has a 3xx status code
+func (o *AntiRansomwareSuspectCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this anti ransomware suspect collection get o k response has a 4xx status code
+func (o *AntiRansomwareSuspectCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this anti ransomware suspect collection get o k response has a 5xx status code
+func (o *AntiRansomwareSuspectCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this anti ransomware suspect collection get o k response a status code equal to that given
+func (o *AntiRansomwareSuspectCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AntiRansomwareSuspectCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] antiRansomwareSuspectCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AntiRansomwareSuspectCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] antiRansomwareSuspectCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AntiRansomwareSuspectCollectionGetOK) GetPayload() *models.AntiRansomwareSuspectResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAntiRansomwareSuspectCollectionGetDefault(code int) *AntiRansomwareSuspe
 	}
 }
 
-/* AntiRansomwareSuspectCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+AntiRansomwareSuspectCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AntiRansomwareSuspectCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this anti ransomware suspect collection get default response has a 2xx status code
+func (o *AntiRansomwareSuspectCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this anti ransomware suspect collection get default response has a 3xx status code
+func (o *AntiRansomwareSuspectCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this anti ransomware suspect collection get default response has a 4xx status code
+func (o *AntiRansomwareSuspectCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this anti ransomware suspect collection get default response has a 5xx status code
+func (o *AntiRansomwareSuspectCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this anti ransomware suspect collection get default response a status code equal to that given
+func (o *AntiRansomwareSuspectCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AntiRansomwareSuspectCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] anti_ransomware_suspect_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AntiRansomwareSuspectCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/anti-ransomware/suspects][%d] anti_ransomware_suspect_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AntiRansomwareSuspectCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

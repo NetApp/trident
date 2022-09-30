@@ -46,7 +46,8 @@ func NewSSHGetOK() *SSHGetOK {
 	return &SSHGetOK{}
 }
 
-/* SSHGetOK describes a response with status code 200, with default header values.
+/*
+SSHGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SSHGetOK struct {
 	Payload *models.ClusterSSHServer
 }
 
+// IsSuccess returns true when this ssh get o k response has a 2xx status code
+func (o *SSHGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ssh get o k response has a 3xx status code
+func (o *SSHGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ssh get o k response has a 4xx status code
+func (o *SSHGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ssh get o k response has a 5xx status code
+func (o *SSHGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ssh get o k response a status code equal to that given
+func (o *SSHGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SSHGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/ssh][%d] sshGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SSHGetOK) String() string {
+	return fmt.Sprintf("[GET /security/ssh][%d] sshGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SSHGetOK) GetPayload() *models.ClusterSSHServer {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSSHGetDefault(code int) *SSHGetDefault {
 	}
 }
 
-/* SSHGetDefault describes a response with status code -1, with default header values.
+/*
+SSHGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SSHGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ssh get default response has a 2xx status code
+func (o *SSHGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ssh get default response has a 3xx status code
+func (o *SSHGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ssh get default response has a 4xx status code
+func (o *SSHGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ssh get default response has a 5xx status code
+func (o *SSHGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ssh get default response a status code equal to that given
+func (o *SSHGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SSHGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/ssh][%d] ssh_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SSHGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/ssh][%d] ssh_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SSHGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

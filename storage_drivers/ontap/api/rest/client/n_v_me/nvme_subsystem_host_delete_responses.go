@@ -46,14 +46,44 @@ func NewNvmeSubsystemHostDeleteOK() *NvmeSubsystemHostDeleteOK {
 	return &NvmeSubsystemHostDeleteOK{}
 }
 
-/* NvmeSubsystemHostDeleteOK describes a response with status code 200, with default header values.
+/*
+NvmeSubsystemHostDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NvmeSubsystemHostDeleteOK struct {
 }
 
+// IsSuccess returns true when this nvme subsystem host delete o k response has a 2xx status code
+func (o *NvmeSubsystemHostDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme subsystem host delete o k response has a 3xx status code
+func (o *NvmeSubsystemHostDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme subsystem host delete o k response has a 4xx status code
+func (o *NvmeSubsystemHostDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme subsystem host delete o k response has a 5xx status code
+func (o *NvmeSubsystemHostDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme subsystem host delete o k response a status code equal to that given
+func (o *NvmeSubsystemHostDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeSubsystemHostDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvmeSubsystemHostDeleteOK ", 200)
+}
+
+func (o *NvmeSubsystemHostDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvmeSubsystemHostDeleteOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewNvmeSubsystemHostDeleteDefault(code int) *NvmeSubsystemHostDeleteDefault
 	}
 }
 
-/* NvmeSubsystemHostDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NvmeSubsystemHostDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 72089771 | The NQN is invalid. A non-empty qualifier is required after the prefix. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089772 | The NQN is invalid. Add the prefix _'nqn'_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089773 | The NQN is invalid. The date field must be formatted _yyyy-mm_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72090001 | The NVMe subsystem does not exist. |
-
 */
 type NvmeSubsystemHostDeleteDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *NvmeSubsystemHostDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme subsystem host delete default response has a 2xx status code
+func (o *NvmeSubsystemHostDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme subsystem host delete default response has a 3xx status code
+func (o *NvmeSubsystemHostDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme subsystem host delete default response has a 4xx status code
+func (o *NvmeSubsystemHostDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme subsystem host delete default response has a 5xx status code
+func (o *NvmeSubsystemHostDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme subsystem host delete default response a status code equal to that given
+func (o *NvmeSubsystemHostDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeSubsystemHostDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvme_subsystem_host_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeSubsystemHostDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}][%d] nvme_subsystem_host_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeSubsystemHostDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

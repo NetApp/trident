@@ -46,7 +46,8 @@ func NewSecurityLogForwardingGetOK() *SecurityLogForwardingGetOK {
 	return &SecurityLogForwardingGetOK{}
 }
 
-/* SecurityLogForwardingGetOK describes a response with status code 200, with default header values.
+/*
+SecurityLogForwardingGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SecurityLogForwardingGetOK struct {
 	Payload *models.SecurityAuditLogForward
 }
 
+// IsSuccess returns true when this security log forwarding get o k response has a 2xx status code
+func (o *SecurityLogForwardingGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security log forwarding get o k response has a 3xx status code
+func (o *SecurityLogForwardingGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security log forwarding get o k response has a 4xx status code
+func (o *SecurityLogForwardingGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security log forwarding get o k response has a 5xx status code
+func (o *SecurityLogForwardingGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security log forwarding get o k response a status code equal to that given
+func (o *SecurityLogForwardingGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityLogForwardingGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/audit/destinations/{address}/{port}][%d] securityLogForwardingGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SecurityLogForwardingGetOK) String() string {
+	return fmt.Sprintf("[GET /security/audit/destinations/{address}/{port}][%d] securityLogForwardingGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SecurityLogForwardingGetOK) GetPayload() *models.SecurityAuditLogForward {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSecurityLogForwardingGetDefault(code int) *SecurityLogForwardingGetDefau
 	}
 }
 
-/* SecurityLogForwardingGetDefault describes a response with status code -1, with default header values.
+/*
+SecurityLogForwardingGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SecurityLogForwardingGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security log forwarding get default response has a 2xx status code
+func (o *SecurityLogForwardingGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security log forwarding get default response has a 3xx status code
+func (o *SecurityLogForwardingGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security log forwarding get default response has a 4xx status code
+func (o *SecurityLogForwardingGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security log forwarding get default response has a 5xx status code
+func (o *SecurityLogForwardingGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security log forwarding get default response a status code equal to that given
+func (o *SecurityLogForwardingGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityLogForwardingGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/audit/destinations/{address}/{port}][%d] security_log_forwarding_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityLogForwardingGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/audit/destinations/{address}/{port}][%d] security_log_forwarding_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityLogForwardingGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

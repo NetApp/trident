@@ -55,10 +55,12 @@ func NewSnaplockLogModifyParamsWithHTTPClient(client *http.Client) *SnaplockLogM
 	}
 }
 
-/* SnaplockLogModifyParams contains all the parameters to send to the API endpoint
-   for the snaplock log modify operation.
+/*
+SnaplockLogModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock log modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockLogModifyParams struct {
 

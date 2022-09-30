@@ -46,14 +46,44 @@ func NewSecurityKeyManagerKeyServersModifyOK() *SecurityKeyManagerKeyServersModi
 	return &SecurityKeyManagerKeyServersModifyOK{}
 }
 
-/* SecurityKeyManagerKeyServersModifyOK describes a response with status code 200, with default header values.
+/*
+SecurityKeyManagerKeyServersModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SecurityKeyManagerKeyServersModifyOK struct {
 }
 
+// IsSuccess returns true when this security key manager key servers modify o k response has a 2xx status code
+func (o *SecurityKeyManagerKeyServersModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager key servers modify o k response has a 3xx status code
+func (o *SecurityKeyManagerKeyServersModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager key servers modify o k response has a 4xx status code
+func (o *SecurityKeyManagerKeyServersModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager key servers modify o k response has a 5xx status code
+func (o *SecurityKeyManagerKeyServersModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager key servers modify o k response a status code equal to that given
+func (o *SecurityKeyManagerKeyServersModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityKeyManagerKeyServersModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersModifyOK ", 200)
+}
+
+func (o *SecurityKeyManagerKeyServersModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewSecurityKeyManagerKeyServersModifyDefault(code int) *SecurityKeyManagerK
 	}
 }
 
-/* SecurityKeyManagerKeyServersModifyDefault describes a response with status code -1, with default header values.
+/*
+	SecurityKeyManagerKeyServersModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65536600 | Cannot modify a key server while a node is out quorum. |
@@ -87,7 +119,6 @@ func NewSecurityKeyManagerKeyServersModifyDefault(code int) *SecurityKeyManagerK
 | 65538413 | A secondary key server address is not formatted correctly. |
 | 65538502 | A secondary key server is also a primary key server. |
 | 65538503 | Support for adding secondary key servers requires an ECV of ONTAP 9.11.1 or later. |
-
 */
 type SecurityKeyManagerKeyServersModifyDefault struct {
 	_statusCode int
@@ -100,9 +131,39 @@ func (o *SecurityKeyManagerKeyServersModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security key manager key servers modify default response has a 2xx status code
+func (o *SecurityKeyManagerKeyServersModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security key manager key servers modify default response has a 3xx status code
+func (o *SecurityKeyManagerKeyServersModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security key manager key servers modify default response has a 4xx status code
+func (o *SecurityKeyManagerKeyServersModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security key manager key servers modify default response has a 5xx status code
+func (o *SecurityKeyManagerKeyServersModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security key manager key servers modify default response a status code equal to that given
+func (o *SecurityKeyManagerKeyServersModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityKeyManagerKeyServersModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityKeyManagerKeyServersModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityKeyManagerKeyServersModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

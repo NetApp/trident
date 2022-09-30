@@ -330,7 +330,6 @@ func (m *FcInterfaceResponseLinks) UnmarshalBinary(b []byte) error {
 
 // FcInterfaceResponseRecommend Response properties specific to the FC interface placement functionality. See the _Interface placement recommendations_ section of [`DOC /network/fc/interfaces`](#docs-networking-network_fc_interfaces)
 //
-//
 // swagger:model FcInterfaceResponseRecommend
 type FcInterfaceResponseRecommend struct {
 

@@ -282,12 +282,12 @@ type ClientService interface {
 }
 
 /*
-  AccountCollectionGet Retrieves a list of user accounts in the cluster.
+	AccountCollectionGet Retrieves a list of user accounts in the cluster.
+
 ### Related ONTAP commands
 * `security login show`
 ### Learn more
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) AccountCollectionGet(params *AccountCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -325,7 +325,8 @@ func (a *Client) AccountCollectionGet(params *AccountCollectionGetParams, authIn
 }
 
 /*
-  AccountCreate Creates a new user account.
+	AccountCreate Creates a new user account.
+
 ### Required parameters
 * `name` - Account name to be created.
 * `applications` - Array of one or more application tuples (of application and authentication methods).
@@ -341,7 +342,6 @@ func (a *Client) AccountCollectionGet(params *AccountCollectionGetParams, authIn
 * `security login create`
 ### Learn more
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) AccountCreate(params *AccountCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -379,7 +379,8 @@ func (a *Client) AccountCreate(params *AccountCreateParams, authInfo runtime.Cli
 }
 
 /*
-  AccountDelete Deletes a user account.
+	AccountDelete Deletes a user account.
+
 ### Required parameters
 * `name` - Account name to be deleted.
 * `owner.uuid`  - UUID of the SVM housing the user account to be deleted.
@@ -388,7 +389,6 @@ func (a *Client) AccountCreate(params *AccountCreateParams, authInfo runtime.Cli
 ### Learn more
 * [`DOC /security/accounts/{owner.uuid}/{name}`](#docs-security-security_accounts_{owner.uuid}_{name})
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) AccountDelete(params *AccountDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -426,13 +426,13 @@ func (a *Client) AccountDelete(params *AccountDeleteParams, authInfo runtime.Cli
 }
 
 /*
-  AccountGet Retrieves a specific user account.
+	AccountGet Retrieves a specific user account.
+
 ### Related ONTAP commands
 * `security login show`
 ### Learn more
 * [`DOC /security/accounts/{owner.uuid}/{name}`](#docs-security-security_accounts_{owner.uuid}_{name})
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) AccountGet(params *AccountGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountGetOK, error) {
 	// TODO: Validate the params before sending
@@ -470,7 +470,8 @@ func (a *Client) AccountGet(params *AccountGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  AccountModify Updates a user account. Locks or unlocks a user account and/or updates the role, applications, and/or password for the user account.
+	AccountModify Updates a user account. Locks or unlocks a user account and/or updates the role, applications, and/or password for the user account.
+
 ### Required parameters
 * `name` - Account name to be updated.
 * `owner.uuid`  - UUID of the SVM housing the user account to be updated.
@@ -491,7 +492,6 @@ func (a *Client) AccountGet(params *AccountGetParams, authInfo runtime.ClientAut
 ### Learn more
 * [`DOC /security/accounts/{owner.uuid}/{name}`](#docs-security-security_accounts_{owner.uuid}_{name})
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) AccountModify(params *AccountModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -529,7 +529,8 @@ func (a *Client) AccountModify(params *AccountModifyParams, authInfo runtime.Cli
 }
 
 /*
-  AccountPasswordCreate Updates the password for a user account.
+	AccountPasswordCreate Updates the password for a user account.
+
 ### Required parameters
 * `name` - User account name.
 * `password` - New password for the user account.
@@ -541,7 +542,6 @@ func (a *Client) AccountModify(params *AccountModifyParams, authInfo runtime.Cli
 ### Learn more
 * [`DOC /security/authentication/password`](#docs-security-security_authentication_password)
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) AccountPasswordCreate(params *AccountPasswordCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountPasswordCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -579,13 +579,13 @@ func (a *Client) AccountPasswordCreate(params *AccountPasswordCreateParams, auth
 }
 
 /*
-  AccountPublickeyDelete Deletes the public key for a user account.
+	AccountPublickeyDelete Deletes the public key for a user account.
+
 ### Related ONTAP commands
 * `security login publickey delete`
 ### Learn more
 * [`DOC /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}`](#docs-security-security_authentication_publickeys_{owner.uuid}_{account.name}_{index})
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) AccountPublickeyDelete(params *AccountPublickeyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountPublickeyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -623,10 +623,10 @@ func (a *Client) AccountPublickeyDelete(params *AccountPublickeyDeleteParams, au
 }
 
 /*
-  AntiRansomwareSuspectCollectionGet Retrieves information on the suspects generated by the anti-ransomware analytics.
+	AntiRansomwareSuspectCollectionGet Retrieves information on the suspects generated by the anti-ransomware analytics.
+
 ### Related ONTAP commands
 * `security anti-ransomware volume attack generate-report`
-
 */
 func (a *Client) AntiRansomwareSuspectCollectionGet(params *AntiRansomwareSuspectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -664,10 +664,10 @@ func (a *Client) AntiRansomwareSuspectCollectionGet(params *AntiRansomwareSuspec
 }
 
 /*
-  AntiRansomwareSuspectDelete Clears either all the suspect files of a volume or suspect files of a volume based on file format or suspect time provided.
+	AntiRansomwareSuspectDelete Clears either all the suspect files of a volume or suspect files of a volume based on file format or suspect time provided.
+
 ### Related ONTAP commands
 * `security anti-ransomware volume attack clear-suspect`
-
 */
 func (a *Client) AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -706,7 +706,7 @@ func (a *Client) AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDelete
 }
 
 /*
-  AuditLogForwardingGet Defines a remote syslog/splunk server for sending audit information to.
+AuditLogForwardingGet Defines a remote syslog/splunk server for sending audit information to.
 */
 func (a *Client) AuditLogForwardingGet(params *AuditLogForwardingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditLogForwardingGetOK, error) {
 	// TODO: Validate the params before sending
@@ -744,11 +744,11 @@ func (a *Client) AuditLogForwardingGet(params *AuditLogForwardingGetParams, auth
 }
 
 /*
-  AzureKeyVaultCollectionGet Retrieves AKVs configured for all clusters and SVMs.
+	AzureKeyVaultCollectionGet Retrieves AKVs configured for all clusters and SVMs.
+
 ### Related ONTAP commands
 * `security key-manager external azure show`
 * `security key-manager external azure check`
-
 */
 func (a *Client) AzureKeyVaultCollectionGet(params *AzureKeyVaultCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -786,7 +786,8 @@ func (a *Client) AzureKeyVaultCollectionGet(params *AzureKeyVaultCollectionGetPa
 }
 
 /*
-  AzureKeyVaultCreate Configures the AKV configuration for all clusters and SVMs.
+	AzureKeyVaultCreate Configures the AKV configuration for all clusters and SVMs.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create a AKV.
 * `client_id` - Application (client) ID of the deployed Azure application with appropriate access to an AKV.
@@ -804,7 +805,6 @@ func (a *Client) AzureKeyVaultCollectionGet(params *AzureKeyVaultCollectionGetPa
 ### Related ONTAP commands
 * `security key-manager external azure enable`
 * `security key-manager external azure update-config`
-
 */
 func (a *Client) AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -842,10 +842,10 @@ func (a *Client) AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo
 }
 
 /*
-  AzureKeyVaultDelete Deletes an AKV configuration.
+	AzureKeyVaultDelete Deletes an AKV configuration.
+
 ### Related ONTAP commands
 * `security key-manager external azure disable`
-
 */
 func (a *Client) AzureKeyVaultDelete(params *AzureKeyVaultDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -883,11 +883,11 @@ func (a *Client) AzureKeyVaultDelete(params *AzureKeyVaultDeleteParams, authInfo
 }
 
 /*
-  AzureKeyVaultGet Retrieves the AKV configuration for the SVM specified by the UUID.
+	AzureKeyVaultGet Retrieves the AKV configuration for the SVM specified by the UUID.
+
 ### Related ONTAP commands
 * `security key-manager external azure show`
 * `security key-manager external azure check`
-
 */
 func (a *Client) AzureKeyVaultGet(params *AzureKeyVaultGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultGetOK, error) {
 	// TODO: Validate the params before sending
@@ -925,7 +925,8 @@ func (a *Client) AzureKeyVaultGet(params *AzureKeyVaultGetParams, authInfo runti
 }
 
 /*
-  AzureKeyVaultModify Updates the AKV configuration.
+	AzureKeyVaultModify Updates the AKV configuration.
+
 ### Optional properties
 * `client_secret` - New secret used to prove the application's identity to the AKV.
 * `client_certificate` - New PKCS12 certificate used to prove the application's identity to the AKV.
@@ -940,7 +941,6 @@ func (a *Client) AzureKeyVaultGet(params *AzureKeyVaultGetParams, authInfo runti
 * `security key-manager external azure update-client-secret`
 * `security key-manager external azure update-credentials`
 * `security key-manager external azure update-config`
-
 */
 func (a *Client) AzureKeyVaultModify(params *AzureKeyVaultModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultModifyOK, *AzureKeyVaultModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -980,12 +980,12 @@ func (a *Client) AzureKeyVaultModify(params *AzureKeyVaultModifyParams, authInfo
 }
 
 /*
-  AzureKeyVaultRekeyExternal Rekeys the external key in the key hierarchy for an SVM with an AKV configuration.
+	AzureKeyVaultRekeyExternal Rekeys the external key in the key hierarchy for an SVM with an AKV configuration.
+
 ### Required properties
 * `key_id`- Key identifier of the new AKV key encryption key.
 ### Related ONTAP commands
 * `security key-manager external azure rekey-external`
-
 */
 func (a *Client) AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyExternalAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1023,10 +1023,10 @@ func (a *Client) AzureKeyVaultRekeyExternal(params *AzureKeyVaultRekeyExternalPa
 }
 
 /*
-  AzureKeyVaultRekeyInternal Rekeys the internal key in the key hierarchy for an SVM with an AKV configuration.
+	AzureKeyVaultRekeyInternal Rekeys the internal key in the key hierarchy for an SVM with an AKV configuration.
+
 ### Related ONTAP commands
 * `security key-manager external azure rekey-internal`
-
 */
 func (a *Client) AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyInternalAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1064,10 +1064,10 @@ func (a *Client) AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalPa
 }
 
 /*
-  AzureKeyVaultRestore Restore the keys for an SVM from a configured AKV.
+	AzureKeyVaultRestore Restore the keys for an SVM from a configured AKV.
+
 ### Related ONTAP commands
 * `security key-manager external azure restore`
-
 */
 func (a *Client) AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRestoreAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1105,7 +1105,8 @@ func (a *Client) AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authIn
 }
 
 /*
-  ClusterAccountAdProxyCreate Configures a data SVM as a proxy for Active Directory based authentication for cluster user accounts.
+	ClusterAccountAdProxyCreate Configures a data SVM as a proxy for Active Directory based authentication for cluster user accounts.
+
 ### Required properties
 * `svm.name` or `svm.uuid` - Name and UUID of the SVM for a cluster user account.
 ### Related ONTAP commands
@@ -1113,7 +1114,6 @@ func (a *Client) AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authIn
 ### Learn more
 * [`DOC /security/authentication/cluster/ad-proxy`](#docs-security-security_authentication_cluster_ad-proxy)
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) ClusterAccountAdProxyCreate(params *ClusterAccountAdProxyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterAccountAdProxyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1151,13 +1151,13 @@ func (a *Client) ClusterAccountAdProxyCreate(params *ClusterAccountAdProxyCreate
 }
 
 /*
-  ClusterAccountAdProxyDelete Deletes the data SVM configured as a tunnel for Active Directory based authentication for cluster user accounts.
+	ClusterAccountAdProxyDelete Deletes the data SVM configured as a tunnel for Active Directory based authentication for cluster user accounts.
+
 ### Related ONTAP commands
 * `security login domain-tunnel delete`
 ### Learn more
 * [`DOC /security/authentication/cluster/ad-proxy`](#docs-security-security_authentication_cluster_ad-proxy)
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) ClusterAccountAdProxyDelete(params *ClusterAccountAdProxyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterAccountAdProxyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1195,13 +1195,13 @@ func (a *Client) ClusterAccountAdProxyDelete(params *ClusterAccountAdProxyDelete
 }
 
 /*
-  ClusterAccountAdProxyGet Retrieves SVM information configured as an Active Directory domain-tunnel.
+	ClusterAccountAdProxyGet Retrieves SVM information configured as an Active Directory domain-tunnel.
+
 ### Related ONTAP commands
 * `security login domain-tunnel show`
 ### Learn more
 * [`DOC /security/authentication/cluster/ad-proxy`](#docs-security-security_authentication_cluster_ad-proxy)
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) ClusterAccountAdProxyGet(params *ClusterAccountAdProxyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterAccountAdProxyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1239,13 +1239,13 @@ func (a *Client) ClusterAccountAdProxyGet(params *ClusterAccountAdProxyGetParams
 }
 
 /*
-  ClusterAccountAdProxyModify Updates the data SVM configured as a tunnel for Active Directory based authentication for cluster user accounts.
+	ClusterAccountAdProxyModify Updates the data SVM configured as a tunnel for Active Directory based authentication for cluster user accounts.
+
 ### Related ONTAP commands
 * `security login domain-tunnel modify`
 ### Learn more
 * [`DOC /security/authentication/cluster/ad-proxy`](#docs-security-security_authentication_cluster_ad-proxy)
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) ClusterAccountAdProxyModify(params *ClusterAccountAdProxyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterAccountAdProxyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1283,7 +1283,8 @@ func (a *Client) ClusterAccountAdProxyModify(params *ClusterAccountAdProxyModify
 }
 
 /*
-  ClusterLdapCreate A cluster can have only one LDAP configuration. IPv6 must be enabled if IPv6 family addresses are specified.
+	ClusterLdapCreate A cluster can have only one LDAP configuration. IPv6 must be enabled if IPv6 family addresses are specified.
+
 ### Required properties
 * `servers` - List of LDAP servers used for this client configuration.
 * `bind_dn` - Specifies the user that binds to the LDAP servers.
@@ -1332,7 +1333,6 @@ The LDAP servers are validated as part of this operation. LDAP validation fails 
 1. The server does not have LDAP installed.
 2. The server is invalid.
 3. The server is unreachable.<br/>
-
 */
 func (a *Client) ClusterLdapCreate(params *ClusterLdapCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterLdapCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1370,8 +1370,7 @@ func (a *Client) ClusterLdapCreate(params *ClusterLdapCreateParams, authInfo run
 }
 
 /*
-  ClusterLdapDelete Deletes the LDAP configuration of the cluster.
-
+ClusterLdapDelete Deletes the LDAP configuration of the cluster.
 */
 func (a *Client) ClusterLdapDelete(params *ClusterLdapDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterLdapDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1409,8 +1408,7 @@ func (a *Client) ClusterLdapDelete(params *ClusterLdapDeleteParams, authInfo run
 }
 
 /*
-  ClusterLdapGet Retrieves the cluster LDAP configuration.
-
+ClusterLdapGet Retrieves the cluster LDAP configuration.
 */
 func (a *Client) ClusterLdapGet(params *ClusterLdapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterLdapGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1448,13 +1446,13 @@ func (a *Client) ClusterLdapGet(params *ClusterLdapGetParams, authInfo runtime.C
 }
 
 /*
-  ClusterLdapModify Both mandatory and optional parameters of the LDAP configuration can be updated.
+	ClusterLdapModify Both mandatory and optional parameters of the LDAP configuration can be updated.
+
 IPv6 must be enabled if IPv6 family addresses are specified. Configuring more than one LDAP server is recommended to avoid a single point of failure. Both FQDNs and IP addresses are supported for the `servers` property.
 The LDAP servers are validated as part of this operation. LDAP validation fails in the following scenarios:<br/>
 1. The server does not have LDAP installed.
 2. The server is invalid.
 3. The server is unreachable. <br/>
-
 */
 func (a *Client) ClusterLdapModify(params *ClusterLdapModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterLdapModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1492,12 +1490,12 @@ func (a *Client) ClusterLdapModify(params *ClusterLdapModifyParams, authInfo run
 }
 
 /*
-  ClusterNisCreate The cluster can have one NIS server configuration. Specify the NIS domain and NIS servers as input. Domain name and servers fields cannot be empty.
+	ClusterNisCreate The cluster can have one NIS server configuration. Specify the NIS domain and NIS servers as input. Domain name and servers fields cannot be empty.
+
 Both FQDNs and IP addresses are supported for the `server` property. IPv6 must be enabled if IPv6 family addresses are specified in the `server` property. A maximum of ten NIS servers are supported.
 ### Required properties
 * `domain` - NIS domain to which this configuration belongs.
 * `servers` - List of hostnames or IP addresses of NIS servers used by the NIS domain configuration.
-
 */
 func (a *Client) ClusterNisCreate(params *ClusterNisCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNisCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1535,8 +1533,7 @@ func (a *Client) ClusterNisCreate(params *ClusterNisCreateParams, authInfo runti
 }
 
 /*
-  ClusterNisDelete Deletes the NIS configuration of the cluster. NIS can be removed as a source from ns-switch if NIS is not used for lookups.
-
+ClusterNisDelete Deletes the NIS configuration of the cluster. NIS can be removed as a source from ns-switch if NIS is not used for lookups.
 */
 func (a *Client) ClusterNisDelete(params *ClusterNisDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNisDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1574,9 +1571,9 @@ func (a *Client) ClusterNisDelete(params *ClusterNisDeleteParams, authInfo runti
 }
 
 /*
-  ClusterNisGet Retrieves the NIS configuration of the cluster. Both NIS domain and servers are displayed by default.
-The `bound_servers` property indicates the successfully bound NIS servers.
+	ClusterNisGet Retrieves the NIS configuration of the cluster. Both NIS domain and servers are displayed by default.
 
+The `bound_servers` property indicates the successfully bound NIS servers.
 */
 func (a *Client) ClusterNisGet(params *ClusterNisGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNisGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1614,8 +1611,7 @@ func (a *Client) ClusterNisGet(params *ClusterNisGetParams, authInfo runtime.Cli
 }
 
 /*
-  ClusterNisModify Both NIS domain and servers can be updated. Domains and servers cannot be empty. Both FQDNs and IP addresses are supported for the 'servers' field. If the domain is updated, NIS servers must also be specified. IPv6 must be enabled if IPv6 family addresses are specified for the `servers` property.<br/>
-
+ClusterNisModify Both NIS domain and servers can be updated. Domains and servers cannot be empty. Both FQDNs and IP addresses are supported for the 'servers' field. If the domain is updated, NIS servers must also be specified. IPv6 must be enabled if IPv6 family addresses are specified for the `servers` property.<br/>
 */
 func (a *Client) ClusterNisModify(params *ClusterNisModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNisModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1653,7 +1649,8 @@ func (a *Client) ClusterNisModify(params *ClusterNisModifyParams, authInfo runti
 }
 
 /*
-  CreateCertificateSigningRequest This API generates a Certificate Signing Request(CSR) and a private key pair. A CSR is a message sent securely to a certificate authority (CA) via any electronic media to apply for a digital identity certificate. This is a general utility API for users to generate a CSR.
+	CreateCertificateSigningRequest This API generates a Certificate Signing Request(CSR) and a private key pair. A CSR is a message sent securely to a certificate authority (CA) via any electronic media to apply for a digital identity certificate. This is a general utility API for users to generate a CSR.
+
 ### Recommended optional properties
 * `subject_name` - Subject details of the certificate.
 * `security_strength` - Key size of the certificate in bits. Specifying a stronger security strength in bits is recommended when creating a certificate.
@@ -1667,7 +1664,6 @@ If not specified in POST, the following default property values are assigned:
 * `algorithm` - _rsa_
 ### Related ONTAP commands
 * `security certificate generate-csr`
-
 */
 func (a *Client) CreateCertificateSigningRequest(params *CreateCertificateSigningRequestParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateCertificateSigningRequestOK, error) {
 	// TODO: Validate the params before sending
@@ -1705,11 +1701,11 @@ func (a *Client) CreateCertificateSigningRequest(params *CreateCertificateSignin
 }
 
 /*
-  GcpKmsCollectionGet Retrieves Google Cloud KMS configurations for all clusters and SVMs.
+	GcpKmsCollectionGet Retrieves Google Cloud KMS configurations for all clusters and SVMs.
+
 ### Related ONTAP commands
 * `security key-manager external gcp show`
 * `security key-manager external gcp check`
-
 */
 func (a *Client) GcpKmsCollectionGet(params *GcpKmsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1747,7 +1743,8 @@ func (a *Client) GcpKmsCollectionGet(params *GcpKmsCollectionGetParams, authInfo
 }
 
 /*
-  GcpKmsCreate Configures the Google Cloud KMS configuration for the specified SVM.
+	GcpKmsCreate Configures the Google Cloud KMS configuration for the specified SVM.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create a Google Cloud KMS.
 * `project_id` - Google Cloud project (application) ID of the deployed Google Cloud application with appropriate access to the Google Cloud KMS.
@@ -1756,14 +1753,13 @@ func (a *Client) GcpKmsCollectionGet(params *GcpKmsCollectionGetParams, authInfo
 * `key_name`- Key Identifier of the Google Cloud KMS key encryption key.
 * `application_credentials` - Google Cloud application's service account credentials required to access the specified KMS. It is a JSON file containing an email address and the private key of the service account holder.
 ### Optional properties
-* `proxy_type`` - Type of proxy (http/https) if proxy configuration is used.
+* `proxy_type“ - Type of proxy (http/https) if proxy configuration is used.
 * `proxy_host` - Proxy hostname if proxy configuration is used.
 * `proxy_port` - Proxy port number if proxy configuration is used.
 * `proxy_username` - Proxy username if proxy configuration is used.
 * `proxy_password` - Proxy password if proxy configuration is used.
 ### Related ONTAP commands
 * `security key-manager external gcp enable`
-
 */
 func (a *Client) GcpKmsCreate(params *GcpKmsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1801,10 +1797,10 @@ func (a *Client) GcpKmsCreate(params *GcpKmsCreateParams, authInfo runtime.Clien
 }
 
 /*
-  GcpKmsDelete Deletes a Google Cloud KMS configuration.
+	GcpKmsDelete Deletes a Google Cloud KMS configuration.
+
 ### Related ONTAP commands
 * `security key-manager external gcp disable`
-
 */
 func (a *Client) GcpKmsDelete(params *GcpKmsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1842,11 +1838,11 @@ func (a *Client) GcpKmsDelete(params *GcpKmsDeleteParams, authInfo runtime.Clien
 }
 
 /*
-  GcpKmsGet Retrieves the Google Cloud KMS configuration for the SVM specified by the UUID.
+	GcpKmsGet Retrieves the Google Cloud KMS configuration for the SVM specified by the UUID.
+
 ### Related ONTAP commands
 * `security key-manager external gcp show`
 * `security key-manager external gcp check`
-
 */
 func (a *Client) GcpKmsGet(params *GcpKmsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1884,11 +1880,12 @@ func (a *Client) GcpKmsGet(params *GcpKmsGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  GcpKmsModify Updates the Google Cloud KMS configuration.
+	GcpKmsModify Updates the Google Cloud KMS configuration.
+
 ### Optional properties
 * `key_name` - Key Identifier of the Google Cloud KMS key encryption key.
 * `application_credentials` - New credentials used to verify the application's identity to the Google Cloud KMS.
-* `proxy_type`` - Type of proxy (http/https) if proxy configuration is used.
+* `proxy_type“ - Type of proxy (http/https) if proxy configuration is used.
 * `proxy_host` - Proxy hostname if proxy configuration is used.
 * `proxy_port` - Proxy port number if proxy configuration is used.
 * `proxy_username` - Proxy username if proxy configuration is used.
@@ -1898,7 +1895,6 @@ func (a *Client) GcpKmsGet(params *GcpKmsGetParams, authInfo runtime.ClientAuthI
 * `key_ring_location` - Google Cloud KMS key ring location.
 ### Related ONTAP commands
 * `security key-manager external gcp update-credentials`
-
 */
 func (a *Client) GcpKmsModify(params *GcpKmsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsModifyOK, *GcpKmsModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1938,10 +1934,10 @@ func (a *Client) GcpKmsModify(params *GcpKmsModifyParams, authInfo runtime.Clien
 }
 
 /*
-  GcpKmsRekeyExternal Rekeys the external key in the key hierarchy for an SVM with a Google Cloud KMS configuration.
+	GcpKmsRekeyExternal Rekeys the external key in the key hierarchy for an SVM with a Google Cloud KMS configuration.
+
 ### Related ONTAP commands
 * `security key-manager external gcp rekey-external`
-
 */
 func (a *Client) GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyExternalAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1979,10 +1975,10 @@ func (a *Client) GcpKmsRekeyExternal(params *GcpKmsRekeyExternalParams, authInfo
 }
 
 /*
-  GcpKmsRekeyInternal Rekeys the internal key in the key hierarchy for an SVM with a Google Cloud KMS configuration.
+	GcpKmsRekeyInternal Rekeys the internal key in the key hierarchy for an SVM with a Google Cloud KMS configuration.
+
 ### Related ONTAP commands
 * `security key-manager external gcp rekey-internal`
-
 */
 func (a *Client) GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRekeyInternalAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2020,10 +2016,10 @@ func (a *Client) GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo
 }
 
 /*
-  GcpKmsRestore Restores the keys for an SVM from a configured Google Cloud KMS.
+	GcpKmsRestore Restores the keys for an SVM from a configured Google Cloud KMS.
+
 ### Related ONTAP commands
 * `security key-manager external gcp restore`
-
 */
 func (a *Client) GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRestoreAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2061,10 +2057,10 @@ func (a *Client) GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.Cli
 }
 
 /*
-  IpsecCaCertificateCollectionGet Retrieves the collection of IPsec CA certificates configured for cluster and all SVMs.
+	IpsecCaCertificateCollectionGet Retrieves the collection of IPsec CA certificates configured for cluster and all SVMs.
+
 ### Related ONTAP commands
 * `security ipsec ca-certificate show`
-
 */
 func (a *Client) IpsecCaCertificateCollectionGet(params *IpsecCaCertificateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2102,12 +2098,12 @@ func (a *Client) IpsecCaCertificateCollectionGet(params *IpsecCaCertificateColle
 }
 
 /*
-  IpsecCaCertificateCreate Add CA certificate to IPsec. The CA certificate should already be installed on the cluster prior to adding them to IPsec.
+	IpsecCaCertificateCreate Add CA certificate to IPsec. The CA certificate should already be installed on the cluster prior to adding them to IPsec.
+
 The CA certificate can be installed on the cluster using the /security/certificates endpoint.
 The svm.uuid or svm.name should not be supplied for certificates that have a scope of cluster.
 ### Related ONTAP commands
 * `security ipsec ca-certificate add`
-
 */
 func (a *Client) IpsecCaCertificateCreate(params *IpsecCaCertificateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2145,10 +2141,10 @@ func (a *Client) IpsecCaCertificateCreate(params *IpsecCaCertificateCreateParams
 }
 
 /*
-  IpsecCaCertificateDelete Deletes the IPsec CA certificate with the specified UUID from IPsec.
+	IpsecCaCertificateDelete Deletes the IPsec CA certificate with the specified UUID from IPsec.
+
 ### Related ONTAP commands
 * `security ipsec ca-certificate remove`
-
 */
 func (a *Client) IpsecCaCertificateDelete(params *IpsecCaCertificateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2186,10 +2182,10 @@ func (a *Client) IpsecCaCertificateDelete(params *IpsecCaCertificateDeleteParams
 }
 
 /*
-  IpsecCaCertificateGet Retrieves a specific CA certificate configured for IPsec.
+	IpsecCaCertificateGet Retrieves a specific CA certificate configured for IPsec.
+
 ### Related ONTAP commands
 * `security ipsec ca-certificate show`
-
 */
 func (a *Client) IpsecCaCertificateGet(params *IpsecCaCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2227,10 +2223,10 @@ func (a *Client) IpsecCaCertificateGet(params *IpsecCaCertificateGetParams, auth
 }
 
 /*
-  IpsecGet Retrieves IPsec configuration via REST APIs.
+	IpsecGet Retrieves IPsec configuration via REST APIs.
+
 ### Related ONTAP commands
 * 'security ipsec config show'
-
 */
 func (a *Client) IpsecGet(params *IpsecGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2268,10 +2264,10 @@ func (a *Client) IpsecGet(params *IpsecGetParams, authInfo runtime.ClientAuthInf
 }
 
 /*
-  IpsecModify Updates IPsec configuration via REST APIs.
+	IpsecModify Updates IPsec configuration via REST APIs.
+
 ### Related ONTAP commands
 * 'security ipsec config modify'
-
 */
 func (a *Client) IpsecModify(params *IpsecModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2309,10 +2305,10 @@ func (a *Client) IpsecModify(params *IpsecModifyParams, authInfo runtime.ClientA
 }
 
 /*
-  IpsecPolicyCollectionGet Retrieves the collection of IPsec policies.
+	IpsecPolicyCollectionGet Retrieves the collection of IPsec policies.
+
 ### Related ONTAP commands
 * `security ipsec policy show`
-
 */
 func (a *Client) IpsecPolicyCollectionGet(params *IpsecPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2350,10 +2346,10 @@ func (a *Client) IpsecPolicyCollectionGet(params *IpsecPolicyCollectionGetParams
 }
 
 /*
-  IpsecPolicyCreate Creates an IPsec policy.
+	IpsecPolicyCreate Creates an IPsec policy.
+
 ### Related ONTAP commands
 * `security ipsec policy create`
-
 */
 func (a *Client) IpsecPolicyCreate(params *IpsecPolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2391,10 +2387,10 @@ func (a *Client) IpsecPolicyCreate(params *IpsecPolicyCreateParams, authInfo run
 }
 
 /*
-  IpsecPolicyDelete Deletes a specific IPsec policy.
+	IpsecPolicyDelete Deletes a specific IPsec policy.
+
 ### Related ONTAP commands
 * `security ipsec policy delete`
-
 */
 func (a *Client) IpsecPolicyDelete(params *IpsecPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2432,10 +2428,10 @@ func (a *Client) IpsecPolicyDelete(params *IpsecPolicyDeleteParams, authInfo run
 }
 
 /*
-  IpsecPolicyGet Retrieves a specific IPsec policy.
+	IpsecPolicyGet Retrieves a specific IPsec policy.
+
 ### Related ONTAP commands
 * `security ipsec policy show`
-
 */
 func (a *Client) IpsecPolicyGet(params *IpsecPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2473,10 +2469,10 @@ func (a *Client) IpsecPolicyGet(params *IpsecPolicyGetParams, authInfo runtime.C
 }
 
 /*
-  IpsecPolicyModify Updates a specific IPsec policy.
+	IpsecPolicyModify Updates a specific IPsec policy.
+
 ### Related ONTAP commands
 * `security ipsec policy modify`
-
 */
 func (a *Client) IpsecPolicyModify(params *IpsecPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2514,10 +2510,10 @@ func (a *Client) IpsecPolicyModify(params *IpsecPolicyModifyParams, authInfo run
 }
 
 /*
-  KeyManagerConfigGet Retrieves key manager configurations.
+	KeyManagerConfigGet Retrieves key manager configurations.
+
 ### Related ONTAP commands
 * `security key-manager config show`
-
 */
 func (a *Client) KeyManagerConfigGet(params *KeyManagerConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerConfigGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2555,10 +2551,10 @@ func (a *Client) KeyManagerConfigGet(params *KeyManagerConfigGetParams, authInfo
 }
 
 /*
-  KeyManagerConfigModify Updates key manager configurations.
+	KeyManagerConfigModify Updates key manager configurations.
+
 ### Related ONTAP commands
 * `security key-manager config modify`
-
 */
 func (a *Client) KeyManagerConfigModify(params *KeyManagerConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerConfigModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2596,13 +2592,13 @@ func (a *Client) KeyManagerConfigModify(params *KeyManagerConfigModifyParams, au
 }
 
 /*
-  KeyManagerKeysCollectionGet Retrieves key manager configurations.
+	KeyManagerKeysCollectionGet Retrieves key manager configurations.
+
 ### Required properties
 * `security_key_manager.uuid` - Key manager UUID.
 * `node.uuid` - Node UUID.
 ### Related ONTAP commands
 * `security key-manager key query`
-
 */
 func (a *Client) KeyManagerKeysCollectionGet(params *KeyManagerKeysCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerKeysCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2640,10 +2636,10 @@ func (a *Client) KeyManagerKeysCollectionGet(params *KeyManagerKeysCollectionGet
 }
 
 /*
-  KeyManagerKeysGet Retrieves the key management keys information for the specified key_id.
+	KeyManagerKeysGet Retrieves the key management keys information for the specified key_id.
+
 ### Related ONTAP commands
 * `security key-manager key query -key-id <key_id>`
-
 */
 func (a *Client) KeyManagerKeysGet(params *KeyManagerKeysGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerKeysGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2681,9 +2677,9 @@ func (a *Client) KeyManagerKeysGet(params *KeyManagerKeysGetParams, authInfo run
 }
 
 /*
-  LoginMessagesCollectionGet Retrieves the login banner and messages of the day (MOTD) configured in the cluster
-and in specific SVMs.
+	LoginMessagesCollectionGet Retrieves the login banner and messages of the day (MOTD) configured in the cluster
 
+and in specific SVMs.
 */
 func (a *Client) LoginMessagesCollectionGet(params *LoginMessagesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LoginMessagesCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2721,7 +2717,7 @@ func (a *Client) LoginMessagesCollectionGet(params *LoginMessagesCollectionGetPa
 }
 
 /*
-  LoginMessagesGet Retrieves the login messages configuration by UUID.
+LoginMessagesGet Retrieves the login messages configuration by UUID.
 */
 func (a *Client) LoginMessagesGet(params *LoginMessagesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LoginMessagesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2759,9 +2755,9 @@ func (a *Client) LoginMessagesGet(params *LoginMessagesGetParams, authInfo runti
 }
 
 /*
-  LoginMessagesModify Updates the login messages configuration.
-There are no required fields. An empty body makes no modifications.
+	LoginMessagesModify Updates the login messages configuration.
 
+There are no required fields. An empty body makes no modifications.
 */
 func (a *Client) LoginMessagesModify(params *LoginMessagesModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LoginMessagesModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2799,8 +2795,7 @@ func (a *Client) LoginMessagesModify(params *LoginMessagesModifyParams, authInfo
 }
 
 /*
-  MultiAdminVerifyApprovalGroupCollectionGet Retrieves multi-admin-verify approval groups.
-
+MultiAdminVerifyApprovalGroupCollectionGet Retrieves multi-admin-verify approval groups.
 */
 func (a *Client) MultiAdminVerifyApprovalGroupCollectionGet(params *MultiAdminVerifyApprovalGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2838,8 +2833,7 @@ func (a *Client) MultiAdminVerifyApprovalGroupCollectionGet(params *MultiAdminVe
 }
 
 /*
-  MultiAdminVerifyApprovalGroupCreate Creates a multi-admin-verify approval group.
-
+MultiAdminVerifyApprovalGroupCreate Creates a multi-admin-verify approval group.
 */
 func (a *Client) MultiAdminVerifyApprovalGroupCreate(params *MultiAdminVerifyApprovalGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2877,8 +2871,7 @@ func (a *Client) MultiAdminVerifyApprovalGroupCreate(params *MultiAdminVerifyApp
 }
 
 /*
-  MultiAdminVerifyApprovalGroupDelete Deletes a multi-admin-verify approval group.
-
+MultiAdminVerifyApprovalGroupDelete Deletes a multi-admin-verify approval group.
 */
 func (a *Client) MultiAdminVerifyApprovalGroupDelete(params *MultiAdminVerifyApprovalGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2916,8 +2909,7 @@ func (a *Client) MultiAdminVerifyApprovalGroupDelete(params *MultiAdminVerifyApp
 }
 
 /*
-  MultiAdminVerifyApprovalGroupGet Retrieves a multi-admin-verify approval group.
-
+MultiAdminVerifyApprovalGroupGet Retrieves a multi-admin-verify approval group.
 */
 func (a *Client) MultiAdminVerifyApprovalGroupGet(params *MultiAdminVerifyApprovalGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2955,8 +2947,7 @@ func (a *Client) MultiAdminVerifyApprovalGroupGet(params *MultiAdminVerifyApprov
 }
 
 /*
-  MultiAdminVerifyApprovalGroupModify Updates a multi-admin-verify approval group.
-
+MultiAdminVerifyApprovalGroupModify Updates a multi-admin-verify approval group.
 */
 func (a *Client) MultiAdminVerifyApprovalGroupModify(params *MultiAdminVerifyApprovalGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyApprovalGroupModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2994,8 +2985,7 @@ func (a *Client) MultiAdminVerifyApprovalGroupModify(params *MultiAdminVerifyApp
 }
 
 /*
-  MultiAdminVerifyConfigGet Retrieves the multi-admin-verify configuration.
-
+MultiAdminVerifyConfigGet Retrieves the multi-admin-verify configuration.
 */
 func (a *Client) MultiAdminVerifyConfigGet(params *MultiAdminVerifyConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyConfigGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3033,8 +3023,7 @@ func (a *Client) MultiAdminVerifyConfigGet(params *MultiAdminVerifyConfigGetPara
 }
 
 /*
-  MultiAdminVerifyConfigModify Modifies the multi-admin-verify configuration.
-
+MultiAdminVerifyConfigModify Modifies the multi-admin-verify configuration.
 */
 func (a *Client) MultiAdminVerifyConfigModify(params *MultiAdminVerifyConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyConfigModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3072,8 +3061,7 @@ func (a *Client) MultiAdminVerifyConfigModify(params *MultiAdminVerifyConfigModi
 }
 
 /*
-  MultiAdminVerifyRequestCollectionGet Retrieves multi-admin-verify requests.
-
+MultiAdminVerifyRequestCollectionGet Retrieves multi-admin-verify requests.
 */
 func (a *Client) MultiAdminVerifyRequestCollectionGet(params *MultiAdminVerifyRequestCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3111,8 +3099,7 @@ func (a *Client) MultiAdminVerifyRequestCollectionGet(params *MultiAdminVerifyRe
 }
 
 /*
-  MultiAdminVerifyRequestCreate Creates a multi-admin-verify request.
-
+MultiAdminVerifyRequestCreate Creates a multi-admin-verify request.
 */
 func (a *Client) MultiAdminVerifyRequestCreate(params *MultiAdminVerifyRequestCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3150,8 +3137,7 @@ func (a *Client) MultiAdminVerifyRequestCreate(params *MultiAdminVerifyRequestCr
 }
 
 /*
-  MultiAdminVerifyRequestDelete Deletes a multi-admin-verify request.
-
+MultiAdminVerifyRequestDelete Deletes a multi-admin-verify request.
 */
 func (a *Client) MultiAdminVerifyRequestDelete(params *MultiAdminVerifyRequestDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3189,8 +3175,7 @@ func (a *Client) MultiAdminVerifyRequestDelete(params *MultiAdminVerifyRequestDe
 }
 
 /*
-  MultiAdminVerifyRequestGet Retrieves a multi-admin-verify request.
-
+MultiAdminVerifyRequestGet Retrieves a multi-admin-verify request.
 */
 func (a *Client) MultiAdminVerifyRequestGet(params *MultiAdminVerifyRequestGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3228,8 +3213,7 @@ func (a *Client) MultiAdminVerifyRequestGet(params *MultiAdminVerifyRequestGetPa
 }
 
 /*
-  MultiAdminVerifyRequestModify Updates a multi-admin-verify request.
-
+MultiAdminVerifyRequestModify Updates a multi-admin-verify request.
 */
 func (a *Client) MultiAdminVerifyRequestModify(params *MultiAdminVerifyRequestModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRequestModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3267,8 +3251,7 @@ func (a *Client) MultiAdminVerifyRequestModify(params *MultiAdminVerifyRequestMo
 }
 
 /*
-  MultiAdminVerifyRuleCollectionGet Retrieves multi-admin-verify rules.
-
+MultiAdminVerifyRuleCollectionGet Retrieves multi-admin-verify rules.
 */
 func (a *Client) MultiAdminVerifyRuleCollectionGet(params *MultiAdminVerifyRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3306,8 +3289,7 @@ func (a *Client) MultiAdminVerifyRuleCollectionGet(params *MultiAdminVerifyRuleC
 }
 
 /*
-  MultiAdminVerifyRuleCreate Creates a multi-admin-verify rule.
-
+MultiAdminVerifyRuleCreate Creates a multi-admin-verify rule.
 */
 func (a *Client) MultiAdminVerifyRuleCreate(params *MultiAdminVerifyRuleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3345,8 +3327,7 @@ func (a *Client) MultiAdminVerifyRuleCreate(params *MultiAdminVerifyRuleCreatePa
 }
 
 /*
-  MultiAdminVerifyRuleDelete Deletes a multi-admin-verify rule.
-
+MultiAdminVerifyRuleDelete Deletes a multi-admin-verify rule.
 */
 func (a *Client) MultiAdminVerifyRuleDelete(params *MultiAdminVerifyRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3384,8 +3365,7 @@ func (a *Client) MultiAdminVerifyRuleDelete(params *MultiAdminVerifyRuleDeletePa
 }
 
 /*
-  MultiAdminVerifyRuleGet Retrieves a multi-admin-verify rule.
-
+MultiAdminVerifyRuleGet Retrieves a multi-admin-verify rule.
 */
 func (a *Client) MultiAdminVerifyRuleGet(params *MultiAdminVerifyRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3423,8 +3403,7 @@ func (a *Client) MultiAdminVerifyRuleGet(params *MultiAdminVerifyRuleGetParams, 
 }
 
 /*
-  MultiAdminVerifyRuleModify Updates a multi-admin-verify rule.
-
+MultiAdminVerifyRuleModify Updates a multi-admin-verify rule.
 */
 func (a *Client) MultiAdminVerifyRuleModify(params *MultiAdminVerifyRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MultiAdminVerifyRuleModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3462,13 +3441,13 @@ func (a *Client) MultiAdminVerifyRuleModify(params *MultiAdminVerifyRuleModifyPa
 }
 
 /*
-  PublickeyCollectionGet Retrieves the public keys configured for user accounts.
+	PublickeyCollectionGet Retrieves the public keys configured for user accounts.
+
 ### Related ONTAP commands
 * `security login publickey show`
 ### Learn more
 * [`DOC /security/authentication/publickeys`](#docs-security-security_authentication_publickeys)
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) PublickeyCollectionGet(params *PublickeyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PublickeyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3506,7 +3485,8 @@ func (a *Client) PublickeyCollectionGet(params *PublickeyCollectionGetParams, au
 }
 
 /*
-  PublickeyCreate Creates a public key for a user account.
+	PublickeyCreate Creates a public key for a user account.
+
 ### Required properties
 * `owner.uuid` - UUID of the account owner.
 * `name` - User account name.
@@ -3517,7 +3497,6 @@ func (a *Client) PublickeyCollectionGet(params *PublickeyCollectionGetParams, au
 ### Learn more
 * [`DOC /security/authentication/publickeys`](#docs-security-security_authentication_publickeys)
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) PublickeyCreate(params *PublickeyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PublickeyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3555,13 +3534,13 @@ func (a *Client) PublickeyCreate(params *PublickeyCreateParams, authInfo runtime
 }
 
 /*
-  PublickeyGet Retrieves the public keys configured for a user account.
+	PublickeyGet Retrieves the public keys configured for a user account.
+
 ### Related ONTAP commands
 * `security login publickey show`
 ### Learn more
 * [`DOC /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}`](#docs-security-security_authentication_publickeys_{owner.uuid}_{account.name}_{index})
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) PublickeyGet(params *PublickeyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PublickeyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3599,13 +3578,13 @@ func (a *Client) PublickeyGet(params *PublickeyGetParams, authInfo runtime.Clien
 }
 
 /*
-  PublickeyModify Updates the public key for a user account.
+	PublickeyModify Updates the public key for a user account.
+
 ### Related ONTAP commands
 * `security login publickey modify`
 ### Learn more
 * [`DOC /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}`](#docs-security-security_authentication_publickeys_{owner.uuid}_{account.name}_{index})
 * [`DOC /security/accounts`](#docs-security-security_accounts)
-
 */
 func (a *Client) PublickeyModify(params *PublickeyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PublickeyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -3643,13 +3622,13 @@ func (a *Client) PublickeyModify(params *PublickeyModifyParams, authInfo runtime
 }
 
 /*
-  RoleCollectionGet Retrieves a list of roles configured in the cluster.
+	RoleCollectionGet Retrieves a list of roles configured in the cluster.
+
 ### Related ONTAP commands
 * `security login rest-role show`
 * `security login role show`
 ### Learn more
 * [`DOC /security/roles`](#docs-security-security_roles)
-
 */
 func (a *Client) RoleCollectionGet(params *RoleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RoleCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3687,7 +3666,8 @@ func (a *Client) RoleCollectionGet(params *RoleCollectionGetParams, authInfo run
 }
 
 /*
-  RoleCreate Creates a new cluster-scoped role or an SVM-scoped role. For an SVM-scoped role, specify either the SVM name as the owner.name or SVM UUID as the owner.uuid in the request body along with other parameters for the role. The owner.uuid or owner.name are not required to be specified for a cluster-scoped role.
+	RoleCreate Creates a new cluster-scoped role or an SVM-scoped role. For an SVM-scoped role, specify either the SVM name as the owner.name or SVM UUID as the owner.uuid in the request body along with other parameters for the role. The owner.uuid or owner.name are not required to be specified for a cluster-scoped role.
+
 ### Required parameters
 * `name` - Name of the role to be created.
 * `privileges` - Array of privilege tuples. Each tuple consists of a REST API or command/command directory path and its desired access level. If the tuple refers to a command/command directory path, it could optionally contain a query.
@@ -3698,7 +3678,6 @@ func (a *Client) RoleCollectionGet(params *RoleCollectionGetParams, authInfo run
 * `security login role create`
 ### Learn more
 * [`DOC /security/roles`](#docs-security-security_roles)
-
 */
 func (a *Client) RoleCreate(params *RoleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RoleCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3736,7 +3715,8 @@ func (a *Client) RoleCreate(params *RoleCreateParams, authInfo runtime.ClientAut
 }
 
 /*
-  RoleDelete Deletes the specified role.
+	RoleDelete Deletes the specified role.
+
 ### Required parameters
 * `name` - Name of the role to be deleted.
 * `owner.uuid` - UUID of the SVM housing the role.
@@ -3746,7 +3726,6 @@ func (a *Client) RoleCreate(params *RoleCreateParams, authInfo runtime.ClientAut
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}`](#docs-security-security_roles_{owner.uuid}_{name})
 * [`DOC /security/roles`](#docs-security-security_roles)
-
 */
 func (a *Client) RoleDelete(params *RoleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RoleDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3784,14 +3763,14 @@ func (a *Client) RoleDelete(params *RoleDeleteParams, authInfo runtime.ClientAut
 }
 
 /*
-  RoleGet Retrieves the details of the specified role.
+	RoleGet Retrieves the details of the specified role.
+
 ### Related ONTAP commands
 * `security login rest-role show`
 * `security login role show`
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}`](#docs-security-security_roles_{owner.uuid}_{name})
 * [`DOC /security/roles`](#docs-security-security_roles)
-
 */
 func (a *Client) RoleGet(params *RoleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RoleGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3829,14 +3808,14 @@ func (a *Client) RoleGet(params *RoleGetParams, authInfo runtime.ClientAuthInfoW
 }
 
 /*
-  RolePrivilegeCollectionGet Retrieves privilege details of the specified role.
+	RolePrivilegeCollectionGet Retrieves privilege details of the specified role.
+
 ### Related ONTAP commands
 * `security login rest-role show`
 * `security login role show`
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}/privileges`](#docs-security-security_roles_{owner.uuid}_{name}_privileges)
 * [`DOC /security/roles`](#docs-security-security_roles)
-
 */
 func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3874,7 +3853,8 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 }
 
 /*
-  RolePrivilegeCreate Adds a privilege tuple (of REST URI or command/command directory path, its access level and an optional query, if the "path" refers to a command/command directory path) to an existing role.
+	RolePrivilegeCreate Adds a privilege tuple (of REST URI or command/command directory path, its access level and an optional query, if the "path" refers to a command/command directory path) to an existing role.
+
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
@@ -3886,7 +3866,6 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}/privileges`](#docs-security-security_roles_{owner.uuid}_{name}_privileges)
 * [`DOC /security/roles`](#docs-security-security_roles)
-
 */
 func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3924,7 +3903,8 @@ func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo
 }
 
 /*
-  RolePrivilegeDelete Deletes a privilege tuple (of REST URI or command/command directory path, its access level and an optional query) from the role. The REST URI can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+	RolePrivilegeDelete Deletes a privilege tuple (of REST URI or command/command directory path, its access level and an optional query) from the role. The REST URI can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+
 ### Required parameters
 * `owner.uuid` - UUID of the SVM which houses this role.
 * `name` - Name of the role to be updated.
@@ -3935,7 +3915,6 @@ func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}/privileges/{path}`](#docs-security-security_roles_{owner.uuid}_{name}_privileges_{path})
 * [`DOC /security/roles`](#docs-security-security_roles)
-
 */
 func (a *Client) RolePrivilegeDelete(params *RolePrivilegeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3973,14 +3952,14 @@ func (a *Client) RolePrivilegeDelete(params *RolePrivilegeDeleteParams, authInfo
 }
 
 /*
-  RolePrivilegeGet Retrieves the access level for a REST API path or command/command directory path for the specified role. Optionally retrieves the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+	RolePrivilegeGet Retrieves the access level for a REST API path or command/command directory path for the specified role. Optionally retrieves the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+
 ### Related ONTAP commands
 * `security login rest-role show`
 * `security login role show`
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}/privileges/{path}`](#docs-security-security_roles_{owner.uuid}_{name}_privileges_{path})
 * [`DOC /security/roles`](#docs-security-security_roles)
-
 */
 func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4018,7 +3997,8 @@ func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runti
 }
 
 /*
-  RolePrivilegeModify Updates the access level for a REST API path or command/command directory path. Optionally updates the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+	RolePrivilegeModify Updates the access level for a REST API path or command/command directory path. Optionally updates the query, if 'path' refers to a command/command directory path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
@@ -4032,7 +4012,6 @@ func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runti
 ### Learn more
 * [`DOC /security/roles/{owner.uuid}/{name}/privileges/{path}`](#docs-security-security_roles_{owner.uuid}_{name}_privileges_{path})
 * [`DOC /security/roles`](#docs-security-security_roles)
-
 */
 func (a *Client) RolePrivilegeModify(params *RolePrivilegeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*RolePrivilegeModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -4070,11 +4049,11 @@ func (a *Client) RolePrivilegeModify(params *RolePrivilegeModifyParams, authInfo
 }
 
 /*
-  SecurityAssociationCollectionGet Retrieves the IPsec and IKE (Internet Key Exchange) security associations.
+	SecurityAssociationCollectionGet Retrieves the IPsec and IKE (Internet Key Exchange) security associations.
+
 ### Related ONTAP commands
 * `security ipsec show-ipsecsa`
 * `security ipsec show-ikesa`
-
 */
 func (a *Client) SecurityAssociationCollectionGet(params *SecurityAssociationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAssociationCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4112,11 +4091,11 @@ func (a *Client) SecurityAssociationCollectionGet(params *SecurityAssociationCol
 }
 
 /*
-  SecurityAssociationGet Retrieves a specific IPsec or IKE (Internet Key Exchange) security association.
+	SecurityAssociationGet Retrieves a specific IPsec or IKE (Internet Key Exchange) security association.
+
 ### Related ONTAP commands
 * `security ipsec show-ipsecsa`
 * `security ipsec show-ikesa`
-
 */
 func (a *Client) SecurityAssociationGet(params *SecurityAssociationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAssociationGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4154,7 +4133,7 @@ func (a *Client) SecurityAssociationGet(params *SecurityAssociationGetParams, au
 }
 
 /*
-  SecurityAuditGet Retrieves administrative audit settings for GET requests.
+SecurityAuditGet Retrieves administrative audit settings for GET requests.
 */
 func (a *Client) SecurityAuditGet(params *SecurityAuditGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAuditGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4192,7 +4171,7 @@ func (a *Client) SecurityAuditGet(params *SecurityAuditGetParams, authInfo runti
 }
 
 /*
-  SecurityAuditLogCollectionGet Retrieves the administrative audit log viewer.
+SecurityAuditLogCollectionGet Retrieves the administrative audit log viewer.
 */
 func (a *Client) SecurityAuditLogCollectionGet(params *SecurityAuditLogCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAuditLogCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4230,9 +4209,9 @@ func (a *Client) SecurityAuditLogCollectionGet(params *SecurityAuditLogCollectio
 }
 
 /*
-  SecurityAuditModify Updates administrative audit settings for GET requests.
-All of the fields are optional. An empty body will make no changes.
+	SecurityAuditModify Updates administrative audit settings for GET requests.
 
+All of the fields are optional. An empty body will make no changes.
 */
 func (a *Client) SecurityAuditModify(params *SecurityAuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAuditModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -4270,10 +4249,10 @@ func (a *Client) SecurityAuditModify(params *SecurityAuditModifyParams, authInfo
 }
 
 /*
-  SecurityCertificateCollectionGet Retrieves security certificates.
+	SecurityCertificateCollectionGet Retrieves security certificates.
+
 ### Related ONTAP commands
 * `security certificate show`
-
 */
 func (a *Client) SecurityCertificateCollectionGet(params *SecurityCertificateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4311,7 +4290,8 @@ func (a *Client) SecurityCertificateCollectionGet(params *SecurityCertificateCol
 }
 
 /*
-  SecurityCertificateCreate Creates or installs a certificate.
+	SecurityCertificateCreate Creates or installs a certificate.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create or install the certificate.
 * `common_name` - Common name of the certificate. Required when creating a certificate.
@@ -4330,7 +4310,6 @@ If not specified in POST, the following default property values are assigned:
 ### Related ONTAP commands
 * `security certificate create`
 * `security certificate install`
-
 */
 func (a *Client) SecurityCertificateCreate(params *SecurityCertificateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -4368,10 +4347,10 @@ func (a *Client) SecurityCertificateCreate(params *SecurityCertificateCreatePara
 }
 
 /*
-  SecurityCertificateDelete Deletes a security certificate.
+	SecurityCertificateDelete Deletes a security certificate.
+
 ### Related ONTAP commands
 * `security certificate delete`
-
 */
 func (a *Client) SecurityCertificateDelete(params *SecurityCertificateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -4409,10 +4388,10 @@ func (a *Client) SecurityCertificateDelete(params *SecurityCertificateDeletePara
 }
 
 /*
-  SecurityCertificateGet Retrieves security certificates.
+	SecurityCertificateGet Retrieves security certificates.
+
 ### Related ONTAP commands
 * `security certificate show`
-
 */
 func (a *Client) SecurityCertificateGet(params *SecurityCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4450,7 +4429,8 @@ func (a *Client) SecurityCertificateGet(params *SecurityCertificateGetParams, au
 }
 
 /*
-  SecurityCertificateSign Signs a certificate.
+	SecurityCertificateSign Signs a certificate.
+
 ### Required properties
 * `signing_request` - Certificate signing request to be signed by the given certificate authority.
 ### Recommended optional properties
@@ -4464,7 +4444,6 @@ If not specified in POST, the following default property values are assigned:
 * `security certificate sign`
 This API is used to sign a certificate request using a pre-existing self-signed root certificate. The self-signed root certificate acts as a certificate authority within its scope and maintains the records of its signed certificates. <br/>
 The root certificate can be created for a given SVM or for the cluster using [`POST security/certificates`].<br/>
-
 */
 func (a *Client) SecurityCertificateSign(params *SecurityCertificateSignParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateSignOK, error) {
 	// TODO: Validate the params before sending
@@ -4502,8 +4481,7 @@ func (a *Client) SecurityCertificateSign(params *SecurityCertificateSignParams, 
 }
 
 /*
-  SecurityConfigGet Retrieves information about the security configured on the cluster.
-
+SecurityConfigGet Retrieves information about the security configured on the cluster.
 */
 func (a *Client) SecurityConfigGet(params *SecurityConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityConfigGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4541,8 +4519,7 @@ func (a *Client) SecurityConfigGet(params *SecurityConfigGetParams, authInfo run
 }
 
 /*
-  SecurityConfigModify Updates the software FIPS mode or enables conversion of non-encrypted metadata volumes to encrypted metadata volumes and non-NAE aggregates to NAE aggregates.
-
+SecurityConfigModify Updates the software FIPS mode or enables conversion of non-encrypted metadata volumes to encrypted metadata volumes and non-NAE aggregates to NAE aggregates.
 */
 func (a *Client) SecurityConfigModify(params *SecurityConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityConfigModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -4580,7 +4557,8 @@ func (a *Client) SecurityConfigModify(params *SecurityConfigModifyParams, authIn
 }
 
 /*
-  SecurityKeyManagerCollectionGet Retrieves key managers.
+	SecurityKeyManagerCollectionGet Retrieves key managers.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `status.message`
@@ -4590,7 +4568,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `security key-manager external show`
 * `security key-manager external show-status`
 * `security key-manager onboard show-backup`
-
 */
 func (a *Client) SecurityKeyManagerCollectionGet(params *SecurityKeyManagerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4628,7 +4605,8 @@ func (a *Client) SecurityKeyManagerCollectionGet(params *SecurityKeyManagerColle
 }
 
 /*
-  SecurityKeyManagerCreate Creates a key manager.
+	SecurityKeyManagerCreate Creates a key manager.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create a key manager.
 * `external.client_certificate` - Client certificate. Required only when creating an external key manager.
@@ -4640,7 +4618,6 @@ func (a *Client) SecurityKeyManagerCollectionGet(params *SecurityKeyManagerColle
 * `security key-manager external enable`
 * `security key-manager onboard enable`
 * `security key-manager onboard sync`
-
 */
 func (a *Client) SecurityKeyManagerCreate(params *SecurityKeyManagerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -4678,11 +4655,11 @@ func (a *Client) SecurityKeyManagerCreate(params *SecurityKeyManagerCreateParams
 }
 
 /*
-  SecurityKeyManagerDelete Deletes a key manager.
+	SecurityKeyManagerDelete Deletes a key manager.
+
 ### Related ONTAP commands
 * `security key-manager external disable`
 * `security key-manager onboard disable`
-
 */
 func (a *Client) SecurityKeyManagerDelete(params *SecurityKeyManagerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -4720,7 +4697,8 @@ func (a *Client) SecurityKeyManagerDelete(params *SecurityKeyManagerDeleteParams
 }
 
 /*
-  SecurityKeyManagerGet Retrieves key managers.
+	SecurityKeyManagerGet Retrieves key managers.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `status.message`
@@ -4730,7 +4708,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `security key-manager external show`
 * `security key-manager external show-status`
 * `security key-manager onboard show-backup`
-
 */
 func (a *Client) SecurityKeyManagerGet(params *SecurityKeyManagerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4768,11 +4745,11 @@ func (a *Client) SecurityKeyManagerGet(params *SecurityKeyManagerGetParams, auth
 }
 
 /*
-  SecurityKeyManagerKeyServersCollectionGet Retrieves the list of key servers configured in an external key manager.
+	SecurityKeyManagerKeyServersCollectionGet Retrieves the list of key servers configured in an external key manager.
+
 ### Related ONTAP commands
 * `security key-manager external show`
 * `security key-manager external show-status`
-
 */
 func (a *Client) SecurityKeyManagerKeyServersCollectionGet(params *SecurityKeyManagerKeyServersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4810,13 +4787,13 @@ func (a *Client) SecurityKeyManagerKeyServersCollectionGet(params *SecurityKeyMa
 }
 
 /*
-  SecurityKeyManagerKeyServersCreate Adds primary key servers to a configured external key manager.
+	SecurityKeyManagerKeyServersCreate Adds primary key servers to a configured external key manager.
+
 ### Required properties
 * `uuid` - UUID of the external key manager.
 * `server` - Primary Key server name.
 ### Related ONTAP commands
 * `security key-manager external add-servers`
-
 */
 func (a *Client) SecurityKeyManagerKeyServersCreate(params *SecurityKeyManagerKeyServersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -4854,12 +4831,12 @@ func (a *Client) SecurityKeyManagerKeyServersCreate(params *SecurityKeyManagerKe
 }
 
 /*
-  SecurityKeyManagerKeyServersDelete Deletes a primary key server.
+	SecurityKeyManagerKeyServersDelete Deletes a primary key server.
+
 ### Optional parameters:
 * `force` - Bypass Out of Quorum checks wehn deleting a primary key server. This flag is set to "false" by default.
 ### Related ONTAP commands
 * `security key-manager external remove-servers`
-
 */
 func (a *Client) SecurityKeyManagerKeyServersDelete(params *SecurityKeyManagerKeyServersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -4897,11 +4874,11 @@ func (a *Client) SecurityKeyManagerKeyServersDelete(params *SecurityKeyManagerKe
 }
 
 /*
-  SecurityKeyManagerKeyServersGet Retrieves key servers configured in an external key manager.
+	SecurityKeyManagerKeyServersGet Retrieves key servers configured in an external key manager.
+
 ### Related ONTAP commands
 * `security key-manager external show`
 * `security key-manager external show-status`
-
 */
 func (a *Client) SecurityKeyManagerKeyServersGet(params *SecurityKeyManagerKeyServersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4939,10 +4916,10 @@ func (a *Client) SecurityKeyManagerKeyServersGet(params *SecurityKeyManagerKeySe
 }
 
 /*
-  SecurityKeyManagerKeyServersModify Updates a primary key server.
+	SecurityKeyManagerKeyServersModify Updates a primary key server.
+
 ### Related ONTAP commands
 * `security key-manager external modify-server`
-
 */
 func (a *Client) SecurityKeyManagerKeyServersModify(params *SecurityKeyManagerKeyServersModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -4980,7 +4957,8 @@ func (a *Client) SecurityKeyManagerKeyServersModify(params *SecurityKeyManagerKe
 }
 
 /*
-  SecurityKeyManagerMigrate Migrates the keys belonging to an SVM between the cluster's key manager and the SVM's key manager. This operation can run for several minutes.
+	SecurityKeyManagerMigrate Migrates the keys belonging to an SVM between the cluster's key manager and the SVM's key manager. This operation can run for several minutes.
+
 ### Required properties
 * `source.uuid` - UUID of the source key manager.
 * `uuid` - UUID of the destination key manager.
@@ -4989,7 +4967,6 @@ The UUID of Azure Key Vault key manager can be fetched using [`GET /api/security
 The UUID of Google Cloud key manager can be fetched using [`GET /api/security/gcp-kms`].
 ### Related ONTAP commands
 * `security key-manager migrate`
-
 */
 func (a *Client) SecurityKeyManagerMigrate(params *SecurityKeyManagerMigrateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerMigrateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -5027,7 +5004,8 @@ func (a *Client) SecurityKeyManagerMigrate(params *SecurityKeyManagerMigratePara
 }
 
 /*
-  SecurityKeyManagerModify Updates a key manager.
+	SecurityKeyManagerModify Updates a key manager.
+
 ### Required properties
 * `onboard.existing_passphrase` - Cluster-wide passphrase. Required only when synchronizing the passphrase of the Onboard Key Manager.
 * `synchronize` - Synchronizes missing Onboard Key Manager keys on any node in the cluster. Required only when synchronizing the Onboard Key Manager keys in a local cluster.
@@ -5035,7 +5013,6 @@ func (a *Client) SecurityKeyManagerMigrate(params *SecurityKeyManagerMigratePara
 * `security key-manager external modify`
 * `security key-manager onboard sync`
 * `security key-manager onboard update-passphrase`
-
 */
 func (a *Client) SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -5073,7 +5050,8 @@ func (a *Client) SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams
 }
 
 /*
-  SecurityKeystoreCollectionGet Retrieves keystores.
+	SecurityKeystoreCollectionGet Retrieves keystores.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `keystore.location`
@@ -5081,7 +5059,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `svm.uuid`
 ### Related ONTAP commands
 * `security key-manager show-key-store`
-
 */
 func (a *Client) SecurityKeystoreCollectionGet(params *SecurityKeystoreCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5119,7 +5096,8 @@ func (a *Client) SecurityKeystoreCollectionGet(params *SecurityKeystoreCollectio
 }
 
 /*
-  SecurityLogForwardingCreate Configures remote syslog/splunk server information.
+	SecurityLogForwardingCreate Configures remote syslog/splunk server information.
+
 ### Required properties
 All of the following fields are required for creating a remote syslog/splunk destination
 * `address`
@@ -5129,7 +5107,6 @@ All of the following fields are optional for creating a remote syslog/splunk des
 * `protocol`
 * `facility`
 * `verify_server` (Can only be "true" when protocol is "tcp_encrypted")
-
 */
 func (a *Client) SecurityLogForwardingCreate(params *SecurityLogForwardingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -5167,7 +5144,7 @@ func (a *Client) SecurityLogForwardingCreate(params *SecurityLogForwardingCreate
 }
 
 /*
-  SecurityLogForwardingDelete Deletes remote syslog/splunk server information.
+SecurityLogForwardingDelete Deletes remote syslog/splunk server information.
 */
 func (a *Client) SecurityLogForwardingDelete(params *SecurityLogForwardingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -5205,7 +5182,7 @@ func (a *Client) SecurityLogForwardingDelete(params *SecurityLogForwardingDelete
 }
 
 /*
-  SecurityLogForwardingGet Defines a remote syslog/splunk server for sending audit information to.
+SecurityLogForwardingGet Defines a remote syslog/splunk server for sending audit information to.
 */
 func (a *Client) SecurityLogForwardingGet(params *SecurityLogForwardingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5243,7 +5220,7 @@ func (a *Client) SecurityLogForwardingGet(params *SecurityLogForwardingGetParams
 }
 
 /*
-  SecurityLogForwardingModify Updates remote syslog/splunk server information.
+SecurityLogForwardingModify Updates remote syslog/splunk server information.
 */
 func (a *Client) SecurityLogForwardingModify(params *SecurityLogForwardingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -5281,14 +5258,14 @@ func (a *Client) SecurityLogForwardingModify(params *SecurityLogForwardingModify
 }
 
 /*
-  SecuritySamlSpCreate Creates a SAML service provider configuration. Note that "common_name" is mutually exclusive with "serial_number" and "ca" in POST. SAML will initially be disabled, requiring a patch to set "enabled" to "true", so that the user has time to complete the setup of the IdP.
+	SecuritySamlSpCreate Creates a SAML service provider configuration. Note that "common_name" is mutually exclusive with "serial_number" and "ca" in POST. SAML will initially be disabled, requiring a patch to set "enabled" to "true", so that the user has time to complete the setup of the IdP.
+
 ### Required properties
 * `idp_uri`
 ### Optional properties
 * `certificate`
 * `enabled`
 * `host`
-
 */
 func (a *Client) SecuritySamlSpCreate(params *SecuritySamlSpCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -5326,7 +5303,7 @@ func (a *Client) SecuritySamlSpCreate(params *SecuritySamlSpCreateParams, authIn
 }
 
 /*
-  SecuritySamlSpDelete Deletes a SAML service provider configuration.
+SecuritySamlSpDelete Deletes a SAML service provider configuration.
 */
 func (a *Client) SecuritySamlSpDelete(params *SecuritySamlSpDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -5364,7 +5341,7 @@ func (a *Client) SecuritySamlSpDelete(params *SecuritySamlSpDeleteParams, authIn
 }
 
 /*
-  SecuritySamlSpGet Retrieves a SAML service provider configuration.
+SecuritySamlSpGet Retrieves a SAML service provider configuration.
 */
 func (a *Client) SecuritySamlSpGet(params *SecuritySamlSpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5402,7 +5379,7 @@ func (a *Client) SecuritySamlSpGet(params *SecuritySamlSpGetParams, authInfo run
 }
 
 /*
-  SecuritySamlSpModify Updates a SAML service provider configuration.
+SecuritySamlSpModify Updates a SAML service provider configuration.
 */
 func (a *Client) SecuritySamlSpModify(params *SecuritySamlSpModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -5440,11 +5417,11 @@ func (a *Client) SecuritySamlSpModify(params *SecuritySamlSpModifyParams, authIn
 }
 
 /*
-  SSHGet Retrieves the cluster SSH server ciphers, MAC algorithms, key exchange algorithms, and connection limits.
+	SSHGet Retrieves the cluster SSH server ciphers, MAC algorithms, key exchange algorithms, and connection limits.
+
 ### Related ONTAP commands
 * `security ssh`
 * `security protocol ssh`
-
 */
 func (a *Client) SSHGet(params *SSHGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SSHGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5482,7 +5459,8 @@ func (a *Client) SSHGet(params *SSHGetParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-  SSHModify Updates the SSH server setting for a cluster.
+	SSHModify Updates the SSH server setting for a cluster.
+
 ### Optional parameters
 * `ciphers` - Encryption algorithms for the payload
 * `key_exchange_algorithms` - SSH key exchange algorithms
@@ -5494,7 +5472,6 @@ func (a *Client) SSHGet(params *SSHGetParams, authInfo runtime.ClientAuthInfoWri
 ### Related ONTAP commands
 * `security ssh`
 * `security protocol ssh`
-
 */
 func (a *Client) SSHModify(params *SSHModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SSHModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -5532,10 +5509,10 @@ func (a *Client) SSHModify(params *SSHModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  SvmSSHServerCollectionGet Retrieves the SSH server configuration for all the SVMs.
+	SvmSSHServerCollectionGet Retrieves the SSH server configuration for all the SVMs.
+
 ### Related ONTAP commands
 * `security ssh`
-
 */
 func (a *Client) SvmSSHServerCollectionGet(params *SvmSSHServerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5573,10 +5550,10 @@ func (a *Client) SvmSSHServerCollectionGet(params *SvmSSHServerCollectionGetPara
 }
 
 /*
-  SvmSSHServerGet Retrieves the SSH server configuration for the specified SVM.
+	SvmSSHServerGet Retrieves the SSH server configuration for the specified SVM.
+
 ### Related ONTAP commands
 * `security ssh`
-
 */
 func (a *Client) SvmSSHServerGet(params *SvmSSHServerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5614,7 +5591,8 @@ func (a *Client) SvmSSHServerGet(params *SvmSSHServerGetParams, authInfo runtime
 }
 
 /*
-  SvmSSHServerModify Updates the SSH server configuration for the specified SVM.
+	SvmSSHServerModify Updates the SSH server configuration for the specified SVM.
+
 ### Optional parameters
 * `ciphers` - Encryption algorithms for the payload
 * `key_exchange_algorithms` - SSH key exchange algorithms
@@ -5622,7 +5600,6 @@ func (a *Client) SvmSSHServerGet(params *SvmSSHServerGetParams, authInfo runtime
 * `max_authentication_retry_count` - Maximum authentication retries allowed before closing the connection
 ### Related ONTAP commands
 * `security ssh`
-
 */
 func (a *Client) SvmSSHServerModify(params *SvmSSHServerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerModifyOK, error) {
 	// TODO: Validate the params before sending

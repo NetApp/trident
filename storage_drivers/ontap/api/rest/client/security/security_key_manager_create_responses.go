@@ -46,7 +46,8 @@ func NewSecurityKeyManagerCreateCreated() *SecurityKeyManagerCreateCreated {
 	return &SecurityKeyManagerCreateCreated{}
 }
 
-/* SecurityKeyManagerCreateCreated describes a response with status code 201, with default header values.
+/*
+SecurityKeyManagerCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type SecurityKeyManagerCreateCreated struct {
 	Payload *models.SecurityKeyManagerResponse
 }
 
+// IsSuccess returns true when this security key manager create created response has a 2xx status code
+func (o *SecurityKeyManagerCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager create created response has a 3xx status code
+func (o *SecurityKeyManagerCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager create created response has a 4xx status code
+func (o *SecurityKeyManagerCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager create created response has a 5xx status code
+func (o *SecurityKeyManagerCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager create created response a status code equal to that given
+func (o *SecurityKeyManagerCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *SecurityKeyManagerCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /security/key-managers][%d] securityKeyManagerCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *SecurityKeyManagerCreateCreated) String() string {
+	return fmt.Sprintf("[POST /security/key-managers][%d] securityKeyManagerCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *SecurityKeyManagerCreateCreated) GetPayload() *models.SecurityKeyManagerResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 	}
 }
 
-/* SecurityKeyManagerCreateDefault describes a response with status code -1, with default header values.
+/*
+	SecurityKeyManagerCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65536038 | A maximum of 4 active primary key servers are allowed. |
@@ -116,7 +149,6 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 | 66060338 | Failed to establish secure connection for a key management server due to incorrect server_ca certificates. |
 | 66060339 | Failed to establish secure connection for a key management server due to incorrect client certificates. |
 | 66060340 | Failed to establish secure connection for a key management server due to Cryptsoft error. |
-
 */
 type SecurityKeyManagerCreateDefault struct {
 	_statusCode int
@@ -129,9 +161,39 @@ func (o *SecurityKeyManagerCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security key manager create default response has a 2xx status code
+func (o *SecurityKeyManagerCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security key manager create default response has a 3xx status code
+func (o *SecurityKeyManagerCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security key manager create default response has a 4xx status code
+func (o *SecurityKeyManagerCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security key manager create default response has a 5xx status code
+func (o *SecurityKeyManagerCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security key manager create default response a status code equal to that given
+func (o *SecurityKeyManagerCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityKeyManagerCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/key-managers][%d] security_key_manager_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityKeyManagerCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/key-managers][%d] security_key_manager_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityKeyManagerCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

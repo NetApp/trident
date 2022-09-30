@@ -46,7 +46,8 @@ func NewMultiAdminVerifyRequestCreateCreated() *MultiAdminVerifyRequestCreateCre
 	return &MultiAdminVerifyRequestCreateCreated{}
 }
 
-/* MultiAdminVerifyRequestCreateCreated describes a response with status code 201, with default header values.
+/*
+MultiAdminVerifyRequestCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type MultiAdminVerifyRequestCreateCreated struct {
 	Payload *models.MultiAdminVerifyRequestResponse
 }
 
+// IsSuccess returns true when this multi admin verify request create created response has a 2xx status code
+func (o *MultiAdminVerifyRequestCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this multi admin verify request create created response has a 3xx status code
+func (o *MultiAdminVerifyRequestCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this multi admin verify request create created response has a 4xx status code
+func (o *MultiAdminVerifyRequestCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this multi admin verify request create created response has a 5xx status code
+func (o *MultiAdminVerifyRequestCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this multi admin verify request create created response a status code equal to that given
+func (o *MultiAdminVerifyRequestCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *MultiAdminVerifyRequestCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multiAdminVerifyRequestCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *MultiAdminVerifyRequestCreateCreated) String() string {
+	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multiAdminVerifyRequestCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *MultiAdminVerifyRequestCreateCreated) GetPayload() *models.MultiAdminVerifyRequestResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewMultiAdminVerifyRequestCreateDefault(code int) *MultiAdminVerifyRequestC
 	}
 }
 
-/* MultiAdminVerifyRequestCreateDefault describes a response with status code -1, with default header values.
+/*
+	MultiAdminVerifyRequestCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262148 | The specified command is not recognized. |
@@ -100,7 +133,6 @@ func NewMultiAdminVerifyRequestCreateDefault(code int) *MultiAdminVerifyRequestC
 | 262330 | Cannot approve/veto a request multiple times. |
 | 262334 | The parameter specified in the command is not supported. |
 | 262337 | Cannot approve/veto the user's own request. |
-
 */
 type MultiAdminVerifyRequestCreateDefault struct {
 	_statusCode int
@@ -113,9 +145,39 @@ func (o *MultiAdminVerifyRequestCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this multi admin verify request create default response has a 2xx status code
+func (o *MultiAdminVerifyRequestCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this multi admin verify request create default response has a 3xx status code
+func (o *MultiAdminVerifyRequestCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this multi admin verify request create default response has a 4xx status code
+func (o *MultiAdminVerifyRequestCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this multi admin verify request create default response has a 5xx status code
+func (o *MultiAdminVerifyRequestCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this multi admin verify request create default response a status code equal to that given
+func (o *MultiAdminVerifyRequestCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MultiAdminVerifyRequestCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multi_admin_verify_request_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MultiAdminVerifyRequestCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/multi-admin-verify/requests][%d] multi_admin_verify_request_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MultiAdminVerifyRequestCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

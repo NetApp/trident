@@ -16,7 +16,6 @@ import (
 
 // FcInterfaceReference An FC interface.
 //
-//
 // swagger:model fc_interface_reference
 type FcInterfaceReference struct {
 

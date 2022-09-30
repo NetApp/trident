@@ -53,10 +53,12 @@ func NewIgroupGetParamsWithHTTPClient(client *http.Client) *IgroupGetParams {
 	}
 }
 
-/* IgroupGetParams contains all the parameters to send to the API endpoint
-   for the igroup get operation.
+/*
+IgroupGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the igroup get operation.
+
+	Typically these are written to a http.Request.
 */
 type IgroupGetParams struct {
 

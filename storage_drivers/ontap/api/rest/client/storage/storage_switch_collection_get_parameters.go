@@ -53,10 +53,12 @@ func NewStorageSwitchCollectionGetParamsWithHTTPClient(client *http.Client) *Sto
 	}
 }
 
-/* StorageSwitchCollectionGetParams contains all the parameters to send to the API endpoint
-   for the storage switch collection get operation.
+/*
+StorageSwitchCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the storage switch collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type StorageSwitchCollectionGetParams struct {
 

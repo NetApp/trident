@@ -46,7 +46,8 @@ func NewNodeMetricsCollectionGetOK() *NodeMetricsCollectionGetOK {
 	return &NodeMetricsCollectionGetOK{}
 }
 
-/* NodeMetricsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NodeMetricsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NodeMetricsCollectionGetOK struct {
 	Payload *models.NodeMetricsResponse
 }
 
+// IsSuccess returns true when this node metrics collection get o k response has a 2xx status code
+func (o *NodeMetricsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this node metrics collection get o k response has a 3xx status code
+func (o *NodeMetricsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this node metrics collection get o k response has a 4xx status code
+func (o *NodeMetricsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this node metrics collection get o k response has a 5xx status code
+func (o *NodeMetricsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this node metrics collection get o k response a status code equal to that given
+func (o *NodeMetricsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NodeMetricsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/nodes/{uuid}/metrics][%d] nodeMetricsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NodeMetricsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/nodes/{uuid}/metrics][%d] nodeMetricsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NodeMetricsCollectionGetOK) GetPayload() *models.NodeMetricsResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNodeMetricsCollectionGetDefault(code int) *NodeMetricsCollectionGetDefau
 	}
 }
 
-/* NodeMetricsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+NodeMetricsCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NodeMetricsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this node metrics collection get default response has a 2xx status code
+func (o *NodeMetricsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this node metrics collection get default response has a 3xx status code
+func (o *NodeMetricsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this node metrics collection get default response has a 4xx status code
+func (o *NodeMetricsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this node metrics collection get default response has a 5xx status code
+func (o *NodeMetricsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this node metrics collection get default response a status code equal to that given
+func (o *NodeMetricsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NodeMetricsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/nodes/{uuid}/metrics][%d] node_metrics_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NodeMetricsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/nodes/{uuid}/metrics][%d] node_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NodeMetricsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewNvmeCollectionPerformanceMetricsGetOK() *NvmeCollectionPerformanceMetric
 	return &NvmeCollectionPerformanceMetricsGetOK{}
 }
 
-/* NvmeCollectionPerformanceMetricsGetOK describes a response with status code 200, with default header values.
+/*
+NvmeCollectionPerformanceMetricsGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NvmeCollectionPerformanceMetricsGetOK struct {
 	Payload *models.PerformanceNvmeMetricResponse
 }
 
+// IsSuccess returns true when this nvme collection performance metrics get o k response has a 2xx status code
+func (o *NvmeCollectionPerformanceMetricsGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme collection performance metrics get o k response has a 3xx status code
+func (o *NvmeCollectionPerformanceMetricsGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme collection performance metrics get o k response has a 4xx status code
+func (o *NvmeCollectionPerformanceMetricsGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme collection performance metrics get o k response has a 5xx status code
+func (o *NvmeCollectionPerformanceMetricsGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme collection performance metrics get o k response a status code equal to that given
+func (o *NvmeCollectionPerformanceMetricsGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeCollectionPerformanceMetricsGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}/metrics][%d] nvmeCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NvmeCollectionPerformanceMetricsGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}/metrics][%d] nvmeCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NvmeCollectionPerformanceMetricsGetOK) GetPayload() *models.PerformanceNvmeMetricResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNvmeCollectionPerformanceMetricsGetDefault(code int) *NvmeCollectionPerf
 	}
 }
 
-/* NvmeCollectionPerformanceMetricsGetDefault describes a response with status code -1, with default header values.
+/*
+NvmeCollectionPerformanceMetricsGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NvmeCollectionPerformanceMetricsGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme collection performance metrics get default response has a 2xx status code
+func (o *NvmeCollectionPerformanceMetricsGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme collection performance metrics get default response has a 3xx status code
+func (o *NvmeCollectionPerformanceMetricsGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme collection performance metrics get default response has a 4xx status code
+func (o *NvmeCollectionPerformanceMetricsGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme collection performance metrics get default response has a 5xx status code
+func (o *NvmeCollectionPerformanceMetricsGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme collection performance metrics get default response a status code equal to that given
+func (o *NvmeCollectionPerformanceMetricsGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeCollectionPerformanceMetricsGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}/metrics][%d] nvme_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeCollectionPerformanceMetricsGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/services/{svm.uuid}/metrics][%d] nvme_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeCollectionPerformanceMetricsGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

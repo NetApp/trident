@@ -55,10 +55,12 @@ func NewQosPolicyCreateParamsWithHTTPClient(client *http.Client) *QosPolicyCreat
 	}
 }
 
-/* QosPolicyCreateParams contains all the parameters to send to the API endpoint
-   for the qos policy create operation.
+/*
+QosPolicyCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the qos policy create operation.
+
+	Typically these are written to a http.Request.
 */
 type QosPolicyCreateParams struct {
 

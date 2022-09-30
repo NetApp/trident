@@ -46,7 +46,8 @@ func NewSnaplockFileRetentionGetOK() *SnaplockFileRetentionGetOK {
 	return &SnaplockFileRetentionGetOK{}
 }
 
-/* SnaplockFileRetentionGetOK describes a response with status code 200, with default header values.
+/*
+SnaplockFileRetentionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnaplockFileRetentionGetOK struct {
 	Payload *models.SnaplockFileRetention
 }
 
+// IsSuccess returns true when this snaplock file retention get o k response has a 2xx status code
+func (o *SnaplockFileRetentionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock file retention get o k response has a 3xx status code
+func (o *SnaplockFileRetentionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock file retention get o k response has a 4xx status code
+func (o *SnaplockFileRetentionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock file retention get o k response has a 5xx status code
+func (o *SnaplockFileRetentionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock file retention get o k response a status code equal to that given
+func (o *SnaplockFileRetentionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnaplockFileRetentionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnaplockFileRetentionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFileRetentionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnaplockFileRetentionGetOK) GetPayload() *models.SnaplockFileRetention {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewSnaplockFileRetentionGetDefault(code int) *SnaplockFileRetentionGetDefau
 	}
 }
 
-/* SnaplockFileRetentionGetDefault describes a response with status code -1, with default header values.
+/*
+	SnaplockFileRetentionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 14090347    | File path must be in the format \"/<dir>/<file path>\"  |
-
 */
 type SnaplockFileRetentionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *SnaplockFileRetentionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock file retention get default response has a 2xx status code
+func (o *SnaplockFileRetentionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock file retention get default response has a 3xx status code
+func (o *SnaplockFileRetentionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock file retention get default response has a 4xx status code
+func (o *SnaplockFileRetentionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock file retention get default response has a 5xx status code
+func (o *SnaplockFileRetentionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock file retention get default response a status code equal to that given
+func (o *SnaplockFileRetentionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockFileRetentionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockFileRetentionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_retention_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockFileRetentionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

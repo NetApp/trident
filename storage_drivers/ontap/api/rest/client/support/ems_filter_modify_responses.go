@@ -46,14 +46,44 @@ func NewEmsFilterModifyOK() *EmsFilterModifyOK {
 	return &EmsFilterModifyOK{}
 }
 
-/* EmsFilterModifyOK describes a response with status code 200, with default header values.
+/*
+EmsFilterModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type EmsFilterModifyOK struct {
 }
 
+// IsSuccess returns true when this ems filter modify o k response has a 2xx status code
+func (o *EmsFilterModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems filter modify o k response has a 3xx status code
+func (o *EmsFilterModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems filter modify o k response has a 4xx status code
+func (o *EmsFilterModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems filter modify o k response has a 5xx status code
+func (o *EmsFilterModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems filter modify o k response a status code equal to that given
+func (o *EmsFilterModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EmsFilterModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /support/ems/filters/{name}][%d] emsFilterModifyOK ", 200)
+}
+
+func (o *EmsFilterModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /support/ems/filters/{name}][%d] emsFilterModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewEmsFilterModifyDefault(code int) *EmsFilterModifyDefault {
 	}
 }
 
-/* EmsFilterModifyDefault describes a response with status code -1, with default header values.
+/*
+	EmsFilterModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 983088     | The filter name provided is empty |
@@ -92,7 +124,6 @@ func NewEmsFilterModifyDefault(code int) *EmsFilterModifyDefault {
 | 983156     | The provided snmp_trap_types property does not match that of the name_pattern |
 | 983157     | The provided severities and snmp_trap_types do not match those of the name_pattern |
 | 983158     | The name_pattern provided does not exist |
-
 */
 type EmsFilterModifyDefault struct {
 	_statusCode int
@@ -105,9 +136,39 @@ func (o *EmsFilterModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems filter modify default response has a 2xx status code
+func (o *EmsFilterModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems filter modify default response has a 3xx status code
+func (o *EmsFilterModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems filter modify default response has a 4xx status code
+func (o *EmsFilterModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems filter modify default response has a 5xx status code
+func (o *EmsFilterModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems filter modify default response a status code equal to that given
+func (o *EmsFilterModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsFilterModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /support/ems/filters/{name}][%d] ems_filter_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsFilterModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /support/ems/filters/{name}][%d] ems_filter_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsFilterModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

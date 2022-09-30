@@ -53,10 +53,12 @@ func NewHTTPProxyGetParamsWithHTTPClient(client *http.Client) *HTTPProxyGetParam
 	}
 }
 
-/* HTTPProxyGetParams contains all the parameters to send to the API endpoint
-   for the http proxy get operation.
+/*
+HTTPProxyGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the http proxy get operation.
+
+	Typically these are written to a http.Request.
 */
 type HTTPProxyGetParams struct {
 

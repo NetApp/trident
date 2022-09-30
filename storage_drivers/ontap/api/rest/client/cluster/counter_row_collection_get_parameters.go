@@ -53,10 +53,12 @@ func NewCounterRowCollectionGetParamsWithHTTPClient(client *http.Client) *Counte
 	}
 }
 
-/* CounterRowCollectionGetParams contains all the parameters to send to the API endpoint
-   for the counter row collection get operation.
+/*
+CounterRowCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the counter row collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type CounterRowCollectionGetParams struct {
 

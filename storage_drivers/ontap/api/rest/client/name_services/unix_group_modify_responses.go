@@ -46,14 +46,44 @@ func NewUnixGroupModifyOK() *UnixGroupModifyOK {
 	return &UnixGroupModifyOK{}
 }
 
-/* UnixGroupModifyOK describes a response with status code 200, with default header values.
+/*
+UnixGroupModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type UnixGroupModifyOK struct {
 }
 
+// IsSuccess returns true when this unix group modify o k response has a 2xx status code
+func (o *UnixGroupModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix group modify o k response has a 3xx status code
+func (o *UnixGroupModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix group modify o k response has a 4xx status code
+func (o *UnixGroupModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix group modify o k response has a 5xx status code
+func (o *UnixGroupModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix group modify o k response a status code equal to that given
+func (o *UnixGroupModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixGroupModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/unix-groups/{svm.uuid}/{name}][%d] unixGroupModifyOK ", 200)
+}
+
+func (o *UnixGroupModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/unix-groups/{svm.uuid}/{name}][%d] unixGroupModifyOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewUnixGroupModifyDefault(code int) *UnixGroupModifyDefault {
 	}
 }
 
-/* UnixGroupModifyDefault describes a response with status code -1, with default header values.
+/*
+	UnixGroupModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 23724141   | Duplicate group ID. Group ID must be unique.|
-
 */
 type UnixGroupModifyDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *UnixGroupModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix group modify default response has a 2xx status code
+func (o *UnixGroupModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix group modify default response has a 3xx status code
+func (o *UnixGroupModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix group modify default response has a 4xx status code
+func (o *UnixGroupModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix group modify default response has a 5xx status code
+func (o *UnixGroupModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix group modify default response a status code equal to that given
+func (o *UnixGroupModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixGroupModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/unix-groups/{svm.uuid}/{name}][%d] unix_group_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixGroupModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/unix-groups/{svm.uuid}/{name}][%d] unix_group_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixGroupModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

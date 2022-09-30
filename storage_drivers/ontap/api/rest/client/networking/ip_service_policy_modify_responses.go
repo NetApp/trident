@@ -46,14 +46,44 @@ func NewIPServicePolicyModifyOK() *IPServicePolicyModifyOK {
 	return &IPServicePolicyModifyOK{}
 }
 
-/* IPServicePolicyModifyOK describes a response with status code 200, with default header values.
+/*
+IPServicePolicyModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IPServicePolicyModifyOK struct {
 }
 
+// IsSuccess returns true when this ip service policy modify o k response has a 2xx status code
+func (o *IPServicePolicyModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ip service policy modify o k response has a 3xx status code
+func (o *IPServicePolicyModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ip service policy modify o k response has a 4xx status code
+func (o *IPServicePolicyModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ip service policy modify o k response has a 5xx status code
+func (o *IPServicePolicyModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ip service policy modify o k response a status code equal to that given
+func (o *IPServicePolicyModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IPServicePolicyModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ipServicePolicyModifyOK ", 200)
+}
+
+func (o *IPServicePolicyModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ipServicePolicyModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewIPServicePolicyModifyDefault(code int) *IPServicePolicyModifyDefault {
 	}
 }
 
-/* IPServicePolicyModifyDefault describes a response with status code -1, with default header values.
+/*
+	IPServicePolicyModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376669 | Port must reside in the same IPspace as the interface's SVM. |
@@ -83,7 +115,6 @@ func NewIPServicePolicyModifyDefault(code int) *IPServicePolicyModifyDefault {
 | 53281934 | An SVM-scoped service cannot be added to a Cluster-scoped service policy. |
 | 53281952 | The service policy on an SVM cannot be updated to include a block service. Use built-in service policies for SAN services. |
 | 53281953 | The service policy on an SVM cannot be updated to include a new service. |
-
 */
 type IPServicePolicyModifyDefault struct {
 	_statusCode int
@@ -96,9 +127,39 @@ func (o *IPServicePolicyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ip service policy modify default response has a 2xx status code
+func (o *IPServicePolicyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ip service policy modify default response has a 3xx status code
+func (o *IPServicePolicyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ip service policy modify default response has a 4xx status code
+func (o *IPServicePolicyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ip service policy modify default response has a 5xx status code
+func (o *IPServicePolicyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ip service policy modify default response a status code equal to that given
+func (o *IPServicePolicyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IPServicePolicyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ip_service_policy_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IPServicePolicyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /network/ip/service-policies/{uuid}][%d] ip_service_policy_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IPServicePolicyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

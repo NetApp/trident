@@ -46,7 +46,8 @@ func NewSnapmirrorRelationshipGetOK() *SnapmirrorRelationshipGetOK {
 	return &SnapmirrorRelationshipGetOK{}
 }
 
-/* SnapmirrorRelationshipGetOK describes a response with status code 200, with default header values.
+/*
+SnapmirrorRelationshipGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnapmirrorRelationshipGetOK struct {
 	Payload *models.SnapmirrorRelationship
 }
 
+// IsSuccess returns true when this snapmirror relationship get o k response has a 2xx status code
+func (o *SnapmirrorRelationshipGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror relationship get o k response has a 3xx status code
+func (o *SnapmirrorRelationshipGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror relationship get o k response has a 4xx status code
+func (o *SnapmirrorRelationshipGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror relationship get o k response has a 5xx status code
+func (o *SnapmirrorRelationshipGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror relationship get o k response a status code equal to that given
+func (o *SnapmirrorRelationshipGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnapmirrorRelationshipGetOK) Error() string {
 	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnapmirrorRelationshipGetOK) String() string {
+	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirrorRelationshipGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnapmirrorRelationshipGetOK) GetPayload() *models.SnapmirrorRelationship {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewSnapmirrorRelationshipGetDefault(code int) *SnapmirrorRelationshipGetDef
 	}
 }
 
-/* SnapmirrorRelationshipGetDefault describes a response with status code -1, with default header values.
+/*
+	SnapmirrorRelationshipGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 13303825    | Could not retrieve information for the SnapMirror policy type |
 | 13303817    | Unknown value for the Snapmirror State |
-
 */
 type SnapmirrorRelationshipGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *SnapmirrorRelationshipGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapmirror relationship get default response has a 2xx status code
+func (o *SnapmirrorRelationshipGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapmirror relationship get default response has a 3xx status code
+func (o *SnapmirrorRelationshipGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapmirror relationship get default response has a 4xx status code
+func (o *SnapmirrorRelationshipGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapmirror relationship get default response has a 5xx status code
+func (o *SnapmirrorRelationshipGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapmirror relationship get default response a status code equal to that given
+func (o *SnapmirrorRelationshipGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapmirrorRelationshipGetDefault) Error() string {
 	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapmirrorRelationshipGetDefault) String() string {
+	return fmt.Sprintf("[GET /snapmirror/relationships/{uuid}][%d] snapmirror_relationship_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapmirrorRelationshipGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

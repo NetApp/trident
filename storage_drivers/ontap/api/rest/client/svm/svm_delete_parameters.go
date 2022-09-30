@@ -53,10 +53,12 @@ func NewSvmDeleteParamsWithHTTPClient(client *http.Client) *SvmDeleteParams {
 	}
 }
 
-/* SvmDeleteParams contains all the parameters to send to the API endpoint
-   for the svm delete operation.
+/*
+SvmDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmDeleteParams struct {
 

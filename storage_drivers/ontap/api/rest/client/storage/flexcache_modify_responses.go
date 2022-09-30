@@ -46,7 +46,8 @@ func NewFlexcacheModifyAccepted() *FlexcacheModifyAccepted {
 	return &FlexcacheModifyAccepted{}
 }
 
-/* FlexcacheModifyAccepted describes a response with status code 202, with default header values.
+/*
+FlexcacheModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type FlexcacheModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this flexcache modify accepted response has a 2xx status code
+func (o *FlexcacheModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this flexcache modify accepted response has a 3xx status code
+func (o *FlexcacheModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this flexcache modify accepted response has a 4xx status code
+func (o *FlexcacheModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this flexcache modify accepted response has a 5xx status code
+func (o *FlexcacheModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this flexcache modify accepted response a status code equal to that given
+func (o *FlexcacheModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *FlexcacheModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcacheModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *FlexcacheModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcacheModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *FlexcacheModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewFlexcacheModifyDefault(code int) *FlexcacheModifyDefault {
 	}
 }
 
-/* FlexcacheModifyDefault describes a response with status code -1, with default header values.
+/*
+	FlexcacheModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 66846922   | FlexCache volume does not exist in the SVM |
@@ -104,7 +137,6 @@ func NewFlexcacheModifyDefault(code int) *FlexcacheModifyDefault {
 | 66846946   | The junction-path of origin of FlexCache volume is not active |
 | 66846947   | FlexCache prepopulate job for FlexCache volume already exists |
 | 66846948   | FlexCache prepopulate job for FlexCache volume could not be queued because the node is offline |
-
 */
 type FlexcacheModifyDefault struct {
 	_statusCode int
@@ -117,9 +149,39 @@ func (o *FlexcacheModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this flexcache modify default response has a 2xx status code
+func (o *FlexcacheModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this flexcache modify default response has a 3xx status code
+func (o *FlexcacheModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this flexcache modify default response has a 4xx status code
+func (o *FlexcacheModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this flexcache modify default response has a 5xx status code
+func (o *FlexcacheModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this flexcache modify default response a status code equal to that given
+func (o *FlexcacheModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FlexcacheModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcache_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FlexcacheModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/flexcache/flexcaches/{uuid}][%d] flexcache_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FlexcacheModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

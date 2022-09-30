@@ -53,10 +53,12 @@ func NewAntiRansomwareSuspectDeleteParamsWithHTTPClient(client *http.Client) *An
 	}
 }
 
-/* AntiRansomwareSuspectDeleteParams contains all the parameters to send to the API endpoint
-   for the anti ransomware suspect delete operation.
+/*
+AntiRansomwareSuspectDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the anti ransomware suspect delete operation.
+
+	Typically these are written to a http.Request.
 */
 type AntiRansomwareSuspectDeleteParams struct {
 

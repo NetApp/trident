@@ -55,10 +55,12 @@ func NewGcpKmsModifyParamsWithHTTPClient(client *http.Client) *GcpKmsModifyParam
 	}
 }
 
-/* GcpKmsModifyParams contains all the parameters to send to the API endpoint
-   for the gcp kms modify operation.
+/*
+GcpKmsModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the gcp kms modify operation.
+
+	Typically these are written to a http.Request.
 */
 type GcpKmsModifyParams struct {
 

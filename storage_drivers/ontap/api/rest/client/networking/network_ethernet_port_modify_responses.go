@@ -46,14 +46,44 @@ func NewNetworkEthernetPortModifyOK() *NetworkEthernetPortModifyOK {
 	return &NetworkEthernetPortModifyOK{}
 }
 
-/* NetworkEthernetPortModifyOK describes a response with status code 200, with default header values.
+/*
+NetworkEthernetPortModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NetworkEthernetPortModifyOK struct {
 }
 
+// IsSuccess returns true when this network ethernet port modify o k response has a 2xx status code
+func (o *NetworkEthernetPortModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network ethernet port modify o k response has a 3xx status code
+func (o *NetworkEthernetPortModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network ethernet port modify o k response has a 4xx status code
+func (o *NetworkEthernetPortModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network ethernet port modify o k response has a 5xx status code
+func (o *NetworkEthernetPortModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network ethernet port modify o k response a status code equal to that given
+func (o *NetworkEthernetPortModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkEthernetPortModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] networkEthernetPortModifyOK ", 200)
+}
+
+func (o *NetworkEthernetPortModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] networkEthernetPortModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewNetworkEthernetPortModifyDefault(code int) *NetworkEthernetPortModifyDef
 	}
 }
 
-/* NetworkEthernetPortModifyDefault describes a response with status code -1, with default header values.
+/*
+	NetworkEthernetPortModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376361 | Port is already a member of a LAG. |
@@ -93,7 +125,6 @@ func NewNetworkEthernetPortModifyDefault(code int) *NetworkEthernetPortModifyDef
 | 1967186 | Invalid value for the reachability parameter. |
 | 1967580 | This command is not supported as the effective cluster version is earlier than 9.8. |
 | 1967582 | The reachability parameter is not supported on this cluster. |
-
 */
 type NetworkEthernetPortModifyDefault struct {
 	_statusCode int
@@ -106,9 +137,39 @@ func (o *NetworkEthernetPortModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ethernet port modify default response has a 2xx status code
+func (o *NetworkEthernetPortModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ethernet port modify default response has a 3xx status code
+func (o *NetworkEthernetPortModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ethernet port modify default response has a 4xx status code
+func (o *NetworkEthernetPortModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ethernet port modify default response has a 5xx status code
+func (o *NetworkEthernetPortModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ethernet port modify default response a status code equal to that given
+func (o *NetworkEthernetPortModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkEthernetPortModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] network_ethernet_port_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkEthernetPortModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /network/ethernet/ports/{uuid}][%d] network_ethernet_port_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkEthernetPortModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

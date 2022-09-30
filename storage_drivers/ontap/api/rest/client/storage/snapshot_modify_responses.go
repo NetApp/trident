@@ -46,7 +46,8 @@ func NewSnapshotModifyAccepted() *SnapshotModifyAccepted {
 	return &SnapshotModifyAccepted{}
 }
 
-/* SnapshotModifyAccepted describes a response with status code 202, with default header values.
+/*
+SnapshotModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SnapshotModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this snapshot modify accepted response has a 2xx status code
+func (o *SnapshotModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot modify accepted response has a 3xx status code
+func (o *SnapshotModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot modify accepted response has a 4xx status code
+func (o *SnapshotModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot modify accepted response has a 5xx status code
+func (o *SnapshotModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot modify accepted response a status code equal to that given
+func (o *SnapshotModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SnapshotModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshotModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SnapshotModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshotModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SnapshotModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSnapshotModifyDefault(code int) *SnapshotModifyDefault {
 	}
 }
 
-/* SnapshotModifyDefault describes a response with status code -1, with default header values.
+/*
+	SnapshotModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Code
+	ONTAP Error Response Code
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 524508     | The Snapshot copy was not renamed because the name entered is not valid. |
@@ -97,7 +130,6 @@ func NewSnapshotModifyDefault(code int) *SnapshotModifyDefault {
 | 1638539    | Cannot determine the status of the Snapshot copy rename operation for the specified volume. |
 | 1638554    | Failed to set expiry time for the Snapshot copy. |
 | 1638600    | The Snapshot copy does not exist. |
-
 */
 type SnapshotModifyDefault struct {
 	_statusCode int
@@ -110,9 +142,39 @@ func (o *SnapshotModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapshot modify default response has a 2xx status code
+func (o *SnapshotModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapshot modify default response has a 3xx status code
+func (o *SnapshotModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapshot modify default response has a 4xx status code
+func (o *SnapshotModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapshot modify default response has a 5xx status code
+func (o *SnapshotModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapshot modify default response a status code equal to that given
+func (o *SnapshotModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapshotModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshot_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapshotModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshot_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapshotModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

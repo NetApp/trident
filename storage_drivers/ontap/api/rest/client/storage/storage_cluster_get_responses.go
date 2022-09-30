@@ -46,7 +46,8 @@ func NewStorageClusterGetOK() *StorageClusterGetOK {
 	return &StorageClusterGetOK{}
 }
 
-/* StorageClusterGetOK describes a response with status code 200, with default header values.
+/*
+StorageClusterGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type StorageClusterGetOK struct {
 	Payload *models.ClusterSpace
 }
 
+// IsSuccess returns true when this storage cluster get o k response has a 2xx status code
+func (o *StorageClusterGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this storage cluster get o k response has a 3xx status code
+func (o *StorageClusterGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this storage cluster get o k response has a 4xx status code
+func (o *StorageClusterGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this storage cluster get o k response has a 5xx status code
+func (o *StorageClusterGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this storage cluster get o k response a status code equal to that given
+func (o *StorageClusterGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *StorageClusterGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/cluster][%d] storageClusterGetOK  %+v", 200, o.Payload)
 }
+
+func (o *StorageClusterGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/cluster][%d] storageClusterGetOK  %+v", 200, o.Payload)
+}
+
 func (o *StorageClusterGetOK) GetPayload() *models.ClusterSpace {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewStorageClusterGetDefault(code int) *StorageClusterGetDefault {
 	}
 }
 
-/* StorageClusterGetDefault describes a response with status code -1, with default header values.
+/*
+StorageClusterGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *StorageClusterGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this storage cluster get default response has a 2xx status code
+func (o *StorageClusterGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this storage cluster get default response has a 3xx status code
+func (o *StorageClusterGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this storage cluster get default response has a 4xx status code
+func (o *StorageClusterGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this storage cluster get default response has a 5xx status code
+func (o *StorageClusterGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this storage cluster get default response a status code equal to that given
+func (o *StorageClusterGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *StorageClusterGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/cluster][%d] storage_cluster_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *StorageClusterGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/cluster][%d] storage_cluster_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *StorageClusterGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

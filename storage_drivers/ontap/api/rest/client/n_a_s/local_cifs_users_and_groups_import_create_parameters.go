@@ -55,10 +55,12 @@ func NewLocalCifsUsersAndGroupsImportCreateParamsWithHTTPClient(client *http.Cli
 	}
 }
 
-/* LocalCifsUsersAndGroupsImportCreateParams contains all the parameters to send to the API endpoint
-   for the local cifs users and groups import create operation.
+/*
+LocalCifsUsersAndGroupsImportCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the local cifs users and groups import create operation.
+
+	Typically these are written to a http.Request.
 */
 type LocalCifsUsersAndGroupsImportCreateParams struct {
 

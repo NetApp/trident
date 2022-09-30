@@ -54,10 +54,12 @@ func NewSecurityKeyManagerModifyParamsWithHTTPClient(client *http.Client) *Secur
 	}
 }
 
-/* SecurityKeyManagerModifyParams contains all the parameters to send to the API endpoint
-   for the security key manager modify operation.
+/*
+SecurityKeyManagerModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security key manager modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityKeyManagerModifyParams struct {
 

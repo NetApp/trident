@@ -46,7 +46,8 @@ func NewClusterPeerCollectionGetOK() *ClusterPeerCollectionGetOK {
 	return &ClusterPeerCollectionGetOK{}
 }
 
-/* ClusterPeerCollectionGetOK describes a response with status code 200, with default header values.
+/*
+ClusterPeerCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ClusterPeerCollectionGetOK struct {
 	Payload *models.ClusterPeerResponse
 }
 
+// IsSuccess returns true when this cluster peer collection get o k response has a 2xx status code
+func (o *ClusterPeerCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster peer collection get o k response has a 3xx status code
+func (o *ClusterPeerCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster peer collection get o k response has a 4xx status code
+func (o *ClusterPeerCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster peer collection get o k response has a 5xx status code
+func (o *ClusterPeerCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster peer collection get o k response a status code equal to that given
+func (o *ClusterPeerCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterPeerCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/peers][%d] clusterPeerCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ClusterPeerCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/peers][%d] clusterPeerCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ClusterPeerCollectionGetOK) GetPayload() *models.ClusterPeerResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewClusterPeerCollectionGetDefault(code int) *ClusterPeerCollectionGetDefau
 	}
 }
 
-/* ClusterPeerCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+ClusterPeerCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ClusterPeerCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster peer collection get default response has a 2xx status code
+func (o *ClusterPeerCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster peer collection get default response has a 3xx status code
+func (o *ClusterPeerCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster peer collection get default response has a 4xx status code
+func (o *ClusterPeerCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster peer collection get default response has a 5xx status code
+func (o *ClusterPeerCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster peer collection get default response a status code equal to that given
+func (o *ClusterPeerCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterPeerCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/peers][%d] cluster_peer_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterPeerCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/peers][%d] cluster_peer_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterPeerCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

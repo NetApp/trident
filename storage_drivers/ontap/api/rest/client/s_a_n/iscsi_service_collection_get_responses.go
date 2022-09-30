@@ -46,7 +46,8 @@ func NewIscsiServiceCollectionGetOK() *IscsiServiceCollectionGetOK {
 	return &IscsiServiceCollectionGetOK{}
 }
 
-/* IscsiServiceCollectionGetOK describes a response with status code 200, with default header values.
+/*
+IscsiServiceCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IscsiServiceCollectionGetOK struct {
 	Payload *models.IscsiServiceResponse
 }
 
+// IsSuccess returns true when this iscsi service collection get o k response has a 2xx status code
+func (o *IscsiServiceCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this iscsi service collection get o k response has a 3xx status code
+func (o *IscsiServiceCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this iscsi service collection get o k response has a 4xx status code
+func (o *IscsiServiceCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this iscsi service collection get o k response has a 5xx status code
+func (o *IscsiServiceCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this iscsi service collection get o k response a status code equal to that given
+func (o *IscsiServiceCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IscsiServiceCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/iscsi/services][%d] iscsiServiceCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IscsiServiceCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/iscsi/services][%d] iscsiServiceCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IscsiServiceCollectionGetOK) GetPayload() *models.IscsiServiceResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewIscsiServiceCollectionGetDefault(code int) *IscsiServiceCollectionGetDef
 	}
 }
 
-/* IscsiServiceCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+IscsiServiceCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *IscsiServiceCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this iscsi service collection get default response has a 2xx status code
+func (o *IscsiServiceCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this iscsi service collection get default response has a 3xx status code
+func (o *IscsiServiceCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this iscsi service collection get default response has a 4xx status code
+func (o *IscsiServiceCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this iscsi service collection get default response has a 5xx status code
+func (o *IscsiServiceCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this iscsi service collection get default response a status code equal to that given
+func (o *IscsiServiceCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IscsiServiceCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/iscsi/services][%d] iscsi_service_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IscsiServiceCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/iscsi/services][%d] iscsi_service_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IscsiServiceCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

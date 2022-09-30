@@ -46,7 +46,8 @@ func NewS3GroupCreateCreated() *S3GroupCreateCreated {
 	return &S3GroupCreateCreated{}
 }
 
-/* S3GroupCreateCreated describes a response with status code 201, with default header values.
+/*
+S3GroupCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type S3GroupCreateCreated struct {
 	Payload *models.S3GroupResponse
 }
 
+// IsSuccess returns true when this s3 group create created response has a 2xx status code
+func (o *S3GroupCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 group create created response has a 3xx status code
+func (o *S3GroupCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 group create created response has a 4xx status code
+func (o *S3GroupCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 group create created response has a 5xx status code
+func (o *S3GroupCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 group create created response a status code equal to that given
+func (o *S3GroupCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *S3GroupCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3GroupCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *S3GroupCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3GroupCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *S3GroupCreateCreated) GetPayload() *models.S3GroupResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewS3GroupCreateDefault(code int) *S3GroupCreateDefault {
 	}
 }
 
-/* S3GroupCreateDefault describes a response with status code -1, with default header values.
+/*
+	S3GroupCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405896   | Users list cannot be empty.
@@ -96,7 +129,6 @@ func NewS3GroupCreateDefault(code int) *S3GroupCreateDefault {
 | 92405937   | Policy name specified in the policy list do not exist for SVM.
 | 92405942   | Group name already exists for SVM.
 | 92405966   | User name is present more than once in the users field.
-
 */
 type S3GroupCreateDefault struct {
 	_statusCode int
@@ -109,9 +141,39 @@ func (o *S3GroupCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 group create default response has a 2xx status code
+func (o *S3GroupCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 group create default response has a 3xx status code
+func (o *S3GroupCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 group create default response has a 4xx status code
+func (o *S3GroupCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 group create default response has a 5xx status code
+func (o *S3GroupCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 group create default response a status code equal to that given
+func (o *S3GroupCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3GroupCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3_group_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3GroupCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/groups][%d] s3_group_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3GroupCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

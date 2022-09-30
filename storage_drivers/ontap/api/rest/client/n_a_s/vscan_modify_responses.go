@@ -46,14 +46,44 @@ func NewVscanModifyOK() *VscanModifyOK {
 	return &VscanModifyOK{}
 }
 
-/* VscanModifyOK describes a response with status code 200, with default header values.
+/*
+VscanModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type VscanModifyOK struct {
 }
 
+// IsSuccess returns true when this vscan modify o k response has a 2xx status code
+func (o *VscanModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan modify o k response has a 3xx status code
+func (o *VscanModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan modify o k response has a 4xx status code
+func (o *VscanModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan modify o k response has a 5xx status code
+func (o *VscanModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan modify o k response a status code equal to that given
+func (o *VscanModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscanModifyOK ", 200)
+}
+
+func (o *VscanModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscanModifyOK ", 200)
 }
 
@@ -69,15 +99,16 @@ func NewVscanModifyDefault(code int) *VscanModifyDefault {
 	}
 }
 
-/* VscanModifyDefault describes a response with status code -1, with default header values.
+/*
+	VscanModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 10027015   | Attempting to enable a Vscan but no active scanner-pool exists for the specified SVM
 | 10027011   | Attempting to enable a Vscan for an SVM for which no CIFS server exists
 | 10027023   | Attempting to enable a Vscan for an SVM for which no active Vscan On-Access policy exists
-
 */
 type VscanModifyDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *VscanModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan modify default response has a 2xx status code
+func (o *VscanModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan modify default response has a 3xx status code
+func (o *VscanModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan modify default response has a 4xx status code
+func (o *VscanModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan modify default response has a 5xx status code
+func (o *VscanModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan modify default response a status code equal to that given
+func (o *VscanModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscan_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}][%d] vscan_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

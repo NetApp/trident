@@ -46,7 +46,8 @@ func NewFcPortGetOK() *FcPortGetOK {
 	return &FcPortGetOK{}
 }
 
-/* FcPortGetOK describes a response with status code 200, with default header values.
+/*
+FcPortGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FcPortGetOK struct {
 	Payload *models.FcPort
 }
 
+// IsSuccess returns true when this fc port get o k response has a 2xx status code
+func (o *FcPortGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fc port get o k response has a 3xx status code
+func (o *FcPortGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fc port get o k response has a 4xx status code
+func (o *FcPortGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fc port get o k response has a 5xx status code
+func (o *FcPortGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fc port get o k response a status code equal to that given
+func (o *FcPortGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcPortGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fcPortGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FcPortGetOK) String() string {
+	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fcPortGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FcPortGetOK) GetPayload() *models.FcPort {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFcPortGetDefault(code int) *FcPortGetDefault {
 	}
 }
 
-/* FcPortGetDefault describes a response with status code -1, with default header values.
+/*
+FcPortGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FcPortGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fc port get default response has a 2xx status code
+func (o *FcPortGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fc port get default response has a 3xx status code
+func (o *FcPortGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fc port get default response has a 4xx status code
+func (o *FcPortGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fc port get default response has a 5xx status code
+func (o *FcPortGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fc port get default response a status code equal to that given
+func (o *FcPortGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcPortGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fc_port_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcPortGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/fc/ports/{uuid}][%d] fc_port_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcPortGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

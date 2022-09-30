@@ -53,10 +53,12 @@ func NewCoredumpGetParamsWithHTTPClient(client *http.Client) *CoredumpGetParams 
 	}
 }
 
-/* CoredumpGetParams contains all the parameters to send to the API endpoint
-   for the coredump get operation.
+/*
+CoredumpGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the coredump get operation.
+
+	Typically these are written to a http.Request.
 */
 type CoredumpGetParams struct {
 

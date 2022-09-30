@@ -55,10 +55,12 @@ func NewAzureKeyVaultRekeyExternalParamsWithHTTPClient(client *http.Client) *Azu
 	}
 }
 
-/* AzureKeyVaultRekeyExternalParams contains all the parameters to send to the API endpoint
-   for the azure key vault rekey external operation.
+/*
+AzureKeyVaultRekeyExternalParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the azure key vault rekey external operation.
+
+	Typically these are written to a http.Request.
 */
 type AzureKeyVaultRekeyExternalParams struct {
 

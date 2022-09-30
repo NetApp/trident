@@ -55,10 +55,12 @@ func NewCifsServiceCreateParamsWithHTTPClient(client *http.Client) *CifsServiceC
 	}
 }
 
-/* CifsServiceCreateParams contains all the parameters to send to the API endpoint
-   for the cifs service create operation.
+/*
+CifsServiceCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs service create operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsServiceCreateParams struct {
 

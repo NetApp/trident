@@ -54,10 +54,12 @@ func NewAutoUpdateInfoModifyParamsWithHTTPClient(client *http.Client) *AutoUpdat
 	}
 }
 
-/* AutoUpdateInfoModifyParams contains all the parameters to send to the API endpoint
-   for the auto update info modify operation.
+/*
+AutoUpdateInfoModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the auto update info modify operation.
+
+	Typically these are written to a http.Request.
 */
 type AutoUpdateInfoModifyParams struct {
 

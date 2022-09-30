@@ -46,7 +46,8 @@ func NewApplicationTemplateCollectionGetOK() *ApplicationTemplateCollectionGetOK
 	return &ApplicationTemplateCollectionGetOK{}
 }
 
-/* ApplicationTemplateCollectionGetOK describes a response with status code 200, with default header values.
+/*
+ApplicationTemplateCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ApplicationTemplateCollectionGetOK struct {
 	Payload *models.ApplicationTemplateResponse
 }
 
+// IsSuccess returns true when this application template collection get o k response has a 2xx status code
+func (o *ApplicationTemplateCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application template collection get o k response has a 3xx status code
+func (o *ApplicationTemplateCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application template collection get o k response has a 4xx status code
+func (o *ApplicationTemplateCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application template collection get o k response has a 5xx status code
+func (o *ApplicationTemplateCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application template collection get o k response a status code equal to that given
+func (o *ApplicationTemplateCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ApplicationTemplateCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /application/templates][%d] applicationTemplateCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ApplicationTemplateCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /application/templates][%d] applicationTemplateCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ApplicationTemplateCollectionGetOK) GetPayload() *models.ApplicationTemplateResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewApplicationTemplateCollectionGetDefault(code int) *ApplicationTemplateCo
 	}
 }
 
-/* ApplicationTemplateCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+ApplicationTemplateCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ApplicationTemplateCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this application template collection get default response has a 2xx status code
+func (o *ApplicationTemplateCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this application template collection get default response has a 3xx status code
+func (o *ApplicationTemplateCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this application template collection get default response has a 4xx status code
+func (o *ApplicationTemplateCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this application template collection get default response has a 5xx status code
+func (o *ApplicationTemplateCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this application template collection get default response a status code equal to that given
+func (o *ApplicationTemplateCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ApplicationTemplateCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /application/templates][%d] application_template_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ApplicationTemplateCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /application/templates][%d] application_template_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ApplicationTemplateCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

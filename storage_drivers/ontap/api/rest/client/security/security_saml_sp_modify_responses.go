@@ -46,14 +46,44 @@ func NewSecuritySamlSpModifyOK() *SecuritySamlSpModifyOK {
 	return &SecuritySamlSpModifyOK{}
 }
 
-/* SecuritySamlSpModifyOK describes a response with status code 200, with default header values.
+/*
+SecuritySamlSpModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SecuritySamlSpModifyOK struct {
 }
 
+// IsSuccess returns true when this security saml sp modify o k response has a 2xx status code
+func (o *SecuritySamlSpModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security saml sp modify o k response has a 3xx status code
+func (o *SecuritySamlSpModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security saml sp modify o k response has a 4xx status code
+func (o *SecuritySamlSpModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security saml sp modify o k response has a 5xx status code
+func (o *SecuritySamlSpModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security saml sp modify o k response a status code equal to that given
+func (o *SecuritySamlSpModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecuritySamlSpModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] securitySamlSpModifyOK ", 200)
+}
+
+func (o *SecuritySamlSpModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] securitySamlSpModifyOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewSecuritySamlSpModifyDefault(code int) *SecuritySamlSpModifyDefault {
 	}
 }
 
-/* SecuritySamlSpModifyDefault describes a response with status code -1, with default header values.
+/*
+	SecuritySamlSpModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 12320791 | SAML can only be disabled using the console or a SAML-authenticated application. |
-
 */
 type SecuritySamlSpModifyDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *SecuritySamlSpModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security saml sp modify default response has a 2xx status code
+func (o *SecuritySamlSpModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security saml sp modify default response has a 3xx status code
+func (o *SecuritySamlSpModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security saml sp modify default response has a 4xx status code
+func (o *SecuritySamlSpModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security saml sp modify default response has a 5xx status code
+func (o *SecuritySamlSpModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security saml sp modify default response a status code equal to that given
+func (o *SecuritySamlSpModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecuritySamlSpModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] security_saml_sp_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecuritySamlSpModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/saml-sp][%d] security_saml_sp_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecuritySamlSpModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

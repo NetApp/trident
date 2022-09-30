@@ -55,10 +55,12 @@ func NewEmsFilterCreateParamsWithHTTPClient(client *http.Client) *EmsFilterCreat
 	}
 }
 
-/* EmsFilterCreateParams contains all the parameters to send to the API endpoint
-   for the ems filter create operation.
+/*
+EmsFilterCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ems filter create operation.
+
+	Typically these are written to a http.Request.
 */
 type EmsFilterCreateParams struct {
 

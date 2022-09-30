@@ -46,14 +46,44 @@ func NewNvmeServiceDeleteOK() *NvmeServiceDeleteOK {
 	return &NvmeServiceDeleteOK{}
 }
 
-/* NvmeServiceDeleteOK describes a response with status code 200, with default header values.
+/*
+NvmeServiceDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NvmeServiceDeleteOK struct {
 }
 
+// IsSuccess returns true when this nvme service delete o k response has a 2xx status code
+func (o *NvmeServiceDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme service delete o k response has a 3xx status code
+func (o *NvmeServiceDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme service delete o k response has a 4xx status code
+func (o *NvmeServiceDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme service delete o k response has a 5xx status code
+func (o *NvmeServiceDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme service delete o k response a status code equal to that given
+func (o *NvmeServiceDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeServiceDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceDeleteOK ", 200)
+}
+
+func (o *NvmeServiceDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvmeServiceDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewNvmeServiceDeleteDefault(code int) *NvmeServiceDeleteDefault {
 	}
 }
 
-/* NvmeServiceDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NvmeServiceDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | The supplied SVM does not exist. |
@@ -79,7 +111,6 @@ func NewNvmeServiceDeleteDefault(code int) *NvmeServiceDeleteDefault {
 | 72089653 | There are subsystems associated with the NVMe service SVM. The subsystems must be removed before deleting the NVMe service. |
 | 72089654 | There are NVMe-oF LIFs associated with the NVMe service SVM. The LIFs must be removed before deleting the NVMe service. |
 | 72090028 | The NVMe service is enabled. The NVMe service must be disabled before it can be deleted. |
-
 */
 type NvmeServiceDeleteDefault struct {
 	_statusCode int
@@ -92,9 +123,39 @@ func (o *NvmeServiceDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme service delete default response has a 2xx status code
+func (o *NvmeServiceDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme service delete default response has a 3xx status code
+func (o *NvmeServiceDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme service delete default response has a 4xx status code
+func (o *NvmeServiceDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme service delete default response has a 5xx status code
+func (o *NvmeServiceDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme service delete default response a status code equal to that given
+func (o *NvmeServiceDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeServiceDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvme_service_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeServiceDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/nvme/services/{svm.uuid}][%d] nvme_service_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeServiceDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

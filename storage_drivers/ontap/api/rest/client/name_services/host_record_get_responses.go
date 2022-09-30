@@ -46,7 +46,8 @@ func NewHostRecordGetOK() *HostRecordGetOK {
 	return &HostRecordGetOK{}
 }
 
-/* HostRecordGetOK describes a response with status code 200, with default header values.
+/*
+HostRecordGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type HostRecordGetOK struct {
 	Payload *models.HostRecord
 }
 
+// IsSuccess returns true when this host record get o k response has a 2xx status code
+func (o *HostRecordGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this host record get o k response has a 3xx status code
+func (o *HostRecordGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this host record get o k response has a 4xx status code
+func (o *HostRecordGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this host record get o k response has a 5xx status code
+func (o *HostRecordGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this host record get o k response a status code equal to that given
+func (o *HostRecordGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *HostRecordGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] hostRecordGetOK  %+v", 200, o.Payload)
 }
+
+func (o *HostRecordGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] hostRecordGetOK  %+v", 200, o.Payload)
+}
+
 func (o *HostRecordGetOK) GetPayload() *models.HostRecord {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewHostRecordGetDefault(code int) *HostRecordGetDefault {
 	}
 }
 
-/* HostRecordGetDefault describes a response with status code -1, with default header values.
+/*
+	HostRecordGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 |  8912900   | Invalid IP address. |
-
 */
 type HostRecordGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *HostRecordGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this host record get default response has a 2xx status code
+func (o *HostRecordGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this host record get default response has a 3xx status code
+func (o *HostRecordGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this host record get default response has a 4xx status code
+func (o *HostRecordGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this host record get default response has a 5xx status code
+func (o *HostRecordGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this host record get default response a status code equal to that given
+func (o *HostRecordGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *HostRecordGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] host_record_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *HostRecordGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/host-record/{svm.uuid}/{host}][%d] host_record_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *HostRecordGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

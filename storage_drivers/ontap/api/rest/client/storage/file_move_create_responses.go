@@ -46,14 +46,44 @@ func NewFileMoveCreateCreated() *FileMoveCreateCreated {
 	return &FileMoveCreateCreated{}
 }
 
-/* FileMoveCreateCreated describes a response with status code 201, with default header values.
+/*
+FileMoveCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type FileMoveCreateCreated struct {
 }
 
+// IsSuccess returns true when this file move create created response has a 2xx status code
+func (o *FileMoveCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file move create created response has a 3xx status code
+func (o *FileMoveCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file move create created response has a 4xx status code
+func (o *FileMoveCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file move create created response has a 5xx status code
+func (o *FileMoveCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file move create created response a status code equal to that given
+func (o *FileMoveCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *FileMoveCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /storage/file/moves][%d] fileMoveCreateCreated ", 201)
+}
+
+func (o *FileMoveCreateCreated) String() string {
 	return fmt.Sprintf("[POST /storage/file/moves][%d] fileMoveCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewFileMoveCreateDefault(code int) *FileMoveCreateDefault {
 	}
 }
 
-/* FileMoveCreateDefault describes a response with status code -1, with default header values.
+/*
+	FileMoveCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 7012352 | File locations are inconsistent. All files must be on the same volume. |
@@ -97,7 +129,6 @@ func NewFileMoveCreateDefault(code int) *FileMoveCreateDefault {
 | 144180201 | Destination constituent not properly configured. |
 | 144180206 | File movement with automatic destination constituent selection only supported on FlexGroup volumes with more than one constituent. |
 | 196608143 | Cannot start the operation. The volume is undergoing a secure purge operation. |
-
 */
 type FileMoveCreateDefault struct {
 	_statusCode int
@@ -110,9 +141,39 @@ func (o *FileMoveCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file move create default response has a 2xx status code
+func (o *FileMoveCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file move create default response has a 3xx status code
+func (o *FileMoveCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file move create default response has a 4xx status code
+func (o *FileMoveCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file move create default response has a 5xx status code
+func (o *FileMoveCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file move create default response a status code equal to that given
+func (o *FileMoveCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileMoveCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/file/moves][%d] file_move_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileMoveCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/file/moves][%d] file_move_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileMoveCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

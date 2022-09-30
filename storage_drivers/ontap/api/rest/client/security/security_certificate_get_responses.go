@@ -46,7 +46,8 @@ func NewSecurityCertificateGetOK() *SecurityCertificateGetOK {
 	return &SecurityCertificateGetOK{}
 }
 
-/* SecurityCertificateGetOK describes a response with status code 200, with default header values.
+/*
+SecurityCertificateGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SecurityCertificateGetOK struct {
 	Payload *models.SecurityCertificate
 }
 
+// IsSuccess returns true when this security certificate get o k response has a 2xx status code
+func (o *SecurityCertificateGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security certificate get o k response has a 3xx status code
+func (o *SecurityCertificateGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security certificate get o k response has a 4xx status code
+func (o *SecurityCertificateGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security certificate get o k response has a 5xx status code
+func (o *SecurityCertificateGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security certificate get o k response a status code equal to that given
+func (o *SecurityCertificateGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityCertificateGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/certificates/{uuid}][%d] securityCertificateGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SecurityCertificateGetOK) String() string {
+	return fmt.Sprintf("[GET /security/certificates/{uuid}][%d] securityCertificateGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SecurityCertificateGetOK) GetPayload() *models.SecurityCertificate {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSecurityCertificateGetDefault(code int) *SecurityCertificateGetDefault {
 	}
 }
 
-/* SecurityCertificateGetDefault describes a response with status code -1, with default header values.
+/*
+SecurityCertificateGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SecurityCertificateGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security certificate get default response has a 2xx status code
+func (o *SecurityCertificateGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security certificate get default response has a 3xx status code
+func (o *SecurityCertificateGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security certificate get default response has a 4xx status code
+func (o *SecurityCertificateGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security certificate get default response has a 5xx status code
+func (o *SecurityCertificateGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security certificate get default response a status code equal to that given
+func (o *SecurityCertificateGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityCertificateGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/certificates/{uuid}][%d] security_certificate_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityCertificateGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/certificates/{uuid}][%d] security_certificate_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityCertificateGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewNameMappingDeleteOK() *NameMappingDeleteOK {
 	return &NameMappingDeleteOK{}
 }
 
-/* NameMappingDeleteOK describes a response with status code 200, with default header values.
+/*
+NameMappingDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NameMappingDeleteOK struct {
 }
 
+// IsSuccess returns true when this name mapping delete o k response has a 2xx status code
+func (o *NameMappingDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this name mapping delete o k response has a 3xx status code
+func (o *NameMappingDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this name mapping delete o k response has a 4xx status code
+func (o *NameMappingDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this name mapping delete o k response has a 5xx status code
+func (o *NameMappingDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this name mapping delete o k response a status code equal to that given
+func (o *NameMappingDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NameMappingDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingDeleteOK ", 200)
+}
+
+func (o *NameMappingDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewNameMappingDeleteDefault(code int) *NameMappingDeleteDefault {
 	}
 }
 
-/* NameMappingDeleteDefault describes a response with status code -1, with default header values.
+/*
+NameMappingDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *NameMappingDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this name mapping delete default response has a 2xx status code
+func (o *NameMappingDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this name mapping delete default response has a 3xx status code
+func (o *NameMappingDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this name mapping delete default response has a 4xx status code
+func (o *NameMappingDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this name mapping delete default response has a 5xx status code
+func (o *NameMappingDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this name mapping delete default response a status code equal to that given
+func (o *NameMappingDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NameMappingDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NameMappingDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NameMappingDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

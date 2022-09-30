@@ -46,7 +46,8 @@ func NewIpspaceGetOK() *IpspaceGetOK {
 	return &IpspaceGetOK{}
 }
 
-/* IpspaceGetOK describes a response with status code 200, with default header values.
+/*
+IpspaceGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IpspaceGetOK struct {
 	Payload *models.Ipspace
 }
 
+// IsSuccess returns true when this ipspace get o k response has a 2xx status code
+func (o *IpspaceGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipspace get o k response has a 3xx status code
+func (o *IpspaceGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipspace get o k response has a 4xx status code
+func (o *IpspaceGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipspace get o k response has a 5xx status code
+func (o *IpspaceGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipspace get o k response a status code equal to that given
+func (o *IpspaceGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IpspaceGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ipspaces/{uuid}][%d] ipspaceGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IpspaceGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ipspaces/{uuid}][%d] ipspaceGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IpspaceGetOK) GetPayload() *models.Ipspace {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewIpspaceGetDefault(code int) *IpspaceGetDefault {
 	}
 }
 
-/* IpspaceGetDefault describes a response with status code -1, with default header values.
+/*
+IpspaceGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *IpspaceGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ipspace get default response has a 2xx status code
+func (o *IpspaceGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipspace get default response has a 3xx status code
+func (o *IpspaceGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipspace get default response has a 4xx status code
+func (o *IpspaceGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipspace get default response has a 5xx status code
+func (o *IpspaceGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipspace get default response a status code equal to that given
+func (o *IpspaceGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IpspaceGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ipspaces/{uuid}][%d] ipspace_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IpspaceGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ipspaces/{uuid}][%d] ipspace_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IpspaceGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewNetgroupFileDeleteOK() *NetgroupFileDeleteOK {
 	return &NetgroupFileDeleteOK{}
 }
 
-/* NetgroupFileDeleteOK describes a response with status code 200, with default header values.
+/*
+NetgroupFileDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NetgroupFileDeleteOK struct {
 }
 
+// IsSuccess returns true when this netgroup file delete o k response has a 2xx status code
+func (o *NetgroupFileDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this netgroup file delete o k response has a 3xx status code
+func (o *NetgroupFileDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this netgroup file delete o k response has a 4xx status code
+func (o *NetgroupFileDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this netgroup file delete o k response has a 5xx status code
+func (o *NetgroupFileDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this netgroup file delete o k response a status code equal to that given
+func (o *NetgroupFileDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetgroupFileDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileDeleteOK ", 200)
+}
+
+func (o *NetgroupFileDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewNetgroupFileDeleteDefault(code int) *NetgroupFileDeleteDefault {
 	}
 }
 
-/* NetgroupFileDeleteDefault describes a response with status code -1, with default header values.
+/*
+NetgroupFileDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *NetgroupFileDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this netgroup file delete default response has a 2xx status code
+func (o *NetgroupFileDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this netgroup file delete default response has a 3xx status code
+func (o *NetgroupFileDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this netgroup file delete default response has a 4xx status code
+func (o *NetgroupFileDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this netgroup file delete default response has a 5xx status code
+func (o *NetgroupFileDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this netgroup file delete default response a status code equal to that given
+func (o *NetgroupFileDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetgroupFileDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetgroupFileDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetgroupFileDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

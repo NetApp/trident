@@ -53,10 +53,12 @@ func NewNdmpPasswordGetParamsWithHTTPClient(client *http.Client) *NdmpPasswordGe
 	}
 }
 
-/* NdmpPasswordGetParams contains all the parameters to send to the API endpoint
-   for the ndmp password get operation.
+/*
+NdmpPasswordGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ndmp password get operation.
+
+	Typically these are written to a http.Request.
 */
 type NdmpPasswordGetParams struct {
 

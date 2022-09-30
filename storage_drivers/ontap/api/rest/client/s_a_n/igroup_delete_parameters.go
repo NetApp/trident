@@ -53,10 +53,12 @@ func NewIgroupDeleteParamsWithHTTPClient(client *http.Client) *IgroupDeleteParam
 	}
 }
 
-/* IgroupDeleteParams contains all the parameters to send to the API endpoint
-   for the igroup delete operation.
+/*
+IgroupDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the igroup delete operation.
+
+	Typically these are written to a http.Request.
 */
 type IgroupDeleteParams struct {
 

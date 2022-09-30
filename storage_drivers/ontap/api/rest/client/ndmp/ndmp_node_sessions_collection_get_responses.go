@@ -46,7 +46,8 @@ func NewNdmpNodeSessionsCollectionGetOK() *NdmpNodeSessionsCollectionGetOK {
 	return &NdmpNodeSessionsCollectionGetOK{}
 }
 
-/* NdmpNodeSessionsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NdmpNodeSessionsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NdmpNodeSessionsCollectionGetOK struct {
 	Payload *models.NdmpSessionResponse
 }
 
+// IsSuccess returns true when this ndmp node sessions collection get o k response has a 2xx status code
+func (o *NdmpNodeSessionsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ndmp node sessions collection get o k response has a 3xx status code
+func (o *NdmpNodeSessionsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ndmp node sessions collection get o k response has a 4xx status code
+func (o *NdmpNodeSessionsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ndmp node sessions collection get o k response has a 5xx status code
+func (o *NdmpNodeSessionsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ndmp node sessions collection get o k response a status code equal to that given
+func (o *NdmpNodeSessionsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NdmpNodeSessionsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmpNodeSessionsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NdmpNodeSessionsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmpNodeSessionsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NdmpNodeSessionsCollectionGetOK) GetPayload() *models.NdmpSessionResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewNdmpNodeSessionsCollectionGetDefault(code int) *NdmpNodeSessionsCollecti
 	}
 }
 
-/* NdmpNodeSessionsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	NdmpNodeSessionsCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 68812805    | Failed to obtain the NDMP mode of the operation.|
-
 */
 type NdmpNodeSessionsCollectionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *NdmpNodeSessionsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ndmp node sessions collection get default response has a 2xx status code
+func (o *NdmpNodeSessionsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ndmp node sessions collection get default response has a 3xx status code
+func (o *NdmpNodeSessionsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ndmp node sessions collection get default response has a 4xx status code
+func (o *NdmpNodeSessionsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ndmp node sessions collection get default response has a 5xx status code
+func (o *NdmpNodeSessionsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ndmp node sessions collection get default response a status code equal to that given
+func (o *NdmpNodeSessionsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NdmpNodeSessionsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmp_node_sessions_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NdmpNodeSessionsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/sessions][%d] ndmp_node_sessions_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NdmpNodeSessionsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

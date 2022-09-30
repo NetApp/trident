@@ -46,7 +46,8 @@ func NewLdapSchemaCreateCreated() *LdapSchemaCreateCreated {
 	return &LdapSchemaCreateCreated{}
 }
 
-/* LdapSchemaCreateCreated describes a response with status code 201, with default header values.
+/*
+LdapSchemaCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type LdapSchemaCreateCreated struct {
 	Payload *models.LdapSchema
 }
 
+// IsSuccess returns true when this ldap schema create created response has a 2xx status code
+func (o *LdapSchemaCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ldap schema create created response has a 3xx status code
+func (o *LdapSchemaCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ldap schema create created response has a 4xx status code
+func (o *LdapSchemaCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ldap schema create created response has a 5xx status code
+func (o *LdapSchemaCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ldap schema create created response a status code equal to that given
+func (o *LdapSchemaCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *LdapSchemaCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /name-services/ldap-schemas][%d] ldapSchemaCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *LdapSchemaCreateCreated) String() string {
+	return fmt.Sprintf("[POST /name-services/ldap-schemas][%d] ldapSchemaCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *LdapSchemaCreateCreated) GetPayload() *models.LdapSchema {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewLdapSchemaCreateDefault(code int) *LdapSchemaCreateDefault {
 	}
 }
 
-/* LdapSchemaCreateDefault describes a response with status code -1, with default header values.
+/*
+	LdapSchemaCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name. |
 | 4915221    | LDAP schema name in use in data SVM. |
 | 4915222    | LDAP schema name in use in admin SVM. |
-
 */
 type LdapSchemaCreateDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *LdapSchemaCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ldap schema create default response has a 2xx status code
+func (o *LdapSchemaCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ldap schema create default response has a 3xx status code
+func (o *LdapSchemaCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ldap schema create default response has a 4xx status code
+func (o *LdapSchemaCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ldap schema create default response has a 5xx status code
+func (o *LdapSchemaCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ldap schema create default response a status code equal to that given
+func (o *LdapSchemaCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LdapSchemaCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /name-services/ldap-schemas][%d] ldap_schema_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LdapSchemaCreateDefault) String() string {
+	return fmt.Sprintf("[POST /name-services/ldap-schemas][%d] ldap_schema_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LdapSchemaCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

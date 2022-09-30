@@ -52,7 +52,8 @@ func NewAggregateModifyOK() *AggregateModifyOK {
 	return &AggregateModifyOK{}
 }
 
-/* AggregateModifyOK describes a response with status code 200, with default header values.
+/*
+AggregateModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -60,9 +61,39 @@ type AggregateModifyOK struct {
 	Payload *models.AggregatePatch
 }
 
+// IsSuccess returns true when this aggregate modify o k response has a 2xx status code
+func (o *AggregateModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aggregate modify o k response has a 3xx status code
+func (o *AggregateModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aggregate modify o k response has a 4xx status code
+func (o *AggregateModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aggregate modify o k response has a 5xx status code
+func (o *AggregateModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aggregate modify o k response a status code equal to that given
+func (o *AggregateModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AggregateModifyOK) Error() string {
 	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyOK  %+v", 200, o.Payload)
 }
+
+func (o *AggregateModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyOK  %+v", 200, o.Payload)
+}
+
 func (o *AggregateModifyOK) GetPayload() *models.AggregatePatch {
 	return o.Payload
 }
@@ -84,7 +115,8 @@ func NewAggregateModifyAccepted() *AggregateModifyAccepted {
 	return &AggregateModifyAccepted{}
 }
 
-/* AggregateModifyAccepted describes a response with status code 202, with default header values.
+/*
+AggregateModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -92,9 +124,39 @@ type AggregateModifyAccepted struct {
 	Payload *models.AggregatePatch
 }
 
+// IsSuccess returns true when this aggregate modify accepted response has a 2xx status code
+func (o *AggregateModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aggregate modify accepted response has a 3xx status code
+func (o *AggregateModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aggregate modify accepted response has a 4xx status code
+func (o *AggregateModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aggregate modify accepted response has a 5xx status code
+func (o *AggregateModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aggregate modify accepted response a status code equal to that given
+func (o *AggregateModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *AggregateModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *AggregateModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *AggregateModifyAccepted) GetPayload() *models.AggregatePatch {
 	return o.Payload
 }
@@ -118,9 +180,11 @@ func NewAggregateModifyDefault(code int) *AggregateModifyDefault {
 	}
 }
 
-/* AggregateModifyDefault describes a response with status code -1, with default header values.
+/*
+	AggregateModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262247 | The value is invalid for the field. |
@@ -229,7 +293,6 @@ func NewAggregateModifyDefault(code int) *AggregateModifyDefault {
 | 26542121 | A MetroCluster disaster recovery operation is in progress. When the recovery operation completes, try the operation again. |
 | 196608334 | Failed to modify the aggregate because it contains NAE volumes. |
 | 196608335 | Failed to modify the aggregate because it contains non-encrypted volumes. |
-
 */
 type AggregateModifyDefault struct {
 	_statusCode int
@@ -242,9 +305,39 @@ func (o *AggregateModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this aggregate modify default response has a 2xx status code
+func (o *AggregateModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this aggregate modify default response has a 3xx status code
+func (o *AggregateModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this aggregate modify default response has a 4xx status code
+func (o *AggregateModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this aggregate modify default response has a 5xx status code
+func (o *AggregateModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this aggregate modify default response a status code equal to that given
+func (o *AggregateModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AggregateModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregate_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AggregateModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregate_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AggregateModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

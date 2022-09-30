@@ -53,10 +53,12 @@ func NewQosPolicyCollectionGetParamsWithHTTPClient(client *http.Client) *QosPoli
 	}
 }
 
-/* QosPolicyCollectionGetParams contains all the parameters to send to the API endpoint
-   for the qos policy collection get operation.
+/*
+QosPolicyCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the qos policy collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type QosPolicyCollectionGetParams struct {
 

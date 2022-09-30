@@ -46,14 +46,44 @@ func NewFcInterfaceDeleteOK() *FcInterfaceDeleteOK {
 	return &FcInterfaceDeleteOK{}
 }
 
-/* FcInterfaceDeleteOK describes a response with status code 200, with default header values.
+/*
+FcInterfaceDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FcInterfaceDeleteOK struct {
 }
 
+// IsSuccess returns true when this fc interface delete o k response has a 2xx status code
+func (o *FcInterfaceDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fc interface delete o k response has a 3xx status code
+func (o *FcInterfaceDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fc interface delete o k response has a 4xx status code
+func (o *FcInterfaceDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fc interface delete o k response has a 5xx status code
+func (o *FcInterfaceDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fc interface delete o k response a status code equal to that given
+func (o *FcInterfaceDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcInterfaceDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/fc/interfaces/{uuid}][%d] fcInterfaceDeleteOK ", 200)
+}
+
+func (o *FcInterfaceDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/fc/interfaces/{uuid}][%d] fcInterfaceDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewFcInterfaceDeleteDefault(code int) *FcInterfaceDeleteDefault {
 	}
 }
 
-/* FcInterfaceDeleteDefault describes a response with status code -1, with default header values.
+/*
+	FcInterfaceDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 53280992 | The FC interface could not be deleted because it is enabled. |
-
 */
 type FcInterfaceDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *FcInterfaceDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fc interface delete default response has a 2xx status code
+func (o *FcInterfaceDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fc interface delete default response has a 3xx status code
+func (o *FcInterfaceDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fc interface delete default response has a 4xx status code
+func (o *FcInterfaceDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fc interface delete default response has a 5xx status code
+func (o *FcInterfaceDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fc interface delete default response a status code equal to that given
+func (o *FcInterfaceDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcInterfaceDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /network/fc/interfaces/{uuid}][%d] fc_interface_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcInterfaceDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /network/fc/interfaces/{uuid}][%d] fc_interface_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcInterfaceDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewAggregateDeleteParamsWithHTTPClient(client *http.Client) *AggregateDelet
 	}
 }
 
-/* AggregateDeleteParams contains all the parameters to send to the API endpoint
-   for the aggregate delete operation.
+/*
+AggregateDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the aggregate delete operation.
+
+	Typically these are written to a http.Request.
 */
 type AggregateDeleteParams struct {
 

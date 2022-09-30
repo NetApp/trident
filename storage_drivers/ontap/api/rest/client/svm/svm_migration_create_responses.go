@@ -46,7 +46,8 @@ func NewSvmMigrationCreateAccepted() *SvmMigrationCreateAccepted {
 	return &SvmMigrationCreateAccepted{}
 }
 
-/* SvmMigrationCreateAccepted describes a response with status code 202, with default header values.
+/*
+SvmMigrationCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SvmMigrationCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this svm migration create accepted response has a 2xx status code
+func (o *SvmMigrationCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm migration create accepted response has a 3xx status code
+func (o *SvmMigrationCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm migration create accepted response has a 4xx status code
+func (o *SvmMigrationCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm migration create accepted response has a 5xx status code
+func (o *SvmMigrationCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm migration create accepted response a status code equal to that given
+func (o *SvmMigrationCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SvmMigrationCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /svm/migrations][%d] svmMigrationCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SvmMigrationCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /svm/migrations][%d] svmMigrationCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SvmMigrationCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewSvmMigrationCreateDefault(code int) *SvmMigrationCreateDefault {
 	}
 }
 
-/* SvmMigrationCreateDefault describes a response with status code -1, with default header values.
+/*
+	SvmMigrationCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262245 | The value provided is invalid. |
 | 13172746 | SVM migration cannot be started. This is a generic code, see the response message for details. |
-
 */
 type SvmMigrationCreateDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *SvmMigrationCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm migration create default response has a 2xx status code
+func (o *SvmMigrationCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm migration create default response has a 3xx status code
+func (o *SvmMigrationCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm migration create default response has a 4xx status code
+func (o *SvmMigrationCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm migration create default response has a 5xx status code
+func (o *SvmMigrationCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm migration create default response a status code equal to that given
+func (o *SvmMigrationCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmMigrationCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /svm/migrations][%d] svm_migration_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmMigrationCreateDefault) String() string {
+	return fmt.Sprintf("[POST /svm/migrations][%d] svm_migration_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmMigrationCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

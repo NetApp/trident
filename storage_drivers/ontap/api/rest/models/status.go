@@ -17,7 +17,6 @@ import (
 
 // Status Status of each of the DNS name server configured for the specified SVM.
 //
-//
 // swagger:model status
 type Status struct {
 

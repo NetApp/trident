@@ -46,7 +46,8 @@ func NewSnapshotPolicyScheduleGetOK() *SnapshotPolicyScheduleGetOK {
 	return &SnapshotPolicyScheduleGetOK{}
 }
 
-/* SnapshotPolicyScheduleGetOK describes a response with status code 200, with default header values.
+/*
+SnapshotPolicyScheduleGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnapshotPolicyScheduleGetOK struct {
 	Payload *models.SnapshotPolicySchedule
 }
 
+// IsSuccess returns true when this snapshot policy schedule get o k response has a 2xx status code
+func (o *SnapshotPolicyScheduleGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot policy schedule get o k response has a 3xx status code
+func (o *SnapshotPolicyScheduleGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot policy schedule get o k response has a 4xx status code
+func (o *SnapshotPolicyScheduleGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot policy schedule get o k response has a 5xx status code
+func (o *SnapshotPolicyScheduleGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot policy schedule get o k response a status code equal to that given
+func (o *SnapshotPolicyScheduleGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnapshotPolicyScheduleGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnapshotPolicyScheduleGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnapshotPolicyScheduleGetOK) GetPayload() *models.SnapshotPolicySchedule {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSnapshotPolicyScheduleGetDefault(code int) *SnapshotPolicyScheduleGetDef
 	}
 }
 
-/* SnapshotPolicyScheduleGetDefault describes a response with status code -1, with default header values.
+/*
+SnapshotPolicyScheduleGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SnapshotPolicyScheduleGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapshot policy schedule get default response has a 2xx status code
+func (o *SnapshotPolicyScheduleGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapshot policy schedule get default response has a 3xx status code
+func (o *SnapshotPolicyScheduleGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapshot policy schedule get default response has a 4xx status code
+func (o *SnapshotPolicyScheduleGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapshot policy schedule get default response has a 5xx status code
+func (o *SnapshotPolicyScheduleGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapshot policy schedule get default response a status code equal to that given
+func (o *SnapshotPolicyScheduleGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapshotPolicyScheduleGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapshotPolicyScheduleGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapshotPolicyScheduleGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

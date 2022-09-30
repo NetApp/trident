@@ -46,7 +46,8 @@ func NewMultiAdminVerifyRequestCollectionGetOK() *MultiAdminVerifyRequestCollect
 	return &MultiAdminVerifyRequestCollectionGetOK{}
 }
 
-/* MultiAdminVerifyRequestCollectionGetOK describes a response with status code 200, with default header values.
+/*
+MultiAdminVerifyRequestCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type MultiAdminVerifyRequestCollectionGetOK struct {
 	Payload *models.MultiAdminVerifyRequestResponse
 }
 
+// IsSuccess returns true when this multi admin verify request collection get o k response has a 2xx status code
+func (o *MultiAdminVerifyRequestCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this multi admin verify request collection get o k response has a 3xx status code
+func (o *MultiAdminVerifyRequestCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this multi admin verify request collection get o k response has a 4xx status code
+func (o *MultiAdminVerifyRequestCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this multi admin verify request collection get o k response has a 5xx status code
+func (o *MultiAdminVerifyRequestCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this multi admin verify request collection get o k response a status code equal to that given
+func (o *MultiAdminVerifyRequestCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MultiAdminVerifyRequestCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/multi-admin-verify/requests][%d] multiAdminVerifyRequestCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *MultiAdminVerifyRequestCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/multi-admin-verify/requests][%d] multiAdminVerifyRequestCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *MultiAdminVerifyRequestCollectionGetOK) GetPayload() *models.MultiAdminVerifyRequestResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewMultiAdminVerifyRequestCollectionGetDefault(code int) *MultiAdminVerifyR
 	}
 }
 
-/* MultiAdminVerifyRequestCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+MultiAdminVerifyRequestCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *MultiAdminVerifyRequestCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this multi admin verify request collection get default response has a 2xx status code
+func (o *MultiAdminVerifyRequestCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this multi admin verify request collection get default response has a 3xx status code
+func (o *MultiAdminVerifyRequestCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this multi admin verify request collection get default response has a 4xx status code
+func (o *MultiAdminVerifyRequestCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this multi admin verify request collection get default response has a 5xx status code
+func (o *MultiAdminVerifyRequestCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this multi admin verify request collection get default response a status code equal to that given
+func (o *MultiAdminVerifyRequestCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MultiAdminVerifyRequestCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/multi-admin-verify/requests][%d] multi_admin_verify_request_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MultiAdminVerifyRequestCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/multi-admin-verify/requests][%d] multi_admin_verify_request_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MultiAdminVerifyRequestCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

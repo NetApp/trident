@@ -46,7 +46,8 @@ func NewNdmpNodeGetOK() *NdmpNodeGetOK {
 	return &NdmpNodeGetOK{}
 }
 
-/* NdmpNodeGetOK describes a response with status code 200, with default header values.
+/*
+NdmpNodeGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NdmpNodeGetOK struct {
 	Payload *models.NdmpNode
 }
 
+// IsSuccess returns true when this ndmp node get o k response has a 2xx status code
+func (o *NdmpNodeGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ndmp node get o k response has a 3xx status code
+func (o *NdmpNodeGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ndmp node get o k response has a 4xx status code
+func (o *NdmpNodeGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ndmp node get o k response has a 5xx status code
+func (o *NdmpNodeGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ndmp node get o k response a status code equal to that given
+func (o *NdmpNodeGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NdmpNodeGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NdmpNodeGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NdmpNodeGetOK) GetPayload() *models.NdmpNode {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewNdmpNodeGetDefault(code int) *NdmpNodeGetDefault {
 	}
 }
 
-/* NdmpNodeGetDefault describes a response with status code -1, with default header values.
+/*
+	NdmpNodeGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 68812801    | Node-scoped operations are not allowed in an SVM-scope.|
 | 68812802    | The UUID is not valid.|
 | 68812804    | Failed to get the node name from the specified node UUID.|
-
 */
 type NdmpNodeGetDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *NdmpNodeGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ndmp node get default response has a 2xx status code
+func (o *NdmpNodeGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ndmp node get default response has a 3xx status code
+func (o *NdmpNodeGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ndmp node get default response has a 4xx status code
+func (o *NdmpNodeGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ndmp node get default response has a 5xx status code
+func (o *NdmpNodeGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ndmp node get default response a status code equal to that given
+func (o *NdmpNodeGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NdmpNodeGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NdmpNodeGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NdmpNodeGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

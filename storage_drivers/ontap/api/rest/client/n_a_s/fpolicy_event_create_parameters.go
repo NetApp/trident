@@ -55,10 +55,12 @@ func NewFpolicyEventCreateParamsWithHTTPClient(client *http.Client) *FpolicyEven
 	}
 }
 
-/* FpolicyEventCreateParams contains all the parameters to send to the API endpoint
-   for the fpolicy event create operation.
+/*
+FpolicyEventCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fpolicy event create operation.
+
+	Typically these are written to a http.Request.
 */
 type FpolicyEventCreateParams struct {
 

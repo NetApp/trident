@@ -46,7 +46,8 @@ func NewNfsCreateCreated() *NfsCreateCreated {
 	return &NfsCreateCreated{}
 }
 
-/* NfsCreateCreated describes a response with status code 201, with default header values.
+/*
+NfsCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type NfsCreateCreated struct {
 	Payload *models.NfsServiceResponse
 }
 
+// IsSuccess returns true when this nfs create created response has a 2xx status code
+func (o *NfsCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nfs create created response has a 3xx status code
+func (o *NfsCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nfs create created response has a 4xx status code
+func (o *NfsCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nfs create created response has a 5xx status code
+func (o *NfsCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nfs create created response a status code equal to that given
+func (o *NfsCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *NfsCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfsCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *NfsCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfsCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *NfsCreateCreated) GetPayload() *models.NfsServiceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewNfsCreateDefault(code int) *NfsCreateDefault {
 	}
 }
 
-/* NfsCreateDefault describes a response with status code -1, with default header values.
+/*
+	NfsCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 3276916    | Vserver is not running |
@@ -93,7 +126,6 @@ func NewNfsCreateDefault(code int) *NfsCreateDefault {
 | 3277069    | Cannot disable TCP because the SnapDiff RPC server is in the \\\"on\\\" state |
 | 3277089    | Attempting to create an NFS server using 64-bits for NFSv3 FSIDs and File IDs on Vserver. Older client software might not work with 64-bit identifiers|
 | 3277099    | Domain name contains invalid characters or it is too short. Allowed characters are: alphabetical characters (A-Za-z), numeric characters (0-9), minus sign (-), and the period (.). The first character must be alphabetical or numeric, last character must not be a minus sign or a period. Minimum supported length: 2 characters, maximum of 256 characters |
-
 */
 type NfsCreateDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *NfsCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nfs create default response has a 2xx status code
+func (o *NfsCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nfs create default response has a 3xx status code
+func (o *NfsCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nfs create default response has a 4xx status code
+func (o *NfsCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nfs create default response has a 5xx status code
+func (o *NfsCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nfs create default response a status code equal to that given
+func (o *NfsCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NfsCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfs_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NfsCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/nfs/services][%d] nfs_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NfsCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

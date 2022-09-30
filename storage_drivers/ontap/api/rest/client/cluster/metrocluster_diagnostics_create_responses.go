@@ -46,7 +46,8 @@ func NewMetroclusterDiagnosticsCreateAccepted() *MetroclusterDiagnosticsCreateAc
 	return &MetroclusterDiagnosticsCreateAccepted{}
 }
 
-/* MetroclusterDiagnosticsCreateAccepted describes a response with status code 202, with default header values.
+/*
+MetroclusterDiagnosticsCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type MetroclusterDiagnosticsCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this metrocluster diagnostics create accepted response has a 2xx status code
+func (o *MetroclusterDiagnosticsCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster diagnostics create accepted response has a 3xx status code
+func (o *MetroclusterDiagnosticsCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster diagnostics create accepted response has a 4xx status code
+func (o *MetroclusterDiagnosticsCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster diagnostics create accepted response has a 5xx status code
+func (o *MetroclusterDiagnosticsCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster diagnostics create accepted response a status code equal to that given
+func (o *MetroclusterDiagnosticsCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *MetroclusterDiagnosticsCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /cluster/metrocluster/diagnostics][%d] metroclusterDiagnosticsCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *MetroclusterDiagnosticsCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /cluster/metrocluster/diagnostics][%d] metroclusterDiagnosticsCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *MetroclusterDiagnosticsCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewMetroclusterDiagnosticsCreateDefault(code int) *MetroclusterDiagnosticsC
 	}
 }
 
-/* MetroclusterDiagnosticsCreateDefault describes a response with status code -1, with default header values.
+/*
+	MetroclusterDiagnosticsCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
@@ -92,7 +125,6 @@ func NewMetroclusterDiagnosticsCreateDefault(code int) *MetroclusterDiagnosticsC
 | 2432853 | MetroCluster diagnostics job scheduled |
 | 2432854 | MetroCluster diagnostics complete |
 | 2432855 | MetroCluster diagnostics operation failed. Use the REST API GET method on "/api/cluster/metrocluster/operations?type=check&fields=*" for more information. |
-
 */
 type MetroclusterDiagnosticsCreateDefault struct {
 	_statusCode int
@@ -103,7 +135,36 @@ func (o *MetroclusterDiagnosticsCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster diagnostics create default response has a 2xx status code
+func (o *MetroclusterDiagnosticsCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster diagnostics create default response has a 3xx status code
+func (o *MetroclusterDiagnosticsCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster diagnostics create default response has a 4xx status code
+func (o *MetroclusterDiagnosticsCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster diagnostics create default response has a 5xx status code
+func (o *MetroclusterDiagnosticsCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster diagnostics create default response a status code equal to that given
+func (o *MetroclusterDiagnosticsCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterDiagnosticsCreateDefault) Error() string {
+	return fmt.Sprintf("[POST /cluster/metrocluster/diagnostics][%d] metrocluster_diagnostics_create default ", o._statusCode)
+}
+
+func (o *MetroclusterDiagnosticsCreateDefault) String() string {
 	return fmt.Sprintf("[POST /cluster/metrocluster/diagnostics][%d] metrocluster_diagnostics_create default ", o._statusCode)
 }
 

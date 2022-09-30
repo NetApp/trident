@@ -7955,7 +7955,7 @@ func (m *VolumeEfficiencySpaceSavings) UnmarshalBinary(b []byte) error {
 type VolumeEncryption struct {
 
 	// Creates an encrypted or an unencrypted volume. For POST, when set to 'true', a new key is generated and used to encrypt the given volume. In that case, the underlying SVM must be configured with the key manager. When set to 'false', the volume created will be unencrypted. For PATCH, when set to 'true', it encrypts an unencrypted volume. Specifying the parameter as 'false' in a PATCH operation for an encrypted volume is only supported when moving the volume to another aggregate.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Encryption key creation time of the volume.
 	// Example: 2022-01-01T19:00:00Z

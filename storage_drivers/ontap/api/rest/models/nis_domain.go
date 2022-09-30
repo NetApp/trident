@@ -15,7 +15,6 @@ import (
 
 // NisDomain The NIS domain to which this configuration belongs.
 //
-//
 // swagger:model nis_domain
 type NisDomain string
 

@@ -46,7 +46,8 @@ func NewLunCollectionPerformanceMetricsGetOK() *LunCollectionPerformanceMetricsG
 	return &LunCollectionPerformanceMetricsGetOK{}
 }
 
-/* LunCollectionPerformanceMetricsGetOK describes a response with status code 200, with default header values.
+/*
+LunCollectionPerformanceMetricsGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LunCollectionPerformanceMetricsGetOK struct {
 	Payload *models.PerformanceLunMetricResponse
 }
 
+// IsSuccess returns true when this lun collection performance metrics get o k response has a 2xx status code
+func (o *LunCollectionPerformanceMetricsGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun collection performance metrics get o k response has a 3xx status code
+func (o *LunCollectionPerformanceMetricsGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun collection performance metrics get o k response has a 4xx status code
+func (o *LunCollectionPerformanceMetricsGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun collection performance metrics get o k response has a 5xx status code
+func (o *LunCollectionPerformanceMetricsGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun collection performance metrics get o k response a status code equal to that given
+func (o *LunCollectionPerformanceMetricsGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LunCollectionPerformanceMetricsGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/luns/{uuid}/metrics][%d] lunCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LunCollectionPerformanceMetricsGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/luns/{uuid}/metrics][%d] lunCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LunCollectionPerformanceMetricsGetOK) GetPayload() *models.PerformanceLunMetricResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLunCollectionPerformanceMetricsGetDefault(code int) *LunCollectionPerfor
 	}
 }
 
-/* LunCollectionPerformanceMetricsGetDefault describes a response with status code -1, with default header values.
+/*
+LunCollectionPerformanceMetricsGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LunCollectionPerformanceMetricsGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this lun collection performance metrics get default response has a 2xx status code
+func (o *LunCollectionPerformanceMetricsGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this lun collection performance metrics get default response has a 3xx status code
+func (o *LunCollectionPerformanceMetricsGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this lun collection performance metrics get default response has a 4xx status code
+func (o *LunCollectionPerformanceMetricsGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this lun collection performance metrics get default response has a 5xx status code
+func (o *LunCollectionPerformanceMetricsGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this lun collection performance metrics get default response a status code equal to that given
+func (o *LunCollectionPerformanceMetricsGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LunCollectionPerformanceMetricsGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/luns/{uuid}/metrics][%d] lun_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LunCollectionPerformanceMetricsGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/luns/{uuid}/metrics][%d] lun_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LunCollectionPerformanceMetricsGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

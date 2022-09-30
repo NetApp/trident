@@ -52,10 +52,12 @@ func NewClusterLdapDeleteParamsWithHTTPClient(client *http.Client) *ClusterLdapD
 	}
 }
 
-/* ClusterLdapDeleteParams contains all the parameters to send to the API endpoint
-   for the cluster ldap delete operation.
+/*
+ClusterLdapDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster ldap delete operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterLdapDeleteParams struct {
 	timeout    time.Duration

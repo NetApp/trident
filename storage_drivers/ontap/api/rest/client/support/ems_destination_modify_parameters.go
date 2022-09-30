@@ -54,10 +54,12 @@ func NewEmsDestinationModifyParamsWithHTTPClient(client *http.Client) *EmsDestin
 	}
 }
 
-/* EmsDestinationModifyParams contains all the parameters to send to the API endpoint
-   for the ems destination modify operation.
+/*
+EmsDestinationModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ems destination modify operation.
+
+	Typically these are written to a http.Request.
 */
 type EmsDestinationModifyParams struct {
 

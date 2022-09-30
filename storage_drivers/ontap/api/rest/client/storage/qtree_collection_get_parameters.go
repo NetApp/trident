@@ -53,10 +53,12 @@ func NewQtreeCollectionGetParamsWithHTTPClient(client *http.Client) *QtreeCollec
 	}
 }
 
-/* QtreeCollectionGetParams contains all the parameters to send to the API endpoint
-   for the qtree collection get operation.
+/*
+QtreeCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the qtree collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type QtreeCollectionGetParams struct {
 

@@ -56,12 +56,12 @@ type ClientService interface {
 }
 
 /*
-  ClusterNdmpGet Retrieves the current NDMP mode.
+	ClusterNdmpGet Retrieves the current NDMP mode.
+
 ### Related ONTAP commands
 * `system services ndmp node-scope-mode status`
 ### Learn more
 * [`DOC /protocols/ndmp`](#docs-ndmp-protocols_ndmp)
-
 */
 func (a *Client) ClusterNdmpGet(params *ClusterNdmpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNdmpGetOK, error) {
 	// TODO: Validate the params before sending
@@ -99,12 +99,12 @@ func (a *Client) ClusterNdmpGet(params *ClusterNdmpGetParams, authInfo runtime.C
 }
 
 /*
-  ClusterNdmpModify Updates the NDMP mode.
+	ClusterNdmpModify Updates the NDMP mode.
+
 ### Related ONTAP commands
 * `system services ndmp node-scope-mode`
 ### Learn more
 * [`DOC /protocols/ndmp`](#docs-ndmp-protocols_ndmp)
-
 */
 func (a *Client) ClusterNdmpModify(params *ClusterNdmpModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNdmpModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -142,12 +142,12 @@ func (a *Client) ClusterNdmpModify(params *ClusterNdmpModifyParams, authInfo run
 }
 
 /*
-  NdmpNodeCollectionGet Retrieves NDMP node configurations for all of the nodes.
+	NdmpNodeCollectionGet Retrieves NDMP node configurations for all of the nodes.
+
 ### Related ONTAP commands
 * `system services ndmp show`
 ### Learn more
 * [`DOC /protocols/ndmp/nodes`](#docs-ndmp-protocols_ndmp_nodes)
-
 */
 func (a *Client) NdmpNodeCollectionGet(params *NdmpNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -185,12 +185,12 @@ func (a *Client) NdmpNodeCollectionGet(params *NdmpNodeCollectionGetParams, auth
 }
 
 /*
-  NdmpNodeGet Retrieves an NDMP node configuration for a specific node.
+	NdmpNodeGet Retrieves an NDMP node configuration for a specific node.
+
 ### Related ONTAP commands
 * `system services ndmp show`
 ### Learn more
 * [`DOC /protocols/ndmp/nodes`](#docs-ndmp-protocols_ndmp_nodes)
-
 */
 func (a *Client) NdmpNodeGet(params *NdmpNodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -228,12 +228,12 @@ func (a *Client) NdmpNodeGet(params *NdmpNodeGetParams, authInfo runtime.ClientA
 }
 
 /*
-  NdmpNodeModify Updates the NDMP node configuration for a specific node.
+	NdmpNodeModify Updates the NDMP node configuration for a specific node.
+
 ### Related ONTAP commands
 * `system services ndmp modify`
 ### Learn more
 * [`DOC /protocols/ndmp/nodes`](#docs-ndmp-protocols_ndmp_nodes)
-
 */
 func (a *Client) NdmpNodeModify(params *NdmpNodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -271,13 +271,13 @@ func (a *Client) NdmpNodeModify(params *NdmpNodeModifyParams, authInfo runtime.C
 }
 
 /*
-  NdmpNodeSessionDelete Deletes a specific NDMP session.
+	NdmpNodeSessionDelete Deletes a specific NDMP session.
+
 ### Related ONTAP commands
 * `vserver services ndmp kill`
 * `system services ndmp kill`
 ### Learn more
 * [`DOC /protocols/ndmp/sessions`](#docs-ndmp-protocols_ndmp_sessions)
-
 */
 func (a *Client) NdmpNodeSessionDelete(params *NdmpNodeSessionDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeSessionDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -315,13 +315,13 @@ func (a *Client) NdmpNodeSessionDelete(params *NdmpNodeSessionDeleteParams, auth
 }
 
 /*
-  NdmpNodeSessionGet Retrieves the details of a specific NDMP session.
+	NdmpNodeSessionGet Retrieves the details of a specific NDMP session.
+
 ### Related ONTAP commands
 * `vserver services ndmp probe`
 * `system services ndmp probe`
 ### Learn more
 * [`DOC /protocols/ndmp/sessions`](#docs-ndmp-protocols_ndmp_sessions)
-
 */
 func (a *Client) NdmpNodeSessionGet(params *NdmpNodeSessionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeSessionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -359,13 +359,13 @@ func (a *Client) NdmpNodeSessionGet(params *NdmpNodeSessionGetParams, authInfo r
 }
 
 /*
-  NdmpNodeSessionsCollectionGet Retrieves a collection of NDMP sessions. In the case of SVM-scope, if this API is executed on a data IP, it displays the list of NDMP sessions under the specified SVM; otherwise it displays the list of NDMP sessions for all the SVMs under the cluster. In the case of node-scope, it displays the list of NDMP sessions for all nodes.
+	NdmpNodeSessionsCollectionGet Retrieves a collection of NDMP sessions. In the case of SVM-scope, if this API is executed on a data IP, it displays the list of NDMP sessions under the specified SVM; otherwise it displays the list of NDMP sessions for all the SVMs under the cluster. In the case of node-scope, it displays the list of NDMP sessions for all nodes.
+
 ### Related ONTAP commands
 * `vserver services ndmp probe`
 * `system services ndmp probe`
 ### Learn more
 * [`DOC /protocols/ndmp/sessions`](#docs-ndmp-protocols_ndmp_sessions)
-
 */
 func (a *Client) NdmpNodeSessionsCollectionGet(params *NdmpNodeSessionsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeSessionsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -403,12 +403,12 @@ func (a *Client) NdmpNodeSessionsCollectionGet(params *NdmpNodeSessionsCollectio
 }
 
 /*
-  NdmpPasswordGet Generates and retrieves the password for the specified NDMP user.
+	NdmpPasswordGet Generates and retrieves the password for the specified NDMP user.
+
 ### Related ONTAP commands
 * `vserver services ndmp generate-password`
 ### Learn more
 * [`DOC /protocols/ndmp/svms/{svm.uuid}/passwords/{user}`](#docs-ndmp-protocols_ndmp_svms_{svm.uuid}_passwords_{user})
-
 */
 func (a *Client) NdmpPasswordGet(params *NdmpPasswordGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpPasswordGetOK, error) {
 	// TODO: Validate the params before sending
@@ -446,12 +446,12 @@ func (a *Client) NdmpPasswordGet(params *NdmpPasswordGetParams, authInfo runtime
 }
 
 /*
-  NdmpSvmCollectionGet Retrieves NDMP configurations for all SVMs.
+	NdmpSvmCollectionGet Retrieves NDMP configurations for all SVMs.
+
 ### Related ONTAP commands
 * `vserver services ndmp show`
 ### Learn more
 * [`DOC /protocols/ndmp/svms`](#docs-ndmp-protocols_ndmp_svms)
-
 */
 func (a *Client) NdmpSvmCollectionGet(params *NdmpSvmCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpSvmCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -489,12 +489,12 @@ func (a *Client) NdmpSvmCollectionGet(params *NdmpSvmCollectionGetParams, authIn
 }
 
 /*
-  NdmpSvmGet Retrieves an NDMP configuration for a specific SVM.
+	NdmpSvmGet Retrieves an NDMP configuration for a specific SVM.
+
 ### Related ONTAP commands
 * `vserver services ndmp show`
 ### Learn more
 * [`DOC /protocols/ndmp/svms`](#docs-ndmp-protocols_ndmp_svms)
-
 */
 func (a *Client) NdmpSvmGet(params *NdmpSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpSvmGetOK, error) {
 	// TODO: Validate the params before sending
@@ -532,12 +532,12 @@ func (a *Client) NdmpSvmGet(params *NdmpSvmGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  NdmpSvmModify Updates the NDMP configuration for a specific SVM.
+	NdmpSvmModify Updates the NDMP configuration for a specific SVM.
+
 ### Related ONTAP commands
 * `vserver services ndmp modify`
 ### Learn more
 * [`DOC /protocols/ndmp/svms`](#docs-ndmp-protocols_ndmp_svms)
-
 */
 func (a *Client) NdmpSvmModify(params *NdmpSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpSvmModifyOK, error) {
 	// TODO: Validate the params before sending

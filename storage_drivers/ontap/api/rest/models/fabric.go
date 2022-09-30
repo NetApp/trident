@@ -17,7 +17,6 @@ import (
 
 // Fabric A Fibre Channel (FC) fabric REST object provides information about an FC network (fabric) connected to the cluster. Logically, the FC fabric also contains FC switches and the FC zones that comprise the active zoneset of the fabric. FC switch and zone infromation is not reported directly in the FC fabric REST object for reasons of scale and flexibility; they are found by querying the FC switches and FC zones REST endpoints.
 //
-//
 // swagger:model fabric
 type Fabric struct {
 
@@ -261,7 +260,6 @@ func (m *Fabric) UnmarshalBinary(b []byte) error {
 
 // FabricCache Properties of Fibre Chanel fabric cache.
 //
-//
 // swagger:model FabricCache
 type FabricCache struct {
 
@@ -377,7 +375,6 @@ func (m *FabricCache) UnmarshalBinary(b []byte) error {
 }
 
 // FabricConnectionsItems0 A connection between a cluster node Fibre Channel (FC) port and an FC switch port.
-//
 //
 // swagger:model FabricConnectionsItems0
 type FabricConnectionsItems0 struct {
@@ -506,7 +503,6 @@ func (m *FabricConnectionsItems0) UnmarshalBinary(b []byte) error {
 }
 
 // FabricConnectionsItems0ClusterPort The cluster Fibre Channel (FC) port that connects the FC fabric.
-//
 //
 // swagger:model FabricConnectionsItems0ClusterPort
 type FabricConnectionsItems0ClusterPort struct {
@@ -751,7 +747,6 @@ func (m *FabricConnectionsItems0ClusterPortLinks) UnmarshalBinary(b []byte) erro
 
 // FabricConnectionsItems0ClusterPortNode The node on which the cluster Fibre Channel port is located.
 //
-//
 // swagger:model FabricConnectionsItems0ClusterPortNode
 type FabricConnectionsItems0ClusterPortNode struct {
 
@@ -809,7 +804,6 @@ func (m *FabricConnectionsItems0ClusterPortNode) UnmarshalBinary(b []byte) error
 }
 
 // FabricConnectionsItems0Switch The Fibre Channel switch to which the cluster node port is connected.
-//
 //
 // swagger:model FabricConnectionsItems0Switch
 type FabricConnectionsItems0Switch struct {
@@ -1044,7 +1038,6 @@ func (m *FabricConnectionsItems0SwitchLinks) UnmarshalBinary(b []byte) error {
 
 // FabricConnectionsItems0SwitchPort The port of the Fibre Channel switch to which the cluster node port is connected.
 //
-//
 // swagger:model FabricConnectionsItems0SwitchPort
 type FabricConnectionsItems0SwitchPort struct {
 
@@ -1188,7 +1181,6 @@ func (m *FabricLinks) UnmarshalBinary(b []byte) error {
 }
 
 // FabricZoneset The active Fibre Channel zoneset in the fabric.
-//
 //
 // swagger:model FabricZoneset
 type FabricZoneset struct {

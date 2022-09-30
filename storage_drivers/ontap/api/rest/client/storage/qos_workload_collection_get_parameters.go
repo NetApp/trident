@@ -53,10 +53,12 @@ func NewQosWorkloadCollectionGetParamsWithHTTPClient(client *http.Client) *QosWo
 	}
 }
 
-/* QosWorkloadCollectionGetParams contains all the parameters to send to the API endpoint
-   for the qos workload collection get operation.
+/*
+QosWorkloadCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the qos workload collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type QosWorkloadCollectionGetParams struct {
 

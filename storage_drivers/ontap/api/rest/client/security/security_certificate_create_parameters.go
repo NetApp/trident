@@ -55,10 +55,12 @@ func NewSecurityCertificateCreateParamsWithHTTPClient(client *http.Client) *Secu
 	}
 }
 
-/* SecurityCertificateCreateParams contains all the parameters to send to the API endpoint
-   for the security certificate create operation.
+/*
+SecurityCertificateCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security certificate create operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityCertificateCreateParams struct {
 

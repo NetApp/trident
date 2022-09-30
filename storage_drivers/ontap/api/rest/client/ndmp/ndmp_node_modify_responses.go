@@ -46,7 +46,8 @@ func NewNdmpNodeModifyOK() *NdmpNodeModifyOK {
 	return &NdmpNodeModifyOK{}
 }
 
-/* NdmpNodeModifyOK describes a response with status code 200, with default header values.
+/*
+NdmpNodeModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NdmpNodeModifyOK struct {
 	Payload *models.NdmpNode
 }
 
+// IsSuccess returns true when this ndmp node modify o k response has a 2xx status code
+func (o *NdmpNodeModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ndmp node modify o k response has a 3xx status code
+func (o *NdmpNodeModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ndmp node modify o k response has a 4xx status code
+func (o *NdmpNodeModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ndmp node modify o k response has a 5xx status code
+func (o *NdmpNodeModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ndmp node modify o k response a status code equal to that given
+func (o *NdmpNodeModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NdmpNodeModifyOK) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeModifyOK  %+v", 200, o.Payload)
 }
+
+func (o *NdmpNodeModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmpNodeModifyOK  %+v", 200, o.Payload)
+}
+
 func (o *NdmpNodeModifyOK) GetPayload() *models.NdmpNode {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewNdmpNodeModifyDefault(code int) *NdmpNodeModifyDefault {
 	}
 }
 
-/* NdmpNodeModifyDefault describes a response with status code -1, with default header values.
+/*
+	NdmpNodeModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 68812800    | The user is required to enable NDMP on a node.|
 | 68812801    | Node-scoped operations are not allowed in an SVM-scope.|
 | 68812802    | The UUID is not valid.|
-
 */
 type NdmpNodeModifyDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *NdmpNodeModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ndmp node modify default response has a 2xx status code
+func (o *NdmpNodeModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ndmp node modify default response has a 3xx status code
+func (o *NdmpNodeModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ndmp node modify default response has a 4xx status code
+func (o *NdmpNodeModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ndmp node modify default response has a 5xx status code
+func (o *NdmpNodeModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ndmp node modify default response a status code equal to that given
+func (o *NdmpNodeModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NdmpNodeModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NdmpNodeModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/ndmp/nodes/{node.uuid}][%d] ndmp_node_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NdmpNodeModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

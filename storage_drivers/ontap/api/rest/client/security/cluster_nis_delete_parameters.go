@@ -52,10 +52,12 @@ func NewClusterNisDeleteParamsWithHTTPClient(client *http.Client) *ClusterNisDel
 	}
 }
 
-/* ClusterNisDeleteParams contains all the parameters to send to the API endpoint
-   for the cluster nis delete operation.
+/*
+ClusterNisDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster nis delete operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterNisDeleteParams struct {
 	timeout    time.Duration

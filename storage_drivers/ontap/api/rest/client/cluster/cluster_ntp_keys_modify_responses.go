@@ -46,14 +46,44 @@ func NewClusterNtpKeysModifyOK() *ClusterNtpKeysModifyOK {
 	return &ClusterNtpKeysModifyOK{}
 }
 
-/* ClusterNtpKeysModifyOK describes a response with status code 200, with default header values.
+/*
+ClusterNtpKeysModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ClusterNtpKeysModifyOK struct {
 }
 
+// IsSuccess returns true when this cluster ntp keys modify o k response has a 2xx status code
+func (o *ClusterNtpKeysModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ntp keys modify o k response has a 3xx status code
+func (o *ClusterNtpKeysModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ntp keys modify o k response has a 4xx status code
+func (o *ClusterNtpKeysModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ntp keys modify o k response has a 5xx status code
+func (o *ClusterNtpKeysModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ntp keys modify o k response a status code equal to that given
+func (o *ClusterNtpKeysModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterNtpKeysModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] clusterNtpKeysModifyOK ", 200)
+}
+
+func (o *ClusterNtpKeysModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] clusterNtpKeysModifyOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewClusterNtpKeysModifyDefault(code int) *ClusterNtpKeysModifyDefault {
 	}
 }
 
-/* ClusterNtpKeysModifyDefault describes a response with status code -1, with default header values.
+/*
+	ClusterNtpKeysModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2097187 | An invalid SHA1 key was provided. |
-
 */
 type ClusterNtpKeysModifyDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *ClusterNtpKeysModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ntp keys modify default response has a 2xx status code
+func (o *ClusterNtpKeysModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ntp keys modify default response has a 3xx status code
+func (o *ClusterNtpKeysModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ntp keys modify default response has a 4xx status code
+func (o *ClusterNtpKeysModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ntp keys modify default response has a 5xx status code
+func (o *ClusterNtpKeysModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ntp keys modify default response a status code equal to that given
+func (o *ClusterNtpKeysModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNtpKeysModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNtpKeysModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /cluster/ntp/keys/{id}][%d] cluster_ntp_keys_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNtpKeysModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewSnapshotPolicyCreateCreated() *SnapshotPolicyCreateCreated {
 	return &SnapshotPolicyCreateCreated{}
 }
 
-/* SnapshotPolicyCreateCreated describes a response with status code 201, with default header values.
+/*
+SnapshotPolicyCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type SnapshotPolicyCreateCreated struct {
 }
 
+// IsSuccess returns true when this snapshot policy create created response has a 2xx status code
+func (o *SnapshotPolicyCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot policy create created response has a 3xx status code
+func (o *SnapshotPolicyCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot policy create created response has a 4xx status code
+func (o *SnapshotPolicyCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot policy create created response has a 5xx status code
+func (o *SnapshotPolicyCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot policy create created response a status code equal to that given
+func (o *SnapshotPolicyCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *SnapshotPolicyCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshotPolicyCreateCreated ", 201)
+}
+
+func (o *SnapshotPolicyCreateCreated) String() string {
 	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshotPolicyCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewSnapshotPolicyCreateDefault(code int) *SnapshotPolicyCreateDefault {
 	}
 }
 
-/* SnapshotPolicyCreateDefault describes a response with status code -1, with default header values.
+/*
+	SnapshotPolicyCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1638407    | When adding schedule to a Snapshot copy policy, the count for that schedule must be specified. |
@@ -84,7 +116,6 @@ func NewSnapshotPolicyCreateDefault(code int) *SnapshotPolicyCreateDefault {
 | 1638527    | Policy name already exists. |
 | 1638528    | This operation is not supported in a mixed-version cluster. |
 | 1638531    | This operation is not supported because specified policy is owned by the cluster admin. |
-
 */
 type SnapshotPolicyCreateDefault struct {
 	_statusCode int
@@ -97,9 +128,39 @@ func (o *SnapshotPolicyCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapshot policy create default response has a 2xx status code
+func (o *SnapshotPolicyCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapshot policy create default response has a 3xx status code
+func (o *SnapshotPolicyCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapshot policy create default response has a 4xx status code
+func (o *SnapshotPolicyCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapshot policy create default response has a 5xx status code
+func (o *SnapshotPolicyCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapshot policy create default response a status code equal to that given
+func (o *SnapshotPolicyCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapshotPolicyCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshot_policy_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapshotPolicyCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/snapshot-policies][%d] snapshot_policy_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapshotPolicyCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

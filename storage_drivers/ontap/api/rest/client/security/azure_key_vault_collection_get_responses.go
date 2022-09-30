@@ -46,7 +46,8 @@ func NewAzureKeyVaultCollectionGetOK() *AzureKeyVaultCollectionGetOK {
 	return &AzureKeyVaultCollectionGetOK{}
 }
 
-/* AzureKeyVaultCollectionGetOK describes a response with status code 200, with default header values.
+/*
+AzureKeyVaultCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AzureKeyVaultCollectionGetOK struct {
 	Payload *models.AzureKeyVaultResponse
 }
 
+// IsSuccess returns true when this azure key vault collection get o k response has a 2xx status code
+func (o *AzureKeyVaultCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this azure key vault collection get o k response has a 3xx status code
+func (o *AzureKeyVaultCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this azure key vault collection get o k response has a 4xx status code
+func (o *AzureKeyVaultCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this azure key vault collection get o k response has a 5xx status code
+func (o *AzureKeyVaultCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this azure key vault collection get o k response a status code equal to that given
+func (o *AzureKeyVaultCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AzureKeyVaultCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/azure-key-vaults][%d] azureKeyVaultCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AzureKeyVaultCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/azure-key-vaults][%d] azureKeyVaultCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AzureKeyVaultCollectionGetOK) GetPayload() *models.AzureKeyVaultResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAzureKeyVaultCollectionGetDefault(code int) *AzureKeyVaultCollectionGetD
 	}
 }
 
-/* AzureKeyVaultCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+AzureKeyVaultCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AzureKeyVaultCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this azure key vault collection get default response has a 2xx status code
+func (o *AzureKeyVaultCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this azure key vault collection get default response has a 3xx status code
+func (o *AzureKeyVaultCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this azure key vault collection get default response has a 4xx status code
+func (o *AzureKeyVaultCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this azure key vault collection get default response has a 5xx status code
+func (o *AzureKeyVaultCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this azure key vault collection get default response a status code equal to that given
+func (o *AzureKeyVaultCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AzureKeyVaultCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/azure-key-vaults][%d] azure_key_vault_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AzureKeyVaultCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/azure-key-vaults][%d] azure_key_vault_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AzureKeyVaultCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

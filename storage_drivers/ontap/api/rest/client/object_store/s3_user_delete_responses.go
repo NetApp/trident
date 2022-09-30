@@ -46,14 +46,44 @@ func NewS3UserDeleteOK() *S3UserDeleteOK {
 	return &S3UserDeleteOK{}
 }
 
-/* S3UserDeleteOK describes a response with status code 200, with default header values.
+/*
+S3UserDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type S3UserDeleteOK struct {
 }
 
+// IsSuccess returns true when this s3 user delete o k response has a 2xx status code
+func (o *S3UserDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 user delete o k response has a 3xx status code
+func (o *S3UserDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 user delete o k response has a 4xx status code
+func (o *S3UserDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 user delete o k response has a 5xx status code
+func (o *S3UserDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 user delete o k response a status code equal to that given
+func (o *S3UserDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3UserDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3UserDeleteOK ", 200)
+}
+
+func (o *S3UserDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3UserDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewS3UserDeleteDefault(code int) *S3UserDeleteDefault {
 	}
 }
 
-/* S3UserDeleteDefault describes a response with status code -1, with default header values.
+/*
+S3UserDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *S3UserDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 user delete default response has a 2xx status code
+func (o *S3UserDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 user delete default response has a 3xx status code
+func (o *S3UserDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 user delete default response has a 4xx status code
+func (o *S3UserDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 user delete default response has a 5xx status code
+func (o *S3UserDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 user delete default response a status code equal to that given
+func (o *S3UserDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3UserDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3_user_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3UserDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3_user_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3UserDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

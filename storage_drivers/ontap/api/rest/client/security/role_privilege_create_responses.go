@@ -46,14 +46,44 @@ func NewRolePrivilegeCreateCreated() *RolePrivilegeCreateCreated {
 	return &RolePrivilegeCreateCreated{}
 }
 
-/* RolePrivilegeCreateCreated describes a response with status code 201, with default header values.
+/*
+RolePrivilegeCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type RolePrivilegeCreateCreated struct {
 }
 
+// IsSuccess returns true when this role privilege create created response has a 2xx status code
+func (o *RolePrivilegeCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this role privilege create created response has a 3xx status code
+func (o *RolePrivilegeCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this role privilege create created response has a 4xx status code
+func (o *RolePrivilegeCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this role privilege create created response has a 5xx status code
+func (o *RolePrivilegeCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this role privilege create created response a status code equal to that given
+func (o *RolePrivilegeCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *RolePrivilegeCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] rolePrivilegeCreateCreated ", 201)
+}
+
+func (o *RolePrivilegeCreateCreated) String() string {
 	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] rolePrivilegeCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewRolePrivilegeCreateDefault(code int) *RolePrivilegeCreateDefault {
 	}
 }
 
-/* RolePrivilegeCreateDefault describes a response with status code -1, with default header values.
+/*
+	RolePrivilegeCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5636129 | A role with given name has not been defined. |
@@ -88,7 +120,6 @@ func NewRolePrivilegeCreateDefault(code int) *RolePrivilegeCreateDefault {
 | 13434891 | UUID LookUp failed for Vserver roles. |
 | 13434892 | Roles is a required field. |
 | 13434893 | The SVM does not exist. |
-
 */
 type RolePrivilegeCreateDefault struct {
 	_statusCode int
@@ -101,9 +132,39 @@ func (o *RolePrivilegeCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this role privilege create default response has a 2xx status code
+func (o *RolePrivilegeCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this role privilege create default response has a 3xx status code
+func (o *RolePrivilegeCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this role privilege create default response has a 4xx status code
+func (o *RolePrivilegeCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this role privilege create default response has a 5xx status code
+func (o *RolePrivilegeCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this role privilege create default response a status code equal to that given
+func (o *RolePrivilegeCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *RolePrivilegeCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] role_privilege_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *RolePrivilegeCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/roles/{owner.uuid}/{name}/privileges][%d] role_privilege_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *RolePrivilegeCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

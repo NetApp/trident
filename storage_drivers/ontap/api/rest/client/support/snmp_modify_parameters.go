@@ -54,10 +54,12 @@ func NewSnmpModifyParamsWithHTTPClient(client *http.Client) *SnmpModifyParams {
 	}
 }
 
-/* SnmpModifyParams contains all the parameters to send to the API endpoint
-   for the snmp modify operation.
+/*
+SnmpModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snmp modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SnmpModifyParams struct {
 

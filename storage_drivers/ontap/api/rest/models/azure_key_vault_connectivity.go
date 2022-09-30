@@ -15,7 +15,6 @@ import (
 // AzureKeyVaultConnectivity Indicates whether or not the AKV service is reachable from all the nodes in the cluster.
 // This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
-//
 // swagger:model azure_key_vault_connectivity
 type AzureKeyVaultConnectivity struct {
 

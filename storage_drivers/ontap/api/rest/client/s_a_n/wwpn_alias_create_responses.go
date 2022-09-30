@@ -46,7 +46,8 @@ func NewWwpnAliasCreateCreated() *WwpnAliasCreateCreated {
 	return &WwpnAliasCreateCreated{}
 }
 
-/* WwpnAliasCreateCreated describes a response with status code 201, with default header values.
+/*
+WwpnAliasCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type WwpnAliasCreateCreated struct {
 	Payload *models.WwpnAliasResponse
 }
 
+// IsSuccess returns true when this wwpn alias create created response has a 2xx status code
+func (o *WwpnAliasCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this wwpn alias create created response has a 3xx status code
+func (o *WwpnAliasCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this wwpn alias create created response has a 4xx status code
+func (o *WwpnAliasCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this wwpn alias create created response has a 5xx status code
+func (o *WwpnAliasCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this wwpn alias create created response a status code equal to that given
+func (o *WwpnAliasCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *WwpnAliasCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpnAliasCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *WwpnAliasCreateCreated) String() string {
+	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpnAliasCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *WwpnAliasCreateCreated) GetPayload() *models.WwpnAliasResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewWwpnAliasCreateDefault(code int) *WwpnAliasCreateDefault {
 	}
 }
 
-/* WwpnAliasCreateDefault describes a response with status code -1, with default header values.
+/*
+	WwpnAliasCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1254317    | The alias already exists. |
@@ -91,7 +124,6 @@ func NewWwpnAliasCreateDefault(code int) *WwpnAliasCreateDefault {
 | 2621706    | Both the SVM UUID and SVM name were supplied, but do not refer to the same SVM. |
 | 2621707    | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
 | 5373982    | An invalid WWPN was supplied. The valid WWN format is XX:XX:XX:XX:XX:XX:XX:XX, where X is a hexadecimal digit. Example: "01:02:03:04:0a:0b:0c:0d". |
-
 */
 type WwpnAliasCreateDefault struct {
 	_statusCode int
@@ -104,9 +136,39 @@ func (o *WwpnAliasCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this wwpn alias create default response has a 2xx status code
+func (o *WwpnAliasCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this wwpn alias create default response has a 3xx status code
+func (o *WwpnAliasCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this wwpn alias create default response has a 4xx status code
+func (o *WwpnAliasCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this wwpn alias create default response has a 5xx status code
+func (o *WwpnAliasCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this wwpn alias create default response a status code equal to that given
+func (o *WwpnAliasCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *WwpnAliasCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpn_alias_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *WwpnAliasCreateDefault) String() string {
+	return fmt.Sprintf("[POST /network/fc/wwpn-aliases][%d] wwpn_alias_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *WwpnAliasCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

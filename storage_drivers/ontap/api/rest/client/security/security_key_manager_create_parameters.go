@@ -55,10 +55,12 @@ func NewSecurityKeyManagerCreateParamsWithHTTPClient(client *http.Client) *Secur
 	}
 }
 
-/* SecurityKeyManagerCreateParams contains all the parameters to send to the API endpoint
-   for the security key manager create operation.
+/*
+SecurityKeyManagerCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security key manager create operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityKeyManagerCreateParams struct {
 

@@ -46,7 +46,8 @@ func NewVolumeCreateAccepted() *VolumeCreateAccepted {
 	return &VolumeCreateAccepted{}
 }
 
-/* VolumeCreateAccepted describes a response with status code 202, with default header values.
+/*
+VolumeCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type VolumeCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this volume create accepted response has a 2xx status code
+func (o *VolumeCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume create accepted response has a 3xx status code
+func (o *VolumeCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume create accepted response has a 4xx status code
+func (o *VolumeCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume create accepted response has a 5xx status code
+func (o *VolumeCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume create accepted response a status code equal to that given
+func (o *VolumeCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *VolumeCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/volumes][%d] volumeCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *VolumeCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/volumes][%d] volumeCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *VolumeCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewVolumeCreateDefault(code int) *VolumeCreateDefault {
 	}
 }
 
-/* VolumeCreateDefault describes a response with status code -1, with default header values.
+/*
+	VolumeCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 787140 | One of \"aggregates.uuid\", \"aggregates.name\", or \"style\" must be provided. |
@@ -116,7 +149,6 @@ func NewVolumeCreateDefault(code int) *VolumeCreateDefault {
 | 111411205 | File system analytics requires an effective cluster version of 9.8 or later. |
 | 111411206 | The specified \"analytics.state\" is invalid. |
 | 111411207 | File system analytics cannot be enabled on volumes that contain LUNs. |
-
 */
 type VolumeCreateDefault struct {
 	_statusCode int
@@ -129,9 +161,39 @@ func (o *VolumeCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this volume create default response has a 2xx status code
+func (o *VolumeCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this volume create default response has a 3xx status code
+func (o *VolumeCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this volume create default response has a 4xx status code
+func (o *VolumeCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this volume create default response has a 5xx status code
+func (o *VolumeCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this volume create default response a status code equal to that given
+func (o *VolumeCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VolumeCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/volumes][%d] volume_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VolumeCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/volumes][%d] volume_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VolumeCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -54,10 +54,12 @@ func NewSplitLoadModifyParamsWithHTTPClient(client *http.Client) *SplitLoadModif
 	}
 }
 
-/* SplitLoadModifyParams contains all the parameters to send to the API endpoint
-   for the split load modify operation.
+/*
+SplitLoadModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the split load modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SplitLoadModifyParams struct {
 

@@ -46,14 +46,44 @@ func NewFpolicyPolicyDeleteOK() *FpolicyPolicyDeleteOK {
 	return &FpolicyPolicyDeleteOK{}
 }
 
-/* FpolicyPolicyDeleteOK describes a response with status code 200, with default header values.
+/*
+FpolicyPolicyDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FpolicyPolicyDeleteOK struct {
 }
 
+// IsSuccess returns true when this fpolicy policy delete o k response has a 2xx status code
+func (o *FpolicyPolicyDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fpolicy policy delete o k response has a 3xx status code
+func (o *FpolicyPolicyDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fpolicy policy delete o k response has a 4xx status code
+func (o *FpolicyPolicyDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fpolicy policy delete o k response has a 5xx status code
+func (o *FpolicyPolicyDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fpolicy policy delete o k response a status code equal to that given
+func (o *FpolicyPolicyDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FpolicyPolicyDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyDeleteOK ", 200)
+}
+
+func (o *FpolicyPolicyDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyDeleteOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewFpolicyPolicyDeleteDefault(code int) *FpolicyPolicyDeleteDefault {
 	}
 }
 
-/* FpolicyPolicyDeleteDefault describes a response with status code -1, with default header values.
+/*
+	FpolicyPolicyDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 9764900    | Deletion of a cluster level FPolicy policy is not supported |
 | 9764941    | Cannot delete an enabled FPolicy policy |
-
 */
 type FpolicyPolicyDeleteDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *FpolicyPolicyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fpolicy policy delete default response has a 2xx status code
+func (o *FpolicyPolicyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fpolicy policy delete default response has a 3xx status code
+func (o *FpolicyPolicyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fpolicy policy delete default response has a 4xx status code
+func (o *FpolicyPolicyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fpolicy policy delete default response has a 5xx status code
+func (o *FpolicyPolicyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fpolicy policy delete default response a status code equal to that given
+func (o *FpolicyPolicyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FpolicyPolicyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FpolicyPolicyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FpolicyPolicyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

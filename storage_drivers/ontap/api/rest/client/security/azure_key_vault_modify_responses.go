@@ -52,14 +52,44 @@ func NewAzureKeyVaultModifyOK() *AzureKeyVaultModifyOK {
 	return &AzureKeyVaultModifyOK{}
 }
 
-/* AzureKeyVaultModifyOK describes a response with status code 200, with default header values.
+/*
+AzureKeyVaultModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type AzureKeyVaultModifyOK struct {
 }
 
+// IsSuccess returns true when this azure key vault modify o k response has a 2xx status code
+func (o *AzureKeyVaultModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this azure key vault modify o k response has a 3xx status code
+func (o *AzureKeyVaultModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this azure key vault modify o k response has a 4xx status code
+func (o *AzureKeyVaultModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this azure key vault modify o k response has a 5xx status code
+func (o *AzureKeyVaultModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this azure key vault modify o k response a status code equal to that given
+func (o *AzureKeyVaultModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AzureKeyVaultModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyOK ", 200)
+}
+
+func (o *AzureKeyVaultModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyOK ", 200)
 }
 
@@ -73,14 +103,44 @@ func NewAzureKeyVaultModifyAccepted() *AzureKeyVaultModifyAccepted {
 	return &AzureKeyVaultModifyAccepted{}
 }
 
-/* AzureKeyVaultModifyAccepted describes a response with status code 202, with default header values.
+/*
+AzureKeyVaultModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type AzureKeyVaultModifyAccepted struct {
 }
 
+// IsSuccess returns true when this azure key vault modify accepted response has a 2xx status code
+func (o *AzureKeyVaultModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this azure key vault modify accepted response has a 3xx status code
+func (o *AzureKeyVaultModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this azure key vault modify accepted response has a 4xx status code
+func (o *AzureKeyVaultModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this azure key vault modify accepted response has a 5xx status code
+func (o *AzureKeyVaultModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this azure key vault modify accepted response a status code equal to that given
+func (o *AzureKeyVaultModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *AzureKeyVaultModifyAccepted) Error() string {
+	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyAccepted ", 202)
+}
+
+func (o *AzureKeyVaultModifyAccepted) String() string {
 	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azureKeyVaultModifyAccepted ", 202)
 }
 
@@ -96,9 +156,11 @@ func NewAzureKeyVaultModifyDefault(code int) *AzureKeyVaultModifyDefault {
 	}
 }
 
-/* AzureKeyVaultModifyDefault describes a response with status code -1, with default header values.
+/*
+	AzureKeyVaultModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65537120 | Azure Key Vault is not configured for the given SVM. |
@@ -109,7 +171,6 @@ func NewAzureKeyVaultModifyDefault(code int) *AzureKeyVaultModifyDefault {
 | 65537547 | One or more volume encryption keys for encrypted volumes of this data SVM are stored in the key manager configured for the admin SVM. Use the REST API POST method to migrate this data SVM's keys from the admin SVM's key manager to this data SVM's key manager before running the rekey operation. |
 | 65537573 | Invalid client certificate. |
 | 65537577 | The AKV certificate authentication method cannot be configured for the given SVM as not all nodes in the cluster support the AKV certificate authentication. |
-
 */
 type AzureKeyVaultModifyDefault struct {
 	_statusCode int
@@ -122,9 +183,39 @@ func (o *AzureKeyVaultModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this azure key vault modify default response has a 2xx status code
+func (o *AzureKeyVaultModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this azure key vault modify default response has a 3xx status code
+func (o *AzureKeyVaultModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this azure key vault modify default response has a 4xx status code
+func (o *AzureKeyVaultModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this azure key vault modify default response has a 5xx status code
+func (o *AzureKeyVaultModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this azure key vault modify default response a status code equal to that given
+func (o *AzureKeyVaultModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AzureKeyVaultModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azure_key_vault_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AzureKeyVaultModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/azure-key-vaults/{uuid}][%d] azure_key_vault_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AzureKeyVaultModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

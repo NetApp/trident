@@ -46,14 +46,44 @@ func NewLocalHostCreateCreated() *LocalHostCreateCreated {
 	return &LocalHostCreateCreated{}
 }
 
-/* LocalHostCreateCreated describes a response with status code 201, with default header values.
+/*
+LocalHostCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type LocalHostCreateCreated struct {
 }
 
+// IsSuccess returns true when this local host create created response has a 2xx status code
+func (o *LocalHostCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local host create created response has a 3xx status code
+func (o *LocalHostCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local host create created response has a 4xx status code
+func (o *LocalHostCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local host create created response has a 5xx status code
+func (o *LocalHostCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local host create created response a status code equal to that given
+func (o *LocalHostCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *LocalHostCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /name-services/local-hosts][%d] localHostCreateCreated ", 201)
+}
+
+func (o *LocalHostCreateCreated) String() string {
 	return fmt.Sprintf("[POST /name-services/local-hosts][%d] localHostCreateCreated ", 201)
 }
 
@@ -69,15 +99,16 @@ func NewLocalHostCreateDefault(code int) *LocalHostCreateDefault {
 	}
 }
 
-/* LocalHostCreateDefault describes a response with status code -1, with default header values.
+/*
+	LocalHostCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1966253 | IPv6 is not enabled in the cluster. Enable IPv6 using command "network options ipv6 modify -enabled true" and try again. |
 | 8912896 | Only admin or data Vservers allowed. |
 | 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
-
 */
 type LocalHostCreateDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *LocalHostCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this local host create default response has a 2xx status code
+func (o *LocalHostCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this local host create default response has a 3xx status code
+func (o *LocalHostCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this local host create default response has a 4xx status code
+func (o *LocalHostCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this local host create default response has a 5xx status code
+func (o *LocalHostCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this local host create default response a status code equal to that given
+func (o *LocalHostCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LocalHostCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /name-services/local-hosts][%d] local_host_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LocalHostCreateDefault) String() string {
+	return fmt.Sprintf("[POST /name-services/local-hosts][%d] local_host_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LocalHostCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

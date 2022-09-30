@@ -53,10 +53,12 @@ func NewVvolBindingGetParamsWithHTTPClient(client *http.Client) *VvolBindingGetP
 	}
 }
 
-/* VvolBindingGetParams contains all the parameters to send to the API endpoint
-   for the vvol binding get operation.
+/*
+VvolBindingGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vvol binding get operation.
+
+	Typically these are written to a http.Request.
 */
 type VvolBindingGetParams struct {
 

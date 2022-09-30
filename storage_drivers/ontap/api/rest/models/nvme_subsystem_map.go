@@ -16,7 +16,6 @@ import (
 
 // NvmeSubsystemMap An NVMe subsystem map is an association of an NVMe namespace with an NVMe subsystem. When an NVMe namespace is mapped to an NVMe subsystem, the NVMe subsystem's hosts are granted access to the NVMe namespace. The relationship between an NVMe subsystem and an NVMe namespace is one subsystem to many namespaces.
 //
-//
 // swagger:model nvme_subsystem_map
 type NvmeSubsystemMap struct {
 
@@ -355,7 +354,6 @@ func (m *NvmeSubsystemMapLinks) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeSubsystemMapNamespace The NVMe namespace to which the NVMe subsystem is mapped. Required in POST by supplying either the UUID, name, or both.
-//
 //
 // swagger:model NvmeSubsystemMapNamespace
 type NvmeSubsystemMapNamespace struct {
@@ -759,7 +757,6 @@ func (m *NvmeSubsystemMapNamespaceNodeLinks) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeSubsystemMapSubsystem The NVMe subsystem to which the NVMe namespace is mapped. Required in POST by supplying either `subsystem.uuid`, `subsystem.name`  or both.
-//
 //
 // swagger:model NvmeSubsystemMapSubsystem
 type NvmeSubsystemMapSubsystem struct {

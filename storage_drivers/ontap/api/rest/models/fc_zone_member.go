@@ -17,7 +17,6 @@ import (
 
 // FcZoneMember A Fibre Channel zone member.
 //
-//
 // swagger:model fc_zone_member
 type FcZoneMember struct {
 

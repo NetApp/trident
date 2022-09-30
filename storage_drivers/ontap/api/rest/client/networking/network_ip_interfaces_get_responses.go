@@ -46,7 +46,8 @@ func NewNetworkIPInterfacesGetOK() *NetworkIPInterfacesGetOK {
 	return &NetworkIPInterfacesGetOK{}
 }
 
-/* NetworkIPInterfacesGetOK describes a response with status code 200, with default header values.
+/*
+NetworkIPInterfacesGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NetworkIPInterfacesGetOK struct {
 	Payload *models.IPInterfaceResponse
 }
 
+// IsSuccess returns true when this network Ip interfaces get o k response has a 2xx status code
+func (o *NetworkIPInterfacesGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip interfaces get o k response has a 3xx status code
+func (o *NetworkIPInterfacesGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip interfaces get o k response has a 4xx status code
+func (o *NetworkIPInterfacesGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip interfaces get o k response has a 5xx status code
+func (o *NetworkIPInterfacesGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip interfaces get o k response a status code equal to that given
+func (o *NetworkIPInterfacesGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkIPInterfacesGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ip/interfaces][%d] networkIpInterfacesGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NetworkIPInterfacesGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ip/interfaces][%d] networkIpInterfacesGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NetworkIPInterfacesGetOK) GetPayload() *models.IPInterfaceResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNetworkIPInterfacesGetDefault(code int) *NetworkIPInterfacesGetDefault {
 	}
 }
 
-/* NetworkIPInterfacesGetDefault describes a response with status code -1, with default header values.
+/*
+NetworkIPInterfacesGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NetworkIPInterfacesGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ip interfaces get default response has a 2xx status code
+func (o *NetworkIPInterfacesGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ip interfaces get default response has a 3xx status code
+func (o *NetworkIPInterfacesGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ip interfaces get default response has a 4xx status code
+func (o *NetworkIPInterfacesGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ip interfaces get default response has a 5xx status code
+func (o *NetworkIPInterfacesGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ip interfaces get default response a status code equal to that given
+func (o *NetworkIPInterfacesGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkIPInterfacesGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ip/interfaces][%d] network_ip_interfaces_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkIPInterfacesGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ip/interfaces][%d] network_ip_interfaces_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkIPInterfacesGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

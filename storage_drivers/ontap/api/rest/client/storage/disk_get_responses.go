@@ -46,7 +46,8 @@ func NewDiskGetOK() *DiskGetOK {
 	return &DiskGetOK{}
 }
 
-/* DiskGetOK describes a response with status code 200, with default header values.
+/*
+DiskGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type DiskGetOK struct {
 	Payload *models.Disk
 }
 
+// IsSuccess returns true when this disk get o k response has a 2xx status code
+func (o *DiskGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this disk get o k response has a 3xx status code
+func (o *DiskGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this disk get o k response has a 4xx status code
+func (o *DiskGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this disk get o k response has a 5xx status code
+func (o *DiskGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this disk get o k response a status code equal to that given
+func (o *DiskGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *DiskGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/disks/{name}][%d] diskGetOK  %+v", 200, o.Payload)
 }
+
+func (o *DiskGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/disks/{name}][%d] diskGetOK  %+v", 200, o.Payload)
+}
+
 func (o *DiskGetOK) GetPayload() *models.Disk {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewDiskGetDefault(code int) *DiskGetDefault {
 	}
 }
 
-/* DiskGetDefault describes a response with status code -1, with default header values.
+/*
+DiskGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *DiskGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this disk get default response has a 2xx status code
+func (o *DiskGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this disk get default response has a 3xx status code
+func (o *DiskGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this disk get default response has a 4xx status code
+func (o *DiskGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this disk get default response has a 5xx status code
+func (o *DiskGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this disk get default response a status code equal to that given
+func (o *DiskGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *DiskGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/disks/{name}][%d] disk_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *DiskGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/disks/{name}][%d] disk_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *DiskGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

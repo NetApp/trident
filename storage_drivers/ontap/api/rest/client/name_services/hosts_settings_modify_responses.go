@@ -46,14 +46,44 @@ func NewHostsSettingsModifyOK() *HostsSettingsModifyOK {
 	return &HostsSettingsModifyOK{}
 }
 
-/* HostsSettingsModifyOK describes a response with status code 200, with default header values.
+/*
+HostsSettingsModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type HostsSettingsModifyOK struct {
 }
 
+// IsSuccess returns true when this hosts settings modify o k response has a 2xx status code
+func (o *HostsSettingsModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this hosts settings modify o k response has a 3xx status code
+func (o *HostsSettingsModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this hosts settings modify o k response has a 4xx status code
+func (o *HostsSettingsModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this hosts settings modify o k response has a 5xx status code
+func (o *HostsSettingsModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this hosts settings modify o k response a status code equal to that given
+func (o *HostsSettingsModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *HostsSettingsModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/cache/host/settings/{svm.uuid}][%d] hostsSettingsModifyOK ", 200)
+}
+
+func (o *HostsSettingsModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/cache/host/settings/{svm.uuid}][%d] hostsSettingsModifyOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewHostsSettingsModifyDefault(code int) *HostsSettingsModifyDefault {
 	}
 }
 
-/* HostsSettingsModifyDefault describes a response with status code -1, with default header values.
+/*
+	HostsSettingsModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
-
 */
 type HostsSettingsModifyDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *HostsSettingsModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this hosts settings modify default response has a 2xx status code
+func (o *HostsSettingsModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this hosts settings modify default response has a 3xx status code
+func (o *HostsSettingsModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this hosts settings modify default response has a 4xx status code
+func (o *HostsSettingsModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this hosts settings modify default response has a 5xx status code
+func (o *HostsSettingsModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this hosts settings modify default response a status code equal to that given
+func (o *HostsSettingsModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *HostsSettingsModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/cache/host/settings/{svm.uuid}][%d] hosts_settings_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *HostsSettingsModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/cache/host/settings/{svm.uuid}][%d] hosts_settings_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *HostsSettingsModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

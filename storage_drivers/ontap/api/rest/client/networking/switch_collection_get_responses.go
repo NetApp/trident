@@ -46,7 +46,8 @@ func NewSwitchCollectionGetOK() *SwitchCollectionGetOK {
 	return &SwitchCollectionGetOK{}
 }
 
-/* SwitchCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SwitchCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SwitchCollectionGetOK struct {
 	Payload *models.SwitchResponse
 }
 
+// IsSuccess returns true when this switch collection get o k response has a 2xx status code
+func (o *SwitchCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this switch collection get o k response has a 3xx status code
+func (o *SwitchCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this switch collection get o k response has a 4xx status code
+func (o *SwitchCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this switch collection get o k response has a 5xx status code
+func (o *SwitchCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this switch collection get o k response a status code equal to that given
+func (o *SwitchCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SwitchCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ethernet/switches][%d] switchCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SwitchCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ethernet/switches][%d] switchCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SwitchCollectionGetOK) GetPayload() *models.SwitchResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSwitchCollectionGetDefault(code int) *SwitchCollectionGetDefault {
 	}
 }
 
-/* SwitchCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+SwitchCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SwitchCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this switch collection get default response has a 2xx status code
+func (o *SwitchCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this switch collection get default response has a 3xx status code
+func (o *SwitchCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this switch collection get default response has a 4xx status code
+func (o *SwitchCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this switch collection get default response has a 5xx status code
+func (o *SwitchCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this switch collection get default response a status code equal to that given
+func (o *SwitchCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SwitchCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ethernet/switches][%d] switch_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SwitchCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ethernet/switches][%d] switch_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SwitchCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

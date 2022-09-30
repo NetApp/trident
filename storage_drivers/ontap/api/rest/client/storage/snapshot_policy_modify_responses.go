@@ -46,14 +46,44 @@ func NewSnapshotPolicyModifyOK() *SnapshotPolicyModifyOK {
 	return &SnapshotPolicyModifyOK{}
 }
 
-/* SnapshotPolicyModifyOK describes a response with status code 200, with default header values.
+/*
+SnapshotPolicyModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnapshotPolicyModifyOK struct {
 }
 
+// IsSuccess returns true when this snapshot policy modify o k response has a 2xx status code
+func (o *SnapshotPolicyModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot policy modify o k response has a 3xx status code
+func (o *SnapshotPolicyModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot policy modify o k response has a 4xx status code
+func (o *SnapshotPolicyModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot policy modify o k response has a 5xx status code
+func (o *SnapshotPolicyModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot policy modify o k response a status code equal to that given
+func (o *SnapshotPolicyModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnapshotPolicyModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshotPolicyModifyOK ", 200)
+}
+
+func (o *SnapshotPolicyModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshotPolicyModifyOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewSnapshotPolicyModifyDefault(code int) *SnapshotPolicyModifyDefault {
 	}
 }
 
-/* SnapshotPolicyModifyDefault describes a response with status code -1, with default header values.
+/*
+	SnapshotPolicyModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Code
+	ONTAP Error Response Code
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1638414    | Cannot enable policy. Reason: Specified schedule not found. |
-
 */
 type SnapshotPolicyModifyDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *SnapshotPolicyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapshot policy modify default response has a 2xx status code
+func (o *SnapshotPolicyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapshot policy modify default response has a 3xx status code
+func (o *SnapshotPolicyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapshot policy modify default response has a 4xx status code
+func (o *SnapshotPolicyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapshot policy modify default response has a 5xx status code
+func (o *SnapshotPolicyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapshot policy modify default response a status code equal to that given
+func (o *SnapshotPolicyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapshotPolicyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshot_policy_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapshotPolicyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{uuid}][%d] snapshot_policy_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapshotPolicyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewShadowcopyCollectionGetOK() *ShadowcopyCollectionGetOK {
 	return &ShadowcopyCollectionGetOK{}
 }
 
-/* ShadowcopyCollectionGetOK describes a response with status code 200, with default header values.
+/*
+ShadowcopyCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ShadowcopyCollectionGetOK struct {
 	Payload *models.ShadowcopyResponse
 }
 
+// IsSuccess returns true when this shadowcopy collection get o k response has a 2xx status code
+func (o *ShadowcopyCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this shadowcopy collection get o k response has a 3xx status code
+func (o *ShadowcopyCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this shadowcopy collection get o k response has a 4xx status code
+func (o *ShadowcopyCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this shadowcopy collection get o k response has a 5xx status code
+func (o *ShadowcopyCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this shadowcopy collection get o k response a status code equal to that given
+func (o *ShadowcopyCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ShadowcopyCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies][%d] shadowcopyCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ShadowcopyCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies][%d] shadowcopyCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ShadowcopyCollectionGetOK) GetPayload() *models.ShadowcopyResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewShadowcopyCollectionGetDefault(code int) *ShadowcopyCollectionGetDefault
 	}
 }
 
-/* ShadowcopyCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+ShadowcopyCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ShadowcopyCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this shadowcopy collection get default response has a 2xx status code
+func (o *ShadowcopyCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this shadowcopy collection get default response has a 3xx status code
+func (o *ShadowcopyCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this shadowcopy collection get default response has a 4xx status code
+func (o *ShadowcopyCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this shadowcopy collection get default response has a 5xx status code
+func (o *ShadowcopyCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this shadowcopy collection get default response a status code equal to that given
+func (o *ShadowcopyCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ShadowcopyCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies][%d] shadowcopy_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ShadowcopyCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/shadow-copies][%d] shadowcopy_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ShadowcopyCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

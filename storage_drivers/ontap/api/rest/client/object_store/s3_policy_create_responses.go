@@ -46,7 +46,8 @@ func NewS3PolicyCreateCreated() *S3PolicyCreateCreated {
 	return &S3PolicyCreateCreated{}
 }
 
-/* S3PolicyCreateCreated describes a response with status code 201, with default header values.
+/*
+S3PolicyCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type S3PolicyCreateCreated struct {
 	Payload *models.S3PolicyResponse
 }
 
+// IsSuccess returns true when this s3 policy create created response has a 2xx status code
+func (o *S3PolicyCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 policy create created response has a 3xx status code
+func (o *S3PolicyCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 policy create created response has a 4xx status code
+func (o *S3PolicyCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 policy create created response has a 5xx status code
+func (o *S3PolicyCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 policy create created response a status code equal to that given
+func (o *S3PolicyCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *S3PolicyCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3PolicyCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *S3PolicyCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3PolicyCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *S3PolicyCreateCreated) GetPayload() *models.S3PolicyResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewS3PolicyCreateDefault(code int) *S3PolicyCreateDefault {
 	}
 }
 
-/* S3PolicyCreateDefault describes a response with status code -1, with default header values.
+/*
+	S3PolicyCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405906   | The specified action name is invalid.
@@ -92,7 +125,6 @@ func NewS3PolicyCreateDefault(code int) *S3PolicyCreateDefault {
 | 92405950   | Policy name already exists for SVM.
 | 92405954   | Policy name is reserved for read-only policies. Cannot be used for custom policy creation.
 | 92405963   | Failed to create policy statements for policy. Reason: "{reason of failure}". Resolve all issues and retry the operation.
-
 */
 type S3PolicyCreateDefault struct {
 	_statusCode int
@@ -105,9 +137,39 @@ func (o *S3PolicyCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 policy create default response has a 2xx status code
+func (o *S3PolicyCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 policy create default response has a 3xx status code
+func (o *S3PolicyCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 policy create default response has a 4xx status code
+func (o *S3PolicyCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 policy create default response has a 5xx status code
+func (o *S3PolicyCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 policy create default response a status code equal to that given
+func (o *S3PolicyCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3PolicyCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3_policy_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3PolicyCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/policies][%d] s3_policy_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3PolicyCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

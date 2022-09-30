@@ -19,7 +19,6 @@ import (
 // Machine-to-machine interfaces, such as file access protocols (NFS, CIFS), block access protocols (SAN), and other protocols
 // such as Manage ONTAP (ONTAPI), use second or subsecond time values that are based on world time or UTC.
 //
-//
 // swagger:model timezone_cluster
 type TimezoneCluster struct {
 

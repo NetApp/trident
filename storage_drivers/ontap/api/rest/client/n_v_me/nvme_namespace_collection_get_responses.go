@@ -46,7 +46,8 @@ func NewNvmeNamespaceCollectionGetOK() *NvmeNamespaceCollectionGetOK {
 	return &NvmeNamespaceCollectionGetOK{}
 }
 
-/* NvmeNamespaceCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NvmeNamespaceCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NvmeNamespaceCollectionGetOK struct {
 	Payload *models.NvmeNamespaceResponse
 }
 
+// IsSuccess returns true when this nvme namespace collection get o k response has a 2xx status code
+func (o *NvmeNamespaceCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme namespace collection get o k response has a 3xx status code
+func (o *NvmeNamespaceCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme namespace collection get o k response has a 4xx status code
+func (o *NvmeNamespaceCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme namespace collection get o k response has a 5xx status code
+func (o *NvmeNamespaceCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme namespace collection get o k response a status code equal to that given
+func (o *NvmeNamespaceCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeNamespaceCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/namespaces][%d] nvmeNamespaceCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NvmeNamespaceCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/namespaces][%d] nvmeNamespaceCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NvmeNamespaceCollectionGetOK) GetPayload() *models.NvmeNamespaceResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNvmeNamespaceCollectionGetDefault(code int) *NvmeNamespaceCollectionGetD
 	}
 }
 
-/* NvmeNamespaceCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+NvmeNamespaceCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NvmeNamespaceCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme namespace collection get default response has a 2xx status code
+func (o *NvmeNamespaceCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme namespace collection get default response has a 3xx status code
+func (o *NvmeNamespaceCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme namespace collection get default response has a 4xx status code
+func (o *NvmeNamespaceCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme namespace collection get default response has a 5xx status code
+func (o *NvmeNamespaceCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme namespace collection get default response a status code equal to that given
+func (o *NvmeNamespaceCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeNamespaceCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/namespaces][%d] nvme_namespace_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeNamespaceCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/namespaces][%d] nvme_namespace_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeNamespaceCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

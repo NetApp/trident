@@ -14,7 +14,6 @@ import (
 
 // Fips Cluster-wide Federal Information Processing Standards (FIPS) mode information.
 //
-//
 // swagger:model fips
 type Fips struct {
 

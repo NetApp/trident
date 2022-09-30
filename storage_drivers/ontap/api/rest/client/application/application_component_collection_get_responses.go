@@ -46,7 +46,8 @@ func NewApplicationComponentCollectionGetOK() *ApplicationComponentCollectionGet
 	return &ApplicationComponentCollectionGetOK{}
 }
 
-/* ApplicationComponentCollectionGetOK describes a response with status code 200, with default header values.
+/*
+ApplicationComponentCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ApplicationComponentCollectionGetOK struct {
 	Payload *models.ApplicationComponentResponse
 }
 
+// IsSuccess returns true when this application component collection get o k response has a 2xx status code
+func (o *ApplicationComponentCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application component collection get o k response has a 3xx status code
+func (o *ApplicationComponentCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application component collection get o k response has a 4xx status code
+func (o *ApplicationComponentCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application component collection get o k response has a 5xx status code
+func (o *ApplicationComponentCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application component collection get o k response a status code equal to that given
+func (o *ApplicationComponentCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ApplicationComponentCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components][%d] applicationComponentCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ApplicationComponentCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components][%d] applicationComponentCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ApplicationComponentCollectionGetOK) GetPayload() *models.ApplicationComponentResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewApplicationComponentCollectionGetDefault(code int) *ApplicationComponent
 	}
 }
 
-/* ApplicationComponentCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+ApplicationComponentCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ApplicationComponentCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this application component collection get default response has a 2xx status code
+func (o *ApplicationComponentCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this application component collection get default response has a 3xx status code
+func (o *ApplicationComponentCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this application component collection get default response has a 4xx status code
+func (o *ApplicationComponentCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this application component collection get default response has a 5xx status code
+func (o *ApplicationComponentCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this application component collection get default response a status code equal to that given
+func (o *ApplicationComponentCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ApplicationComponentCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components][%d] application_component_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ApplicationComponentCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components][%d] application_component_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ApplicationComponentCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

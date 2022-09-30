@@ -54,10 +54,12 @@ func NewConfigurationBackupModifyParamsWithHTTPClient(client *http.Client) *Conf
 	}
 }
 
-/* ConfigurationBackupModifyParams contains all the parameters to send to the API endpoint
-   for the configuration backup modify operation.
+/*
+ConfigurationBackupModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the configuration backup modify operation.
+
+	Typically these are written to a http.Request.
 */
 type ConfigurationBackupModifyParams struct {
 

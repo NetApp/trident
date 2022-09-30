@@ -53,10 +53,12 @@ func NewClusterNtpKeysDeleteParamsWithHTTPClient(client *http.Client) *ClusterNt
 	}
 }
 
-/* ClusterNtpKeysDeleteParams contains all the parameters to send to the API endpoint
-   for the cluster ntp keys delete operation.
+/*
+ClusterNtpKeysDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster ntp keys delete operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterNtpKeysDeleteParams struct {
 

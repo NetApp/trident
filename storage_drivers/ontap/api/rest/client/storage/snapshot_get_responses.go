@@ -46,7 +46,8 @@ func NewSnapshotGetOK() *SnapshotGetOK {
 	return &SnapshotGetOK{}
 }
 
-/* SnapshotGetOK describes a response with status code 200, with default header values.
+/*
+SnapshotGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnapshotGetOK struct {
 	Payload *models.Snapshot
 }
 
+// IsSuccess returns true when this snapshot get o k response has a 2xx status code
+func (o *SnapshotGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot get o k response has a 3xx status code
+func (o *SnapshotGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot get o k response has a 4xx status code
+func (o *SnapshotGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot get o k response has a 5xx status code
+func (o *SnapshotGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot get o k response a status code equal to that given
+func (o *SnapshotGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnapshotGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshotGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnapshotGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshotGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnapshotGetOK) GetPayload() *models.Snapshot {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSnapshotGetDefault(code int) *SnapshotGetDefault {
 	}
 }
 
-/* SnapshotGetDefault describes a response with status code -1, with default header values.
+/*
+	SnapshotGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Code
+	ONTAP Error Response Code
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2          | An invalid value was entered for one of the fields. |
@@ -91,7 +124,6 @@ func NewSnapshotGetDefault(code int) *SnapshotGetDefault {
 | 1638503    | The Snapshot copy does not exist on the specified volume. |
 | 1638600    | The Snapshot copy does not exist. |
 | 1638615    | Bulk operations for Snapshot copies are not supported on multiple SVMs. |
-
 */
 type SnapshotGetDefault struct {
 	_statusCode int
@@ -104,9 +136,39 @@ func (o *SnapshotGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapshot get default response has a 2xx status code
+func (o *SnapshotGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapshot get default response has a 3xx status code
+func (o *SnapshotGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapshot get default response has a 4xx status code
+func (o *SnapshotGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapshot get default response has a 5xx status code
+func (o *SnapshotGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapshot get default response a status code equal to that given
+func (o *SnapshotGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapshotGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshot_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapshotGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshot_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapshotGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

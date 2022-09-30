@@ -46,7 +46,8 @@ func NewEffectivePermissionGetOK() *EffectivePermissionGetOK {
 	return &EffectivePermissionGetOK{}
 }
 
-/* EffectivePermissionGetOK describes a response with status code 200, with default header values.
+/*
+EffectivePermissionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type EffectivePermissionGetOK struct {
 	Payload *models.EffectivePermission
 }
 
+// IsSuccess returns true when this effective permission get o k response has a 2xx status code
+func (o *EffectivePermissionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this effective permission get o k response has a 3xx status code
+func (o *EffectivePermissionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this effective permission get o k response has a 4xx status code
+func (o *EffectivePermissionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this effective permission get o k response has a 5xx status code
+func (o *EffectivePermissionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this effective permission get o k response a status code equal to that given
+func (o *EffectivePermissionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EffectivePermissionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effectivePermissionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *EffectivePermissionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effectivePermissionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *EffectivePermissionGetOK) GetPayload() *models.EffectivePermission {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewEffectivePermissionGetDefault(code int) *EffectivePermissionGetDefault {
 	}
 }
 
-/* EffectivePermissionGetDefault describes a response with status code -1, with default header values.
+/*
+EffectivePermissionGetDefault describes a response with status code -1, with default header values.
 
 ONTAP Error Response Codes | Error Code | Description | | ---------- | ----------- | | 655865     | The specified path cannot be used, if the file does not exist.|
 */
@@ -95,9 +127,39 @@ func (o *EffectivePermissionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this effective permission get default response has a 2xx status code
+func (o *EffectivePermissionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this effective permission get default response has a 3xx status code
+func (o *EffectivePermissionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this effective permission get default response has a 4xx status code
+func (o *EffectivePermissionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this effective permission get default response has a 5xx status code
+func (o *EffectivePermissionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this effective permission get default response a status code equal to that given
+func (o *EffectivePermissionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EffectivePermissionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effective_permission_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EffectivePermissionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/file-security/effective-permissions/{svm.uuid}/{path}][%d] effective_permission_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EffectivePermissionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

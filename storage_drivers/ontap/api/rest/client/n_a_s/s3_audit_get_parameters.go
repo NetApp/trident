@@ -53,10 +53,12 @@ func NewS3AuditGetParamsWithHTTPClient(client *http.Client) *S3AuditGetParams {
 	}
 }
 
-/* S3AuditGetParams contains all the parameters to send to the API endpoint
-   for the s3 audit get operation.
+/*
+S3AuditGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 audit get operation.
+
+	Typically these are written to a http.Request.
 */
 type S3AuditGetParams struct {
 

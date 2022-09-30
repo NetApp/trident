@@ -46,7 +46,8 @@ func NewFpolicyConnectionCollectionGetOK() *FpolicyConnectionCollectionGetOK {
 	return &FpolicyConnectionCollectionGetOK{}
 }
 
-/* FpolicyConnectionCollectionGetOK describes a response with status code 200, with default header values.
+/*
+FpolicyConnectionCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FpolicyConnectionCollectionGetOK struct {
 	Payload *models.FpolicyConnectionResponse
 }
 
+// IsSuccess returns true when this fpolicy connection collection get o k response has a 2xx status code
+func (o *FpolicyConnectionCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fpolicy connection collection get o k response has a 3xx status code
+func (o *FpolicyConnectionCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fpolicy connection collection get o k response has a 4xx status code
+func (o *FpolicyConnectionCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fpolicy connection collection get o k response has a 5xx status code
+func (o *FpolicyConnectionCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fpolicy connection collection get o k response a status code equal to that given
+func (o *FpolicyConnectionCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FpolicyConnectionCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/connections][%d] fpolicyConnectionCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FpolicyConnectionCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/connections][%d] fpolicyConnectionCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FpolicyConnectionCollectionGetOK) GetPayload() *models.FpolicyConnectionResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFpolicyConnectionCollectionGetDefault(code int) *FpolicyConnectionCollec
 	}
 }
 
-/* FpolicyConnectionCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+FpolicyConnectionCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FpolicyConnectionCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fpolicy connection collection get default response has a 2xx status code
+func (o *FpolicyConnectionCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fpolicy connection collection get default response has a 3xx status code
+func (o *FpolicyConnectionCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fpolicy connection collection get default response has a 4xx status code
+func (o *FpolicyConnectionCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fpolicy connection collection get default response has a 5xx status code
+func (o *FpolicyConnectionCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fpolicy connection collection get default response a status code equal to that given
+func (o *FpolicyConnectionCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FpolicyConnectionCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/connections][%d] fpolicy_connection_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FpolicyConnectionCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/fpolicy/{svm.uuid}/connections][%d] fpolicy_connection_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FpolicyConnectionCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

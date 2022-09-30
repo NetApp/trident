@@ -46,7 +46,8 @@ func NewNetworkIPBgpPeerGroupsGetOK() *NetworkIPBgpPeerGroupsGetOK {
 	return &NetworkIPBgpPeerGroupsGetOK{}
 }
 
-/* NetworkIPBgpPeerGroupsGetOK describes a response with status code 200, with default header values.
+/*
+NetworkIPBgpPeerGroupsGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NetworkIPBgpPeerGroupsGetOK struct {
 	Payload *models.BgpPeerGroupResponse
 }
 
+// IsSuccess returns true when this network Ip bgp peer groups get o k response has a 2xx status code
+func (o *NetworkIPBgpPeerGroupsGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip bgp peer groups get o k response has a 3xx status code
+func (o *NetworkIPBgpPeerGroupsGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip bgp peer groups get o k response has a 4xx status code
+func (o *NetworkIPBgpPeerGroupsGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip bgp peer groups get o k response has a 5xx status code
+func (o *NetworkIPBgpPeerGroupsGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip bgp peer groups get o k response a status code equal to that given
+func (o *NetworkIPBgpPeerGroupsGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkIPBgpPeerGroupsGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups][%d] networkIpBgpPeerGroupsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NetworkIPBgpPeerGroupsGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups][%d] networkIpBgpPeerGroupsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NetworkIPBgpPeerGroupsGetOK) GetPayload() *models.BgpPeerGroupResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNetworkIPBgpPeerGroupsGetDefault(code int) *NetworkIPBgpPeerGroupsGetDef
 	}
 }
 
-/* NetworkIPBgpPeerGroupsGetDefault describes a response with status code -1, with default header values.
+/*
+NetworkIPBgpPeerGroupsGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NetworkIPBgpPeerGroupsGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ip bgp peer groups get default response has a 2xx status code
+func (o *NetworkIPBgpPeerGroupsGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ip bgp peer groups get default response has a 3xx status code
+func (o *NetworkIPBgpPeerGroupsGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ip bgp peer groups get default response has a 4xx status code
+func (o *NetworkIPBgpPeerGroupsGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ip bgp peer groups get default response has a 5xx status code
+func (o *NetworkIPBgpPeerGroupsGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ip bgp peer groups get default response a status code equal to that given
+func (o *NetworkIPBgpPeerGroupsGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkIPBgpPeerGroupsGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups][%d] network_ip_bgp_peer_groups_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkIPBgpPeerGroupsGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ip/bgp/peer-groups][%d] network_ip_bgp_peer_groups_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkIPBgpPeerGroupsGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

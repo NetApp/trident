@@ -55,10 +55,12 @@ func NewSnaplockLegalHoldCreateParamsWithHTTPClient(client *http.Client) *Snaplo
 	}
 }
 
-/* SnaplockLegalHoldCreateParams contains all the parameters to send to the API endpoint
-   for the snaplock legal hold create operation.
+/*
+SnaplockLegalHoldCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock legal hold create operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockLegalHoldCreateParams struct {
 

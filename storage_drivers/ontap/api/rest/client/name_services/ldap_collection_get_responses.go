@@ -46,7 +46,8 @@ func NewLdapCollectionGetOK() *LdapCollectionGetOK {
 	return &LdapCollectionGetOK{}
 }
 
-/* LdapCollectionGetOK describes a response with status code 200, with default header values.
+/*
+LdapCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LdapCollectionGetOK struct {
 	Payload *models.LdapServiceResponse
 }
 
+// IsSuccess returns true when this ldap collection get o k response has a 2xx status code
+func (o *LdapCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ldap collection get o k response has a 3xx status code
+func (o *LdapCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ldap collection get o k response has a 4xx status code
+func (o *LdapCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ldap collection get o k response has a 5xx status code
+func (o *LdapCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ldap collection get o k response a status code equal to that given
+func (o *LdapCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LdapCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/ldap][%d] ldapCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LdapCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/ldap][%d] ldapCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LdapCollectionGetOK) GetPayload() *models.LdapServiceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewLdapCollectionGetDefault(code int) *LdapCollectionGetDefault {
 	}
 }
 
-/* LdapCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	LdapCollectionGetDefault describes a response with status code -1, with default header values.
 
- Following error codes can be thrown as part of LDAP status information, if LDAP status is needed to be retrieved.
+	Following error codes can be thrown as part of LDAP status information, if LDAP status is needed to be retrieved.
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4915229    | DNS resolution failed due to an internal error. Contact technical support if this issue persists |
@@ -93,7 +126,6 @@ func NewLdapCollectionGetDefault(code int) *LdapCollectionGetDefault {
 | 4915234    | The specified LDAP server or preferred Active Directory server is not supported because it is one of the following: multicast, loopback, 0.0.0.0, or broadcast |
 | 4915265    | The specified bind password or bind DN is invalid |
 | 4915264    | Certificate verification failed. Verify that a valid certificate is installed |
-
 */
 type LdapCollectionGetDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *LdapCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ldap collection get default response has a 2xx status code
+func (o *LdapCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ldap collection get default response has a 3xx status code
+func (o *LdapCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ldap collection get default response has a 4xx status code
+func (o *LdapCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ldap collection get default response has a 5xx status code
+func (o *LdapCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ldap collection get default response a status code equal to that given
+func (o *LdapCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LdapCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/ldap][%d] ldap_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LdapCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/ldap][%d] ldap_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LdapCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

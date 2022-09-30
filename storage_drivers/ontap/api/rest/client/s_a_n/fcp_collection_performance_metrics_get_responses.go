@@ -46,7 +46,8 @@ func NewFcpCollectionPerformanceMetricsGetOK() *FcpCollectionPerformanceMetricsG
 	return &FcpCollectionPerformanceMetricsGetOK{}
 }
 
-/* FcpCollectionPerformanceMetricsGetOK describes a response with status code 200, with default header values.
+/*
+FcpCollectionPerformanceMetricsGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FcpCollectionPerformanceMetricsGetOK struct {
 	Payload *models.PerformanceFcpMetricResponse
 }
 
+// IsSuccess returns true when this fcp collection performance metrics get o k response has a 2xx status code
+func (o *FcpCollectionPerformanceMetricsGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fcp collection performance metrics get o k response has a 3xx status code
+func (o *FcpCollectionPerformanceMetricsGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fcp collection performance metrics get o k response has a 4xx status code
+func (o *FcpCollectionPerformanceMetricsGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fcp collection performance metrics get o k response has a 5xx status code
+func (o *FcpCollectionPerformanceMetricsGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fcp collection performance metrics get o k response a status code equal to that given
+func (o *FcpCollectionPerformanceMetricsGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcpCollectionPerformanceMetricsGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}/metrics][%d] fcpCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FcpCollectionPerformanceMetricsGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}/metrics][%d] fcpCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FcpCollectionPerformanceMetricsGetOK) GetPayload() *models.PerformanceFcpMetricResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFcpCollectionPerformanceMetricsGetDefault(code int) *FcpCollectionPerfor
 	}
 }
 
-/* FcpCollectionPerformanceMetricsGetDefault describes a response with status code -1, with default header values.
+/*
+FcpCollectionPerformanceMetricsGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FcpCollectionPerformanceMetricsGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fcp collection performance metrics get default response has a 2xx status code
+func (o *FcpCollectionPerformanceMetricsGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fcp collection performance metrics get default response has a 3xx status code
+func (o *FcpCollectionPerformanceMetricsGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fcp collection performance metrics get default response has a 4xx status code
+func (o *FcpCollectionPerformanceMetricsGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fcp collection performance metrics get default response has a 5xx status code
+func (o *FcpCollectionPerformanceMetricsGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fcp collection performance metrics get default response a status code equal to that given
+func (o *FcpCollectionPerformanceMetricsGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcpCollectionPerformanceMetricsGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}/metrics][%d] fcp_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcpCollectionPerformanceMetricsGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/fcp/services/{svm.uuid}/metrics][%d] fcp_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcpCollectionPerformanceMetricsGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

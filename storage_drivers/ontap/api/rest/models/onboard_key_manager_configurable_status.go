@@ -14,7 +14,6 @@ import (
 
 // OnboardKeyManagerConfigurableStatus Indicates whether the Onboard Key Manager can be configured in the cluster.
 //
-//
 // swagger:model onboard_key_manager_configurable_status
 type OnboardKeyManagerConfigurableStatus struct {
 

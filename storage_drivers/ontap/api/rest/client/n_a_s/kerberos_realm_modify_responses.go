@@ -46,14 +46,44 @@ func NewKerberosRealmModifyOK() *KerberosRealmModifyOK {
 	return &KerberosRealmModifyOK{}
 }
 
-/* KerberosRealmModifyOK describes a response with status code 200, with default header values.
+/*
+KerberosRealmModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type KerberosRealmModifyOK struct {
 }
 
+// IsSuccess returns true when this kerberos realm modify o k response has a 2xx status code
+func (o *KerberosRealmModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this kerberos realm modify o k response has a 3xx status code
+func (o *KerberosRealmModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this kerberos realm modify o k response has a 4xx status code
+func (o *KerberosRealmModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this kerberos realm modify o k response has a 5xx status code
+func (o *KerberosRealmModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this kerberos realm modify o k response a status code equal to that given
+func (o *KerberosRealmModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *KerberosRealmModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmModifyOK ", 200)
+}
+
+func (o *KerberosRealmModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberosRealmModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewKerberosRealmModifyDefault(code int) *KerberosRealmModifyDefault {
 	}
 }
 
-/* KerberosRealmModifyDefault describes a response with status code -1, with default header values.
+/*
+	KerberosRealmModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error codes | Description |
 | ----------- | ----------- |
 | 1966125     | Failed to remove hosts entry.|
@@ -86,7 +118,6 @@ func NewKerberosRealmModifyDefault(code int) *KerberosRealmModifyDefault {
 | 2949148     | Failed to modify Kerberos realm.|
 | 3276976     | "realm" is a required input|
 | 3276998     | Only the data Vservers can own NFS Kerberos realms.|
-
 */
 type KerberosRealmModifyDefault struct {
 	_statusCode int
@@ -99,9 +130,39 @@ func (o *KerberosRealmModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this kerberos realm modify default response has a 2xx status code
+func (o *KerberosRealmModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this kerberos realm modify default response has a 3xx status code
+func (o *KerberosRealmModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this kerberos realm modify default response has a 4xx status code
+func (o *KerberosRealmModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this kerberos realm modify default response has a 5xx status code
+func (o *KerberosRealmModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this kerberos realm modify default response a status code equal to that given
+func (o *KerberosRealmModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *KerberosRealmModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *KerberosRealmModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/realms/{svm.uuid}/{name}][%d] kerberos_realm_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *KerberosRealmModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

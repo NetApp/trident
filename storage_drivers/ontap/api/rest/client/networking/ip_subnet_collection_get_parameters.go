@@ -53,10 +53,12 @@ func NewIPSubnetCollectionGetParamsWithHTTPClient(client *http.Client) *IPSubnet
 	}
 }
 
-/* IPSubnetCollectionGetParams contains all the parameters to send to the API endpoint
-   for the ip subnet collection get operation.
+/*
+IPSubnetCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ip subnet collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type IPSubnetCollectionGetParams struct {
 

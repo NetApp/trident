@@ -46,14 +46,44 @@ func NewIgroupModifyOK() *IgroupModifyOK {
 	return &IgroupModifyOK{}
 }
 
-/* IgroupModifyOK describes a response with status code 200, with default header values.
+/*
+IgroupModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IgroupModifyOK struct {
 }
 
+// IsSuccess returns true when this igroup modify o k response has a 2xx status code
+func (o *IgroupModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup modify o k response has a 3xx status code
+func (o *IgroupModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup modify o k response has a 4xx status code
+func (o *IgroupModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup modify o k response has a 5xx status code
+func (o *IgroupModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup modify o k response a status code equal to that given
+func (o *IgroupModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IgroupModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroupModifyOK ", 200)
+}
+
+func (o *IgroupModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroupModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewIgroupModifyDefault(code int) *IgroupModifyDefault {
 	}
 }
 
-/* IgroupModifyDefault describes a response with status code -1, with default header values.
+/*
+	IgroupModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1254264 | An attempt was made to bind a portset to an initiator group that is already bound to a portset. |
@@ -85,7 +117,6 @@ func NewIgroupModifyDefault(code int) *IgroupModifyDefault {
 | 5374747 | The cluster is currently running in a mixed version and initiator group comments cannot be created until the effective cluster version reaches 9.9.1. |
 | 5374852 | The initiator group does not exist. |
 | 5374868 | The initiator group was partially modified before an error was encountered while renaming the initiator group. |
-
 */
 type IgroupModifyDefault struct {
 	_statusCode int
@@ -98,9 +129,39 @@ func (o *IgroupModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup modify default response has a 2xx status code
+func (o *IgroupModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup modify default response has a 3xx status code
+func (o *IgroupModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup modify default response has a 4xx status code
+func (o *IgroupModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup modify default response has a 5xx status code
+func (o *IgroupModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup modify default response a status code equal to that given
+func (o *IgroupModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroup_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/san/igroups/{uuid}][%d] igroup_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

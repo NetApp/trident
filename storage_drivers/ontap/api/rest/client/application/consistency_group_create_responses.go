@@ -52,7 +52,8 @@ func NewConsistencyGroupCreateCreated() *ConsistencyGroupCreateCreated {
 	return &ConsistencyGroupCreateCreated{}
 }
 
-/* ConsistencyGroupCreateCreated describes a response with status code 201, with default header values.
+/*
+ConsistencyGroupCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -60,9 +61,39 @@ type ConsistencyGroupCreateCreated struct {
 	Payload *models.ConsistencyGroupResponse
 }
 
+// IsSuccess returns true when this consistency group create created response has a 2xx status code
+func (o *ConsistencyGroupCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this consistency group create created response has a 3xx status code
+func (o *ConsistencyGroupCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this consistency group create created response has a 4xx status code
+func (o *ConsistencyGroupCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this consistency group create created response has a 5xx status code
+func (o *ConsistencyGroupCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this consistency group create created response a status code equal to that given
+func (o *ConsistencyGroupCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *ConsistencyGroupCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *ConsistencyGroupCreateCreated) String() string {
+	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *ConsistencyGroupCreateCreated) GetPayload() *models.ConsistencyGroupResponse {
 	return o.Payload
 }
@@ -84,7 +115,8 @@ func NewConsistencyGroupCreateAccepted() *ConsistencyGroupCreateAccepted {
 	return &ConsistencyGroupCreateAccepted{}
 }
 
-/* ConsistencyGroupCreateAccepted describes a response with status code 202, with default header values.
+/*
+ConsistencyGroupCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -92,9 +124,39 @@ type ConsistencyGroupCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this consistency group create accepted response has a 2xx status code
+func (o *ConsistencyGroupCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this consistency group create accepted response has a 3xx status code
+func (o *ConsistencyGroupCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this consistency group create accepted response has a 4xx status code
+func (o *ConsistencyGroupCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this consistency group create accepted response has a 5xx status code
+func (o *ConsistencyGroupCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this consistency group create accepted response a status code equal to that given
+func (o *ConsistencyGroupCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ConsistencyGroupCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ConsistencyGroupCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistencyGroupCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ConsistencyGroupCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -118,9 +180,11 @@ func NewConsistencyGroupCreateDefault(code int) *ConsistencyGroupCreateDefault {
 	}
 }
 
-/* ConsistencyGroupCreateDefault describes a response with status code -1, with default header values.
+/*
+	ConsistencyGroupCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 53411842 | Consistency group does not exist. |
@@ -140,7 +204,6 @@ func NewConsistencyGroupCreateDefault(code int) *ConsistencyGroupCreateDefault {
 | 53411867 | LUN name is too long after appending a unique suffix. |
 | 53411869 | Volume name is too long after appending a unique suffix. |
 | 53411870 | When using the \"round_robin\" layout, the volume count must not be greater than the LUN count. |
-
 */
 type ConsistencyGroupCreateDefault struct {
 	_statusCode int
@@ -153,9 +216,39 @@ func (o *ConsistencyGroupCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this consistency group create default response has a 2xx status code
+func (o *ConsistencyGroupCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this consistency group create default response has a 3xx status code
+func (o *ConsistencyGroupCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this consistency group create default response has a 4xx status code
+func (o *ConsistencyGroupCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this consistency group create default response has a 5xx status code
+func (o *ConsistencyGroupCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this consistency group create default response a status code equal to that given
+func (o *ConsistencyGroupCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ConsistencyGroupCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistency_group_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ConsistencyGroupCreateDefault) String() string {
+	return fmt.Sprintf("[POST /application/consistency-groups][%d] consistency_group_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ConsistencyGroupCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

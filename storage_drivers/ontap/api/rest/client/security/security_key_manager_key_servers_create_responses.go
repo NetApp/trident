@@ -46,7 +46,8 @@ func NewSecurityKeyManagerKeyServersCreateCreated() *SecurityKeyManagerKeyServer
 	return &SecurityKeyManagerKeyServersCreateCreated{}
 }
 
-/* SecurityKeyManagerKeyServersCreateCreated describes a response with status code 201, with default header values.
+/*
+SecurityKeyManagerKeyServersCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type SecurityKeyManagerKeyServersCreateCreated struct {
 	Payload *models.KeyServerResponse
 }
 
+// IsSuccess returns true when this security key manager key servers create created response has a 2xx status code
+func (o *SecurityKeyManagerKeyServersCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager key servers create created response has a 3xx status code
+func (o *SecurityKeyManagerKeyServersCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager key servers create created response has a 4xx status code
+func (o *SecurityKeyManagerKeyServersCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager key servers create created response has a 5xx status code
+func (o *SecurityKeyManagerKeyServersCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager key servers create created response a status code equal to that given
+func (o *SecurityKeyManagerKeyServersCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *SecurityKeyManagerKeyServersCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] securityKeyManagerKeyServersCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *SecurityKeyManagerKeyServersCreateCreated) String() string {
+	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] securityKeyManagerKeyServersCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *SecurityKeyManagerKeyServersCreateCreated) GetPayload() *models.KeyServerResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSecurityKeyManagerKeyServersCreateDefault(code int) *SecurityKeyManagerK
 	}
 }
 
-/* SecurityKeyManagerKeyServersCreateDefault describes a response with status code -1, with default header values.
+/*
+	SecurityKeyManagerKeyServersCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65536038 | A maximum of 4 active primary key servers are allowed. |
@@ -100,7 +133,6 @@ func NewSecurityKeyManagerKeyServersCreateDefault(code int) *SecurityKeyManagerK
 | 66060338 | Unable to establish secure connection to KMIP server due to incorrect server_ca certificates. |
 | 66060339 | Unable to establish secure connection to KMIP server due to incorrect client certificates. |
 | 66060340 | Unable to establish secure connection to KMIP server due to Cryptsoft error. |
-
 */
 type SecurityKeyManagerKeyServersCreateDefault struct {
 	_statusCode int
@@ -113,9 +145,39 @@ func (o *SecurityKeyManagerKeyServersCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security key manager key servers create default response has a 2xx status code
+func (o *SecurityKeyManagerKeyServersCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security key manager key servers create default response has a 3xx status code
+func (o *SecurityKeyManagerKeyServersCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security key manager key servers create default response has a 4xx status code
+func (o *SecurityKeyManagerKeyServersCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security key manager key servers create default response has a 5xx status code
+func (o *SecurityKeyManagerKeyServersCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security key manager key servers create default response a status code equal to that given
+func (o *SecurityKeyManagerKeyServersCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityKeyManagerKeyServersCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] security_key_manager_key_servers_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityKeyManagerKeyServersCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/key-managers/{uuid}/key-servers][%d] security_key_manager_key_servers_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityKeyManagerKeyServersCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

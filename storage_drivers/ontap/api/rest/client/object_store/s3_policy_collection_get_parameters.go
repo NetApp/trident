@@ -53,10 +53,12 @@ func NewS3PolicyCollectionGetParamsWithHTTPClient(client *http.Client) *S3Policy
 	}
 }
 
-/* S3PolicyCollectionGetParams contains all the parameters to send to the API endpoint
-   for the s3 policy collection get operation.
+/*
+S3PolicyCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 policy collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type S3PolicyCollectionGetParams struct {
 

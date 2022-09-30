@@ -46,7 +46,8 @@ func NewStoragePoolDeleteAccepted() *StoragePoolDeleteAccepted {
 	return &StoragePoolDeleteAccepted{}
 }
 
-/* StoragePoolDeleteAccepted describes a response with status code 202, with default header values.
+/*
+StoragePoolDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type StoragePoolDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this storage pool delete accepted response has a 2xx status code
+func (o *StoragePoolDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this storage pool delete accepted response has a 3xx status code
+func (o *StoragePoolDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this storage pool delete accepted response has a 4xx status code
+func (o *StoragePoolDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this storage pool delete accepted response has a 5xx status code
+func (o *StoragePoolDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this storage pool delete accepted response a status code equal to that given
+func (o *StoragePoolDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *StoragePoolDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storagePoolDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *StoragePoolDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storagePoolDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *StoragePoolDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewStoragePoolDeleteDefault(code int) *StoragePoolDeleteDefault {
 	}
 }
 
-/* StoragePoolDeleteDefault describes a response with status code -1, with default header values.
+/*
+	StoragePoolDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 11209668 | Capacity from pool is being used by one or more aggregates. |
@@ -92,7 +125,6 @@ func NewStoragePoolDeleteDefault(code int) *StoragePoolDeleteDefault {
 | 11209673 | Unable to assign shared capacity from a constituent disk. |
 | 11209675 | A constituent disk of the storage pool has non-spare capacity. |
 | 11209676 | A constituent disk of the storage pool is reserved for coredump. |
-
 */
 type StoragePoolDeleteDefault struct {
 	_statusCode int
@@ -105,9 +137,39 @@ func (o *StoragePoolDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this storage pool delete default response has a 2xx status code
+func (o *StoragePoolDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this storage pool delete default response has a 3xx status code
+func (o *StoragePoolDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this storage pool delete default response has a 4xx status code
+func (o *StoragePoolDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this storage pool delete default response has a 5xx status code
+func (o *StoragePoolDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this storage pool delete default response a status code equal to that given
+func (o *StoragePoolDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *StoragePoolDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storage_pool_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *StoragePoolDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/pools/{uuid}][%d] storage_pool_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *StoragePoolDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

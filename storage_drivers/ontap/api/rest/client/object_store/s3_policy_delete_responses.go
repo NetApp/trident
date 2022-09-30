@@ -46,14 +46,44 @@ func NewS3PolicyDeleteOK() *S3PolicyDeleteOK {
 	return &S3PolicyDeleteOK{}
 }
 
-/* S3PolicyDeleteOK describes a response with status code 200, with default header values.
+/*
+S3PolicyDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type S3PolicyDeleteOK struct {
 }
 
+// IsSuccess returns true when this s3 policy delete o k response has a 2xx status code
+func (o *S3PolicyDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 policy delete o k response has a 3xx status code
+func (o *S3PolicyDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 policy delete o k response has a 4xx status code
+func (o *S3PolicyDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 policy delete o k response has a 5xx status code
+func (o *S3PolicyDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 policy delete o k response a status code equal to that given
+func (o *S3PolicyDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3PolicyDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyDeleteOK ", 200)
+}
+
+func (o *S3PolicyDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewS3PolicyDeleteDefault(code int) *S3PolicyDeleteDefault {
 	}
 }
 
-/* S3PolicyDeleteDefault describes a response with status code -1, with default header values.
+/*
+S3PolicyDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *S3PolicyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 policy delete default response has a 2xx status code
+func (o *S3PolicyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 policy delete default response has a 3xx status code
+func (o *S3PolicyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 policy delete default response has a 4xx status code
+func (o *S3PolicyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 policy delete default response has a 5xx status code
+func (o *S3PolicyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 policy delete default response a status code equal to that given
+func (o *S3PolicyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3PolicyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3PolicyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3PolicyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -52,10 +52,12 @@ func NewSvmPeerPermissionDeleteParamsWithHTTPClient(client *http.Client) *SvmPee
 	}
 }
 
-/* SvmPeerPermissionDeleteParams contains all the parameters to send to the API endpoint
-   for the svm peer permission delete operation.
+/*
+SvmPeerPermissionDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm peer permission delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmPeerPermissionDeleteParams struct {
 

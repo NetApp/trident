@@ -55,10 +55,12 @@ func NewS3UserModifyParamsWithHTTPClient(client *http.Client) *S3UserModifyParam
 	}
 }
 
-/* S3UserModifyParams contains all the parameters to send to the API endpoint
-   for the s3 user modify operation.
+/*
+S3UserModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 user modify operation.
+
+	Typically these are written to a http.Request.
 */
 type S3UserModifyParams struct {
 

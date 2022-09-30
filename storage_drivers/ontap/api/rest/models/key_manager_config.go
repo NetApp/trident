@@ -16,7 +16,6 @@ import (
 
 // KeyManagerConfig Manages the various key manager configuration options.
 //
-//
 // swagger:model key_manager_config
 type KeyManagerConfig struct {
 

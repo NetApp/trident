@@ -54,10 +54,12 @@ func NewNetgroupsSettingsModifyParamsWithHTTPClient(client *http.Client) *Netgro
 	}
 }
 
-/* NetgroupsSettingsModifyParams contains all the parameters to send to the API endpoint
-   for the netgroups settings modify operation.
+/*
+NetgroupsSettingsModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the netgroups settings modify operation.
+
+	Typically these are written to a http.Request.
 */
 type NetgroupsSettingsModifyParams struct {
 

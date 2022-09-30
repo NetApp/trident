@@ -46,14 +46,44 @@ func NewCifsShareACLDeleteOK() *CifsShareACLDeleteOK {
 	return &CifsShareACLDeleteOK{}
 }
 
-/* CifsShareACLDeleteOK describes a response with status code 200, with default header values.
+/*
+CifsShareACLDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type CifsShareACLDeleteOK struct {
 }
 
+// IsSuccess returns true when this cifs share Acl delete o k response has a 2xx status code
+func (o *CifsShareACLDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs share Acl delete o k response has a 3xx status code
+func (o *CifsShareACLDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs share Acl delete o k response has a 4xx status code
+func (o *CifsShareACLDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs share Acl delete o k response has a 5xx status code
+func (o *CifsShareACLDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs share Acl delete o k response a status code equal to that given
+func (o *CifsShareACLDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsShareACLDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifsShareAclDeleteOK ", 200)
+}
+
+func (o *CifsShareACLDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifsShareAclDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewCifsShareACLDeleteDefault(code int) *CifsShareACLDeleteDefault {
 	}
 }
 
-/* CifsShareACLDeleteDefault describes a response with status code -1, with default header values.
+/*
+CifsShareACLDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *CifsShareACLDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs share acl delete default response has a 2xx status code
+func (o *CifsShareACLDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs share acl delete default response has a 3xx status code
+func (o *CifsShareACLDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs share acl delete default response has a 4xx status code
+func (o *CifsShareACLDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs share acl delete default response has a 5xx status code
+func (o *CifsShareACLDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs share acl delete default response a status code equal to that given
+func (o *CifsShareACLDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsShareACLDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifs_share_acl_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsShareACLDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/shares/{svm.uuid}/{share}/acls/{user_or_group}/{type}][%d] cifs_share_acl_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsShareACLDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

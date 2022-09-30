@@ -46,7 +46,8 @@ func NewAutoUpdateConfigurationGetOK() *AutoUpdateConfigurationGetOK {
 	return &AutoUpdateConfigurationGetOK{}
 }
 
-/* AutoUpdateConfigurationGetOK describes a response with status code 200, with default header values.
+/*
+AutoUpdateConfigurationGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AutoUpdateConfigurationGetOK struct {
 	Payload *models.AutoUpdateConfiguration
 }
 
+// IsSuccess returns true when this auto update configuration get o k response has a 2xx status code
+func (o *AutoUpdateConfigurationGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this auto update configuration get o k response has a 3xx status code
+func (o *AutoUpdateConfigurationGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this auto update configuration get o k response has a 4xx status code
+func (o *AutoUpdateConfigurationGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this auto update configuration get o k response has a 5xx status code
+func (o *AutoUpdateConfigurationGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this auto update configuration get o k response a status code equal to that given
+func (o *AutoUpdateConfigurationGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AutoUpdateConfigurationGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/auto-update/configurations/{uuid}][%d] autoUpdateConfigurationGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AutoUpdateConfigurationGetOK) String() string {
+	return fmt.Sprintf("[GET /support/auto-update/configurations/{uuid}][%d] autoUpdateConfigurationGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AutoUpdateConfigurationGetOK) GetPayload() *models.AutoUpdateConfiguration {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAutoUpdateConfigurationGetDefault(code int) *AutoUpdateConfigurationGetD
 	}
 }
 
-/* AutoUpdateConfigurationGetDefault describes a response with status code -1, with default header values.
+/*
+AutoUpdateConfigurationGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AutoUpdateConfigurationGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this auto update configuration get default response has a 2xx status code
+func (o *AutoUpdateConfigurationGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this auto update configuration get default response has a 3xx status code
+func (o *AutoUpdateConfigurationGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this auto update configuration get default response has a 4xx status code
+func (o *AutoUpdateConfigurationGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this auto update configuration get default response has a 5xx status code
+func (o *AutoUpdateConfigurationGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this auto update configuration get default response a status code equal to that given
+func (o *AutoUpdateConfigurationGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AutoUpdateConfigurationGetDefault) Error() string {
 	return fmt.Sprintf("[GET /support/auto-update/configurations/{uuid}][%d] auto_update_configuration_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AutoUpdateConfigurationGetDefault) String() string {
+	return fmt.Sprintf("[GET /support/auto-update/configurations/{uuid}][%d] auto_update_configuration_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AutoUpdateConfigurationGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

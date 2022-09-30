@@ -53,10 +53,12 @@ func NewIpsecGetParamsWithHTTPClient(client *http.Client) *IpsecGetParams {
 	}
 }
 
-/* IpsecGetParams contains all the parameters to send to the API endpoint
-   for the ipsec get operation.
+/*
+IpsecGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ipsec get operation.
+
+	Typically these are written to a http.Request.
 */
 type IpsecGetParams struct {
 

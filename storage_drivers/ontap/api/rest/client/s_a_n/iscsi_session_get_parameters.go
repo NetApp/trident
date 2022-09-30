@@ -53,10 +53,12 @@ func NewIscsiSessionGetParamsWithHTTPClient(client *http.Client) *IscsiSessionGe
 	}
 }
 
-/* IscsiSessionGetParams contains all the parameters to send to the API endpoint
-   for the iscsi session get operation.
+/*
+IscsiSessionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the iscsi session get operation.
+
+	Typically these are written to a http.Request.
 */
 type IscsiSessionGetParams struct {
 

@@ -53,10 +53,12 @@ func NewClusterNtpKeysGetParamsWithHTTPClient(client *http.Client) *ClusterNtpKe
 	}
 }
 
-/* ClusterNtpKeysGetParams contains all the parameters to send to the API endpoint
-   for the cluster ntp keys get operation.
+/*
+ClusterNtpKeysGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster ntp keys get operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterNtpKeysGetParams struct {
 

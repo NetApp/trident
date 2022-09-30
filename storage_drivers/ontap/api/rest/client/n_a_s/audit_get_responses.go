@@ -46,7 +46,8 @@ func NewAuditGetOK() *AuditGetOK {
 	return &AuditGetOK{}
 }
 
-/* AuditGetOK describes a response with status code 200, with default header values.
+/*
+AuditGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AuditGetOK struct {
 	Payload *models.Audit
 }
 
+// IsSuccess returns true when this audit get o k response has a 2xx status code
+func (o *AuditGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this audit get o k response has a 3xx status code
+func (o *AuditGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this audit get o k response has a 4xx status code
+func (o *AuditGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this audit get o k response has a 5xx status code
+func (o *AuditGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this audit get o k response a status code equal to that given
+func (o *AuditGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AuditGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] auditGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AuditGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] auditGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AuditGetOK) GetPayload() *models.Audit {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAuditGetDefault(code int) *AuditGetDefault {
 	}
 }
 
-/* AuditGetDefault describes a response with status code -1, with default header values.
+/*
+AuditGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AuditGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this audit get default response has a 2xx status code
+func (o *AuditGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this audit get default response has a 3xx status code
+func (o *AuditGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this audit get default response has a 4xx status code
+func (o *AuditGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this audit get default response has a 5xx status code
+func (o *AuditGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this audit get default response a status code equal to that given
+func (o *AuditGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AuditGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] audit_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AuditGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/audit/{svm.uuid}][%d] audit_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AuditGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

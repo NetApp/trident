@@ -53,10 +53,12 @@ func NewSensorsCollectionGetParamsWithHTTPClient(client *http.Client) *SensorsCo
 	}
 }
 
-/* SensorsCollectionGetParams contains all the parameters to send to the API endpoint
-   for the sensors collection get operation.
+/*
+SensorsCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the sensors collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type SensorsCollectionGetParams struct {
 

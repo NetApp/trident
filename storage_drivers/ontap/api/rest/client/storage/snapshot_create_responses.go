@@ -46,7 +46,8 @@ func NewSnapshotCreateAccepted() *SnapshotCreateAccepted {
 	return &SnapshotCreateAccepted{}
 }
 
-/* SnapshotCreateAccepted describes a response with status code 202, with default header values.
+/*
+SnapshotCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SnapshotCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this snapshot create accepted response has a 2xx status code
+func (o *SnapshotCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot create accepted response has a 3xx status code
+func (o *SnapshotCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot create accepted response has a 4xx status code
+func (o *SnapshotCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot create accepted response has a 5xx status code
+func (o *SnapshotCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot create accepted response a status code equal to that given
+func (o *SnapshotCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SnapshotCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SnapshotCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshotCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SnapshotCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSnapshotCreateDefault(code int) *SnapshotCreateDefault {
 	}
 }
 
-/* SnapshotCreateDefault describes a response with status code -1, with default header values.
+/*
+	SnapshotCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Code
+	ONTAP Error Response Code
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 524479     | The specified volume is not online or does not have enough space to create a Snapshot copy. |
@@ -96,7 +129,6 @@ func NewSnapshotCreateDefault(code int) *SnapshotCreateDefault {
 | 1638616    | Bulk Snapshot copy create is not supported with multiple Snapshot copy names. |
 | 1638617    | Bulk Snapshot copy create is not supported with volume names in a mixed-version cluster. |
 | 1638618    | The property cannot be specified for Snapshot copy create. |
-
 */
 type SnapshotCreateDefault struct {
 	_statusCode int
@@ -109,9 +141,39 @@ func (o *SnapshotCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapshot create default response has a 2xx status code
+func (o *SnapshotCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapshot create default response has a 3xx status code
+func (o *SnapshotCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapshot create default response has a 4xx status code
+func (o *SnapshotCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapshot create default response has a 5xx status code
+func (o *SnapshotCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapshot create default response a status code equal to that given
+func (o *SnapshotCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapshotCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshot_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapshotCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/volumes/{volume.uuid}/snapshots][%d] snapshot_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapshotCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

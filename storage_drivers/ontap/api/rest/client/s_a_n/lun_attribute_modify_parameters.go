@@ -54,10 +54,12 @@ func NewLunAttributeModifyParamsWithHTTPClient(client *http.Client) *LunAttribut
 	}
 }
 
-/* LunAttributeModifyParams contains all the parameters to send to the API endpoint
-   for the lun attribute modify operation.
+/*
+LunAttributeModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the lun attribute modify operation.
+
+	Typically these are written to a http.Request.
 */
 type LunAttributeModifyParams struct {
 

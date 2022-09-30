@@ -46,7 +46,8 @@ func NewSecurityKeyManagerKeyServersGetOK() *SecurityKeyManagerKeyServersGetOK {
 	return &SecurityKeyManagerKeyServersGetOK{}
 }
 
-/* SecurityKeyManagerKeyServersGetOK describes a response with status code 200, with default header values.
+/*
+SecurityKeyManagerKeyServersGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SecurityKeyManagerKeyServersGetOK struct {
 	Payload *models.KeyServer
 }
 
+// IsSuccess returns true when this security key manager key servers get o k response has a 2xx status code
+func (o *SecurityKeyManagerKeyServersGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager key servers get o k response has a 3xx status code
+func (o *SecurityKeyManagerKeyServersGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager key servers get o k response has a 4xx status code
+func (o *SecurityKeyManagerKeyServersGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager key servers get o k response has a 5xx status code
+func (o *SecurityKeyManagerKeyServersGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager key servers get o k response a status code equal to that given
+func (o *SecurityKeyManagerKeyServersGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityKeyManagerKeyServersGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SecurityKeyManagerKeyServersGetOK) String() string {
+	return fmt.Sprintf("[GET /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SecurityKeyManagerKeyServersGetOK) GetPayload() *models.KeyServer {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSecurityKeyManagerKeyServersGetDefault(code int) *SecurityKeyManagerKeyS
 	}
 }
 
-/* SecurityKeyManagerKeyServersGetDefault describes a response with status code -1, with default header values.
+/*
+SecurityKeyManagerKeyServersGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SecurityKeyManagerKeyServersGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security key manager key servers get default response has a 2xx status code
+func (o *SecurityKeyManagerKeyServersGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security key manager key servers get default response has a 3xx status code
+func (o *SecurityKeyManagerKeyServersGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security key manager key servers get default response has a 4xx status code
+func (o *SecurityKeyManagerKeyServersGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security key manager key servers get default response has a 5xx status code
+func (o *SecurityKeyManagerKeyServersGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security key manager key servers get default response a status code equal to that given
+func (o *SecurityKeyManagerKeyServersGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityKeyManagerKeyServersGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityKeyManagerKeyServersGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityKeyManagerKeyServersGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

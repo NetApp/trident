@@ -53,10 +53,12 @@ func NewIgroupNestedDeleteParamsWithHTTPClient(client *http.Client) *IgroupNeste
 	}
 }
 
-/* IgroupNestedDeleteParams contains all the parameters to send to the API endpoint
-   for the igroup nested delete operation.
+/*
+IgroupNestedDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the igroup nested delete operation.
+
+	Typically these are written to a http.Request.
 */
 type IgroupNestedDeleteParams struct {
 

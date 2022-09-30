@@ -46,7 +46,8 @@ func NewVscanScannerPoolGetOK() *VscanScannerPoolGetOK {
 	return &VscanScannerPoolGetOK{}
 }
 
-/* VscanScannerPoolGetOK describes a response with status code 200, with default header values.
+/*
+VscanScannerPoolGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type VscanScannerPoolGetOK struct {
 	Payload *models.VscanScannerPool
 }
 
+// IsSuccess returns true when this vscan scanner pool get o k response has a 2xx status code
+func (o *VscanScannerPoolGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan scanner pool get o k response has a 3xx status code
+func (o *VscanScannerPoolGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan scanner pool get o k response has a 4xx status code
+func (o *VscanScannerPoolGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan scanner pool get o k response has a 5xx status code
+func (o *VscanScannerPoolGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan scanner pool get o k response a status code equal to that given
+func (o *VscanScannerPoolGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanScannerPoolGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerPoolGetOK  %+v", 200, o.Payload)
 }
+
+func (o *VscanScannerPoolGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscanScannerPoolGetOK  %+v", 200, o.Payload)
+}
+
 func (o *VscanScannerPoolGetOK) GetPayload() *models.VscanScannerPool {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewVscanScannerPoolGetDefault(code int) *VscanScannerPoolGetDefault {
 	}
 }
 
-/* VscanScannerPoolGetDefault describes a response with status code -1, with default header values.
+/*
+VscanScannerPoolGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *VscanScannerPoolGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan scanner pool get default response has a 2xx status code
+func (o *VscanScannerPoolGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan scanner pool get default response has a 3xx status code
+func (o *VscanScannerPoolGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan scanner pool get default response has a 4xx status code
+func (o *VscanScannerPoolGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan scanner pool get default response has a 5xx status code
+func (o *VscanScannerPoolGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan scanner pool get default response a status code equal to that given
+func (o *VscanScannerPoolGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanScannerPoolGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_pool_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanScannerPoolGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/scanner-pools/{name}][%d] vscan_scanner_pool_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanScannerPoolGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

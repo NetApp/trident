@@ -53,10 +53,12 @@ func NewWwpnAliasGetParamsWithHTTPClient(client *http.Client) *WwpnAliasGetParam
 	}
 }
 
-/* WwpnAliasGetParams contains all the parameters to send to the API endpoint
-   for the wwpn alias get operation.
+/*
+WwpnAliasGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the wwpn alias get operation.
+
+	Typically these are written to a http.Request.
 */
 type WwpnAliasGetParams struct {
 

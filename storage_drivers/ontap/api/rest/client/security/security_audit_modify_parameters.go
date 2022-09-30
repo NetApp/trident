@@ -54,10 +54,12 @@ func NewSecurityAuditModifyParamsWithHTTPClient(client *http.Client) *SecurityAu
 	}
 }
 
-/* SecurityAuditModifyParams contains all the parameters to send to the API endpoint
-   for the security audit modify operation.
+/*
+SecurityAuditModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security audit modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityAuditModifyParams struct {
 

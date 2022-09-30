@@ -46,7 +46,8 @@ func NewSvmMigrationVolumeCollectionGetOK() *SvmMigrationVolumeCollectionGetOK {
 	return &SvmMigrationVolumeCollectionGetOK{}
 }
 
-/* SvmMigrationVolumeCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SvmMigrationVolumeCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SvmMigrationVolumeCollectionGetOK struct {
 	Payload *models.SvmMigrationVolumeResponse
 }
 
+// IsSuccess returns true when this svm migration volume collection get o k response has a 2xx status code
+func (o *SvmMigrationVolumeCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm migration volume collection get o k response has a 3xx status code
+func (o *SvmMigrationVolumeCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm migration volume collection get o k response has a 4xx status code
+func (o *SvmMigrationVolumeCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm migration volume collection get o k response has a 5xx status code
+func (o *SvmMigrationVolumeCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm migration volume collection get o k response a status code equal to that given
+func (o *SvmMigrationVolumeCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SvmMigrationVolumeCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes][%d] svmMigrationVolumeCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SvmMigrationVolumeCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes][%d] svmMigrationVolumeCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SvmMigrationVolumeCollectionGetOK) GetPayload() *models.SvmMigrationVolumeResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewSvmMigrationVolumeCollectionGetDefault(code int) *SvmMigrationVolumeColl
 	}
 }
 
-/* SvmMigrationVolumeCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	SvmMigrationVolumeCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 13172783 | Migrate RDB lookup failed |
-
 */
 type SvmMigrationVolumeCollectionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *SvmMigrationVolumeCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm migration volume collection get default response has a 2xx status code
+func (o *SvmMigrationVolumeCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm migration volume collection get default response has a 3xx status code
+func (o *SvmMigrationVolumeCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm migration volume collection get default response has a 4xx status code
+func (o *SvmMigrationVolumeCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm migration volume collection get default response has a 5xx status code
+func (o *SvmMigrationVolumeCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm migration volume collection get default response a status code equal to that given
+func (o *SvmMigrationVolumeCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmMigrationVolumeCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes][%d] svm_migration_volume_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmMigrationVolumeCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /svm/migrations/{svm_migration.uuid}/volumes][%d] svm_migration_volume_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmMigrationVolumeCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

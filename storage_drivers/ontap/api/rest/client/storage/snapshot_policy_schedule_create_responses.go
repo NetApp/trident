@@ -46,14 +46,44 @@ func NewSnapshotPolicyScheduleCreateCreated() *SnapshotPolicyScheduleCreateCreat
 	return &SnapshotPolicyScheduleCreateCreated{}
 }
 
-/* SnapshotPolicyScheduleCreateCreated describes a response with status code 201, with default header values.
+/*
+SnapshotPolicyScheduleCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type SnapshotPolicyScheduleCreateCreated struct {
 }
 
+// IsSuccess returns true when this snapshot policy schedule create created response has a 2xx status code
+func (o *SnapshotPolicyScheduleCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot policy schedule create created response has a 3xx status code
+func (o *SnapshotPolicyScheduleCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot policy schedule create created response has a 4xx status code
+func (o *SnapshotPolicyScheduleCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot policy schedule create created response has a 5xx status code
+func (o *SnapshotPolicyScheduleCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot policy schedule create created response a status code equal to that given
+func (o *SnapshotPolicyScheduleCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *SnapshotPolicyScheduleCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshotPolicyScheduleCreateCreated ", 201)
+}
+
+func (o *SnapshotPolicyScheduleCreateCreated) String() string {
 	return fmt.Sprintf("[POST /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshotPolicyScheduleCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewSnapshotPolicyScheduleCreateDefault(code int) *SnapshotPolicyScheduleCre
 	}
 }
 
-/* SnapshotPolicyScheduleCreateDefault describes a response with status code -1, with default header values.
+/*
+	SnapshotPolicyScheduleCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1638407    | When adding schedule to a Snapshot copy policy, the count for that schedule must be specified. |
@@ -81,7 +113,6 @@ func NewSnapshotPolicyScheduleCreateDefault(code int) *SnapshotPolicyScheduleCre
 | 1638508    | Another schedule has the same prefix within this policy. |
 | 1638528    | This operation is not supported in a mixed-version cluster. |
 | 1638531    | This operation is not supported because specified policy is owned by the cluster admin. |
-
 */
 type SnapshotPolicyScheduleCreateDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *SnapshotPolicyScheduleCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapshot policy schedule create default response has a 2xx status code
+func (o *SnapshotPolicyScheduleCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapshot policy schedule create default response has a 3xx status code
+func (o *SnapshotPolicyScheduleCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapshot policy schedule create default response has a 4xx status code
+func (o *SnapshotPolicyScheduleCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapshot policy schedule create default response has a 5xx status code
+func (o *SnapshotPolicyScheduleCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapshot policy schedule create default response a status code equal to that given
+func (o *SnapshotPolicyScheduleCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapshotPolicyScheduleCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshot_policy_schedule_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapshotPolicyScheduleCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshot_policy_schedule_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapshotPolicyScheduleCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

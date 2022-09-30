@@ -46,14 +46,44 @@ func NewUnixUserSettingsModifyOK() *UnixUserSettingsModifyOK {
 	return &UnixUserSettingsModifyOK{}
 }
 
-/* UnixUserSettingsModifyOK describes a response with status code 200, with default header values.
+/*
+UnixUserSettingsModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type UnixUserSettingsModifyOK struct {
 }
 
+// IsSuccess returns true when this unix user settings modify o k response has a 2xx status code
+func (o *UnixUserSettingsModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix user settings modify o k response has a 3xx status code
+func (o *UnixUserSettingsModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix user settings modify o k response has a 4xx status code
+func (o *UnixUserSettingsModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix user settings modify o k response has a 5xx status code
+func (o *UnixUserSettingsModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix user settings modify o k response a status code equal to that given
+func (o *UnixUserSettingsModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixUserSettingsModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/cache/unix-user/settings/{svm.uuid}][%d] unixUserSettingsModifyOK ", 200)
+}
+
+func (o *UnixUserSettingsModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/cache/unix-user/settings/{svm.uuid}][%d] unixUserSettingsModifyOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewUnixUserSettingsModifyDefault(code int) *UnixUserSettingsModifyDefault {
 	}
 }
 
-/* UnixUserSettingsModifyDefault describes a response with status code -1, with default header values.
+/*
+	UnixUserSettingsModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
-
 */
 type UnixUserSettingsModifyDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *UnixUserSettingsModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix user settings modify default response has a 2xx status code
+func (o *UnixUserSettingsModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix user settings modify default response has a 3xx status code
+func (o *UnixUserSettingsModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix user settings modify default response has a 4xx status code
+func (o *UnixUserSettingsModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix user settings modify default response has a 5xx status code
+func (o *UnixUserSettingsModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix user settings modify default response a status code equal to that given
+func (o *UnixUserSettingsModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixUserSettingsModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/cache/unix-user/settings/{svm.uuid}][%d] unix_user_settings_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixUserSettingsModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/cache/unix-user/settings/{svm.uuid}][%d] unix_user_settings_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixUserSettingsModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

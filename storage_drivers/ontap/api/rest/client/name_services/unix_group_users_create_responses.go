@@ -46,14 +46,44 @@ func NewUnixGroupUsersCreateCreated() *UnixGroupUsersCreateCreated {
 	return &UnixGroupUsersCreateCreated{}
 }
 
-/* UnixGroupUsersCreateCreated describes a response with status code 201, with default header values.
+/*
+UnixGroupUsersCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type UnixGroupUsersCreateCreated struct {
 }
 
+// IsSuccess returns true when this unix group users create created response has a 2xx status code
+func (o *UnixGroupUsersCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix group users create created response has a 3xx status code
+func (o *UnixGroupUsersCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix group users create created response has a 4xx status code
+func (o *UnixGroupUsersCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix group users create created response has a 5xx status code
+func (o *UnixGroupUsersCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix group users create created response a status code equal to that given
+func (o *UnixGroupUsersCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *UnixGroupUsersCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unixGroupUsersCreateCreated ", 201)
+}
+
+func (o *UnixGroupUsersCreateCreated) String() string {
 	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unixGroupUsersCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewUnixGroupUsersCreateDefault(code int) *UnixGroupUsersCreateDefault {
 	}
 }
 
-/* UnixGroupUsersCreateDefault describes a response with status code -1, with default header values.
+/*
+	UnixGroupUsersCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262179     | Invalid arguments in records. |
@@ -81,7 +113,6 @@ func NewUnixGroupUsersCreateDefault(code int) *UnixGroupUsersCreateDefault {
 | 23724066   | User name too long. Maximum supported length is 64 characters.|
 | 23724142   | "records" field must not be specified when a single user is added.|
 | 23724143   | SVM UUID, UNIX group name and skip-name-validation are invalid fields for "records" parameter. |
-
 */
 type UnixGroupUsersCreateDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *UnixGroupUsersCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix group users create default response has a 2xx status code
+func (o *UnixGroupUsersCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix group users create default response has a 3xx status code
+func (o *UnixGroupUsersCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix group users create default response has a 4xx status code
+func (o *UnixGroupUsersCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix group users create default response has a 5xx status code
+func (o *UnixGroupUsersCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix group users create default response a status code equal to that given
+func (o *UnixGroupUsersCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixGroupUsersCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unix_group_users_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixGroupUsersCreateDefault) String() string {
+	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unix_group_users_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixGroupUsersCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

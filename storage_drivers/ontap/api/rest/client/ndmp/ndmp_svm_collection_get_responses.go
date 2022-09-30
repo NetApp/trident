@@ -46,7 +46,8 @@ func NewNdmpSvmCollectionGetOK() *NdmpSvmCollectionGetOK {
 	return &NdmpSvmCollectionGetOK{}
 }
 
-/* NdmpSvmCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NdmpSvmCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NdmpSvmCollectionGetOK struct {
 	Payload *models.NdmpSvmResponse
 }
 
+// IsSuccess returns true when this ndmp svm collection get o k response has a 2xx status code
+func (o *NdmpSvmCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ndmp svm collection get o k response has a 3xx status code
+func (o *NdmpSvmCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ndmp svm collection get o k response has a 4xx status code
+func (o *NdmpSvmCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ndmp svm collection get o k response has a 5xx status code
+func (o *NdmpSvmCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ndmp svm collection get o k response a status code equal to that given
+func (o *NdmpSvmCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NdmpSvmCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmpSvmCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NdmpSvmCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmpSvmCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NdmpSvmCollectionGetOK) GetPayload() *models.NdmpSvmResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNdmpSvmCollectionGetDefault(code int) *NdmpSvmCollectionGetDefault {
 	}
 }
 
-/* NdmpSvmCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+NdmpSvmCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NdmpSvmCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ndmp svm collection get default response has a 2xx status code
+func (o *NdmpSvmCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ndmp svm collection get default response has a 3xx status code
+func (o *NdmpSvmCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ndmp svm collection get default response has a 4xx status code
+func (o *NdmpSvmCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ndmp svm collection get default response has a 5xx status code
+func (o *NdmpSvmCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ndmp svm collection get default response a status code equal to that given
+func (o *NdmpSvmCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NdmpSvmCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmp_svm_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NdmpSvmCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/svms][%d] ndmp_svm_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NdmpSvmCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewCoredumpDeleteParamsWithHTTPClient(client *http.Client) *CoredumpDeleteP
 	}
 }
 
-/* CoredumpDeleteParams contains all the parameters to send to the API endpoint
-   for the coredump delete operation.
+/*
+CoredumpDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the coredump delete operation.
+
+	Typically these are written to a http.Request.
 */
 type CoredumpDeleteParams struct {
 

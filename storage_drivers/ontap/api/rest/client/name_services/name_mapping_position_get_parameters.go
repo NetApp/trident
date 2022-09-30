@@ -53,10 +53,12 @@ func NewNameMappingPositionGetParamsWithHTTPClient(client *http.Client) *NameMap
 	}
 }
 
-/* NameMappingPositionGetParams contains all the parameters to send to the API endpoint
-   for the name mapping position get operation.
+/*
+NameMappingPositionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the name mapping position get operation.
+
+	Typically these are written to a http.Request.
 */
 type NameMappingPositionGetParams struct {
 

@@ -42,10 +42,10 @@ type ClientService interface {
 }
 
 /*
-  CloudTargetCollectionGet Retrieves the collection of cloud targets in the cluster.
+	CloudTargetCollectionGet Retrieves the collection of cloud targets in the cluster.
+
 ### Related ONTAP commands
 * `storage aggregate object-store config show`
-
 */
 func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -83,7 +83,8 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 }
 
 /*
-  CloudTargetCreate Creates a cloud target.
+	CloudTargetCreate Creates a cloud target.
+
 ### Required properties
 * `name` - Name for the cloud target.
 * `owner` - Owner of the target: _fabricpool_, _snapmirror_.
@@ -109,15 +110,18 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
   - _gcp_sa_ - if running in Cloud Volumes ONTAP in GCP
   - _azure_msi_ - if running in Cloud Volumes ONTAP in Azure
   - _key_  - in all other cases.
+
 * `server`
   - _s3.amazonaws.com_ - if `provider_type` is _AWS_S3_
   - _blob.core.windows.net_ - if `provider_type` is _Azure_Cloud_
   - _storage.googleapis.com_ - if `provider_type` is _GoogleCloud_
+
 * `ssl_enabled` - _true_
 * `port`
   - _443_ if `ssl_enabled` is _true_
   - _80_ if `ssl_enabled` is _false_ and `provider_type` is not _SGWS_
   - _8084_ if `ssl_enabled` is _false_ and `provider_type` is _SGWS_
+
 * `ipspace` - _Default_
 * `certificate_validation_enabled` - _true_
 * `ignore_warnings` - _false_
@@ -126,12 +130,13 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 * `server_side_encryption`
   - _none_ - if `provider_type` is _ONTAP_S3_
   - _sse_s3_ - if `provider_type` is not _ONTAP_S3_
+
 * `url_style`
   - _path_style_ - if `provider_type` is neither _AWS_S3_ nor _AliCloud_
   - _virtual_hosted_style_ - if `provider_type` is either _AWS_S3 or _AliCloud__
+
 ### Related ONTAP commands
 * `storage aggregate object-store config create`
-
 */
 func (a *Client) CloudTargetCreate(params *CloudTargetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -169,10 +174,10 @@ func (a *Client) CloudTargetCreate(params *CloudTargetCreateParams, authInfo run
 }
 
 /*
-  CloudTargetDelete Deletes the cloud target specified by the UUID. This request starts a job and returns a link to that job.
+	CloudTargetDelete Deletes the cloud target specified by the UUID. This request starts a job and returns a link to that job.
+
 ### Related ONTAP commands
 * `storage aggregate object-store config delete`
-
 */
 func (a *Client) CloudTargetDelete(params *CloudTargetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -210,10 +215,10 @@ func (a *Client) CloudTargetDelete(params *CloudTargetDeleteParams, authInfo run
 }
 
 /*
-  CloudTargetGet Retrieves the cloud target specified by the UUID.
+	CloudTargetGet Retrieves the cloud target specified by the UUID.
+
 ### Related ONTAP commands
 * `storage aggregate object-store config show`
-
 */
 func (a *Client) CloudTargetGet(params *CloudTargetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetGetOK, error) {
 	// TODO: Validate the params before sending
@@ -251,10 +256,10 @@ func (a *Client) CloudTargetGet(params *CloudTargetGetParams, authInfo runtime.C
 }
 
 /*
-  CloudTargetModify Updates the cloud target specified by the UUID with the fields in the body. This request starts a job and returns a link to that job.
+	CloudTargetModify Updates the cloud target specified by the UUID with the fields in the body. This request starts a job and returns a link to that job.
+
 ### Related ONTAP commands
 * `storage aggregate object-store config modify`
-
 */
 func (a *Client) CloudTargetModify(params *CloudTargetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetModifyAccepted, error) {
 	// TODO: Validate the params before sending

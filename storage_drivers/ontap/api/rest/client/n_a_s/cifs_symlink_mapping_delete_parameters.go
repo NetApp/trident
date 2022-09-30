@@ -52,10 +52,12 @@ func NewCifsSymlinkMappingDeleteParamsWithHTTPClient(client *http.Client) *CifsS
 	}
 }
 
-/* CifsSymlinkMappingDeleteParams contains all the parameters to send to the API endpoint
-   for the cifs symlink mapping delete operation.
+/*
+CifsSymlinkMappingDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs symlink mapping delete operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsSymlinkMappingDeleteParams struct {
 

@@ -46,7 +46,8 @@ func NewCifsOpenFileCollectionGetOK() *CifsOpenFileCollectionGetOK {
 	return &CifsOpenFileCollectionGetOK{}
 }
 
-/* CifsOpenFileCollectionGetOK describes a response with status code 200, with default header values.
+/*
+CifsOpenFileCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsOpenFileCollectionGetOK struct {
 	Payload *models.CifsOpenFileResponse
 }
 
+// IsSuccess returns true when this cifs open file collection get o k response has a 2xx status code
+func (o *CifsOpenFileCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs open file collection get o k response has a 3xx status code
+func (o *CifsOpenFileCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs open file collection get o k response has a 4xx status code
+func (o *CifsOpenFileCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs open file collection get o k response has a 5xx status code
+func (o *CifsOpenFileCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs open file collection get o k response a status code equal to that given
+func (o *CifsOpenFileCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsOpenFileCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifsOpenFileCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsOpenFileCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifsOpenFileCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsOpenFileCollectionGetOK) GetPayload() *models.CifsOpenFileResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsOpenFileCollectionGetDefault(code int) *CifsOpenFileCollectionGetDef
 	}
 }
 
-/* CifsOpenFileCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+CifsOpenFileCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsOpenFileCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs open file collection get default response has a 2xx status code
+func (o *CifsOpenFileCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs open file collection get default response has a 3xx status code
+func (o *CifsOpenFileCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs open file collection get default response has a 4xx status code
+func (o *CifsOpenFileCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs open file collection get default response has a 5xx status code
+func (o *CifsOpenFileCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs open file collection get default response a status code equal to that given
+func (o *CifsOpenFileCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsOpenFileCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifs_open_file_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsOpenFileCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/session/files][%d] cifs_open_file_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsOpenFileCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

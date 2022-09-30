@@ -55,10 +55,12 @@ func NewRolePrivilegeCreateParamsWithHTTPClient(client *http.Client) *RolePrivil
 	}
 }
 
-/* RolePrivilegeCreateParams contains all the parameters to send to the API endpoint
-   for the role privilege create operation.
+/*
+RolePrivilegeCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the role privilege create operation.
+
+	Typically these are written to a http.Request.
 */
 type RolePrivilegeCreateParams struct {
 

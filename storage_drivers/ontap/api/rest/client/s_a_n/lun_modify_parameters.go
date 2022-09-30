@@ -55,10 +55,12 @@ func NewLunModifyParamsWithHTTPClient(client *http.Client) *LunModifyParams {
 	}
 }
 
-/* LunModifyParams contains all the parameters to send to the API endpoint
-   for the lun modify operation.
+/*
+LunModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the lun modify operation.
+
+	Typically these are written to a http.Request.
 */
 type LunModifyParams struct {
 

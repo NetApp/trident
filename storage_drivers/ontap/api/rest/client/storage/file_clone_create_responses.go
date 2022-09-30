@@ -46,7 +46,8 @@ func NewFileCloneCreateAccepted() *FileCloneCreateAccepted {
 	return &FileCloneCreateAccepted{}
 }
 
-/* FileCloneCreateAccepted describes a response with status code 202, with default header values.
+/*
+FileCloneCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type FileCloneCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this file clone create accepted response has a 2xx status code
+func (o *FileCloneCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file clone create accepted response has a 3xx status code
+func (o *FileCloneCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file clone create accepted response has a 4xx status code
+func (o *FileCloneCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file clone create accepted response has a 5xx status code
+func (o *FileCloneCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file clone create accepted response a status code equal to that given
+func (o *FileCloneCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *FileCloneCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/file/clone][%d] fileCloneCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *FileCloneCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/file/clone][%d] fileCloneCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *FileCloneCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFileCloneCreateDefault(code int) *FileCloneCreateDefault {
 	}
 }
 
-/* FileCloneCreateDefault describes a response with status code -1, with default header values.
+/*
+FileCloneCreateDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FileCloneCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file clone create default response has a 2xx status code
+func (o *FileCloneCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file clone create default response has a 3xx status code
+func (o *FileCloneCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file clone create default response has a 4xx status code
+func (o *FileCloneCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file clone create default response has a 5xx status code
+func (o *FileCloneCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file clone create default response a status code equal to that given
+func (o *FileCloneCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileCloneCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/file/clone][%d] file_clone_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileCloneCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/file/clone][%d] file_clone_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileCloneCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

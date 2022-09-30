@@ -53,10 +53,12 @@ func NewSecurityKeyManagerMigrateParamsWithHTTPClient(client *http.Client) *Secu
 	}
 }
 
-/* SecurityKeyManagerMigrateParams contains all the parameters to send to the API endpoint
-   for the security key manager migrate operation.
+/*
+SecurityKeyManagerMigrateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security key manager migrate operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityKeyManagerMigrateParams struct {
 

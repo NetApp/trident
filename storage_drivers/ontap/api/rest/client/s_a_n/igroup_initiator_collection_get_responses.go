@@ -46,7 +46,8 @@ func NewIgroupInitiatorCollectionGetOK() *IgroupInitiatorCollectionGetOK {
 	return &IgroupInitiatorCollectionGetOK{}
 }
 
-/* IgroupInitiatorCollectionGetOK describes a response with status code 200, with default header values.
+/*
+IgroupInitiatorCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IgroupInitiatorCollectionGetOK struct {
 	Payload *models.IgroupInitiatorResponse
 }
 
+// IsSuccess returns true when this igroup initiator collection get o k response has a 2xx status code
+func (o *IgroupInitiatorCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup initiator collection get o k response has a 3xx status code
+func (o *IgroupInitiatorCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup initiator collection get o k response has a 4xx status code
+func (o *IgroupInitiatorCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup initiator collection get o k response has a 5xx status code
+func (o *IgroupInitiatorCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup initiator collection get o k response a status code equal to that given
+func (o *IgroupInitiatorCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IgroupInitiatorCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroupInitiatorCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IgroupInitiatorCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroupInitiatorCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IgroupInitiatorCollectionGetOK) GetPayload() *models.IgroupInitiatorResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewIgroupInitiatorCollectionGetDefault(code int) *IgroupInitiatorCollection
 	}
 }
 
-/* IgroupInitiatorCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	IgroupInitiatorCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374852 | The initiator group specified in the URI does not exist. |
-
 */
 type IgroupInitiatorCollectionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *IgroupInitiatorCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup initiator collection get default response has a 2xx status code
+func (o *IgroupInitiatorCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup initiator collection get default response has a 3xx status code
+func (o *IgroupInitiatorCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup initiator collection get default response has a 4xx status code
+func (o *IgroupInitiatorCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup initiator collection get default response has a 5xx status code
+func (o *IgroupInitiatorCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup initiator collection get default response a status code equal to that given
+func (o *IgroupInitiatorCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupInitiatorCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroup_initiator_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupInitiatorCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/igroups/{igroup.uuid}/initiators][%d] igroup_initiator_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupInitiatorCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

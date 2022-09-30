@@ -46,14 +46,44 @@ func NewClusterNisModifyOK() *ClusterNisModifyOK {
 	return &ClusterNisModifyOK{}
 }
 
-/* ClusterNisModifyOK describes a response with status code 200, with default header values.
+/*
+ClusterNisModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ClusterNisModifyOK struct {
 }
 
+// IsSuccess returns true when this cluster nis modify o k response has a 2xx status code
+func (o *ClusterNisModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster nis modify o k response has a 3xx status code
+func (o *ClusterNisModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster nis modify o k response has a 4xx status code
+func (o *ClusterNisModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster nis modify o k response has a 5xx status code
+func (o *ClusterNisModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster nis modify o k response a status code equal to that given
+func (o *ClusterNisModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterNisModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] clusterNisModifyOK ", 200)
+}
+
+func (o *ClusterNisModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] clusterNisModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewClusterNisModifyDefault(code int) *ClusterNisModifyDefault {
 	}
 }
 
-/* ClusterNisModifyDefault describes a response with status code -1, with default header values.
+/*
+	ClusterNisModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1966253    | IPv6 is not enabled in the cluster .|
@@ -81,7 +113,6 @@ func NewClusterNisModifyDefault(code int) *ClusterNisModifyDefault {
 | 23724112   | DNS resolution failed due to an internal error. Contact technical support if this issue persists. |
 | 23724132   | DNS resolution failed for all the specified servers.  |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces |
-
 */
 type ClusterNisModifyDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *ClusterNisModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster nis modify default response has a 2xx status code
+func (o *ClusterNisModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster nis modify default response has a 3xx status code
+func (o *ClusterNisModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster nis modify default response has a 4xx status code
+func (o *ClusterNisModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster nis modify default response has a 5xx status code
+func (o *ClusterNisModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster nis modify default response a status code equal to that given
+func (o *ClusterNisModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNisModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] cluster_nis_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNisModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/nis][%d] cluster_nis_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNisModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

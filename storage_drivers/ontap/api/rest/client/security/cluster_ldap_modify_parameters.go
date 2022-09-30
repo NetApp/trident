@@ -54,10 +54,12 @@ func NewClusterLdapModifyParamsWithHTTPClient(client *http.Client) *ClusterLdapM
 	}
 }
 
-/* ClusterLdapModifyParams contains all the parameters to send to the API endpoint
-   for the cluster ldap modify operation.
+/*
+ClusterLdapModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster ldap modify operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterLdapModifyParams struct {
 

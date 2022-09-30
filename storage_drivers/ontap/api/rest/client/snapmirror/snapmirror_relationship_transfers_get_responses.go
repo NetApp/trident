@@ -46,7 +46,8 @@ func NewSnapmirrorRelationshipTransfersGetOK() *SnapmirrorRelationshipTransfersG
 	return &SnapmirrorRelationshipTransfersGetOK{}
 }
 
-/* SnapmirrorRelationshipTransfersGetOK describes a response with status code 200, with default header values.
+/*
+SnapmirrorRelationshipTransfersGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnapmirrorRelationshipTransfersGetOK struct {
 	Payload *models.SnapmirrorTransferResponse
 }
 
+// IsSuccess returns true when this snapmirror relationship transfers get o k response has a 2xx status code
+func (o *SnapmirrorRelationshipTransfersGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror relationship transfers get o k response has a 3xx status code
+func (o *SnapmirrorRelationshipTransfersGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror relationship transfers get o k response has a 4xx status code
+func (o *SnapmirrorRelationshipTransfersGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror relationship transfers get o k response has a 5xx status code
+func (o *SnapmirrorRelationshipTransfersGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror relationship transfers get o k response a status code equal to that given
+func (o *SnapmirrorRelationshipTransfersGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnapmirrorRelationshipTransfersGetOK) Error() string {
 	return fmt.Sprintf("[GET /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirrorRelationshipTransfersGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnapmirrorRelationshipTransfersGetOK) String() string {
+	return fmt.Sprintf("[GET /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirrorRelationshipTransfersGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnapmirrorRelationshipTransfersGetOK) GetPayload() *models.SnapmirrorTransferResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSnapmirrorRelationshipTransfersGetDefault(code int) *SnapmirrorRelations
 	}
 }
 
-/* SnapmirrorRelationshipTransfersGetDefault describes a response with status code -1, with default header values.
+/*
+SnapmirrorRelationshipTransfersGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SnapmirrorRelationshipTransfersGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapmirror relationship transfers get default response has a 2xx status code
+func (o *SnapmirrorRelationshipTransfersGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapmirror relationship transfers get default response has a 3xx status code
+func (o *SnapmirrorRelationshipTransfersGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapmirror relationship transfers get default response has a 4xx status code
+func (o *SnapmirrorRelationshipTransfersGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapmirror relationship transfers get default response has a 5xx status code
+func (o *SnapmirrorRelationshipTransfersGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapmirror relationship transfers get default response a status code equal to that given
+func (o *SnapmirrorRelationshipTransfersGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapmirrorRelationshipTransfersGetDefault) Error() string {
 	return fmt.Sprintf("[GET /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirror_relationship_transfers_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapmirrorRelationshipTransfersGetDefault) String() string {
+	return fmt.Sprintf("[GET /snapmirror/relationships/{relationship.uuid}/transfers][%d] snapmirror_relationship_transfers_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapmirrorRelationshipTransfersGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

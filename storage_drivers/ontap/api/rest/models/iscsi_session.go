@@ -17,7 +17,6 @@ import (
 
 // IscsiSession An iSCSI session is one or more TCP connections that link an iSCSI initiator with an iSCSI target. TCP connections can be added and removed from an iSCSI session by the iSCSI initiator. Across all TCP connections within an iSCSI session, an initiator sees one and the same target. After the connection is established, iSCSI control, data, and status messages are communicated over the session.
 //
-//
 // swagger:model iscsi_session
 type IscsiSession struct {
 
@@ -583,7 +582,6 @@ func (m *IscsiSessionIgroupsItems0Links) UnmarshalBinary(b []byte) error {
 }
 
 // IscsiSessionInitiator The initiator that created the session.
-//
 //
 // swagger:model IscsiSessionInitiator
 type IscsiSessionInitiator struct {

@@ -54,10 +54,12 @@ func NewKerberosInterfaceModifyParamsWithHTTPClient(client *http.Client) *Kerber
 	}
 }
 
-/* KerberosInterfaceModifyParams contains all the parameters to send to the API endpoint
-   for the kerberos interface modify operation.
+/*
+KerberosInterfaceModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the kerberos interface modify operation.
+
+	Typically these are written to a http.Request.
 */
 type KerberosInterfaceModifyParams struct {
 

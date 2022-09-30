@@ -46,14 +46,44 @@ func NewNetworkEthernetPortDeleteOK() *NetworkEthernetPortDeleteOK {
 	return &NetworkEthernetPortDeleteOK{}
 }
 
-/* NetworkEthernetPortDeleteOK describes a response with status code 200, with default header values.
+/*
+NetworkEthernetPortDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NetworkEthernetPortDeleteOK struct {
 }
 
+// IsSuccess returns true when this network ethernet port delete o k response has a 2xx status code
+func (o *NetworkEthernetPortDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network ethernet port delete o k response has a 3xx status code
+func (o *NetworkEthernetPortDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network ethernet port delete o k response has a 4xx status code
+func (o *NetworkEthernetPortDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network ethernet port delete o k response has a 5xx status code
+func (o *NetworkEthernetPortDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network ethernet port delete o k response a status code equal to that given
+func (o *NetworkEthernetPortDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkEthernetPortDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteOK ", 200)
+}
+
+func (o *NetworkEthernetPortDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewNetworkEthernetPortDeleteDefault(code int) *NetworkEthernetPortDeleteDef
 	}
 }
 
-/* NetworkEthernetPortDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NetworkEthernetPortDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376858 | Port already has an interface bound. |
 | 1966189 | Port is the home port or current port of an interface. |
-
 */
 type NetworkEthernetPortDeleteDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *NetworkEthernetPortDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ethernet port delete default response has a 2xx status code
+func (o *NetworkEthernetPortDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ethernet port delete default response has a 3xx status code
+func (o *NetworkEthernetPortDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ethernet port delete default response has a 4xx status code
+func (o *NetworkEthernetPortDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ethernet port delete default response has a 5xx status code
+func (o *NetworkEthernetPortDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ethernet port delete default response a status code equal to that given
+func (o *NetworkEthernetPortDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkEthernetPortDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] network_ethernet_port_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkEthernetPortDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] network_ethernet_port_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkEthernetPortDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

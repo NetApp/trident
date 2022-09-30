@@ -46,14 +46,44 @@ func NewVolumeEfficiencyPolicyModifyOK() *VolumeEfficiencyPolicyModifyOK {
 	return &VolumeEfficiencyPolicyModifyOK{}
 }
 
-/* VolumeEfficiencyPolicyModifyOK describes a response with status code 200, with default header values.
+/*
+VolumeEfficiencyPolicyModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type VolumeEfficiencyPolicyModifyOK struct {
 }
 
+// IsSuccess returns true when this volume efficiency policy modify o k response has a 2xx status code
+func (o *VolumeEfficiencyPolicyModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume efficiency policy modify o k response has a 3xx status code
+func (o *VolumeEfficiencyPolicyModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume efficiency policy modify o k response has a 4xx status code
+func (o *VolumeEfficiencyPolicyModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume efficiency policy modify o k response has a 5xx status code
+func (o *VolumeEfficiencyPolicyModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume efficiency policy modify o k response a status code equal to that given
+func (o *VolumeEfficiencyPolicyModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VolumeEfficiencyPolicyModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyModifyOK ", 200)
+}
+
+func (o *VolumeEfficiencyPolicyModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewVolumeEfficiencyPolicyModifyDefault(code int) *VolumeEfficiencyPolicyMod
 	}
 }
 
-/* VolumeEfficiencyPolicyModifyDefault describes a response with status code -1, with default header values.
+/*
+	VolumeEfficiencyPolicyModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Code
+	ONTAP Error Response Code
+
 | Error Code | Description |
 | ---------- | ----------- |
 |  6881341   | Specified schedule not found. |
@@ -87,7 +119,6 @@ func NewVolumeEfficiencyPolicyModifyDefault(code int) *VolumeEfficiencyPolicyMod
 |  6881475   | Duration is not valid. |
 |  6881476   | Duration cannot be less than 1 hour. |
 |  6881477   | Duration cannot be more than 999 hours. |
-
 */
 type VolumeEfficiencyPolicyModifyDefault struct {
 	_statusCode int
@@ -100,9 +131,39 @@ func (o *VolumeEfficiencyPolicyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this volume efficiency policy modify default response has a 2xx status code
+func (o *VolumeEfficiencyPolicyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this volume efficiency policy modify default response has a 3xx status code
+func (o *VolumeEfficiencyPolicyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this volume efficiency policy modify default response has a 4xx status code
+func (o *VolumeEfficiencyPolicyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this volume efficiency policy modify default response has a 5xx status code
+func (o *VolumeEfficiencyPolicyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this volume efficiency policy modify default response a status code equal to that given
+func (o *VolumeEfficiencyPolicyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VolumeEfficiencyPolicyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VolumeEfficiencyPolicyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VolumeEfficiencyPolicyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

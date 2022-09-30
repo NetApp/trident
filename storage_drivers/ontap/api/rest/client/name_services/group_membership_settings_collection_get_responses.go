@@ -46,7 +46,8 @@ func NewGroupMembershipSettingsCollectionGetOK() *GroupMembershipSettingsCollect
 	return &GroupMembershipSettingsCollectionGetOK{}
 }
 
-/* GroupMembershipSettingsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+GroupMembershipSettingsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type GroupMembershipSettingsCollectionGetOK struct {
 	Payload *models.GroupMembershipSettingsResponse
 }
 
+// IsSuccess returns true when this group membership settings collection get o k response has a 2xx status code
+func (o *GroupMembershipSettingsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this group membership settings collection get o k response has a 3xx status code
+func (o *GroupMembershipSettingsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this group membership settings collection get o k response has a 4xx status code
+func (o *GroupMembershipSettingsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this group membership settings collection get o k response has a 5xx status code
+func (o *GroupMembershipSettingsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this group membership settings collection get o k response a status code equal to that given
+func (o *GroupMembershipSettingsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GroupMembershipSettingsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings][%d] groupMembershipSettingsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *GroupMembershipSettingsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings][%d] groupMembershipSettingsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *GroupMembershipSettingsCollectionGetOK) GetPayload() *models.GroupMembershipSettingsResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewGroupMembershipSettingsCollectionGetDefault(code int) *GroupMembershipSe
 	}
 }
 
-/* GroupMembershipSettingsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+GroupMembershipSettingsCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *GroupMembershipSettingsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this group membership settings collection get default response has a 2xx status code
+func (o *GroupMembershipSettingsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this group membership settings collection get default response has a 3xx status code
+func (o *GroupMembershipSettingsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this group membership settings collection get default response has a 4xx status code
+func (o *GroupMembershipSettingsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this group membership settings collection get default response has a 5xx status code
+func (o *GroupMembershipSettingsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this group membership settings collection get default response a status code equal to that given
+func (o *GroupMembershipSettingsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GroupMembershipSettingsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings][%d] group_membership_settings_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GroupMembershipSettingsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/group-membership/settings][%d] group_membership_settings_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GroupMembershipSettingsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

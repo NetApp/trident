@@ -46,14 +46,44 @@ func NewLocalCifsGroupMembersBulkDeleteOK() *LocalCifsGroupMembersBulkDeleteOK {
 	return &LocalCifsGroupMembersBulkDeleteOK{}
 }
 
-/* LocalCifsGroupMembersBulkDeleteOK describes a response with status code 200, with default header values.
+/*
+LocalCifsGroupMembersBulkDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LocalCifsGroupMembersBulkDeleteOK struct {
 }
 
+// IsSuccess returns true when this local cifs group members bulk delete o k response has a 2xx status code
+func (o *LocalCifsGroupMembersBulkDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local cifs group members bulk delete o k response has a 3xx status code
+func (o *LocalCifsGroupMembersBulkDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local cifs group members bulk delete o k response has a 4xx status code
+func (o *LocalCifsGroupMembersBulkDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local cifs group members bulk delete o k response has a 5xx status code
+func (o *LocalCifsGroupMembersBulkDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local cifs group members bulk delete o k response a status code equal to that given
+func (o *LocalCifsGroupMembersBulkDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LocalCifsGroupMembersBulkDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] localCifsGroupMembersBulkDeleteOK ", 200)
+}
+
+func (o *LocalCifsGroupMembersBulkDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] localCifsGroupMembersBulkDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewLocalCifsGroupMembersBulkDeleteDefault(code int) *LocalCifsGroupMembersB
 	}
 }
 
-/* LocalCifsGroupMembersBulkDeleteDefault describes a response with status code -1, with default header values.
+/*
+LocalCifsGroupMembersBulkDeleteDefault describes a response with status code -1, with default header values.
 
 Error ONTAP Error Response Codes | Error Code | Description | | ---------- | ----------- | | 655673     | Failed to resolve the member to be deleted from the specified group. | | 655719     | Failed to delete a member from the specified group. The error code returned details the failure along with the reason for the failure. Take corrective actions as per the specified reason. | | 655742     | The "records" field must not be specified when a single user is to be deleted. | | 655743     | SVM UUID and CIFS local group SID are invalid fields for the "records" parameter. |
 */
@@ -84,9 +115,39 @@ func (o *LocalCifsGroupMembersBulkDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this local cifs group members bulk delete default response has a 2xx status code
+func (o *LocalCifsGroupMembersBulkDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this local cifs group members bulk delete default response has a 3xx status code
+func (o *LocalCifsGroupMembersBulkDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this local cifs group members bulk delete default response has a 4xx status code
+func (o *LocalCifsGroupMembersBulkDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this local cifs group members bulk delete default response has a 5xx status code
+func (o *LocalCifsGroupMembersBulkDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this local cifs group members bulk delete default response a status code equal to that given
+func (o *LocalCifsGroupMembersBulkDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LocalCifsGroupMembersBulkDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] local_cifs_group_members_bulk_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LocalCifsGroupMembersBulkDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members][%d] local_cifs_group_members_bulk_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LocalCifsGroupMembersBulkDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

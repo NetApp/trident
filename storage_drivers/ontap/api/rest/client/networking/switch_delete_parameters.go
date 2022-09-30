@@ -52,10 +52,12 @@ func NewSwitchDeleteParamsWithHTTPClient(client *http.Client) *SwitchDeleteParam
 	}
 }
 
-/* SwitchDeleteParams contains all the parameters to send to the API endpoint
-   for the switch delete operation.
+/*
+SwitchDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the switch delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SwitchDeleteParams struct {
 

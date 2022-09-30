@@ -46,14 +46,44 @@ func NewIgroupInitiatorDeleteOK() *IgroupInitiatorDeleteOK {
 	return &IgroupInitiatorDeleteOK{}
 }
 
-/* IgroupInitiatorDeleteOK describes a response with status code 200, with default header values.
+/*
+IgroupInitiatorDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IgroupInitiatorDeleteOK struct {
 }
 
+// IsSuccess returns true when this igroup initiator delete o k response has a 2xx status code
+func (o *IgroupInitiatorDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup initiator delete o k response has a 3xx status code
+func (o *IgroupInitiatorDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup initiator delete o k response has a 4xx status code
+func (o *IgroupInitiatorDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup initiator delete o k response has a 5xx status code
+func (o *IgroupInitiatorDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup initiator delete o k response a status code equal to that given
+func (o *IgroupInitiatorDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IgroupInitiatorDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorDeleteOK ", 200)
+}
+
+func (o *IgroupInitiatorDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroupInitiatorDeleteOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewIgroupInitiatorDeleteDefault(code int) *IgroupInitiatorDeleteDefault {
 	}
 }
 
-/* IgroupInitiatorDeleteDefault describes a response with status code -1, with default header values.
+/*
+	IgroupInitiatorDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1254213 | The initiator group is mapped to one or more LUNs and `allow_delete_while_mapped` has not been specified. |
 | 5374034 | An initiator is not a member of the initiator group. |
 | 5374041 | The initiator is not owned by the supplied initiator group. |
 | 5374852 | The initiator group specified in the URI does not exist. |
-
 */
 type IgroupInitiatorDeleteDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *IgroupInitiatorDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup initiator delete default response has a 2xx status code
+func (o *IgroupInitiatorDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup initiator delete default response has a 3xx status code
+func (o *IgroupInitiatorDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup initiator delete default response has a 4xx status code
+func (o *IgroupInitiatorDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup initiator delete default response has a 5xx status code
+func (o *IgroupInitiatorDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup initiator delete default response a status code equal to that given
+func (o *IgroupInitiatorDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupInitiatorDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupInitiatorDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/san/igroups/{igroup.uuid}/initiators/{name}][%d] igroup_initiator_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupInitiatorDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

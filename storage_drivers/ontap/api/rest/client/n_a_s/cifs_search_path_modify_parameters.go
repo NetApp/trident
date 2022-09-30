@@ -53,10 +53,12 @@ func NewCifsSearchPathModifyParamsWithHTTPClient(client *http.Client) *CifsSearc
 	}
 }
 
-/* CifsSearchPathModifyParams contains all the parameters to send to the API endpoint
-   for the cifs search path modify operation.
+/*
+CifsSearchPathModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs search path modify operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsSearchPathModifyParams struct {
 

@@ -88,7 +88,8 @@ type ClientService interface {
 }
 
 /*
-  SvmCollectionGet Retrieves a list of SVMs and individual SVM properties. This includes protocol configurations such as CIFS and NFS, export policies, name service configurations, and network services.
+	SvmCollectionGet Retrieves a list of SVMs and individual SVM properties. This includes protocol configurations such as CIFS and NFS, export policies, name service configurations, and network services.
+
 ### Important notes
 * The SVM object includes a large set of fields and can be expensive to retrieve. Use this API to list the collection of SVMs, and to retrieve only the full details of individual SVMs as needed.
 * It is not recommended to create or delete more than five SVMs in parallel.
@@ -99,51 +100,53 @@ There is an added cost to retrieving values for these properties. They are not i
 ### Related ONTAP commands
 * `vserver show`
 ### Examples
-1. Retrieves a list of SVMs in the cluster sorted by name
+ 1. Retrieves a list of SVMs in the cluster sorted by name
     <br/>
     ```
     GET "/api/svm/svms?order_by=name"
     ```
     <br/>
-2. Retrieves a list of SVMs in the cluster that have the NFS protocol enabled
+ 2. Retrieves a list of SVMs in the cluster that have the NFS protocol enabled
     <br/>
     ```
     GET "/api/svm/svms?nfs.enabled=true"
     ```
     <br/>
-3. Retrieves a list of SVMs in the cluster that have the CIFS protocol enabled
+ 3. Retrieves a list of SVMs in the cluster that have the CIFS protocol enabled
     <br/>
     ```
     GET "/api/svm/svms?cifs.enabled=true"
     ```
     <br/>
-4. Retrieves a list of SVMs in the cluster that have the S3 protocol enabled
+ 4. Retrieves a list of SVMs in the cluster that have the S3 protocol enabled
     <br/>
     ```
     GET "/api/svm/svms?s3.enabled=true"
     ```
     <br/>
+
 5 Retrieves a list of SVMs in the cluster that have the FCP protocol allowed
-    <br/>
-    ```
-    GET "/api/svm/svms?fcp.allowed=true"
-    ```
-    <br/>
-6. Retrieves a list of SVMs in the cluster that have the CIFS protocol allowed
-    <br/>
-    ```
-    GET "/api/svm/svms?cifs.allowed=true"
-    ```
-    <br/>
-7. Retrieves a list of SVMs in the cluster where the NDMP protocol is specified as allowed
-    <br/>
-    ```
-    GET "/api/svm/svms?ndmp.allowed=true"
-    ```
-    <br/>
+
+		<br/>
+		```
+		GET "/api/svm/svms?fcp.allowed=true"
+		```
+		<br/>
+	 6. Retrieves a list of SVMs in the cluster that have the CIFS protocol allowed
+	    <br/>
+	    ```
+	    GET "/api/svm/svms?cifs.allowed=true"
+	    ```
+	    <br/>
+	 7. Retrieves a list of SVMs in the cluster where the NDMP protocol is specified as allowed
+	    <br/>
+	    ```
+	    GET "/api/svm/svms?ndmp.allowed=true"
+	    ```
+	    <br/>
+
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
-
 */
 func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -181,7 +184,8 @@ func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runti
 }
 
 /*
-  SvmCreate Creates and provisions an SVM. If no IPspace is provided, then the SVM is created on the `Default` IPspace.
+	SvmCreate Creates and provisions an SVM. If no IPspace is provided, then the SVM is created on the `Default` IPspace.
+
 * The number of parallel SVMs that can be created must not be greater than five.
 * If a sixth SVM POST request is issued, the following error message is generated: "Maximum allowed SVM jobs exceeded. Wait for the existing SVM jobs to complete and try again."
 ### Required properties
@@ -196,28 +200,35 @@ func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runti
 * `ip_interfaces.ip.netmask` - Netmask length or IP address
 * `ip_interfaces.location.broadcast_domain.uuid` or `ip_interfaces.location.broadcast_domain.name` - Broadcast domain name or UUID belonging to the same IPspace of the SVM.
 * `routes` - If provided, the following field is required:
-  * `routes.gateway` - Gateway IP address
+  - `routes.gateway` - Gateway IP address
+
 * `cifs` - If provided, interfaces, routes and DNS must be provided. The following fields are also required:
-  * `cifs.name` - Name of the CIFS server to be created for the SVM.
-  * `cifs.ad_domain.fqdn` - Fully qualified domain name
-  * `cifs.ad_domain.user` - Administrator username
-  * `cifs.ad_domain.password` - User password
+  - `cifs.name` - Name of the CIFS server to be created for the SVM.
+  - `cifs.ad_domain.fqdn` - Fully qualified domain name
+  - `cifs.ad_domain.user` - Administrator username
+  - `cifs.ad_domain.password` - User password
+
 * `ldap` - If provided, the following fields are required:
-  * `ldap.servers` or `ldap.ad_domain` - LDAP server list or Active Directory domain
-  * `ldap.bind_dn` - Bind DN
-  * `ldap.base_dn` - Base DN
+  - `ldap.servers` or `ldap.ad_domain` - LDAP server list or Active Directory domain
+  - `ldap.bind_dn` - Bind DN
+  - `ldap.base_dn` - Base DN
+
 * `nis` - If provided, the following fields are required:
-  * `nis.servers` - NIS servers
-  * `nis.domain` - NIS domain
+  - `nis.servers` - NIS servers
+  - `nis.domain` - NIS domain
+
 * `dns` - If provided, the following fields are required:
-  * `dns.servers` - Name servers
-  * `dns.domains` - Domains
+  - `dns.servers` - Name servers
+  - `dns.domains` - Domains
+
 * `fc_interfaces` - If provided, the following fields are required:
-  * `fc_interfaces.name` - Fibre Channel interface name
-  * `fc_interfaces.data_protocol` - Fibre Channel interface data protocol
-  * `fc_interfaces.location.port.uuid` or `fc_interfaces.location.port.name` and `fc_interfaces.location.port.node.name` - Either port UUID or port name and node name together must be provided.
+  - `fc_interfaces.name` - Fibre Channel interface name
+  - `fc_interfaces.data_protocol` - Fibre Channel interface data protocol
+  - `fc_interfaces.location.port.uuid` or `fc_interfaces.location.port.name` and `fc_interfaces.location.port.node.name` - Either port UUID or port name and node name together must be provided.
+
 * `s3` - If provided, the following field should also be specified:
-  * `s3.name` - Name of the S3 server. If `s3.name' is not specified while `s3.enabled` is set to 'true', the S3 server will be created with the default name '<svm.name>_S3Server'.
+  - `s3.name` - Name of the S3 server. If `s3.name' is not specified while `s3.enabled` is set to 'true', the S3 server will be created with the default name '<svm.name>_S3Server'.
+
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `language` - _C.UTF-8_
@@ -243,93 +254,93 @@ If not specified in POST, the following default property values are assigned:
 * `vserver add-protocols`
 * `vserver remove-protocols`
 ### Examples
-1. Creates an SVM with default "snapshot_policy"
+ 1. Creates an SVM with default "snapshot_policy"
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "snapshot_policy":{"name":"default"}}'
     ```
     <br/>
-2. Creates an SVM and configures NFS, ISCSI and FCP
+ 2. Creates an SVM and configures NFS, ISCSI and FCP
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "nfs":{"enabled":"true"}, "fcp":{"enabled":"true"}, "iscsi":{"enabled":"true"}}'
     ```
     <br/>
-3. Creates an SVM and configures NVMe
+ 3. Creates an SVM and configures NVMe
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "nvme":{"enabled":"true"}}'
     ```
     <br/>
-4. Creates an SVM and configures LDAP
+ 4. Creates an SVM and configures LDAP
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "snapshot_policy":{"name":"default"}, "ldap":{"servers":["10.140.101.1","10.140.101.2"], "ad_domain":"abc.com", "base_dn":"dc=netapp,dc=com", "bind_dn":"dc=netapp,dc=com"}}'
     ```
     <br/>
-5. Creates an SVM and configures NIS
+ 5. Creates an SVM and configures NIS
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "snapshot_policy":{"name":"default"}, "nis":{"enabled":"true", "domain":"def.com","servers":["10.224.223.130", "10.224.223.131"]}}'
     ```
     <br/>
-6. Creates an SVM and configures DNS
+ 6. Creates an SVM and configures DNS
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "snapshot_policy":{"name":"default"}, "dns":{"domains":["abc.com","def.com"], "servers":["10.224.223.130", "10.224.223.131"]}}'
     ```
     <br/>
-7. Creates an SVM and configures a LIF
+ 7. Creates an SVM and configures a LIF
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "ip_interfaces": [{"name":"lif1", "ip":{"address":"10.10.10.7", "netmask": "255.255.255.0"}, "location":{"broadcast_domain":{"name":"bd1"}, "home_node":{"name":"node1"}}, "service_policy": "default-management"}]}'
     ```
     <br/>
-8. Creates an SVM and configures a LIF with IPV6 address
+ 8. Creates an SVM and configures a LIF with IPV6 address
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "ip_interfaces": [{"name":"lif2", "ip":{"address":"fd22:8b1e:b255:202:2a0:98ff:fe01:7d5b", "netmask":"24"}, "location":{"broadcast_domain":{"name":"bd1"}, "home_node":{"name":"node1"}}, "service_policy": "default-management"}]}'
     ```
     <br/>
-9. Creates an SVM and configures CIFS
+ 9. Creates an SVM and configures CIFS
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "cifs":{"name":"CIFDOC", "ad_domain":{"fqdn":"abc.def.com", "organizational_unit":"CN=Computers", "user":"cif_admin", "password":"abc123"}}, "ip_interfaces":[{"name":"lif1", "ip":{"address":"10.10.10.7", "netmask": "255.255.255.0"}, "location":{"broadcast_domain":{"name":"bd1"}, "home_node":{"name":"node1"}}, "service_policy": "default-management"}],"routes": [{"destination": {"address": "0.0.0.0", "netmask": "0"}, "gateway": "10.10.10.7"}], "dns":{"domains":["abc.def.com", "def.com"], "servers":["10.224.223.130", "10.224.223.131"]}}'
     ```
     <br/>
-10. Creates an SVM and configures an S3 server
+ 10. Creates an SVM and configures an S3 server
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"svm5", "s3":{"name":"s3-server-1", "enabled":true}}'
     ```
     <br/>
-11. Creates an SVM and disallows NVMe service for the SVM
+ 11. Creates an SVM and disallows NVMe service for the SVM
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "nvme":{"allowed":"false"}}'
     ```
     <br/>
-12. Creates an SVM, allows and configures the NFS service for the SVM
+ 12. Creates an SVM, allows and configures the NFS service for the SVM
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "nfs":{"allowed":"true", "enabled":true}}'
     ```
     <br/>
-13. Create an SVM and set the max volume limit for the SVM
+ 13. Create an SVM and set the max volume limit for the SVM
     <br/>
     ```
     POST "/api/svm/svms/" '{"name":"testVs", "max_volumes":"200"}'
     ```
     <br/>
-14. Creates an SVM and disallows the NDMP service for the SVM.
+ 14. Creates an SVM and disallows the NDMP service for the SVM.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "ndmp":{"allowed":"false"}}'
     ```
     <br/>
+
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
-
 */
 func (a *Client) SvmCreate(params *SvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -367,21 +378,23 @@ func (a *Client) SvmCreate(params *SvmCreateParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  SvmDelete Deletes an SVM. As a prerequisite, SVM objects must be deleted first. SnapMirror relationships must be deleted and data volumes must be offline and deleted.
+	SvmDelete Deletes an SVM. As a prerequisite, SVM objects must be deleted first. SnapMirror relationships must be deleted and data volumes must be offline and deleted.
+
 * The number of parallel SVMs that can be created must not be greater than five.
 * If a sixth SVM POST request is issued, the following error message is generated: "Maximum allowed SVM jobs exceeded. Wait for the existing SVM jobs to complete and try again."
 ### Related ONTAP commands
 * `vserver delete`
 ### Example
 Deleting an individual SVM in the cluster.
-  <br/>
-  ```
-  DELETE "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485"
-  ```
-  <br/>
+
+	<br/>
+	```
+	DELETE "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485"
+	```
+	<br/>
+
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
-
 */
 func (a *Client) SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -419,7 +432,8 @@ func (a *Client) SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  SvmGet Retrieves the properties for an individual SVM. This includes protocol configurations such as CIFS and NFS, export policies, name service configurations, and network services.
+	SvmGet Retrieves the properties for an individual SVM. This includes protocol configurations such as CIFS and NFS, export policies, name service configurations, and network services.
+
 ### Important notes
 * The SVM object includes a large set of fields and can be expensive to retrieve.
 * REST APIs only expose a data SVM as an SVM.
@@ -427,13 +441,13 @@ func (a *Client) SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthI
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `snapmirror.*`
 ### Example
-    Retrieving an individual SVM in the cluster
-    <br/>
-    ```
-    GET "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485"
-    ```
-    <br/>
 
+	Retrieving an individual SVM in the cluster
+	<br/>
+	```
+	GET "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485"
+	```
+	<br/>
 */
 func (a *Client) SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmGetOK, error) {
 	// TODO: Validate the params before sending
@@ -471,10 +485,10 @@ func (a *Client) SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-  SvmMigrateDelete Deletes the SVM migration.
+	SvmMigrateDelete Deletes the SVM migration.
+
 ### Related ONTAP commands
 * `vserver migrate abort`
-
 */
 func (a *Client) SvmMigrateDelete(params *SvmMigrateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrateDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -512,10 +526,10 @@ func (a *Client) SvmMigrateDelete(params *SvmMigrateDeleteParams, authInfo runti
 }
 
 /*
-  SvmMigrationCollectionGet Retrieves the SVM migration status.
+	SvmMigrationCollectionGet Retrieves the SVM migration status.
+
 ### Related ONTAP commands
 * `vserver migrate show`
-
 */
 func (a *Client) SvmMigrationCollectionGet(params *SvmMigrationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -553,7 +567,8 @@ func (a *Client) SvmMigrationCollectionGet(params *SvmMigrationCollectionGetPara
 }
 
 /*
-  SvmMigrationCreate Creates an SVM migration operation. This API must be executed on the destination cluster. This API creates an SVM on the destination cluster and preserves the SVM's identity specified in the source cluster.
+	SvmMigrationCreate Creates an SVM migration operation. This API must be executed on the destination cluster. This API creates an SVM on the destination cluster and preserves the SVM's identity specified in the source cluster.
+
 Optionally, you can specify the aggregate list for creating the volumes, and IPspace. You can perform pre-checks to verify if SVM migration is possible, by setting the "check-only" option to "true". By default the values for auto-source-cleanup and auto-cutover is true.
 ### Required properties
 * `source.svm.name` or `source.svm.uuid` - Source SVM name or source SVM UUID.
@@ -566,7 +581,6 @@ Optionally, you can specify the aggregate list for creating the volumes, and IPs
 * `check_only` - Option to perform all the prechecks for migrate without actually starting the migrate. Default is false.
 ### Related ONTAP commands
 * `vserver migrate start`
-
 */
 func (a *Client) SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -604,18 +618,19 @@ func (a *Client) SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo r
 }
 
 /*
-  SvmMigrationGet Retrieves the migration status of an individual SVM.
+	SvmMigrationGet Retrieves the migration status of an individual SVM.
+
 ### Important notes
 * The "migrations" object includes a large set of fields and can be expensive to retrieve.
 * REST APIs only expose a data SVM as an SVM.
 ### Example
-    Retrieving an individual SVM migration status.
-    <br/>
-    ```
-    GET "/api/svm/migrations/a14ae39f-8d85-11e9-b4a7-00505682dc8b/svms/f16f0935-5281-11e8-b94d-005056b46485"
-    ```
-    <br/>
 
+	Retrieving an individual SVM migration status.
+	<br/>
+	```
+	GET "/api/svm/migrations/a14ae39f-8d85-11e9-b4a7-00505682dc8b/svms/f16f0935-5281-11e8-b94d-005056b46485"
+	```
+	<br/>
 */
 func (a *Client) SvmMigrationGet(params *SvmMigrationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationGetOK, error) {
 	// TODO: Validate the params before sending
@@ -653,13 +668,13 @@ func (a *Client) SvmMigrationGet(params *SvmMigrationGetParams, authInfo runtime
 }
 
 /*
-  SvmMigrationModify Actions that can be performed during an SVM migration.
+	SvmMigrationModify Actions that can be performed during an SVM migration.
+
 ### Related ONTAP commands
 * `vserver migrate pause`
 * `vserver migrate resume`
 * `vserver migrate cutover`
 * `vserver migrate source-cleanup`
-
 */
 func (a *Client) SvmMigrationModify(params *SvmMigrationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -697,10 +712,10 @@ func (a *Client) SvmMigrationModify(params *SvmMigrationModifyParams, authInfo r
 }
 
 /*
-  SvmMigrationVolumeCollectionGet Retrieves the transfer status of the volumes in the SVM.
+	SvmMigrationVolumeCollectionGet Retrieves the transfer status of the volumes in the SVM.
+
 ### Related ONTAP commands
 * `vserver migrate show-volume`
-
 */
 func (a *Client) SvmMigrationVolumeCollectionGet(params *SvmMigrationVolumeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationVolumeCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -738,10 +753,10 @@ func (a *Client) SvmMigrationVolumeCollectionGet(params *SvmMigrationVolumeColle
 }
 
 /*
-  SvmMigrationVolumeGet Retrieves the volume transfer status of the specified volume.uuid.
+	SvmMigrationVolumeGet Retrieves the volume transfer status of the specified volume.uuid.
+
 ### Related ONTAP commands
 * `vserver migrate show-volume`
-
 */
 func (a *Client) SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationVolumeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -779,7 +794,8 @@ func (a *Client) SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, auth
 }
 
 /*
-  SvmModify Updates one or more of the following properties of an individual SVM: SVM name, SVM default volume language code, SVM comment, and SVM state.
+	SvmModify Updates one or more of the following properties of an individual SVM: SVM name, SVM default volume language code, SVM comment, and SVM state.
+
 ### Related ONTAP commands
 * `vserver modify`
 * `vserver rename`
@@ -789,69 +805,69 @@ func (a *Client) SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, auth
 * `vserver add-protocols`
 * `vserver remove-protocols`
 ### Examples
-1.  Stops an SVM and updates the "comment" field for an individual SVM
+ 1. Stops an SVM and updates the "comment" field for an individual SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"state":"stopped", "comment":"This SVM is stopped."}'
     ```
     <br/>
-2.  Starts an SVM and updates the "comment" field for an individual SVM
+ 2. Starts an SVM and updates the "comment" field for an individual SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"state":"running", "comment":"This SVM is running."}'
     ```
     <br/>
-3.  Updates the "language" field for an individual SVM
+ 3. Updates the "language" field for an individual SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"language":"en.UTF-8"}'
     ```
     <br/>
-4.  Updates the "name" field for an SVM or renames the SVM
+ 4. Updates the "name" field for an SVM or renames the SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"name":"svm_new"}'
     ```
     <br/>
-5.  Updates the aggregates for an individual SVM
+ 5. Updates the aggregates for an individual SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"aggregates":{"name":["aggr1","aggr2","aggr3"]}}'
     ```
     <br/>
-6.  Updates the Snapshot copy policy for an individual SVM
+ 6. Updates the Snapshot copy policy for an individual SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"snapshot_policy":{"name":"custom1"}}'
     ```
     <br/>
-7.  Updates the TLS certificate for an individual SVM
+ 7. Updates the TLS certificate for an individual SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"certificate":{"uuid":"1cd8a442-86d1-11e0-ae1c-123478563412"}}'
     ```
     <br/>
-8.  Updates the QoS policy for the SVM
+ 8. Updates the QoS policy for the SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"qos_policy_group":{"name":"qpolicy1"}}'
     ```
     <br/>
-9.  Allows NFS protocol which was previously disallowed for the SVM
+ 9. Allows NFS protocol which was previously disallowed for the SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"nfs":{"allowed":"true"}}'
     ```
     <br/>
-10. Updates the max volume limit for the SVM
+ 10. Updates the max volume limit for the SVM
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"max_volumes":"200"}'
     ```
     <br/>
+
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
-
 */
 func (a *Client) SvmModify(params *SvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -889,26 +905,27 @@ func (a *Client) SvmModify(params *SvmModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  SvmPeerCollectionGet Retrieves the list of SVM peer relationships.
+	SvmPeerCollectionGet Retrieves the list of SVM peer relationships.
+
 ### Related ONTAP commands
 * `vserver peer show`
 ### Examples
 The following examples show how to retrieve a collection of SVM peer relationships based on a query.
-1. Retrieves a list of SVM peers of a specific local SVM
-   <br/>
-   ```
-   GET "/api/svm/peers/?svm.name=VS1"
-   ```
-   <br/>
-2. Retrieves a list of SVM peers of a specific cluster peer
-   <br/>
-   ```
-   GET "/api/svm/peers/?peer.cluster.name=cluster2"
-   ```
-   <br/>
+ 1. Retrieves a list of SVM peers of a specific local SVM
+    <br/>
+    ```
+    GET "/api/svm/peers/?svm.name=VS1"
+    ```
+    <br/>
+ 2. Retrieves a list of SVM peers of a specific cluster peer
+    <br/>
+    ```
+    GET "/api/svm/peers/?peer.cluster.name=cluster2"
+    ```
+    <br/>
+
 ### Learn more
 * [`DOC /svm/peers`](#docs-svm-svm_peers)
-
 */
 func (a *Client) SvmPeerCollectionGet(params *SvmPeerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -946,10 +963,12 @@ func (a *Client) SvmPeerCollectionGet(params *SvmPeerCollectionGetParams, authIn
 }
 
 /*
-  SvmPeerCreate Creates a new SVM peer relationship.
+	SvmPeerCreate Creates a new SVM peer relationship.
+
 ### Important notes
-  * The create request accepts peer SVM name as input instead of peer SVM UUID as the local cluster cannot validate peer SVM based on UUID.
-  * The input parameter `name` refers to the local name of the peer SVM. The `peer cluster name` parameter is optional for creating intracluster SVM peer relationships.
+  - The create request accepts peer SVM name as input instead of peer SVM UUID as the local cluster cannot validate peer SVM based on UUID.
+  - The input parameter `name` refers to the local name of the peer SVM. The `peer cluster name` parameter is optional for creating intracluster SVM peer relationships.
+
 ### Required properties
 * `svm.name` or `svm.uuid` - SVM name or SVM UUID
 * `peer.svm.name` or `peer.svm.uuid` - Peer SVM name or Peer SVM UUID
@@ -966,7 +985,6 @@ POST "/api/svm/peers" '{"svm":{"name":"vs1"}, "peer.cluster.name":"cluster2", "p
 <br/>
 ### Learn more
 * [`DOC /svm/peers`](#docs-svm-svm_peers)
-
 */
 func (a *Client) SvmPeerCreate(params *SvmPeerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1004,7 +1022,8 @@ func (a *Client) SvmPeerCreate(params *SvmPeerCreateParams, authInfo runtime.Cli
 }
 
 /*
-  SvmPeerDelete Deletes the SVM peer relationship.
+	SvmPeerDelete Deletes the SVM peer relationship.
+
 ### Related ONTAP commands
 * `vserver peer delete`
 ### Example
@@ -1016,7 +1035,6 @@ DELETE "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9"
 <br/>
 ### Learn more
 * [`DOC /svm/peers`](#docs-svm-svm_peers)
-
 */
 func (a *Client) SvmPeerDelete(params *SvmPeerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1054,7 +1072,8 @@ func (a *Client) SvmPeerDelete(params *SvmPeerDeleteParams, authInfo runtime.Cli
 }
 
 /*
-  SvmPeerInstanceGet Retrieves the SVM peer relationship instance.
+	SvmPeerInstanceGet Retrieves the SVM peer relationship instance.
+
 ### Related ONTAP commands
 * `vserver peer show`
 ### Example
@@ -1066,7 +1085,6 @@ GET "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9"
 <br/>
 ### Learn more
 * [`DOC /svm/peers`](#docs-svm-svm_peers)
-
 */
 func (a *Client) SvmPeerInstanceGet(params *SvmPeerInstanceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerInstanceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1104,27 +1122,28 @@ func (a *Client) SvmPeerInstanceGet(params *SvmPeerInstanceGetParams, authInfo r
 }
 
 /*
-  SvmPeerModify Updates the SVM peer relationship.
+	SvmPeerModify Updates the SVM peer relationship.
+
 ### Related ONTAP commands
 * `vserver peer modify`
 ### Examples
 The following examples show how to update an SVM peer relationship. The input parameter 'name' refers to the local name of the peer SVM.
 <br/>
-1. Accepts an SVM peer relationship
-   <br/>
-   ```
-   PATCH "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9" '{"state":"peered"}'
-   ```
-   <br/>
-2. Updates the local name of an SVM peer relationship
-   <br/>
-   ```
-   PATCH "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9" '{"name":"vs2"}'
-   ```
-   <br/>
+ 1. Accepts an SVM peer relationship
+    <br/>
+    ```
+    PATCH "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9" '{"state":"peered"}'
+    ```
+    <br/>
+ 2. Updates the local name of an SVM peer relationship
+    <br/>
+    ```
+    PATCH "/api/svm/peers/d3268a74-ee76-11e8-a9bb-005056ac6dc9" '{"name":"vs2"}'
+    ```
+    <br/>
+
 ### Learn more
 * [`DOC /svm/peers`](#docs-svm-svm_peers)
-
 */
 func (a *Client) SvmPeerModify(params *SvmPeerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1162,27 +1181,28 @@ func (a *Client) SvmPeerModify(params *SvmPeerModifyParams, authInfo runtime.Cli
 }
 
 /*
-  SvmPeerPermissionCollectionGet Retrieves the list of SVM peer permissions.
+	SvmPeerPermissionCollectionGet Retrieves the list of SVM peer permissions.
+
 ### Related ONTAP commands
 * `vserver peer permission show`
 ### Examples
 The following examples show how to retrieve a collection of SVM peer permissions based on a query.
 <br/>
-1. Retrieves a list of SVM peer permissions of a specific local SVM
-   <br/>
-   ```
-   GET "/api/svm/peer-permissions/?svm.name=VS1"
-   ```
-   <br/>
-2. Retrieves a list of SVM peer permissions of a specific cluster peer
-   <br/>
-   ```
-   GET "/api/svm/peer-permissions/?cluster_peer.name=cluster2"
-   ```
-   <br/>
+ 1. Retrieves a list of SVM peer permissions of a specific local SVM
+    <br/>
+    ```
+    GET "/api/svm/peer-permissions/?svm.name=VS1"
+    ```
+    <br/>
+ 2. Retrieves a list of SVM peer permissions of a specific cluster peer
+    <br/>
+    ```
+    GET "/api/svm/peer-permissions/?cluster_peer.name=cluster2"
+    ```
+    <br/>
+
 ### Learn more
 * [`DOC /svm/peer-permissions`](#docs-svm-svm_peer-permissions)
-
 */
 func (a *Client) SvmPeerPermissionCollectionGet(params *SvmPeerPermissionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1220,7 +1240,8 @@ func (a *Client) SvmPeerPermissionCollectionGet(params *SvmPeerPermissionCollect
 }
 
 /*
-  SvmPeerPermissionCreate Creates an SVM peer permission.
+	SvmPeerPermissionCreate Creates an SVM peer permission.
+
 ### Required properties
 * `svm.name` or `svm.uuid` - SVM name
 * `cluster_peer.uuid` or `cluster_peer.name` - Peer cluster name or peer cluster UUID
@@ -1230,27 +1251,27 @@ func (a *Client) SvmPeerPermissionCollectionGet(params *SvmPeerPermissionCollect
 ### Examples
 The following examples show how to create SVM peer permissions.
 <br/>
-1. Creates an SVM peer permission entry with the local SVM and cluster peer names
-   <br/>
-   ```
-   POST "/api/svm/peer-permissions" '{"cluster_peer":{"name":"cluster2"}, "svm":{"name":"VS1"}, "applications":["snapmirror"]}'
-   ```
-   <br/>
-2. Creates an SVM peer permission entry with the local SVM and cluster peer UUID
-   <br/>
-   ```
-   POST "/api/svm/peer-permissions" '{"cluster_peer":{"uuid":"d3268a74-ee76-11e8-a9bb-005056ac6dc9"}, "svm":{"uuid":"8f467b93-f2f1-11e8-9027-005056ac81fc"}, "applications":["snapmirror"]}'
-   ```
-   <br/>
-3. Creates an SVM peer permission entry with all SVMs and the cluster peer name
-   <br/>
-   ```
-   POST "/api/svm/peer-permissions" '{"cluster_peer":{"name":"cluster2"}, "svm":{"name":"*"}, "applications":["snapmirror"]}'
-   ```
-   <br/>
+ 1. Creates an SVM peer permission entry with the local SVM and cluster peer names
+    <br/>
+    ```
+    POST "/api/svm/peer-permissions" '{"cluster_peer":{"name":"cluster2"}, "svm":{"name":"VS1"}, "applications":["snapmirror"]}'
+    ```
+    <br/>
+ 2. Creates an SVM peer permission entry with the local SVM and cluster peer UUID
+    <br/>
+    ```
+    POST "/api/svm/peer-permissions" '{"cluster_peer":{"uuid":"d3268a74-ee76-11e8-a9bb-005056ac6dc9"}, "svm":{"uuid":"8f467b93-f2f1-11e8-9027-005056ac81fc"}, "applications":["snapmirror"]}'
+    ```
+    <br/>
+ 3. Creates an SVM peer permission entry with all SVMs and the cluster peer name
+    <br/>
+    ```
+    POST "/api/svm/peer-permissions" '{"cluster_peer":{"name":"cluster2"}, "svm":{"name":"*"}, "applications":["snapmirror"]}'
+    ```
+    <br/>
+
 ### Learn more
 * [`DOC /svm/peer-permissions`](#docs-svm-svm_peer-permissions)
-
 */
 func (a *Client) SvmPeerPermissionCreate(params *SvmPeerPermissionCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1288,7 +1309,8 @@ func (a *Client) SvmPeerPermissionCreate(params *SvmPeerPermissionCreateParams, 
 }
 
 /*
-  SvmPeerPermissionDelete Deletes the SVM peer permissions.
+	SvmPeerPermissionDelete Deletes the SVM peer permissions.
+
 ### Related ONTAP commands
 * `verver peer permission delete`
 ### Example
@@ -1300,7 +1322,6 @@ DELETE "/api/svm/peer-permissions/d3268a74-ee76-11e8-a9bb-005056ac6dc9/8f467b93-
 <br/>
 ### Learn more
 * [`DOC /svm/peer-permissions`](#docs-svm-svm_peer-permissions)
-
 */
 func (a *Client) SvmPeerPermissionDelete(params *SvmPeerPermissionDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1338,7 +1359,8 @@ func (a *Client) SvmPeerPermissionDelete(params *SvmPeerPermissionDeleteParams, 
 }
 
 /*
-  SvmPeerPermissionInstanceGet Retrieves the SVM peer permission instance.
+	SvmPeerPermissionInstanceGet Retrieves the SVM peer permission instance.
+
 ### Related ONTAP commands
 * `vserver peer permission show`
 ### Example
@@ -1350,7 +1372,6 @@ GET "/api/svm/peer-permissions/d3268a74-ee76-11e8-a9bb-005056ac6dc9/8f467b93-f2f
 <br/>
 ### Learn more
 * [`DOC /svm/peer-permissions`](#docs-svm-svm_peer-permissions)
-
 */
 func (a *Client) SvmPeerPermissionInstanceGet(params *SvmPeerPermissionInstanceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionInstanceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1388,7 +1409,8 @@ func (a *Client) SvmPeerPermissionInstanceGet(params *SvmPeerPermissionInstanceG
 }
 
 /*
-  SvmPeerPermissionModify Updates the SVM peer permissions.
+	SvmPeerPermissionModify Updates the SVM peer permissions.
+
 ### Related ONTAP commands
 * `vserver peer permission modify`
 ### Example
@@ -1400,7 +1422,6 @@ PATCH "/api/svm/peer-permissions/d3268a74-ee76-11e8-a9bb-005056ac6dc9/8f467b93-f
 <br/>
 ### Learn more
 * [`DOC /svm/peer-permissions`](#docs-svm-svm_peer-permissions)
-
 */
 func (a *Client) SvmPeerPermissionModify(params *SvmPeerPermissionModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1438,7 +1459,7 @@ func (a *Client) SvmPeerPermissionModify(params *SvmPeerPermissionModifyParams, 
 }
 
 /*
-  TopMetricsSvmClientCollectionGet Retrieves a list of clients with the most IO activity.
+TopMetricsSvmClientCollectionGet Retrieves a list of clients with the most IO activity.
 */
 func (a *Client) TopMetricsSvmClientCollectionGet(params *TopMetricsSvmClientCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmClientCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1476,7 +1497,7 @@ func (a *Client) TopMetricsSvmClientCollectionGet(params *TopMetricsSvmClientCol
 }
 
 /*
-  TopMetricsSvmDirectoryCollectionGet Retrieves a list of directories with the most IO activity.
+TopMetricsSvmDirectoryCollectionGet Retrieves a list of directories with the most IO activity.
 */
 func (a *Client) TopMetricsSvmDirectoryCollectionGet(params *TopMetricsSvmDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmDirectoryCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1514,7 +1535,7 @@ func (a *Client) TopMetricsSvmDirectoryCollectionGet(params *TopMetricsSvmDirect
 }
 
 /*
-  TopMetricsSvmFileCollectionGet Retrieves a list of files with the most IO activity.
+TopMetricsSvmFileCollectionGet Retrieves a list of files with the most IO activity.
 */
 func (a *Client) TopMetricsSvmFileCollectionGet(params *TopMetricsSvmFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmFileCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1552,7 +1573,7 @@ func (a *Client) TopMetricsSvmFileCollectionGet(params *TopMetricsSvmFileCollect
 }
 
 /*
-  TopMetricsSvmUserCollectionGet Retrieves a list of users with the most IO activity.
+TopMetricsSvmUserCollectionGet Retrieves a list of users with the most IO activity.
 */
 func (a *Client) TopMetricsSvmUserCollectionGet(params *TopMetricsSvmUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsSvmUserCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1590,7 +1611,7 @@ func (a *Client) TopMetricsSvmUserCollectionGet(params *TopMetricsSvmUserCollect
 }
 
 /*
-  WebSvmGet Retrieves the web services security configuration.
+WebSvmGet Retrieves the web services security configuration.
 */
 func (a *Client) WebSvmGet(params *WebSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebSvmGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1628,7 +1649,7 @@ func (a *Client) WebSvmGet(params *WebSvmGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  WebSvmModify Updates the web services security configuration.
+WebSvmModify Updates the web services security configuration.
 */
 func (a *Client) WebSvmModify(params *WebSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebSvmModifyOK, *WebSvmModifyAccepted, error) {
 	// TODO: Validate the params before sending

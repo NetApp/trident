@@ -46,14 +46,44 @@ func NewHTTPProxyModifyOK() *HTTPProxyModifyOK {
 	return &HTTPProxyModifyOK{}
 }
 
-/* HTTPProxyModifyOK describes a response with status code 200, with default header values.
+/*
+HTTPProxyModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type HTTPProxyModifyOK struct {
 }
 
+// IsSuccess returns true when this http proxy modify o k response has a 2xx status code
+func (o *HTTPProxyModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this http proxy modify o k response has a 3xx status code
+func (o *HTTPProxyModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this http proxy modify o k response has a 4xx status code
+func (o *HTTPProxyModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this http proxy modify o k response has a 5xx status code
+func (o *HTTPProxyModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this http proxy modify o k response a status code equal to that given
+func (o *HTTPProxyModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *HTTPProxyModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] httpProxyModifyOK ", 200)
+}
+
+func (o *HTTPProxyModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] httpProxyModifyOK ", 200)
 }
 
@@ -69,16 +99,17 @@ func NewHTTPProxyModifyDefault(code int) *HTTPProxyModifyDefault {
 	}
 }
 
-/* HTTPProxyModifyDefault describes a response with status code -1, with default header values.
+/*
+	HTTPProxyModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 26214473   | The HTTP proxy configuration is not valid. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
 | 26214481   | Username and password cannot be empty when HTTP proxy authentication is enabled. |
 | 26214482   | Username and password cannot be specified when HTTP proxy authentication is disabled. |
-
 */
 type HTTPProxyModifyDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *HTTPProxyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this http proxy modify default response has a 2xx status code
+func (o *HTTPProxyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this http proxy modify default response has a 3xx status code
+func (o *HTTPProxyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this http proxy modify default response has a 4xx status code
+func (o *HTTPProxyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this http proxy modify default response has a 5xx status code
+func (o *HTTPProxyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this http proxy modify default response a status code equal to that given
+func (o *HTTPProxyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *HTTPProxyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] http_proxy_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *HTTPProxyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /network/http-proxy/{uuid}][%d] http_proxy_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *HTTPProxyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

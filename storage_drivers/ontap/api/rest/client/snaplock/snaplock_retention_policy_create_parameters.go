@@ -55,10 +55,12 @@ func NewSnaplockRetentionPolicyCreateParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* SnaplockRetentionPolicyCreateParams contains all the parameters to send to the API endpoint
-   for the snaplock retention policy create operation.
+/*
+SnaplockRetentionPolicyCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock retention policy create operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockRetentionPolicyCreateParams struct {
 

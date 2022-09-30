@@ -53,10 +53,12 @@ func NewHostsSettingsCollectionGetParamsWithHTTPClient(client *http.Client) *Hos
 	}
 }
 
-/* HostsSettingsCollectionGetParams contains all the parameters to send to the API endpoint
-   for the hosts settings collection get operation.
+/*
+HostsSettingsCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the hosts settings collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type HostsSettingsCollectionGetParams struct {
 

@@ -17,7 +17,6 @@ import (
 
 // KeyManagerKeys Displays the keys stored in a key manager.
 //
-//
 // swagger:model key_manager_keys
 type KeyManagerKeys struct {
 

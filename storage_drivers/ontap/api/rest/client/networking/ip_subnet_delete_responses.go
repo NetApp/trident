@@ -36,14 +36,44 @@ func NewIPSubnetDeleteOK() *IPSubnetDeleteOK {
 	return &IPSubnetDeleteOK{}
 }
 
-/* IPSubnetDeleteOK describes a response with status code 200, with default header values.
+/*
+IPSubnetDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IPSubnetDeleteOK struct {
 }
 
+// IsSuccess returns true when this ip subnet delete o k response has a 2xx status code
+func (o *IPSubnetDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ip subnet delete o k response has a 3xx status code
+func (o *IPSubnetDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ip subnet delete o k response has a 4xx status code
+func (o *IPSubnetDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ip subnet delete o k response has a 5xx status code
+func (o *IPSubnetDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ip subnet delete o k response a status code equal to that given
+func (o *IPSubnetDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IPSubnetDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/ip/subnets/{uuid}][%d] ipSubnetDeleteOK ", 200)
+}
+
+func (o *IPSubnetDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/ip/subnets/{uuid}][%d] ipSubnetDeleteOK ", 200)
 }
 

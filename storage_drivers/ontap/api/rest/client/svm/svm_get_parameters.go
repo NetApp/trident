@@ -53,10 +53,12 @@ func NewSvmGetParamsWithHTTPClient(client *http.Client) *SvmGetParams {
 	}
 }
 
-/* SvmGetParams contains all the parameters to send to the API endpoint
-   for the svm get operation.
+/*
+SvmGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm get operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmGetParams struct {
 

@@ -15,7 +15,6 @@ import (
 
 // FabricReference A reference to a Fibre Channel fabric.
 //
-//
 // swagger:model fabric_reference
 type FabricReference struct {
 

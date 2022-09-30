@@ -52,10 +52,12 @@ func NewUnixGroupDeleteParamsWithHTTPClient(client *http.Client) *UnixGroupDelet
 	}
 }
 
-/* UnixGroupDeleteParams contains all the parameters to send to the API endpoint
-   for the unix group delete operation.
+/*
+UnixGroupDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the unix group delete operation.
+
+	Typically these are written to a http.Request.
 */
 type UnixGroupDeleteParams struct {
 

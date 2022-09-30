@@ -55,10 +55,12 @@ func NewUnixUserCreateParamsWithHTTPClient(client *http.Client) *UnixUserCreateP
 	}
 }
 
-/* UnixUserCreateParams contains all the parameters to send to the API endpoint
-   for the unix user create operation.
+/*
+UnixUserCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the unix user create operation.
+
+	Typically these are written to a http.Request.
 */
 type UnixUserCreateParams struct {
 

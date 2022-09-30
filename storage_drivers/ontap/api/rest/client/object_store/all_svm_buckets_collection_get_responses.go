@@ -46,7 +46,8 @@ func NewAllSvmBucketsCollectionGetOK() *AllSvmBucketsCollectionGetOK {
 	return &AllSvmBucketsCollectionGetOK{}
 }
 
-/* AllSvmBucketsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+AllSvmBucketsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AllSvmBucketsCollectionGetOK struct {
 	Payload *models.S3BucketResponse
 }
 
+// IsSuccess returns true when this all svm buckets collection get o k response has a 2xx status code
+func (o *AllSvmBucketsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this all svm buckets collection get o k response has a 3xx status code
+func (o *AllSvmBucketsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this all svm buckets collection get o k response has a 4xx status code
+func (o *AllSvmBucketsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this all svm buckets collection get o k response has a 5xx status code
+func (o *AllSvmBucketsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this all svm buckets collection get o k response a status code equal to that given
+func (o *AllSvmBucketsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AllSvmBucketsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] allSvmBucketsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AllSvmBucketsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] allSvmBucketsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AllSvmBucketsCollectionGetOK) GetPayload() *models.S3BucketResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAllSvmBucketsCollectionGetDefault(code int) *AllSvmBucketsCollectionGetD
 	}
 }
 
-/* AllSvmBucketsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+AllSvmBucketsCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AllSvmBucketsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this all svm buckets collection get default response has a 2xx status code
+func (o *AllSvmBucketsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this all svm buckets collection get default response has a 3xx status code
+func (o *AllSvmBucketsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this all svm buckets collection get default response has a 4xx status code
+func (o *AllSvmBucketsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this all svm buckets collection get default response has a 5xx status code
+func (o *AllSvmBucketsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this all svm buckets collection get default response a status code equal to that given
+func (o *AllSvmBucketsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AllSvmBucketsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] all_svm_buckets_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AllSvmBucketsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/buckets][%d] all_svm_buckets_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AllSvmBucketsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

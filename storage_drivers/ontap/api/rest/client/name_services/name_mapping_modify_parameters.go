@@ -55,10 +55,12 @@ func NewNameMappingModifyParamsWithHTTPClient(client *http.Client) *NameMappingM
 	}
 }
 
-/* NameMappingModifyParams contains all the parameters to send to the API endpoint
-   for the name mapping modify operation.
+/*
+NameMappingModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the name mapping modify operation.
+
+	Typically these are written to a http.Request.
 */
 type NameMappingModifyParams struct {
 

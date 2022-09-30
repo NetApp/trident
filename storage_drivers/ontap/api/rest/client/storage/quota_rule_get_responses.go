@@ -46,7 +46,8 @@ func NewQuotaRuleGetOK() *QuotaRuleGetOK {
 	return &QuotaRuleGetOK{}
 }
 
-/* QuotaRuleGetOK describes a response with status code 200, with default header values.
+/*
+QuotaRuleGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type QuotaRuleGetOK struct {
 	Payload *models.QuotaRule
 }
 
+// IsSuccess returns true when this quota rule get o k response has a 2xx status code
+func (o *QuotaRuleGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this quota rule get o k response has a 3xx status code
+func (o *QuotaRuleGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this quota rule get o k response has a 4xx status code
+func (o *QuotaRuleGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this quota rule get o k response has a 5xx status code
+func (o *QuotaRuleGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this quota rule get o k response a status code equal to that given
+func (o *QuotaRuleGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *QuotaRuleGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quotaRuleGetOK  %+v", 200, o.Payload)
 }
+
+func (o *QuotaRuleGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quotaRuleGetOK  %+v", 200, o.Payload)
+}
+
 func (o *QuotaRuleGetOK) GetPayload() *models.QuotaRule {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewQuotaRuleGetDefault(code int) *QuotaRuleGetDefault {
 	}
 }
 
-/* QuotaRuleGetDefault describes a response with status code -1, with default header values.
+/*
+	QuotaRuleGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5308544 | The specified quota rule UUID is invalid. |
 | 5308545 | Unable to retrieve rule for the specified quota rule UUID. |
 | 5308576 | Parameter `show_default_records` only allowed for GET collection. |
-
 */
 type QuotaRuleGetDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *QuotaRuleGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this quota rule get default response has a 2xx status code
+func (o *QuotaRuleGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this quota rule get default response has a 3xx status code
+func (o *QuotaRuleGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this quota rule get default response has a 4xx status code
+func (o *QuotaRuleGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this quota rule get default response has a 5xx status code
+func (o *QuotaRuleGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this quota rule get default response a status code equal to that given
+func (o *QuotaRuleGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QuotaRuleGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quota_rule_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QuotaRuleGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/quota/rules/{uuid}][%d] quota_rule_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QuotaRuleGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

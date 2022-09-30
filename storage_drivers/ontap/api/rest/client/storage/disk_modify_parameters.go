@@ -55,10 +55,12 @@ func NewDiskModifyParamsWithHTTPClient(client *http.Client) *DiskModifyParams {
 	}
 }
 
-/* DiskModifyParams contains all the parameters to send to the API endpoint
-   for the disk modify operation.
+/*
+DiskModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the disk modify operation.
+
+	Typically these are written to a http.Request.
 */
 type DiskModifyParams struct {
 

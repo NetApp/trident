@@ -52,10 +52,12 @@ func NewSecuritySamlSpDeleteParamsWithHTTPClient(client *http.Client) *SecurityS
 	}
 }
 
-/* SecuritySamlSpDeleteParams contains all the parameters to send to the API endpoint
-   for the security saml sp delete operation.
+/*
+SecuritySamlSpDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security saml sp delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SecuritySamlSpDeleteParams struct {
 	timeout    time.Duration

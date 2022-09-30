@@ -52,10 +52,12 @@ func NewFileDirectorySecurityDeleteParamsWithHTTPClient(client *http.Client) *Fi
 	}
 }
 
-/* FileDirectorySecurityDeleteParams contains all the parameters to send to the API endpoint
-   for the file directory security delete operation.
+/*
+FileDirectorySecurityDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file directory security delete operation.
+
+	Typically these are written to a http.Request.
 */
 type FileDirectorySecurityDeleteParams struct {
 

@@ -55,10 +55,12 @@ func NewAggregateModifyParamsWithHTTPClient(client *http.Client) *AggregateModif
 	}
 }
 
-/* AggregateModifyParams contains all the parameters to send to the API endpoint
-   for the aggregate modify operation.
+/*
+AggregateModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the aggregate modify operation.
+
+	Typically these are written to a http.Request.
 */
 type AggregateModifyParams struct {
 

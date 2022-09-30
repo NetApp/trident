@@ -53,10 +53,12 @@ func NewLunAttributeCollectionGetParamsWithHTTPClient(client *http.Client) *LunA
 	}
 }
 
-/* LunAttributeCollectionGetParams contains all the parameters to send to the API endpoint
-   for the lun attribute collection get operation.
+/*
+LunAttributeCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the lun attribute collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type LunAttributeCollectionGetParams struct {
 

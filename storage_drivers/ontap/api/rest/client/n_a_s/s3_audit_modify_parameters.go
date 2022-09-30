@@ -55,10 +55,12 @@ func NewS3AuditModifyParamsWithHTTPClient(client *http.Client) *S3AuditModifyPar
 	}
 }
 
-/* S3AuditModifyParams contains all the parameters to send to the API endpoint
-   for the s3 audit modify operation.
+/*
+S3AuditModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 audit modify operation.
+
+	Typically these are written to a http.Request.
 */
 type S3AuditModifyParams struct {
 

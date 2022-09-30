@@ -46,14 +46,44 @@ func NewFileDirectorySecurityDeleteOK() *FileDirectorySecurityDeleteOK {
 	return &FileDirectorySecurityDeleteOK{}
 }
 
-/* FileDirectorySecurityDeleteOK describes a response with status code 200, with default header values.
+/*
+FileDirectorySecurityDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FileDirectorySecurityDeleteOK struct {
 }
 
+// IsSuccess returns true when this file directory security delete o k response has a 2xx status code
+func (o *FileDirectorySecurityDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file directory security delete o k response has a 3xx status code
+func (o *FileDirectorySecurityDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file directory security delete o k response has a 4xx status code
+func (o *FileDirectorySecurityDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file directory security delete o k response has a 5xx status code
+func (o *FileDirectorySecurityDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file directory security delete o k response a status code equal to that given
+func (o *FileDirectorySecurityDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FileDirectorySecurityDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityDeleteOK ", 200)
+}
+
+func (o *FileDirectorySecurityDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewFileDirectorySecurityDeleteDefault(code int) *FileDirectorySecurityDelet
 	}
 }
 
-/* FileDirectorySecurityDeleteDefault describes a response with status code -1, with default header values.
+/*
+FileDirectorySecurityDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *FileDirectorySecurityDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file directory security delete default response has a 2xx status code
+func (o *FileDirectorySecurityDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file directory security delete default response has a 3xx status code
+func (o *FileDirectorySecurityDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file directory security delete default response has a 4xx status code
+func (o *FileDirectorySecurityDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file directory security delete default response has a 5xx status code
+func (o *FileDirectorySecurityDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file directory security delete default response a status code equal to that given
+func (o *FileDirectorySecurityDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileDirectorySecurityDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileDirectorySecurityDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileDirectorySecurityDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

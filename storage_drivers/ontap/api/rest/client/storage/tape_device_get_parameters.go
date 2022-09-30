@@ -53,10 +53,12 @@ func NewTapeDeviceGetParamsWithHTTPClient(client *http.Client) *TapeDeviceGetPar
 	}
 }
 
-/* TapeDeviceGetParams contains all the parameters to send to the API endpoint
-   for the tape device get operation.
+/*
+TapeDeviceGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the tape device get operation.
+
+	Typically these are written to a http.Request.
 */
 type TapeDeviceGetParams struct {
 

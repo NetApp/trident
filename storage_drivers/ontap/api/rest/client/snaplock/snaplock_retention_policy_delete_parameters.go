@@ -52,10 +52,12 @@ func NewSnaplockRetentionPolicyDeleteParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* SnaplockRetentionPolicyDeleteParams contains all the parameters to send to the API endpoint
-   for the snaplock retention policy delete operation.
+/*
+SnaplockRetentionPolicyDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock retention policy delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockRetentionPolicyDeleteParams struct {
 

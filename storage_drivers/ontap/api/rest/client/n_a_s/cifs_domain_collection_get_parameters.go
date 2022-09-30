@@ -53,10 +53,12 @@ func NewCifsDomainCollectionGetParamsWithHTTPClient(client *http.Client) *CifsDo
 	}
 }
 
-/* CifsDomainCollectionGetParams contains all the parameters to send to the API endpoint
-   for the cifs domain collection get operation.
+/*
+CifsDomainCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs domain collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsDomainCollectionGetParams struct {
 

@@ -46,7 +46,8 @@ func NewNvmeServiceCollectionGetOK() *NvmeServiceCollectionGetOK {
 	return &NvmeServiceCollectionGetOK{}
 }
 
-/* NvmeServiceCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NvmeServiceCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NvmeServiceCollectionGetOK struct {
 	Payload *models.NvmeServiceResponse
 }
 
+// IsSuccess returns true when this nvme service collection get o k response has a 2xx status code
+func (o *NvmeServiceCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme service collection get o k response has a 3xx status code
+func (o *NvmeServiceCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme service collection get o k response has a 4xx status code
+func (o *NvmeServiceCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme service collection get o k response has a 5xx status code
+func (o *NvmeServiceCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme service collection get o k response a status code equal to that given
+func (o *NvmeServiceCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeServiceCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/services][%d] nvmeServiceCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NvmeServiceCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/services][%d] nvmeServiceCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NvmeServiceCollectionGetOK) GetPayload() *models.NvmeServiceResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNvmeServiceCollectionGetDefault(code int) *NvmeServiceCollectionGetDefau
 	}
 }
 
-/* NvmeServiceCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+NvmeServiceCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NvmeServiceCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme service collection get default response has a 2xx status code
+func (o *NvmeServiceCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme service collection get default response has a 3xx status code
+func (o *NvmeServiceCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme service collection get default response has a 4xx status code
+func (o *NvmeServiceCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme service collection get default response has a 5xx status code
+func (o *NvmeServiceCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme service collection get default response a status code equal to that given
+func (o *NvmeServiceCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeServiceCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/services][%d] nvme_service_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeServiceCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/services][%d] nvme_service_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeServiceCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

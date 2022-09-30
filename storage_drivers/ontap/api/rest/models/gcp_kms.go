@@ -484,7 +484,6 @@ func (m *GcpKms) UnmarshalBinary(b []byte) error {
 // GcpKmsEkmipReachabilityItems0 Provides the connectivity status for the given SVM on the given node to all EKMIP servers configured on all nodes of the cluster.
 // This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
-//
 // swagger:model GcpKmsEkmipReachabilityItems0
 type GcpKmsEkmipReachabilityItems0 struct {
 
@@ -763,7 +762,6 @@ func (m *GcpKmsEkmipReachabilityItems0NodeLinks) UnmarshalBinary(b []byte) error
 // GcpKmsGoogleReachability Indicates whether or not the Google Cloud KMS service is reachable from all nodes in the cluster.
 // This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
-//
 // swagger:model GcpKmsGoogleReachability
 type GcpKmsGoogleReachability struct {
 
@@ -895,7 +893,6 @@ func (m *GcpKmsLinks) UnmarshalBinary(b []byte) error {
 
 // GcpKmsStateType Google Cloud Key Management Services is a cloud key management service (KMS) that provides a secure store for encryption keys. This object indicates whether or not the Google Cloud KMS key protection is available on all nodes in the cluster.
 // This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
-//
 //
 // swagger:model GcpKmsStateType
 type GcpKmsStateType struct {

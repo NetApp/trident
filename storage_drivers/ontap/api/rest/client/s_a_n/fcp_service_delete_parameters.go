@@ -52,10 +52,12 @@ func NewFcpServiceDeleteParamsWithHTTPClient(client *http.Client) *FcpServiceDel
 	}
 }
 
-/* FcpServiceDeleteParams contains all the parameters to send to the API endpoint
-   for the fcp service delete operation.
+/*
+FcpServiceDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fcp service delete operation.
+
+	Typically these are written to a http.Request.
 */
 type FcpServiceDeleteParams struct {
 

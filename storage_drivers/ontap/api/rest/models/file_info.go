@@ -744,7 +744,6 @@ func (m *FileInfo) UnmarshalBinary(b []byte) error {
 // This property is only populated if file system analytics is enabled on the containing volume. <br/>
 // In the context of the `records` property of a [`file_info_response`](#model-file_info_response), analytics objects will only include properties that may vary between elements within the collection. For example, the analytics objects will not contain histogram labels, since the same histogram labels are used for all elements within the collection. The invariant information is instead available via the `analytics` property of the [`file_info_response`](#model-file_info_response). This avoids an excessive amount of duplicated information when a [`GET  /storage/volumes/{volume.uuid}/files/{path}`](#/storage/file_collection_get) call returns a large collection.
 //
-//
 // swagger:model FileInfoAnalytics
 type FileInfoAnalytics struct {
 
@@ -1559,7 +1558,6 @@ func (m *FileInfoLinksType) UnmarshalBinary(b []byte) error {
 
 // FileInfoQosPolicy The QoS policy for the file. Both traditional and adaptive QoS policies are supported. If both `qos_policy.uuid` and `qos_policy.name` properties are specified in the same request, they must refer to the same QoS policy. To remove the file from a QoS policy, set the property `qos_policy.name` in a PATCH request to an empty string "" or "none". Note: Files which are in use as a LUN cannot be assigned to a QoS policy, instead use PATCH on /storage/luns to assign a QoS policy for such files. <br/>
 // Note that a QoS policy can be set on a file, or a file's volume, but not on both.
-//
 //
 // swagger:model FileInfoQosPolicy
 type FileInfoQosPolicy struct {

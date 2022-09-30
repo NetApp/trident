@@ -55,10 +55,12 @@ func NewFileDirectorySecurityModifyParamsWithHTTPClient(client *http.Client) *Fi
 	}
 }
 
-/* FileDirectorySecurityModifyParams contains all the parameters to send to the API endpoint
-   for the file directory security modify operation.
+/*
+FileDirectorySecurityModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file directory security modify operation.
+
+	Typically these are written to a http.Request.
 */
 type FileDirectorySecurityModifyParams struct {
 

@@ -55,10 +55,12 @@ func NewAutosupportCreateParamsWithHTTPClient(client *http.Client) *AutosupportC
 	}
 }
 
-/* AutosupportCreateParams contains all the parameters to send to the API endpoint
-   for the autosupport create operation.
+/*
+AutosupportCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the autosupport create operation.
+
+	Typically these are written to a http.Request.
 */
 type AutosupportCreateParams struct {
 

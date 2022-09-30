@@ -46,7 +46,8 @@ func NewPublickeyCollectionGetOK() *PublickeyCollectionGetOK {
 	return &PublickeyCollectionGetOK{}
 }
 
-/* PublickeyCollectionGetOK describes a response with status code 200, with default header values.
+/*
+PublickeyCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type PublickeyCollectionGetOK struct {
 	Payload *models.PublickeyResponse
 }
 
+// IsSuccess returns true when this publickey collection get o k response has a 2xx status code
+func (o *PublickeyCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this publickey collection get o k response has a 3xx status code
+func (o *PublickeyCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this publickey collection get o k response has a 4xx status code
+func (o *PublickeyCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this publickey collection get o k response has a 5xx status code
+func (o *PublickeyCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this publickey collection get o k response a status code equal to that given
+func (o *PublickeyCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *PublickeyCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickeyCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *PublickeyCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickeyCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *PublickeyCollectionGetOK) GetPayload() *models.PublickeyResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewPublickeyCollectionGetDefault(code int) *PublickeyCollectionGetDefault {
 	}
 }
 
-/* PublickeyCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+PublickeyCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *PublickeyCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this publickey collection get default response has a 2xx status code
+func (o *PublickeyCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this publickey collection get default response has a 3xx status code
+func (o *PublickeyCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this publickey collection get default response has a 4xx status code
+func (o *PublickeyCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this publickey collection get default response has a 5xx status code
+func (o *PublickeyCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this publickey collection get default response a status code equal to that given
+func (o *PublickeyCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *PublickeyCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickey_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *PublickeyCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/authentication/publickeys][%d] publickey_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *PublickeyCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

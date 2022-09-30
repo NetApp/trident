@@ -53,10 +53,12 @@ func NewScheduleGetParamsWithHTTPClient(client *http.Client) *ScheduleGetParams 
 	}
 }
 
-/* ScheduleGetParams contains all the parameters to send to the API endpoint
-   for the schedule get operation.
+/*
+ScheduleGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the schedule get operation.
+
+	Typically these are written to a http.Request.
 */
 type ScheduleGetParams struct {
 

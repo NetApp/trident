@@ -46,7 +46,8 @@ func NewQosPolicyModifyAccepted() *QosPolicyModifyAccepted {
 	return &QosPolicyModifyAccepted{}
 }
 
-/* QosPolicyModifyAccepted describes a response with status code 202, with default header values.
+/*
+QosPolicyModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type QosPolicyModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this qos policy modify accepted response has a 2xx status code
+func (o *QosPolicyModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this qos policy modify accepted response has a 3xx status code
+func (o *QosPolicyModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this qos policy modify accepted response has a 4xx status code
+func (o *QosPolicyModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this qos policy modify accepted response has a 5xx status code
+func (o *QosPolicyModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this qos policy modify accepted response a status code equal to that given
+func (o *QosPolicyModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *QosPolicyModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/qos/policies/{uuid}][%d] qosPolicyModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *QosPolicyModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/qos/policies/{uuid}][%d] qosPolicyModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *QosPolicyModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewQosPolicyModifyDefault(code int) *QosPolicyModifyDefault {
 	}
 }
 
-/* QosPolicyModifyDefault describes a response with status code -1, with default header values.
+/*
+	QosPolicyModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 8454147 | The maximum limit for QoS policies has been reached. |
@@ -94,7 +127,6 @@ func NewQosPolicyModifyDefault(code int) *QosPolicyModifyDefault {
 | 8454286 | Modifications on these cluster scoped preset policies is prohibited. |
 | 8454327 | The existing fixed QoS policy cannot be modified to an adaptive QoS policy. |
 | 8454328 | The existing adaptive QoS policy cannot be modified to a fixed QoS policy. |
-
 */
 type QosPolicyModifyDefault struct {
 	_statusCode int
@@ -107,9 +139,39 @@ func (o *QosPolicyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this qos policy modify default response has a 2xx status code
+func (o *QosPolicyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this qos policy modify default response has a 3xx status code
+func (o *QosPolicyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this qos policy modify default response has a 4xx status code
+func (o *QosPolicyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this qos policy modify default response has a 5xx status code
+func (o *QosPolicyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this qos policy modify default response a status code equal to that given
+func (o *QosPolicyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QosPolicyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/qos/policies/{uuid}][%d] qos_policy_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QosPolicyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/qos/policies/{uuid}][%d] qos_policy_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QosPolicyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewNetworkEthernetBroadcastDomainsGetParamsWithHTTPClient(client *http.Clie
 	}
 }
 
-/* NetworkEthernetBroadcastDomainsGetParams contains all the parameters to send to the API endpoint
-   for the network ethernet broadcast domains get operation.
+/*
+NetworkEthernetBroadcastDomainsGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ethernet broadcast domains get operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkEthernetBroadcastDomainsGetParams struct {
 

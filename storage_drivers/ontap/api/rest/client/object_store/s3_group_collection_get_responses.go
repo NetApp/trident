@@ -46,7 +46,8 @@ func NewS3GroupCollectionGetOK() *S3GroupCollectionGetOK {
 	return &S3GroupCollectionGetOK{}
 }
 
-/* S3GroupCollectionGetOK describes a response with status code 200, with default header values.
+/*
+S3GroupCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type S3GroupCollectionGetOK struct {
 	Payload *models.S3GroupResponse
 }
 
+// IsSuccess returns true when this s3 group collection get o k response has a 2xx status code
+func (o *S3GroupCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 group collection get o k response has a 3xx status code
+func (o *S3GroupCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 group collection get o k response has a 4xx status code
+func (o *S3GroupCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 group collection get o k response has a 5xx status code
+func (o *S3GroupCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 group collection get o k response a status code equal to that given
+func (o *S3GroupCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3GroupCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups][%d] s3GroupCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *S3GroupCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups][%d] s3GroupCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *S3GroupCollectionGetOK) GetPayload() *models.S3GroupResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewS3GroupCollectionGetDefault(code int) *S3GroupCollectionGetDefault {
 	}
 }
 
-/* S3GroupCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+S3GroupCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *S3GroupCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 group collection get default response has a 2xx status code
+func (o *S3GroupCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 group collection get default response has a 3xx status code
+func (o *S3GroupCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 group collection get default response has a 4xx status code
+func (o *S3GroupCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 group collection get default response has a 5xx status code
+func (o *S3GroupCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 group collection get default response a status code equal to that given
+func (o *S3GroupCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3GroupCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups][%d] s3_group_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3GroupCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/groups][%d] s3_group_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3GroupCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

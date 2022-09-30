@@ -52,14 +52,44 @@ func NewTapeDeviceModifyOK() *TapeDeviceModifyOK {
 	return &TapeDeviceModifyOK{}
 }
 
-/* TapeDeviceModifyOK describes a response with status code 200, with default header values.
+/*
+TapeDeviceModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type TapeDeviceModifyOK struct {
 }
 
+// IsSuccess returns true when this tape device modify o k response has a 2xx status code
+func (o *TapeDeviceModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this tape device modify o k response has a 3xx status code
+func (o *TapeDeviceModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this tape device modify o k response has a 4xx status code
+func (o *TapeDeviceModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this tape device modify o k response has a 5xx status code
+func (o *TapeDeviceModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this tape device modify o k response a status code equal to that given
+func (o *TapeDeviceModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *TapeDeviceModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyOK ", 200)
+}
+
+func (o *TapeDeviceModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyOK ", 200)
 }
 
@@ -73,7 +103,8 @@ func NewTapeDeviceModifyAccepted() *TapeDeviceModifyAccepted {
 	return &TapeDeviceModifyAccepted{}
 }
 
-/* TapeDeviceModifyAccepted describes a response with status code 202, with default header values.
+/*
+TapeDeviceModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -81,9 +112,39 @@ type TapeDeviceModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this tape device modify accepted response has a 2xx status code
+func (o *TapeDeviceModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this tape device modify accepted response has a 3xx status code
+func (o *TapeDeviceModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this tape device modify accepted response has a 4xx status code
+func (o *TapeDeviceModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this tape device modify accepted response has a 5xx status code
+func (o *TapeDeviceModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this tape device modify accepted response a status code equal to that given
+func (o *TapeDeviceModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *TapeDeviceModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *TapeDeviceModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tapeDeviceModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *TapeDeviceModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -107,9 +168,11 @@ func NewTapeDeviceModifyDefault(code int) *TapeDeviceModifyDefault {
 	}
 }
 
-/* TapeDeviceModifyDefault describes a response with status code -1, with default header values.
+/*
+	TapeDeviceModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 11403264 | Tape operation \"<operation>\" failed on tape device \"<device_id>\". This may indicate tape reached end of data, a hardware error, an illegal request, an invalid name format, or an aborted command. |
@@ -125,7 +188,6 @@ func NewTapeDeviceModifyDefault(code int) *TapeDeviceModifyDefault {
 | 11403275 | Tape alias name \"<alias>\" not found. |
 | 11403277 | Tape device \"<device_id>\" is reserved by another host. |
 | 11403278 | Invalid count value specified with operation \"<operation>\". Valid values are from 0 to {1}. |
-
 */
 type TapeDeviceModifyDefault struct {
 	_statusCode int
@@ -138,9 +200,39 @@ func (o *TapeDeviceModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this tape device modify default response has a 2xx status code
+func (o *TapeDeviceModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this tape device modify default response has a 3xx status code
+func (o *TapeDeviceModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this tape device modify default response has a 4xx status code
+func (o *TapeDeviceModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this tape device modify default response has a 5xx status code
+func (o *TapeDeviceModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this tape device modify default response a status code equal to that given
+func (o *TapeDeviceModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TapeDeviceModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *TapeDeviceModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/tape-devices/{node.uuid}/{device_id}][%d] tape_device_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *TapeDeviceModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

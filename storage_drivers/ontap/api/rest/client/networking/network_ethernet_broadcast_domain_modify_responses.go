@@ -46,14 +46,44 @@ func NewNetworkEthernetBroadcastDomainModifyOK() *NetworkEthernetBroadcastDomain
 	return &NetworkEthernetBroadcastDomainModifyOK{}
 }
 
-/* NetworkEthernetBroadcastDomainModifyOK describes a response with status code 200, with default header values.
+/*
+NetworkEthernetBroadcastDomainModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NetworkEthernetBroadcastDomainModifyOK struct {
 }
 
+// IsSuccess returns true when this network ethernet broadcast domain modify o k response has a 2xx status code
+func (o *NetworkEthernetBroadcastDomainModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network ethernet broadcast domain modify o k response has a 3xx status code
+func (o *NetworkEthernetBroadcastDomainModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network ethernet broadcast domain modify o k response has a 4xx status code
+func (o *NetworkEthernetBroadcastDomainModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network ethernet broadcast domain modify o k response has a 5xx status code
+func (o *NetworkEthernetBroadcastDomainModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network ethernet broadcast domain modify o k response a status code equal to that given
+func (o *NetworkEthernetBroadcastDomainModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkEthernetBroadcastDomainModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] networkEthernetBroadcastDomainModifyOK ", 200)
+}
+
+func (o *NetworkEthernetBroadcastDomainModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] networkEthernetBroadcastDomainModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewNetworkEthernetBroadcastDomainModifyDefault(code int) *NetworkEthernetBr
 	}
 }
 
-/* NetworkEthernetBroadcastDomainModifyDefault describes a response with status code -1, with default header values.
+/*
+	NetworkEthernetBroadcastDomainModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1377267 | The specified IPspace does not exist. |
@@ -83,7 +115,6 @@ func NewNetworkEthernetBroadcastDomainModifyDefault(code int) *NetworkEthernetBr
 | 1967151 | The specified ipspace.uuid and ipspace.name do not match. |
 | 1967152 | Patching IPspace for a broadcast domain requires an effective cluster version of 9.7 or later. |
 | 53280884 | The MTU of the broadcast domain cannot be modified on this platform. |
-
 */
 type NetworkEthernetBroadcastDomainModifyDefault struct {
 	_statusCode int
@@ -96,9 +127,39 @@ func (o *NetworkEthernetBroadcastDomainModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ethernet broadcast domain modify default response has a 2xx status code
+func (o *NetworkEthernetBroadcastDomainModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ethernet broadcast domain modify default response has a 3xx status code
+func (o *NetworkEthernetBroadcastDomainModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ethernet broadcast domain modify default response has a 4xx status code
+func (o *NetworkEthernetBroadcastDomainModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ethernet broadcast domain modify default response has a 5xx status code
+func (o *NetworkEthernetBroadcastDomainModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ethernet broadcast domain modify default response a status code equal to that given
+func (o *NetworkEthernetBroadcastDomainModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkEthernetBroadcastDomainModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] network_ethernet_broadcast_domain_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkEthernetBroadcastDomainModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /network/ethernet/broadcast-domains/{uuid}][%d] network_ethernet_broadcast_domain_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkEthernetBroadcastDomainModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

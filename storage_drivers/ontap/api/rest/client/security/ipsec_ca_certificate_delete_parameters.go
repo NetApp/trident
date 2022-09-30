@@ -52,10 +52,12 @@ func NewIpsecCaCertificateDeleteParamsWithHTTPClient(client *http.Client) *Ipsec
 	}
 }
 
-/* IpsecCaCertificateDeleteParams contains all the parameters to send to the API endpoint
-   for the ipsec ca certificate delete operation.
+/*
+IpsecCaCertificateDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ipsec ca certificate delete operation.
+
+	Typically these are written to a http.Request.
 */
 type IpsecCaCertificateDeleteParams struct {
 

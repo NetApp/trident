@@ -46,14 +46,44 @@ func NewFpolicyEventDeleteOK() *FpolicyEventDeleteOK {
 	return &FpolicyEventDeleteOK{}
 }
 
-/* FpolicyEventDeleteOK describes a response with status code 200, with default header values.
+/*
+FpolicyEventDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FpolicyEventDeleteOK struct {
 }
 
+// IsSuccess returns true when this fpolicy event delete o k response has a 2xx status code
+func (o *FpolicyEventDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fpolicy event delete o k response has a 3xx status code
+func (o *FpolicyEventDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fpolicy event delete o k response has a 4xx status code
+func (o *FpolicyEventDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fpolicy event delete o k response has a 5xx status code
+func (o *FpolicyEventDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fpolicy event delete o k response a status code equal to that given
+func (o *FpolicyEventDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FpolicyEventDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventDeleteOK ", 200)
+}
+
+func (o *FpolicyEventDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicyEventDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewFpolicyEventDeleteDefault(code int) *FpolicyEventDeleteDefault {
 	}
 }
 
-/* FpolicyEventDeleteDefault describes a response with status code -1, with default header values.
+/*
+	FpolicyEventDeleteDefault describes a response with status code -1, with default header values.
 
- | Error Code | Description |
+	| Error Code | Description |
+
 | ---------- | ----------- |
 | 9764874    | The FPolicy event is a cluster event |
 | 9764947    | The FPolicy event is attached to an FPolicy policy |
-
 */
 type FpolicyEventDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *FpolicyEventDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fpolicy event delete default response has a 2xx status code
+func (o *FpolicyEventDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fpolicy event delete default response has a 3xx status code
+func (o *FpolicyEventDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fpolicy event delete default response has a 4xx status code
+func (o *FpolicyEventDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fpolicy event delete default response has a 5xx status code
+func (o *FpolicyEventDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fpolicy event delete default response a status code equal to that given
+func (o *FpolicyEventDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FpolicyEventDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FpolicyEventDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/fpolicy/{svm.uuid}/events/{name}][%d] fpolicy_event_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FpolicyEventDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

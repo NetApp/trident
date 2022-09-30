@@ -46,7 +46,8 @@ func NewMetroclusterInterconnectCollectionGetOK() *MetroclusterInterconnectColle
 	return &MetroclusterInterconnectCollectionGetOK{}
 }
 
-/* MetroclusterInterconnectCollectionGetOK describes a response with status code 200, with default header values.
+/*
+MetroclusterInterconnectCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type MetroclusterInterconnectCollectionGetOK struct {
 	Payload *models.MetroclusterInterconnectResponse
 }
 
+// IsSuccess returns true when this metrocluster interconnect collection get o k response has a 2xx status code
+func (o *MetroclusterInterconnectCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster interconnect collection get o k response has a 3xx status code
+func (o *MetroclusterInterconnectCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster interconnect collection get o k response has a 4xx status code
+func (o *MetroclusterInterconnectCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster interconnect collection get o k response has a 5xx status code
+func (o *MetroclusterInterconnectCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster interconnect collection get o k response a status code equal to that given
+func (o *MetroclusterInterconnectCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MetroclusterInterconnectCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects][%d] metroclusterInterconnectCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *MetroclusterInterconnectCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects][%d] metroclusterInterconnectCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *MetroclusterInterconnectCollectionGetOK) GetPayload() *models.MetroclusterInterconnectResponse {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewMetroclusterInterconnectCollectionGetDefault(code int) *MetroclusterInte
 	}
 }
 
-/* MetroclusterInterconnectCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	MetroclusterInterconnectCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
 | 2427132 | MetroCluster is not configured on this cluster. |
-
 */
 type MetroclusterInterconnectCollectionGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *MetroclusterInterconnectCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster interconnect collection get default response has a 2xx status code
+func (o *MetroclusterInterconnectCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster interconnect collection get default response has a 3xx status code
+func (o *MetroclusterInterconnectCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster interconnect collection get default response has a 4xx status code
+func (o *MetroclusterInterconnectCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster interconnect collection get default response has a 5xx status code
+func (o *MetroclusterInterconnectCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster interconnect collection get default response a status code equal to that given
+func (o *MetroclusterInterconnectCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterInterconnectCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects][%d] metrocluster_interconnect_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MetroclusterInterconnectCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects][%d] metrocluster_interconnect_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MetroclusterInterconnectCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewCifsShareCreateCreated() *CifsShareCreateCreated {
 	return &CifsShareCreateCreated{}
 }
 
-/* CifsShareCreateCreated describes a response with status code 201, with default header values.
+/*
+CifsShareCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type CifsShareCreateCreated struct {
 }
 
+// IsSuccess returns true when this cifs share create created response has a 2xx status code
+func (o *CifsShareCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs share create created response has a 3xx status code
+func (o *CifsShareCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs share create created response has a 4xx status code
+func (o *CifsShareCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs share create created response has a 5xx status code
+func (o *CifsShareCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs share create created response a status code equal to that given
+func (o *CifsShareCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *CifsShareCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifsShareCreateCreated ", 201)
+}
+
+func (o *CifsShareCreateCreated) String() string {
 	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifsShareCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewCifsShareCreateDefault(code int) *CifsShareCreateDefault {
 	}
 }
 
-/* CifsShareCreateDefault describes a response with status code -1, with default header values.
+/*
+	CifsShareCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 655628     | CIFS Share Creation with property 'SMB_ENCRYPTION' failed because the CIFS server does not support SMB3.0 |
@@ -86,7 +118,6 @@ func NewCifsShareCreateDefault(code int) *CifsShareCreateDefault {
 | 655655     | no-strict-security should be set to true only if unix_symlink is configured as "local" or "widelink" |
 | 655394     | Failed to create CIFS share because share cannot be made continuously available unless running SMB3 or later. |
 | 4849678    | Failed to create CIFS share because the specified UNIX group does not exist |
-
 */
 type CifsShareCreateDefault struct {
 	_statusCode int
@@ -99,9 +130,39 @@ func (o *CifsShareCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs share create default response has a 2xx status code
+func (o *CifsShareCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs share create default response has a 3xx status code
+func (o *CifsShareCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs share create default response has a 4xx status code
+func (o *CifsShareCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs share create default response has a 5xx status code
+func (o *CifsShareCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs share create default response a status code equal to that given
+func (o *CifsShareCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsShareCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifs_share_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsShareCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/shares][%d] cifs_share_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsShareCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

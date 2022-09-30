@@ -46,7 +46,8 @@ func NewApplicationSnapshotDeleteAccepted() *ApplicationSnapshotDeleteAccepted {
 	return &ApplicationSnapshotDeleteAccepted{}
 }
 
-/* ApplicationSnapshotDeleteAccepted describes a response with status code 202, with default header values.
+/*
+ApplicationSnapshotDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type ApplicationSnapshotDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this application snapshot delete accepted response has a 2xx status code
+func (o *ApplicationSnapshotDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application snapshot delete accepted response has a 3xx status code
+func (o *ApplicationSnapshotDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application snapshot delete accepted response has a 4xx status code
+func (o *ApplicationSnapshotDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application snapshot delete accepted response has a 5xx status code
+func (o *ApplicationSnapshotDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application snapshot delete accepted response a status code equal to that given
+func (o *ApplicationSnapshotDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ApplicationSnapshotDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] applicationSnapshotDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ApplicationSnapshotDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] applicationSnapshotDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ApplicationSnapshotDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewApplicationSnapshotDeleteDefault(code int) *ApplicationSnapshotDeleteDef
 	}
 }
 
-/* ApplicationSnapshotDeleteDefault describes a response with status code -1, with default header values.
+/*
+ApplicationSnapshotDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ApplicationSnapshotDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this application snapshot delete default response has a 2xx status code
+func (o *ApplicationSnapshotDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this application snapshot delete default response has a 3xx status code
+func (o *ApplicationSnapshotDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this application snapshot delete default response has a 4xx status code
+func (o *ApplicationSnapshotDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this application snapshot delete default response has a 5xx status code
+func (o *ApplicationSnapshotDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this application snapshot delete default response a status code equal to that given
+func (o *ApplicationSnapshotDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ApplicationSnapshotDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] application_snapshot_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ApplicationSnapshotDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /application/applications/{application.uuid}/snapshots/{uuid}][%d] application_snapshot_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ApplicationSnapshotDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

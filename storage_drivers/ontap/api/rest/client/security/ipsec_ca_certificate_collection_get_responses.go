@@ -46,7 +46,8 @@ func NewIpsecCaCertificateCollectionGetOK() *IpsecCaCertificateCollectionGetOK {
 	return &IpsecCaCertificateCollectionGetOK{}
 }
 
-/* IpsecCaCertificateCollectionGetOK describes a response with status code 200, with default header values.
+/*
+IpsecCaCertificateCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IpsecCaCertificateCollectionGetOK struct {
 	Payload *models.IpsecCaCertificateResponse
 }
 
+// IsSuccess returns true when this ipsec ca certificate collection get o k response has a 2xx status code
+func (o *IpsecCaCertificateCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipsec ca certificate collection get o k response has a 3xx status code
+func (o *IpsecCaCertificateCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipsec ca certificate collection get o k response has a 4xx status code
+func (o *IpsecCaCertificateCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipsec ca certificate collection get o k response has a 5xx status code
+func (o *IpsecCaCertificateCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipsec ca certificate collection get o k response a status code equal to that given
+func (o *IpsecCaCertificateCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IpsecCaCertificateCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/ipsec/ca-certificates][%d] ipsecCaCertificateCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IpsecCaCertificateCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/ipsec/ca-certificates][%d] ipsecCaCertificateCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IpsecCaCertificateCollectionGetOK) GetPayload() *models.IpsecCaCertificateResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewIpsecCaCertificateCollectionGetDefault(code int) *IpsecCaCertificateColl
 	}
 }
 
-/* IpsecCaCertificateCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+IpsecCaCertificateCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *IpsecCaCertificateCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ipsec ca certificate collection get default response has a 2xx status code
+func (o *IpsecCaCertificateCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipsec ca certificate collection get default response has a 3xx status code
+func (o *IpsecCaCertificateCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipsec ca certificate collection get default response has a 4xx status code
+func (o *IpsecCaCertificateCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipsec ca certificate collection get default response has a 5xx status code
+func (o *IpsecCaCertificateCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipsec ca certificate collection get default response a status code equal to that given
+func (o *IpsecCaCertificateCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IpsecCaCertificateCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/ipsec/ca-certificates][%d] ipsec_ca_certificate_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IpsecCaCertificateCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/ipsec/ca-certificates][%d] ipsec_ca_certificate_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IpsecCaCertificateCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewVscanOnAccessDeleteOK() *VscanOnAccessDeleteOK {
 	return &VscanOnAccessDeleteOK{}
 }
 
-/* VscanOnAccessDeleteOK describes a response with status code 200, with default header values.
+/*
+VscanOnAccessDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type VscanOnAccessDeleteOK struct {
 }
 
+// IsSuccess returns true when this vscan on access delete o k response has a 2xx status code
+func (o *VscanOnAccessDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan on access delete o k response has a 3xx status code
+func (o *VscanOnAccessDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan on access delete o k response has a 4xx status code
+func (o *VscanOnAccessDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan on access delete o k response has a 5xx status code
+func (o *VscanOnAccessDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan on access delete o k response a status code equal to that given
+func (o *VscanOnAccessDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanOnAccessDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessDeleteOK ", 200)
+}
+
+func (o *VscanOnAccessDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessDeleteOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewVscanOnAccessDeleteDefault(code int) *VscanOnAccessDeleteDefault {
 	}
 }
 
-/* VscanOnAccessDeleteDefault describes a response with status code -1, with default header values.
+/*
+	VscanOnAccessDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 10027034   | An On-Access policy associated with an administrative SVM cannot be deleted. |
 | 10027040   | An On-Access policy with a status enabled cannot be deleted. Disable the policy and then delete the policy. |
-
 */
 type VscanOnAccessDeleteDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *VscanOnAccessDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan on access delete default response has a 2xx status code
+func (o *VscanOnAccessDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan on access delete default response has a 3xx status code
+func (o *VscanOnAccessDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan on access delete default response has a 4xx status code
+func (o *VscanOnAccessDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan on access delete default response has a 5xx status code
+func (o *VscanOnAccessDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan on access delete default response a status code equal to that given
+func (o *VscanOnAccessDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanOnAccessDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanOnAccessDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanOnAccessDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

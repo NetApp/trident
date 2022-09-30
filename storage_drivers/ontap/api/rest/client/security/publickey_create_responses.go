@@ -46,14 +46,44 @@ func NewPublickeyCreateCreated() *PublickeyCreateCreated {
 	return &PublickeyCreateCreated{}
 }
 
-/* PublickeyCreateCreated describes a response with status code 201, with default header values.
+/*
+PublickeyCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type PublickeyCreateCreated struct {
 }
 
+// IsSuccess returns true when this publickey create created response has a 2xx status code
+func (o *PublickeyCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this publickey create created response has a 3xx status code
+func (o *PublickeyCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this publickey create created response has a 4xx status code
+func (o *PublickeyCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this publickey create created response has a 5xx status code
+func (o *PublickeyCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this publickey create created response a status code equal to that given
+func (o *PublickeyCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *PublickeyCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickeyCreateCreated ", 201)
+}
+
+func (o *PublickeyCreateCreated) String() string {
 	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickeyCreateCreated ", 201)
 }
 
@@ -69,7 +99,8 @@ func NewPublickeyCreateDefault(code int) *PublickeyCreateDefault {
 	}
 }
 
-/* PublickeyCreateDefault describes a response with status code -1, with default header values.
+/*
+PublickeyCreateDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *PublickeyCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this publickey create default response has a 2xx status code
+func (o *PublickeyCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this publickey create default response has a 3xx status code
+func (o *PublickeyCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this publickey create default response has a 4xx status code
+func (o *PublickeyCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this publickey create default response has a 5xx status code
+func (o *PublickeyCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this publickey create default response a status code equal to that given
+func (o *PublickeyCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *PublickeyCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickey_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *PublickeyCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/authentication/publickeys][%d] publickey_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *PublickeyCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

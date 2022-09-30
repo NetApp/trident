@@ -18,7 +18,6 @@ import (
 
 // FcPort A Fibre Channel (FC) port is the physical port of an FC adapter on an ONTAP cluster node that can be connected to an FC network to provide FC network connectivity. An FC port defines the location of an FC interface within the ONTAP cluster.
 //
-//
 // swagger:model fc_port
 type FcPort struct {
 
@@ -765,7 +764,6 @@ func (m *FcPort) UnmarshalBinary(b []byte) error {
 }
 
 // FcPortFabric Properties of the fabric to which the FC port is attached.
-//
 //
 // swagger:model FcPortFabric
 type FcPortFabric struct {
@@ -1950,7 +1948,6 @@ func (m *FcPortNodeLinks) UnmarshalBinary(b []byte) error {
 
 // FcPortSpeed The physical device speed related properties of the FC port.
 //
-//
 // swagger:model FcPortSpeed
 type FcPortSpeed struct {
 
@@ -2807,7 +2804,6 @@ func (m *FcPortStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 }
 
 // FcPortTransceiver Properties of the transceiver connected to the FC port.
-//
 //
 // swagger:model FcPortTransceiver
 type FcPortTransceiver struct {

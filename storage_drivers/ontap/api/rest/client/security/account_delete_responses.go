@@ -46,14 +46,44 @@ func NewAccountDeleteOK() *AccountDeleteOK {
 	return &AccountDeleteOK{}
 }
 
-/* AccountDeleteOK describes a response with status code 200, with default header values.
+/*
+AccountDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type AccountDeleteOK struct {
 }
 
+// IsSuccess returns true when this account delete o k response has a 2xx status code
+func (o *AccountDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this account delete o k response has a 3xx status code
+func (o *AccountDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this account delete o k response has a 4xx status code
+func (o *AccountDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this account delete o k response has a 5xx status code
+func (o *AccountDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this account delete o k response a status code equal to that given
+func (o *AccountDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AccountDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] accountDeleteOK ", 200)
+}
+
+func (o *AccountDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] accountDeleteOK ", 200)
 }
 
@@ -69,15 +99,16 @@ func NewAccountDeleteDefault(code int) *AccountDeleteDefault {
 	}
 }
 
-/* AccountDeleteDefault describes a response with status code -1, with default header values.
+/*
+	AccountDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5636098 | Last unlocked account that has an admin role cannot be deleted. |
 | 5636125 | The operation is not supported on system accounts. |
 | 5636146 | Cannot delete the last console account with admin role. |
-
 */
 type AccountDeleteDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *AccountDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this account delete default response has a 2xx status code
+func (o *AccountDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this account delete default response has a 3xx status code
+func (o *AccountDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this account delete default response has a 4xx status code
+func (o *AccountDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this account delete default response has a 5xx status code
+func (o *AccountDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this account delete default response a status code equal to that given
+func (o *AccountDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AccountDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] account_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AccountDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/accounts/{owner.uuid}/{name}][%d] account_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AccountDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

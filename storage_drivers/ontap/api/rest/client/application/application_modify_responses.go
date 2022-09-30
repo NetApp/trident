@@ -46,7 +46,8 @@ func NewApplicationModifyAccepted() *ApplicationModifyAccepted {
 	return &ApplicationModifyAccepted{}
 }
 
-/* ApplicationModifyAccepted describes a response with status code 202, with default header values.
+/*
+ApplicationModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type ApplicationModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this application modify accepted response has a 2xx status code
+func (o *ApplicationModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application modify accepted response has a 3xx status code
+func (o *ApplicationModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application modify accepted response has a 4xx status code
+func (o *ApplicationModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application modify accepted response has a 5xx status code
+func (o *ApplicationModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application modify accepted response a status code equal to that given
+func (o *ApplicationModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ApplicationModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] applicationModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ApplicationModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] applicationModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ApplicationModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewApplicationModifyDefault(code int) *ApplicationModifyDefault {
 	}
 }
 
-/* ApplicationModifyDefault describes a response with status code -1, with default header values.
+/*
+ApplicationModifyDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ApplicationModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this application modify default response has a 2xx status code
+func (o *ApplicationModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this application modify default response has a 3xx status code
+func (o *ApplicationModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this application modify default response has a 4xx status code
+func (o *ApplicationModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this application modify default response has a 5xx status code
+func (o *ApplicationModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this application modify default response a status code equal to that given
+func (o *ApplicationModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ApplicationModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] application_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ApplicationModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /application/applications/{uuid}][%d] application_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ApplicationModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

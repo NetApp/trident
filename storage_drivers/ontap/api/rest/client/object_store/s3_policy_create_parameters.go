@@ -55,10 +55,12 @@ func NewS3PolicyCreateParamsWithHTTPClient(client *http.Client) *S3PolicyCreateP
 	}
 }
 
-/* S3PolicyCreateParams contains all the parameters to send to the API endpoint
-   for the s3 policy create operation.
+/*
+S3PolicyCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 policy create operation.
+
+	Typically these are written to a http.Request.
 */
 type S3PolicyCreateParams struct {
 

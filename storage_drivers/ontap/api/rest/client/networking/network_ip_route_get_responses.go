@@ -46,7 +46,8 @@ func NewNetworkIPRouteGetOK() *NetworkIPRouteGetOK {
 	return &NetworkIPRouteGetOK{}
 }
 
-/* NetworkIPRouteGetOK describes a response with status code 200, with default header values.
+/*
+NetworkIPRouteGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NetworkIPRouteGetOK struct {
 	Payload *models.NetworkRoute
 }
 
+// IsSuccess returns true when this network Ip route get o k response has a 2xx status code
+func (o *NetworkIPRouteGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip route get o k response has a 3xx status code
+func (o *NetworkIPRouteGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip route get o k response has a 4xx status code
+func (o *NetworkIPRouteGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip route get o k response has a 5xx status code
+func (o *NetworkIPRouteGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip route get o k response a status code equal to that given
+func (o *NetworkIPRouteGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkIPRouteGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] networkIpRouteGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NetworkIPRouteGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] networkIpRouteGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NetworkIPRouteGetOK) GetPayload() *models.NetworkRoute {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNetworkIPRouteGetDefault(code int) *NetworkIPRouteGetDefault {
 	}
 }
 
-/* NetworkIPRouteGetDefault describes a response with status code -1, with default header values.
+/*
+NetworkIPRouteGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NetworkIPRouteGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ip route get default response has a 2xx status code
+func (o *NetworkIPRouteGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ip route get default response has a 3xx status code
+func (o *NetworkIPRouteGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ip route get default response has a 4xx status code
+func (o *NetworkIPRouteGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ip route get default response has a 5xx status code
+func (o *NetworkIPRouteGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ip route get default response a status code equal to that given
+func (o *NetworkIPRouteGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkIPRouteGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] network_ip_route_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkIPRouteGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ip/routes/{uuid}][%d] network_ip_route_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkIPRouteGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

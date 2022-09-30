@@ -46,14 +46,44 @@ func NewLdapModifyOK() *LdapModifyOK {
 	return &LdapModifyOK{}
 }
 
-/* LdapModifyOK describes a response with status code 200, with default header values.
+/*
+LdapModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LdapModifyOK struct {
 }
 
+// IsSuccess returns true when this ldap modify o k response has a 2xx status code
+func (o *LdapModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ldap modify o k response has a 3xx status code
+func (o *LdapModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ldap modify o k response has a 4xx status code
+func (o *LdapModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ldap modify o k response has a 5xx status code
+func (o *LdapModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ldap modify o k response a status code equal to that given
+func (o *LdapModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LdapModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldapModifyOK ", 200)
+}
+
+func (o *LdapModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldapModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewLdapModifyDefault(code int) *LdapModifyDefault {
 	}
 }
 
-/* LdapModifyDefault describes a response with status code -1, with default header values.
+/*
+	LdapModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262186     | LDAP Servers cannot be used with Active Directory domain and/or preferred Active Directory servers |
@@ -90,7 +122,6 @@ func NewLdapModifyDefault(code int) *LdapModifyDefault {
 | 4915259    | LDAP configurations with Active Directory domains are not supported on admin SVM. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
 | 4915252    | LDAP Referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
-
 */
 type LdapModifyDefault struct {
 	_statusCode int
@@ -103,9 +134,39 @@ func (o *LdapModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ldap modify default response has a 2xx status code
+func (o *LdapModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ldap modify default response has a 3xx status code
+func (o *LdapModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ldap modify default response has a 4xx status code
+func (o *LdapModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ldap modify default response has a 5xx status code
+func (o *LdapModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ldap modify default response a status code equal to that given
+func (o *LdapModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LdapModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldap_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LdapModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/ldap/{svm.uuid}][%d] ldap_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LdapModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

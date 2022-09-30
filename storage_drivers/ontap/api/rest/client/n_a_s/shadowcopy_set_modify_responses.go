@@ -46,14 +46,44 @@ func NewShadowcopySetModifyOK() *ShadowcopySetModifyOK {
 	return &ShadowcopySetModifyOK{}
 }
 
-/* ShadowcopySetModifyOK describes a response with status code 200, with default header values.
+/*
+ShadowcopySetModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ShadowcopySetModifyOK struct {
 }
 
+// IsSuccess returns true when this shadowcopy set modify o k response has a 2xx status code
+func (o *ShadowcopySetModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this shadowcopy set modify o k response has a 3xx status code
+func (o *ShadowcopySetModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this shadowcopy set modify o k response has a 4xx status code
+func (o *ShadowcopySetModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this shadowcopy set modify o k response has a 5xx status code
+func (o *ShadowcopySetModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this shadowcopy set modify o k response a status code equal to that given
+func (o *ShadowcopySetModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ShadowcopySetModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopySetModifyOK ", 200)
+}
+
+func (o *ShadowcopySetModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopySetModifyOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewShadowcopySetModifyDefault(code int) *ShadowcopySetModifyDefault {
 	}
 }
 
-/* ShadowcopySetModifyDefault describes a response with status code -1, with default header values.
+/*
+ShadowcopySetModifyDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *ShadowcopySetModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this shadowcopy set modify default response has a 2xx status code
+func (o *ShadowcopySetModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this shadowcopy set modify default response has a 3xx status code
+func (o *ShadowcopySetModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this shadowcopy set modify default response has a 4xx status code
+func (o *ShadowcopySetModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this shadowcopy set modify default response has a 5xx status code
+func (o *ShadowcopySetModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this shadowcopy set modify default response a status code equal to that given
+func (o *ShadowcopySetModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ShadowcopySetModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopy_set_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ShadowcopySetModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/cifs/shadowcopy-sets/{uuid}][%d] shadowcopy_set_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ShadowcopySetModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewSvmDeleteAccepted() *SvmDeleteAccepted {
 	return &SvmDeleteAccepted{}
 }
 
-/* SvmDeleteAccepted describes a response with status code 202, with default header values.
+/*
+SvmDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SvmDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this svm delete accepted response has a 2xx status code
+func (o *SvmDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm delete accepted response has a 3xx status code
+func (o *SvmDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm delete accepted response has a 4xx status code
+func (o *SvmDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm delete accepted response has a 5xx status code
+func (o *SvmDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm delete accepted response a status code equal to that given
+func (o *SvmDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SvmDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /svm/svms/{uuid}][%d] svmDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SvmDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /svm/svms/{uuid}][%d] svmDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SvmDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSvmDeleteDefault(code int) *SvmDeleteDefault {
 	}
 }
 
-/* SvmDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SvmDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 <br/>
 ```
 | Error codes | Description |
@@ -90,7 +123,6 @@ func NewSvmDeleteDefault(code int) *SvmDeleteDefault {
 | 13434894    | Maximum allowed SVM jobs exceeded. Wait and retry. |
 ```
 <br/>
-
 */
 type SvmDeleteDefault struct {
 	_statusCode int
@@ -103,9 +135,39 @@ func (o *SvmDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm delete default response has a 2xx status code
+func (o *SvmDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm delete default response has a 3xx status code
+func (o *SvmDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm delete default response has a 4xx status code
+func (o *SvmDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm delete default response has a 5xx status code
+func (o *SvmDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm delete default response a status code equal to that given
+func (o *SvmDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /svm/svms/{uuid}][%d] svm_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /svm/svms/{uuid}][%d] svm_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

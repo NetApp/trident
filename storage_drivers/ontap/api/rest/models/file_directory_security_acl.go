@@ -17,7 +17,6 @@ import (
 
 // FileDirectorySecurityACL Manages the DACLS or SACLS.
 //
-//
 // swagger:model file_directory_security_acl
 type FileDirectorySecurityACL struct {
 

@@ -53,10 +53,12 @@ func NewExportPolicyCollectionGetParamsWithHTTPClient(client *http.Client) *Expo
 	}
 }
 
-/* ExportPolicyCollectionGetParams contains all the parameters to send to the API endpoint
-   for the export policy collection get operation.
+/*
+ExportPolicyCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the export policy collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type ExportPolicyCollectionGetParams struct {
 

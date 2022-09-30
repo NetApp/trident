@@ -53,10 +53,12 @@ func NewMetroclusterDrGroupDeleteParamsWithHTTPClient(client *http.Client) *Metr
 	}
 }
 
-/* MetroclusterDrGroupDeleteParams contains all the parameters to send to the API endpoint
-   for the metrocluster dr group delete operation.
+/*
+MetroclusterDrGroupDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the metrocluster dr group delete operation.
+
+	Typically these are written to a http.Request.
 */
 type MetroclusterDrGroupDeleteParams struct {
 

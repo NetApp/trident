@@ -54,10 +54,12 @@ func NewNvmeNamespaceModifyParamsWithHTTPClient(client *http.Client) *NvmeNamesp
 	}
 }
 
-/* NvmeNamespaceModifyParams contains all the parameters to send to the API endpoint
-   for the nvme namespace modify operation.
+/*
+NvmeNamespaceModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme namespace modify operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeNamespaceModifyParams struct {
 

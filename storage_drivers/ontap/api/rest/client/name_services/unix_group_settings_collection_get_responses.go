@@ -46,7 +46,8 @@ func NewUnixGroupSettingsCollectionGetOK() *UnixGroupSettingsCollectionGetOK {
 	return &UnixGroupSettingsCollectionGetOK{}
 }
 
-/* UnixGroupSettingsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+UnixGroupSettingsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type UnixGroupSettingsCollectionGetOK struct {
 	Payload *models.UnixGroupSettingsResponse
 }
 
+// IsSuccess returns true when this unix group settings collection get o k response has a 2xx status code
+func (o *UnixGroupSettingsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix group settings collection get o k response has a 3xx status code
+func (o *UnixGroupSettingsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix group settings collection get o k response has a 4xx status code
+func (o *UnixGroupSettingsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix group settings collection get o k response has a 5xx status code
+func (o *UnixGroupSettingsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix group settings collection get o k response a status code equal to that given
+func (o *UnixGroupSettingsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixGroupSettingsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings][%d] unixGroupSettingsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *UnixGroupSettingsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings][%d] unixGroupSettingsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *UnixGroupSettingsCollectionGetOK) GetPayload() *models.UnixGroupSettingsResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewUnixGroupSettingsCollectionGetDefault(code int) *UnixGroupSettingsCollec
 	}
 }
 
-/* UnixGroupSettingsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+UnixGroupSettingsCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *UnixGroupSettingsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix group settings collection get default response has a 2xx status code
+func (o *UnixGroupSettingsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix group settings collection get default response has a 3xx status code
+func (o *UnixGroupSettingsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix group settings collection get default response has a 4xx status code
+func (o *UnixGroupSettingsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix group settings collection get default response has a 5xx status code
+func (o *UnixGroupSettingsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix group settings collection get default response a status code equal to that given
+func (o *UnixGroupSettingsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixGroupSettingsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings][%d] unix_group_settings_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixGroupSettingsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/unix-group/settings][%d] unix_group_settings_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixGroupSettingsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

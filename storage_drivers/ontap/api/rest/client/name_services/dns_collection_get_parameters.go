@@ -53,10 +53,12 @@ func NewDNSCollectionGetParamsWithHTTPClient(client *http.Client) *DNSCollection
 	}
 }
 
-/* DNSCollectionGetParams contains all the parameters to send to the API endpoint
-   for the dns collection get operation.
+/*
+DNSCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the dns collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type DNSCollectionGetParams struct {
 

@@ -55,10 +55,12 @@ func NewVscanOnDemandCreateParamsWithHTTPClient(client *http.Client) *VscanOnDem
 	}
 }
 
-/* VscanOnDemandCreateParams contains all the parameters to send to the API endpoint
-   for the vscan on demand create operation.
+/*
+VscanOnDemandCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vscan on demand create operation.
+
+	Typically these are written to a http.Request.
 */
 type VscanOnDemandCreateParams struct {
 

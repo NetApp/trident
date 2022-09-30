@@ -46,14 +46,44 @@ func NewClusterAccountAdProxyModifyOK() *ClusterAccountAdProxyModifyOK {
 	return &ClusterAccountAdProxyModifyOK{}
 }
 
-/* ClusterAccountAdProxyModifyOK describes a response with status code 200, with default header values.
+/*
+ClusterAccountAdProxyModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ClusterAccountAdProxyModifyOK struct {
 }
 
+// IsSuccess returns true when this cluster account ad proxy modify o k response has a 2xx status code
+func (o *ClusterAccountAdProxyModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster account ad proxy modify o k response has a 3xx status code
+func (o *ClusterAccountAdProxyModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster account ad proxy modify o k response has a 4xx status code
+func (o *ClusterAccountAdProxyModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster account ad proxy modify o k response has a 5xx status code
+func (o *ClusterAccountAdProxyModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster account ad proxy modify o k response a status code equal to that given
+func (o *ClusterAccountAdProxyModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterAccountAdProxyModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyModifyOK ", 200)
+}
+
+func (o *ClusterAccountAdProxyModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyModifyOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewClusterAccountAdProxyModifyDefault(code int) *ClusterAccountAdProxyModif
 	}
 }
 
-/* ClusterAccountAdProxyModifyDefault describes a response with status code -1, with default header values.
+/*
+ClusterAccountAdProxyModifyDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *ClusterAccountAdProxyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster account ad proxy modify default response has a 2xx status code
+func (o *ClusterAccountAdProxyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster account ad proxy modify default response has a 3xx status code
+func (o *ClusterAccountAdProxyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster account ad proxy modify default response has a 4xx status code
+func (o *ClusterAccountAdProxyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster account ad proxy modify default response has a 5xx status code
+func (o *ClusterAccountAdProxyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster account ad proxy modify default response a status code equal to that given
+func (o *ClusterAccountAdProxyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterAccountAdProxyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterAccountAdProxyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterAccountAdProxyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

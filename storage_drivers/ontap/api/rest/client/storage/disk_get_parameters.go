@@ -53,10 +53,12 @@ func NewDiskGetParamsWithHTTPClient(client *http.Client) *DiskGetParams {
 	}
 }
 
-/* DiskGetParams contains all the parameters to send to the API endpoint
-   for the disk get operation.
+/*
+DiskGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the disk get operation.
+
+	Typically these are written to a http.Request.
 */
 type DiskGetParams struct {
 

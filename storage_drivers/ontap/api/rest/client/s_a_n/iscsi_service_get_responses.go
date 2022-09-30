@@ -46,7 +46,8 @@ func NewIscsiServiceGetOK() *IscsiServiceGetOK {
 	return &IscsiServiceGetOK{}
 }
 
-/* IscsiServiceGetOK describes a response with status code 200, with default header values.
+/*
+IscsiServiceGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IscsiServiceGetOK struct {
 	Payload *models.IscsiService
 }
 
+// IsSuccess returns true when this iscsi service get o k response has a 2xx status code
+func (o *IscsiServiceGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this iscsi service get o k response has a 3xx status code
+func (o *IscsiServiceGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this iscsi service get o k response has a 4xx status code
+func (o *IscsiServiceGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this iscsi service get o k response has a 5xx status code
+func (o *IscsiServiceGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this iscsi service get o k response a status code equal to that given
+func (o *IscsiServiceGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IscsiServiceGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IscsiServiceGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/iscsi/services/{svm.uuid}][%d] iscsiServiceGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IscsiServiceGetOK) GetPayload() *models.IscsiService {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewIscsiServiceGetDefault(code int) *IscsiServiceGetDefault {
 	}
 }
 
-/* IscsiServiceGetDefault describes a response with status code -1, with default header values.
+/*
+	IscsiServiceGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | An SVM with the specified UUID does not exist. |
 | 5374078 | The SVM does not have an iSCSI service. |
-
 */
 type IscsiServiceGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *IscsiServiceGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this iscsi service get default response has a 2xx status code
+func (o *IscsiServiceGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this iscsi service get default response has a 3xx status code
+func (o *IscsiServiceGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this iscsi service get default response has a 4xx status code
+func (o *IscsiServiceGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this iscsi service get default response has a 5xx status code
+func (o *IscsiServiceGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this iscsi service get default response a status code equal to that given
+func (o *IscsiServiceGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IscsiServiceGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IscsiServiceGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/iscsi/services/{svm.uuid}][%d] iscsi_service_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IscsiServiceGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

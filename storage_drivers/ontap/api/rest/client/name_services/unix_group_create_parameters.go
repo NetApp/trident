@@ -55,10 +55,12 @@ func NewUnixGroupCreateParamsWithHTTPClient(client *http.Client) *UnixGroupCreat
 	}
 }
 
-/* UnixGroupCreateParams contains all the parameters to send to the API endpoint
-   for the unix group create operation.
+/*
+UnixGroupCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the unix group create operation.
+
+	Typically these are written to a http.Request.
 */
 type UnixGroupCreateParams struct {
 

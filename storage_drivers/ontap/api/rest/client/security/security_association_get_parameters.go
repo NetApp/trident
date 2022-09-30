@@ -53,10 +53,12 @@ func NewSecurityAssociationGetParamsWithHTTPClient(client *http.Client) *Securit
 	}
 }
 
-/* SecurityAssociationGetParams contains all the parameters to send to the API endpoint
-   for the security association get operation.
+/*
+SecurityAssociationGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security association get operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityAssociationGetParams struct {
 

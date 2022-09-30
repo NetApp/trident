@@ -46,7 +46,8 @@ func NewCloudTargetDeleteAccepted() *CloudTargetDeleteAccepted {
 	return &CloudTargetDeleteAccepted{}
 }
 
-/* CloudTargetDeleteAccepted describes a response with status code 202, with default header values.
+/*
+CloudTargetDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type CloudTargetDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cloud target delete accepted response has a 2xx status code
+func (o *CloudTargetDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cloud target delete accepted response has a 3xx status code
+func (o *CloudTargetDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cloud target delete accepted response has a 4xx status code
+func (o *CloudTargetDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cloud target delete accepted response has a 5xx status code
+func (o *CloudTargetDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cloud target delete accepted response a status code equal to that given
+func (o *CloudTargetDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *CloudTargetDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /cloud/targets/{uuid}][%d] cloudTargetDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *CloudTargetDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /cloud/targets/{uuid}][%d] cloudTargetDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *CloudTargetDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCloudTargetDeleteDefault(code int) *CloudTargetDeleteDefault {
 	}
 }
 
-/* CloudTargetDeleteDefault describes a response with status code -1, with default header values.
+/*
+CloudTargetDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CloudTargetDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cloud target delete default response has a 2xx status code
+func (o *CloudTargetDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cloud target delete default response has a 3xx status code
+func (o *CloudTargetDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cloud target delete default response has a 4xx status code
+func (o *CloudTargetDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cloud target delete default response has a 5xx status code
+func (o *CloudTargetDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cloud target delete default response a status code equal to that given
+func (o *CloudTargetDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CloudTargetDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /cloud/targets/{uuid}][%d] cloud_target_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CloudTargetDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /cloud/targets/{uuid}][%d] cloud_target_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CloudTargetDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

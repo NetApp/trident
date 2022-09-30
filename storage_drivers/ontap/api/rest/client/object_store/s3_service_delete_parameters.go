@@ -53,10 +53,12 @@ func NewS3ServiceDeleteParamsWithHTTPClient(client *http.Client) *S3ServiceDelet
 	}
 }
 
-/* S3ServiceDeleteParams contains all the parameters to send to the API endpoint
-   for the s3 service delete operation.
+/*
+S3ServiceDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 service delete operation.
+
+	Typically these are written to a http.Request.
 */
 type S3ServiceDeleteParams struct {
 

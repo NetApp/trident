@@ -55,10 +55,12 @@ func NewCloudStoreModifyParamsWithHTTPClient(client *http.Client) *CloudStoreMod
 	}
 }
 
-/* CloudStoreModifyParams contains all the parameters to send to the API endpoint
-   for the cloud store modify operation.
+/*
+CloudStoreModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cloud store modify operation.
+
+	Typically these are written to a http.Request.
 */
 type CloudStoreModifyParams struct {
 

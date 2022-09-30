@@ -46,14 +46,44 @@ func NewGlobalCacheSettingModifyOK() *GlobalCacheSettingModifyOK {
 	return &GlobalCacheSettingModifyOK{}
 }
 
-/* GlobalCacheSettingModifyOK describes a response with status code 200, with default header values.
+/*
+GlobalCacheSettingModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type GlobalCacheSettingModifyOK struct {
 }
 
+// IsSuccess returns true when this global cache setting modify o k response has a 2xx status code
+func (o *GlobalCacheSettingModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this global cache setting modify o k response has a 3xx status code
+func (o *GlobalCacheSettingModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this global cache setting modify o k response has a 4xx status code
+func (o *GlobalCacheSettingModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this global cache setting modify o k response has a 5xx status code
+func (o *GlobalCacheSettingModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this global cache setting modify o k response a status code equal to that given
+func (o *GlobalCacheSettingModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GlobalCacheSettingModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/cache/setting][%d] globalCacheSettingModifyOK ", 200)
+}
+
+func (o *GlobalCacheSettingModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/cache/setting][%d] globalCacheSettingModifyOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewGlobalCacheSettingModifyDefault(code int) *GlobalCacheSettingModifyDefau
 	}
 }
 
-/* GlobalCacheSettingModifyDefault describes a response with status code -1, with default header values.
+/*
+GlobalCacheSettingModifyDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *GlobalCacheSettingModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this global cache setting modify default response has a 2xx status code
+func (o *GlobalCacheSettingModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this global cache setting modify default response has a 3xx status code
+func (o *GlobalCacheSettingModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this global cache setting modify default response has a 4xx status code
+func (o *GlobalCacheSettingModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this global cache setting modify default response has a 5xx status code
+func (o *GlobalCacheSettingModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this global cache setting modify default response a status code equal to that given
+func (o *GlobalCacheSettingModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GlobalCacheSettingModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/cache/setting][%d] global_cache_setting_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GlobalCacheSettingModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/cache/setting][%d] global_cache_setting_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GlobalCacheSettingModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -52,10 +52,12 @@ func NewVolumeEfficiencyPolicyDeleteParamsWithHTTPClient(client *http.Client) *V
 	}
 }
 
-/* VolumeEfficiencyPolicyDeleteParams contains all the parameters to send to the API endpoint
-   for the volume efficiency policy delete operation.
+/*
+VolumeEfficiencyPolicyDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the volume efficiency policy delete operation.
+
+	Typically these are written to a http.Request.
 */
 type VolumeEfficiencyPolicyDeleteParams struct {
 

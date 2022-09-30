@@ -46,7 +46,8 @@ func NewUnixGroupGetOK() *UnixGroupGetOK {
 	return &UnixGroupGetOK{}
 }
 
-/* UnixGroupGetOK describes a response with status code 200, with default header values.
+/*
+UnixGroupGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type UnixGroupGetOK struct {
 	Payload *models.UnixGroup
 }
 
+// IsSuccess returns true when this unix group get o k response has a 2xx status code
+func (o *UnixGroupGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix group get o k response has a 3xx status code
+func (o *UnixGroupGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix group get o k response has a 4xx status code
+func (o *UnixGroupGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix group get o k response has a 5xx status code
+func (o *UnixGroupGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix group get o k response a status code equal to that given
+func (o *UnixGroupGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixGroupGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/unix-groups/{svm.uuid}/{name}][%d] unixGroupGetOK  %+v", 200, o.Payload)
 }
+
+func (o *UnixGroupGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/unix-groups/{svm.uuid}/{name}][%d] unixGroupGetOK  %+v", 200, o.Payload)
+}
+
 func (o *UnixGroupGetOK) GetPayload() *models.UnixGroup {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewUnixGroupGetDefault(code int) *UnixGroupGetDefault {
 	}
 }
 
-/* UnixGroupGetDefault describes a response with status code -1, with default header values.
+/*
+UnixGroupGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *UnixGroupGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix group get default response has a 2xx status code
+func (o *UnixGroupGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix group get default response has a 3xx status code
+func (o *UnixGroupGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix group get default response has a 4xx status code
+func (o *UnixGroupGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix group get default response has a 5xx status code
+func (o *UnixGroupGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix group get default response a status code equal to that given
+func (o *UnixGroupGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixGroupGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/unix-groups/{svm.uuid}/{name}][%d] unix_group_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixGroupGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/unix-groups/{svm.uuid}/{name}][%d] unix_group_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixGroupGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

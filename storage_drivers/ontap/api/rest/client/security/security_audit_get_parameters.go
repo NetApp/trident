@@ -53,10 +53,12 @@ func NewSecurityAuditGetParamsWithHTTPClient(client *http.Client) *SecurityAudit
 	}
 }
 
-/* SecurityAuditGetParams contains all the parameters to send to the API endpoint
-   for the security audit get operation.
+/*
+SecurityAuditGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security audit get operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityAuditGetParams struct {
 

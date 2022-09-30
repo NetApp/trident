@@ -46,14 +46,44 @@ func NewAzureKeyVaultDeleteOK() *AzureKeyVaultDeleteOK {
 	return &AzureKeyVaultDeleteOK{}
 }
 
-/* AzureKeyVaultDeleteOK describes a response with status code 200, with default header values.
+/*
+AzureKeyVaultDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type AzureKeyVaultDeleteOK struct {
 }
 
+// IsSuccess returns true when this azure key vault delete o k response has a 2xx status code
+func (o *AzureKeyVaultDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this azure key vault delete o k response has a 3xx status code
+func (o *AzureKeyVaultDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this azure key vault delete o k response has a 4xx status code
+func (o *AzureKeyVaultDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this azure key vault delete o k response has a 5xx status code
+func (o *AzureKeyVaultDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this azure key vault delete o k response a status code equal to that given
+func (o *AzureKeyVaultDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AzureKeyVaultDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azureKeyVaultDeleteOK ", 200)
+}
+
+func (o *AzureKeyVaultDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azureKeyVaultDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewAzureKeyVaultDeleteDefault(code int) *AzureKeyVaultDeleteDefault {
 	}
 }
 
-/* AzureKeyVaultDeleteDefault describes a response with status code -1, with default header values.
+/*
+	AzureKeyVaultDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65536242 | One or more self-encrypting drives are assigned an authentication key. |
@@ -87,7 +119,6 @@ func NewAzureKeyVaultDeleteDefault(code int) *AzureKeyVaultDeleteDefault {
 | 196608080 | One or more nodes in the cluster have the root volume encrypted using NVE (NetApp Volume Encryption). |
 | 196608301 | Internal error. Failed to get encryption type. |
 | 196608305 | NAE aggregates found in the cluster. |
-
 */
 type AzureKeyVaultDeleteDefault struct {
 	_statusCode int
@@ -100,9 +131,39 @@ func (o *AzureKeyVaultDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this azure key vault delete default response has a 2xx status code
+func (o *AzureKeyVaultDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this azure key vault delete default response has a 3xx status code
+func (o *AzureKeyVaultDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this azure key vault delete default response has a 4xx status code
+func (o *AzureKeyVaultDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this azure key vault delete default response has a 5xx status code
+func (o *AzureKeyVaultDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this azure key vault delete default response a status code equal to that given
+func (o *AzureKeyVaultDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AzureKeyVaultDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azure_key_vault_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AzureKeyVaultDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/azure-key-vaults/{uuid}][%d] azure_key_vault_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AzureKeyVaultDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

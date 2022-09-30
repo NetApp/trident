@@ -54,10 +54,12 @@ func NewNfsModifyParamsWithHTTPClient(client *http.Client) *NfsModifyParams {
 	}
 }
 
-/* NfsModifyParams contains all the parameters to send to the API endpoint
-   for the nfs modify operation.
+/*
+NfsModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nfs modify operation.
+
+	Typically these are written to a http.Request.
 */
 type NfsModifyParams struct {
 

@@ -46,7 +46,8 @@ func NewAggregatePerformanceMetricsCollectionGetOK() *AggregatePerformanceMetric
 	return &AggregatePerformanceMetricsCollectionGetOK{}
 }
 
-/* AggregatePerformanceMetricsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+AggregatePerformanceMetricsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AggregatePerformanceMetricsCollectionGetOK struct {
 	Payload *models.PerformanceMetricResponse
 }
 
+// IsSuccess returns true when this aggregate performance metrics collection get o k response has a 2xx status code
+func (o *AggregatePerformanceMetricsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aggregate performance metrics collection get o k response has a 3xx status code
+func (o *AggregatePerformanceMetricsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aggregate performance metrics collection get o k response has a 4xx status code
+func (o *AggregatePerformanceMetricsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aggregate performance metrics collection get o k response has a 5xx status code
+func (o *AggregatePerformanceMetricsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aggregate performance metrics collection get o k response a status code equal to that given
+func (o *AggregatePerformanceMetricsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AggregatePerformanceMetricsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregatePerformanceMetricsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AggregatePerformanceMetricsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregatePerformanceMetricsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AggregatePerformanceMetricsCollectionGetOK) GetPayload() *models.PerformanceMetricResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewAggregatePerformanceMetricsCollectionGetDefault(code int) *AggregatePerf
 	}
 }
 
-/* AggregatePerformanceMetricsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	AggregatePerformanceMetricsCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 8586225 | Encountered unexpected error in retrieving metrics for the requested aggregate. |
-
 */
 type AggregatePerformanceMetricsCollectionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *AggregatePerformanceMetricsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this aggregate performance metrics collection get default response has a 2xx status code
+func (o *AggregatePerformanceMetricsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this aggregate performance metrics collection get default response has a 3xx status code
+func (o *AggregatePerformanceMetricsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this aggregate performance metrics collection get default response has a 4xx status code
+func (o *AggregatePerformanceMetricsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this aggregate performance metrics collection get default response has a 5xx status code
+func (o *AggregatePerformanceMetricsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this aggregate performance metrics collection get default response a status code equal to that given
+func (o *AggregatePerformanceMetricsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AggregatePerformanceMetricsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregate_performance_metrics_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AggregatePerformanceMetricsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}/metrics][%d] aggregate_performance_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AggregatePerformanceMetricsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

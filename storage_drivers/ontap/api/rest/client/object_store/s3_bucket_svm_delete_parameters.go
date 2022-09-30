@@ -53,10 +53,12 @@ func NewS3BucketSvmDeleteParamsWithHTTPClient(client *http.Client) *S3BucketSvmD
 	}
 }
 
-/* S3BucketSvmDeleteParams contains all the parameters to send to the API endpoint
-   for the s3 bucket svm delete operation.
+/*
+S3BucketSvmDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 bucket svm delete operation.
+
+	Typically these are written to a http.Request.
 */
 type S3BucketSvmDeleteParams struct {
 

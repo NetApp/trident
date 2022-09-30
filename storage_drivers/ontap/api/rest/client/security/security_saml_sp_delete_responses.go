@@ -46,14 +46,44 @@ func NewSecuritySamlSpDeleteOK() *SecuritySamlSpDeleteOK {
 	return &SecuritySamlSpDeleteOK{}
 }
 
-/* SecuritySamlSpDeleteOK describes a response with status code 200, with default header values.
+/*
+SecuritySamlSpDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SecuritySamlSpDeleteOK struct {
 }
 
+// IsSuccess returns true when this security saml sp delete o k response has a 2xx status code
+func (o *SecuritySamlSpDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security saml sp delete o k response has a 3xx status code
+func (o *SecuritySamlSpDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security saml sp delete o k response has a 4xx status code
+func (o *SecuritySamlSpDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security saml sp delete o k response has a 5xx status code
+func (o *SecuritySamlSpDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security saml sp delete o k response a status code equal to that given
+func (o *SecuritySamlSpDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecuritySamlSpDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] securitySamlSpDeleteOK ", 200)
+}
+
+func (o *SecuritySamlSpDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] securitySamlSpDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewSecuritySamlSpDeleteDefault(code int) *SecuritySamlSpDeleteDefault {
 	}
 }
 
-/* SecuritySamlSpDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SecuritySamlSpDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 12320803 | SAML must be disabled before the configuration can be removed. |
-
 */
 type SecuritySamlSpDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *SecuritySamlSpDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security saml sp delete default response has a 2xx status code
+func (o *SecuritySamlSpDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security saml sp delete default response has a 3xx status code
+func (o *SecuritySamlSpDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security saml sp delete default response has a 4xx status code
+func (o *SecuritySamlSpDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security saml sp delete default response has a 5xx status code
+func (o *SecuritySamlSpDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security saml sp delete default response a status code equal to that given
+func (o *SecuritySamlSpDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecuritySamlSpDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] security_saml_sp_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecuritySamlSpDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/saml-sp][%d] security_saml_sp_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecuritySamlSpDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

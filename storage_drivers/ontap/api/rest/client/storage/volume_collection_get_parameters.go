@@ -53,10 +53,12 @@ func NewVolumeCollectionGetParamsWithHTTPClient(client *http.Client) *VolumeColl
 	}
 }
 
-/* VolumeCollectionGetParams contains all the parameters to send to the API endpoint
-   for the volume collection get operation.
+/*
+VolumeCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the volume collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type VolumeCollectionGetParams struct {
 

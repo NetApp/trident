@@ -36,14 +36,44 @@ func NewIpspaceDeleteOK() *IpspaceDeleteOK {
 	return &IpspaceDeleteOK{}
 }
 
-/* IpspaceDeleteOK describes a response with status code 200, with default header values.
+/*
+IpspaceDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IpspaceDeleteOK struct {
 }
 
+// IsSuccess returns true when this ipspace delete o k response has a 2xx status code
+func (o *IpspaceDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipspace delete o k response has a 3xx status code
+func (o *IpspaceDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipspace delete o k response has a 4xx status code
+func (o *IpspaceDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipspace delete o k response has a 5xx status code
+func (o *IpspaceDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipspace delete o k response a status code equal to that given
+func (o *IpspaceDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IpspaceDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/ipspaces/{uuid}][%d] ipspaceDeleteOK ", 200)
+}
+
+func (o *IpspaceDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/ipspaces/{uuid}][%d] ipspaceDeleteOK ", 200)
 }
 

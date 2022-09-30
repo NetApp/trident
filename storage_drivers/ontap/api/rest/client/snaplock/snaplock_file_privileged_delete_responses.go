@@ -46,7 +46,8 @@ func NewSnaplockFilePrivilegedDeleteAccepted() *SnaplockFilePrivilegedDeleteAcce
 	return &SnaplockFilePrivilegedDeleteAccepted{}
 }
 
-/* SnaplockFilePrivilegedDeleteAccepted describes a response with status code 202, with default header values.
+/*
+SnaplockFilePrivilegedDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SnaplockFilePrivilegedDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this snaplock file privileged delete accepted response has a 2xx status code
+func (o *SnaplockFilePrivilegedDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock file privileged delete accepted response has a 3xx status code
+func (o *SnaplockFilePrivilegedDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock file privileged delete accepted response has a 4xx status code
+func (o *SnaplockFilePrivilegedDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock file privileged delete accepted response has a 5xx status code
+func (o *SnaplockFilePrivilegedDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock file privileged delete accepted response a status code equal to that given
+func (o *SnaplockFilePrivilegedDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SnaplockFilePrivilegedDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFilePrivilegedDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SnaplockFilePrivilegedDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplockFilePrivilegedDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SnaplockFilePrivilegedDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewSnaplockFilePrivilegedDeleteDefault(code int) *SnaplockFilePrivilegedDel
 	}
 }
 
-/* SnaplockFilePrivilegedDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SnaplockFilePrivilegedDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 14090347    | File path must be in the format \"/<dir>/<file path>\"  |
-
 */
 type SnaplockFilePrivilegedDeleteDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *SnaplockFilePrivilegedDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock file privileged delete default response has a 2xx status code
+func (o *SnaplockFilePrivilegedDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock file privileged delete default response has a 3xx status code
+func (o *SnaplockFilePrivilegedDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock file privileged delete default response has a 4xx status code
+func (o *SnaplockFilePrivilegedDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock file privileged delete default response has a 5xx status code
+func (o *SnaplockFilePrivilegedDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock file privileged delete default response a status code equal to that given
+func (o *SnaplockFilePrivilegedDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockFilePrivilegedDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_privileged_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockFilePrivilegedDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/snaplock/file/{volume.uuid}/{path}][%d] snaplock_file_privileged_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockFilePrivilegedDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

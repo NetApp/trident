@@ -46,7 +46,8 @@ func NewNodeModifyAccepted() *NodeModifyAccepted {
 	return &NodeModifyAccepted{}
 }
 
-/* NodeModifyAccepted describes a response with status code 202, with default header values.
+/*
+NodeModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type NodeModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this node modify accepted response has a 2xx status code
+func (o *NodeModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this node modify accepted response has a 3xx status code
+func (o *NodeModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this node modify accepted response has a 4xx status code
+func (o *NodeModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this node modify accepted response has a 5xx status code
+func (o *NodeModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this node modify accepted response a status code equal to that given
+func (o *NodeModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *NodeModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /cluster/nodes/{uuid}][%d] nodeModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *NodeModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /cluster/nodes/{uuid}][%d] nodeModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *NodeModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewNodeModifyDefault(code int) *NodeModifyDefault {
 	}
 }
 
-/* NodeModifyDefault describes a response with status code -1, with default header values.
+/*
+	NodeModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 852046     | HA partner node |
@@ -90,7 +123,6 @@ func NewNodeModifyDefault(code int) *NodeModifyDefault {
 | 3604514    | A reboot or shutdown request is already in progress. |
 | 3604515    | Reboot or shutdown of all nodes results in data service failure and client disruption for the entire cluster. Use "allow-data-outage=true" to bypass this check. |
 | 9240606    | The reboot/shutdown is prevented due to quorum warnings. |
-
 */
 type NodeModifyDefault struct {
 	_statusCode int
@@ -103,9 +135,39 @@ func (o *NodeModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this node modify default response has a 2xx status code
+func (o *NodeModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this node modify default response has a 3xx status code
+func (o *NodeModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this node modify default response has a 4xx status code
+func (o *NodeModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this node modify default response has a 5xx status code
+func (o *NodeModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this node modify default response a status code equal to that given
+func (o *NodeModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NodeModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /cluster/nodes/{uuid}][%d] node_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NodeModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /cluster/nodes/{uuid}][%d] node_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NodeModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

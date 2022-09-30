@@ -55,10 +55,12 @@ func NewVolumeModifyParamsWithHTTPClient(client *http.Client) *VolumeModifyParam
 	}
 }
 
-/* VolumeModifyParams contains all the parameters to send to the API endpoint
-   for the volume modify operation.
+/*
+VolumeModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the volume modify operation.
+
+	Typically these are written to a http.Request.
 */
 type VolumeModifyParams struct {
 

@@ -53,10 +53,12 @@ func NewNdmpNodeGetParamsWithHTTPClient(client *http.Client) *NdmpNodeGetParams 
 	}
 }
 
-/* NdmpNodeGetParams contains all the parameters to send to the API endpoint
-   for the ndmp node get operation.
+/*
+NdmpNodeGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ndmp node get operation.
+
+	Typically these are written to a http.Request.
 */
 type NdmpNodeGetParams struct {
 

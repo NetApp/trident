@@ -55,10 +55,12 @@ func NewUserGroupPrivilegesCreateParamsWithHTTPClient(client *http.Client) *User
 	}
 }
 
-/* UserGroupPrivilegesCreateParams contains all the parameters to send to the API endpoint
-   for the user group privileges create operation.
+/*
+UserGroupPrivilegesCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the user group privileges create operation.
+
+	Typically these are written to a http.Request.
 */
 type UserGroupPrivilegesCreateParams struct {
 

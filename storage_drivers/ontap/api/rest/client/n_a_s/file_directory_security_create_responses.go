@@ -46,7 +46,8 @@ func NewFileDirectorySecurityCreateAccepted() *FileDirectorySecurityCreateAccept
 	return &FileDirectorySecurityCreateAccepted{}
 }
 
-/* FileDirectorySecurityCreateAccepted describes a response with status code 202, with default header values.
+/*
+FileDirectorySecurityCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type FileDirectorySecurityCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this file directory security create accepted response has a 2xx status code
+func (o *FileDirectorySecurityCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file directory security create accepted response has a 3xx status code
+func (o *FileDirectorySecurityCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file directory security create accepted response has a 4xx status code
+func (o *FileDirectorySecurityCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file directory security create accepted response has a 5xx status code
+func (o *FileDirectorySecurityCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file directory security create accepted response a status code equal to that given
+func (o *FileDirectorySecurityCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *FileDirectorySecurityCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *FileDirectorySecurityCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *FileDirectorySecurityCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFileDirectorySecurityCreateDefault(code int) *FileDirectorySecurityCreat
 	}
 }
 
-/* FileDirectorySecurityCreateDefault describes a response with status code -1, with default header values.
+/*
+FileDirectorySecurityCreateDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FileDirectorySecurityCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file directory security create default response has a 2xx status code
+func (o *FileDirectorySecurityCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file directory security create default response has a 3xx status code
+func (o *FileDirectorySecurityCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file directory security create default response has a 4xx status code
+func (o *FileDirectorySecurityCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file directory security create default response has a 5xx status code
+func (o *FileDirectorySecurityCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file directory security create default response a status code equal to that given
+func (o *FileDirectorySecurityCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileDirectorySecurityCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileDirectorySecurityCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileDirectorySecurityCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

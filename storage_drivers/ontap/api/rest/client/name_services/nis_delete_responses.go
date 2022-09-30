@@ -46,14 +46,44 @@ func NewNisDeleteOK() *NisDeleteOK {
 	return &NisDeleteOK{}
 }
 
-/* NisDeleteOK describes a response with status code 200, with default header values.
+/*
+NisDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NisDeleteOK struct {
 }
 
+// IsSuccess returns true when this nis delete o k response has a 2xx status code
+func (o *NisDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nis delete o k response has a 3xx status code
+func (o *NisDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nis delete o k response has a 4xx status code
+func (o *NisDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nis delete o k response has a 5xx status code
+func (o *NisDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nis delete o k response a status code equal to that given
+func (o *NisDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NisDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nisDeleteOK ", 200)
+}
+
+func (o *NisDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nisDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewNisDeleteDefault(code int) *NisDeleteDefault {
 	}
 }
 
-/* NisDeleteDefault describes a response with status code -1, with default header values.
+/*
+NisDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *NisDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nis delete default response has a 2xx status code
+func (o *NisDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nis delete default response has a 3xx status code
+func (o *NisDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nis delete default response has a 4xx status code
+func (o *NisDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nis delete default response has a 5xx status code
+func (o *NisDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nis delete default response a status code equal to that given
+func (o *NisDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NisDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nis_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NisDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /name-services/nis/{svm.uuid}][%d] nis_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NisDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

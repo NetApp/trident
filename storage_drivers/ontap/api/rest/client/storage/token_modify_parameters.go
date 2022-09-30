@@ -54,10 +54,12 @@ func NewTokenModifyParamsWithHTTPClient(client *http.Client) *TokenModifyParams 
 	}
 }
 
-/* TokenModifyParams contains all the parameters to send to the API endpoint
-   for the token modify operation.
+/*
+TokenModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the token modify operation.
+
+	Typically these are written to a http.Request.
 */
 type TokenModifyParams struct {
 

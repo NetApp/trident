@@ -53,10 +53,12 @@ func NewFileDeleteParamsWithHTTPClient(client *http.Client) *FileDeleteParams {
 	}
 }
 
-/* FileDeleteParams contains all the parameters to send to the API endpoint
-   for the file delete operation.
+/*
+FileDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file delete operation.
+
+	Typically these are written to a http.Request.
 */
 type FileDeleteParams struct {
 

@@ -46,14 +46,44 @@ func NewClusterLdapDeleteOK() *ClusterLdapDeleteOK {
 	return &ClusterLdapDeleteOK{}
 }
 
-/* ClusterLdapDeleteOK describes a response with status code 200, with default header values.
+/*
+ClusterLdapDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ClusterLdapDeleteOK struct {
 }
 
+// IsSuccess returns true when this cluster ldap delete o k response has a 2xx status code
+func (o *ClusterLdapDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ldap delete o k response has a 3xx status code
+func (o *ClusterLdapDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ldap delete o k response has a 4xx status code
+func (o *ClusterLdapDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ldap delete o k response has a 5xx status code
+func (o *ClusterLdapDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ldap delete o k response a status code equal to that given
+func (o *ClusterLdapDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterLdapDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/ldap][%d] clusterLdapDeleteOK ", 200)
+}
+
+func (o *ClusterLdapDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/authentication/cluster/ldap][%d] clusterLdapDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewClusterLdapDeleteDefault(code int) *ClusterLdapDeleteDefault {
 	}
 }
 
-/* ClusterLdapDeleteDefault describes a response with status code -1, with default header values.
+/*
+ClusterLdapDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *ClusterLdapDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ldap delete default response has a 2xx status code
+func (o *ClusterLdapDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ldap delete default response has a 3xx status code
+func (o *ClusterLdapDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ldap delete default response has a 4xx status code
+func (o *ClusterLdapDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ldap delete default response has a 5xx status code
+func (o *ClusterLdapDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ldap delete default response a status code equal to that given
+func (o *ClusterLdapDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterLdapDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/authentication/cluster/ldap][%d] cluster_ldap_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterLdapDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/ldap][%d] cluster_ldap_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterLdapDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

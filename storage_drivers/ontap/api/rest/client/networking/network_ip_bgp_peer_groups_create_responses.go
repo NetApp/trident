@@ -46,14 +46,44 @@ func NewNetworkIPBgpPeerGroupsCreateCreated() *NetworkIPBgpPeerGroupsCreateCreat
 	return &NetworkIPBgpPeerGroupsCreateCreated{}
 }
 
-/* NetworkIPBgpPeerGroupsCreateCreated describes a response with status code 201, with default header values.
+/*
+NetworkIPBgpPeerGroupsCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type NetworkIPBgpPeerGroupsCreateCreated struct {
 }
 
+// IsSuccess returns true when this network Ip bgp peer groups create created response has a 2xx status code
+func (o *NetworkIPBgpPeerGroupsCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip bgp peer groups create created response has a 3xx status code
+func (o *NetworkIPBgpPeerGroupsCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip bgp peer groups create created response has a 4xx status code
+func (o *NetworkIPBgpPeerGroupsCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip bgp peer groups create created response has a 5xx status code
+func (o *NetworkIPBgpPeerGroupsCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip bgp peer groups create created response a status code equal to that given
+func (o *NetworkIPBgpPeerGroupsCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *NetworkIPBgpPeerGroupsCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /network/ip/bgp/peer-groups][%d] networkIpBgpPeerGroupsCreateCreated ", 201)
+}
+
+func (o *NetworkIPBgpPeerGroupsCreateCreated) String() string {
 	return fmt.Sprintf("[POST /network/ip/bgp/peer-groups][%d] networkIpBgpPeerGroupsCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewNetworkIPBgpPeerGroupsCreateDefault(code int) *NetworkIPBgpPeerGroupsCre
 	}
 }
 
-/* NetworkIPBgpPeerGroupsCreateDefault describes a response with status code -1, with default header values.
+/*
+	NetworkIPBgpPeerGroupsCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376963 | Duplicate IP address is specified. |
@@ -110,7 +142,6 @@ func NewNetworkIPBgpPeerGroupsCreateDefault(code int) *NetworkIPBgpPeerGroupsCre
 | 53282006 | BGP peer group could not be updated to use a peer address because the value provided is not a valid peer address. If necessary, try the command again with a routable host address. |
 | 53282007 | BGP peer group could not be updated to use a peer address because the address represents a different address family to the address of the associated BGP LIF. If necessary, try the command again with a matching address family. |
 | 53282018 | Failed to create BGP peer group because an existing peer group has already established a BGP session between LIF and peer address. If necessary, try the command again with a different BGP LIF or a different peer address. |
-
 */
 type NetworkIPBgpPeerGroupsCreateDefault struct {
 	_statusCode int
@@ -123,9 +154,39 @@ func (o *NetworkIPBgpPeerGroupsCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ip bgp peer groups create default response has a 2xx status code
+func (o *NetworkIPBgpPeerGroupsCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ip bgp peer groups create default response has a 3xx status code
+func (o *NetworkIPBgpPeerGroupsCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ip bgp peer groups create default response has a 4xx status code
+func (o *NetworkIPBgpPeerGroupsCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ip bgp peer groups create default response has a 5xx status code
+func (o *NetworkIPBgpPeerGroupsCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ip bgp peer groups create default response a status code equal to that given
+func (o *NetworkIPBgpPeerGroupsCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkIPBgpPeerGroupsCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /network/ip/bgp/peer-groups][%d] network_ip_bgp_peer_groups_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkIPBgpPeerGroupsCreateDefault) String() string {
+	return fmt.Sprintf("[POST /network/ip/bgp/peer-groups][%d] network_ip_bgp_peer_groups_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkIPBgpPeerGroupsCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

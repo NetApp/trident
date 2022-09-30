@@ -53,10 +53,12 @@ func NewShadowcopyGetParamsWithHTTPClient(client *http.Client) *ShadowcopyGetPar
 	}
 }
 
-/* ShadowcopyGetParams contains all the parameters to send to the API endpoint
-   for the shadowcopy get operation.
+/*
+ShadowcopyGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the shadowcopy get operation.
+
+	Typically these are written to a http.Request.
 */
 type ShadowcopyGetParams struct {
 

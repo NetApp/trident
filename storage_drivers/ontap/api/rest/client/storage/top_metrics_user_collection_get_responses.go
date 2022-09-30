@@ -46,7 +46,8 @@ func NewTopMetricsUserCollectionGetOK() *TopMetricsUserCollectionGetOK {
 	return &TopMetricsUserCollectionGetOK{}
 }
 
-/* TopMetricsUserCollectionGetOK describes a response with status code 200, with default header values.
+/*
+TopMetricsUserCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type TopMetricsUserCollectionGetOK struct {
 	Payload *models.TopMetricsUserResponse
 }
 
+// IsSuccess returns true when this top metrics user collection get o k response has a 2xx status code
+func (o *TopMetricsUserCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this top metrics user collection get o k response has a 3xx status code
+func (o *TopMetricsUserCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this top metrics user collection get o k response has a 4xx status code
+func (o *TopMetricsUserCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this top metrics user collection get o k response has a 5xx status code
+func (o *TopMetricsUserCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this top metrics user collection get o k response a status code equal to that given
+func (o *TopMetricsUserCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *TopMetricsUserCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/users][%d] topMetricsUserCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *TopMetricsUserCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/users][%d] topMetricsUserCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *TopMetricsUserCollectionGetOK) GetPayload() *models.TopMetricsUserResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewTopMetricsUserCollectionGetDefault(code int) *TopMetricsUserCollectionGe
 	}
 }
 
-/* TopMetricsUserCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+TopMetricsUserCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *TopMetricsUserCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this top metrics user collection get default response has a 2xx status code
+func (o *TopMetricsUserCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this top metrics user collection get default response has a 3xx status code
+func (o *TopMetricsUserCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this top metrics user collection get default response has a 4xx status code
+func (o *TopMetricsUserCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this top metrics user collection get default response has a 5xx status code
+func (o *TopMetricsUserCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this top metrics user collection get default response a status code equal to that given
+func (o *TopMetricsUserCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TopMetricsUserCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/users][%d] top_metrics_user_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *TopMetricsUserCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/top-metrics/users][%d] top_metrics_user_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *TopMetricsUserCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -55,10 +55,12 @@ func NewQtreeCreateParamsWithHTTPClient(client *http.Client) *QtreeCreateParams 
 	}
 }
 
-/* QtreeCreateParams contains all the parameters to send to the API endpoint
-   for the qtree create operation.
+/*
+QtreeCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the qtree create operation.
+
+	Typically these are written to a http.Request.
 */
 type QtreeCreateParams struct {
 

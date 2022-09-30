@@ -263,6 +263,10 @@ def fix_ems_autosupport_required_empty(d):
     # autosupport_required value must be sent, even if ""
     d["definitions"]["ems_application_log"]["properties"]["autosupport_required"]["x-omitempty"] = False
 
+def fix_volume_encryption_enabled(d):
+    # volume.encryption.enabled fixes
+    d["definitions"]["volume"]["properties"]["encryption"]["properties"]["enabled"]["x-nullable"] = True
+
 def add_unique_types_for_properties(d):
     d["definitions"]["application"]["properties"]["template"]["x-go-name"] = "ApplicationTemplateType"
 
@@ -720,6 +724,7 @@ with open('swagger_full.yaml') as input_file:
     make_volume_nas_path_nillable(dataMap)
     fix_qtree_name_empty(dataMap)
     fix_ems_autosupport_required_empty(dataMap)
+    fix_volume_encryption_enabled(dataMap)
     add_missing_properties(dataMap)
     add_missing_parameters(dataMap)
 

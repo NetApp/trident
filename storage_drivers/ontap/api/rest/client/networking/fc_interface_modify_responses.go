@@ -46,14 +46,44 @@ func NewFcInterfaceModifyOK() *FcInterfaceModifyOK {
 	return &FcInterfaceModifyOK{}
 }
 
-/* FcInterfaceModifyOK describes a response with status code 200, with default header values.
+/*
+FcInterfaceModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FcInterfaceModifyOK struct {
 }
 
+// IsSuccess returns true when this fc interface modify o k response has a 2xx status code
+func (o *FcInterfaceModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fc interface modify o k response has a 3xx status code
+func (o *FcInterfaceModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fc interface modify o k response has a 4xx status code
+func (o *FcInterfaceModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fc interface modify o k response has a 5xx status code
+func (o *FcInterfaceModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fc interface modify o k response a status code equal to that given
+func (o *FcInterfaceModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcInterfaceModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fcInterfaceModifyOK ", 200)
+}
+
+func (o *FcInterfaceModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fcInterfaceModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewFcInterfaceModifyDefault(code int) *FcInterfaceModifyDefault {
 	}
 }
 
-/* FcInterfaceModifyDefault describes a response with status code -1, with default header values.
+/*
+	FcInterfaceModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1966140 | An interface with the same name already exists. |
@@ -83,7 +115,6 @@ func NewFcInterfaceModifyDefault(code int) *FcInterfaceModifyDefault {
 | 5374871 | The Fibre Channel port identified by the specified UUID does not refer to the same port as that identified by the specified node name and/or port name. |
 | 5374872 | If either `location.port.node.name` or `location.port.name` is supplied, both properties must be supplied. |
 | 72089674 | You cannot move a Fibre Channel interface configured for the NVMe over FC data protocol. |
-
 */
 type FcInterfaceModifyDefault struct {
 	_statusCode int
@@ -96,9 +127,39 @@ func (o *FcInterfaceModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fc interface modify default response has a 2xx status code
+func (o *FcInterfaceModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fc interface modify default response has a 3xx status code
+func (o *FcInterfaceModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fc interface modify default response has a 4xx status code
+func (o *FcInterfaceModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fc interface modify default response has a 5xx status code
+func (o *FcInterfaceModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fc interface modify default response a status code equal to that given
+func (o *FcInterfaceModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcInterfaceModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fc_interface_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcInterfaceModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /network/fc/interfaces/{uuid}][%d] fc_interface_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcInterfaceModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

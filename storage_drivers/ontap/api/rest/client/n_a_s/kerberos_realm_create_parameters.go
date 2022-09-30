@@ -55,10 +55,12 @@ func NewKerberosRealmCreateParamsWithHTTPClient(client *http.Client) *KerberosRe
 	}
 }
 
-/* KerberosRealmCreateParams contains all the parameters to send to the API endpoint
-   for the kerberos realm create operation.
+/*
+KerberosRealmCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the kerberos realm create operation.
+
+	Typically these are written to a http.Request.
 */
 type KerberosRealmCreateParams struct {
 

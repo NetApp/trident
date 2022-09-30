@@ -46,7 +46,8 @@ func NewExportRuleCreateCreated() *ExportRuleCreateCreated {
 	return &ExportRuleCreateCreated{}
 }
 
-/* ExportRuleCreateCreated describes a response with status code 201, with default header values.
+/*
+ExportRuleCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type ExportRuleCreateCreated struct {
 	Payload *models.ExportRuleResponse
 }
 
+// IsSuccess returns true when this export rule create created response has a 2xx status code
+func (o *ExportRuleCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this export rule create created response has a 3xx status code
+func (o *ExportRuleCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this export rule create created response has a 4xx status code
+func (o *ExportRuleCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this export rule create created response has a 5xx status code
+func (o *ExportRuleCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this export rule create created response a status code equal to that given
+func (o *ExportRuleCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *ExportRuleCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *ExportRuleCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] exportRuleCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *ExportRuleCreateCreated) GetPayload() *models.ExportRuleResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewExportRuleCreateDefault(code int) *ExportRuleCreateDefault {
 	}
 }
 
-/* ExportRuleCreateDefault describes a response with status code -1, with default header values.
+/*
+	ExportRuleCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1703954    | Export policy does not exist |
@@ -102,7 +135,6 @@ func NewExportRuleCreateDefault(code int) *ExportRuleCreateDefault {
 | 1704065    | Clientmatch domain name too long |
 | 3277000    | Upgrade all nodes to Data ONTAP 9.0.0 or above to use krb5p as a security flavor in export-policy rules |
 | 3277083    | User ID is not valid. Enter a value for User ID from 0 to 4294967295 |
-
 */
 type ExportRuleCreateDefault struct {
 	_statusCode int
@@ -115,9 +147,39 @@ func (o *ExportRuleCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this export rule create default response has a 2xx status code
+func (o *ExportRuleCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this export rule create default response has a 3xx status code
+func (o *ExportRuleCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this export rule create default response has a 4xx status code
+func (o *ExportRuleCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this export rule create default response has a 5xx status code
+func (o *ExportRuleCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this export rule create default response a status code equal to that given
+func (o *ExportRuleCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ExportRuleCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ExportRuleCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/nfs/export-policies/{policy.id}/rules][%d] export_rule_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ExportRuleCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

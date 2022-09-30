@@ -52,14 +52,44 @@ func NewGcpKmsModifyOK() *GcpKmsModifyOK {
 	return &GcpKmsModifyOK{}
 }
 
-/* GcpKmsModifyOK describes a response with status code 200, with default header values.
+/*
+GcpKmsModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type GcpKmsModifyOK struct {
 }
 
+// IsSuccess returns true when this gcp kms modify o k response has a 2xx status code
+func (o *GcpKmsModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this gcp kms modify o k response has a 3xx status code
+func (o *GcpKmsModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this gcp kms modify o k response has a 4xx status code
+func (o *GcpKmsModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this gcp kms modify o k response has a 5xx status code
+func (o *GcpKmsModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this gcp kms modify o k response a status code equal to that given
+func (o *GcpKmsModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GcpKmsModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyOK ", 200)
+}
+
+func (o *GcpKmsModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyOK ", 200)
 }
 
@@ -73,14 +103,44 @@ func NewGcpKmsModifyAccepted() *GcpKmsModifyAccepted {
 	return &GcpKmsModifyAccepted{}
 }
 
-/* GcpKmsModifyAccepted describes a response with status code 202, with default header values.
+/*
+GcpKmsModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type GcpKmsModifyAccepted struct {
 }
 
+// IsSuccess returns true when this gcp kms modify accepted response has a 2xx status code
+func (o *GcpKmsModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this gcp kms modify accepted response has a 3xx status code
+func (o *GcpKmsModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this gcp kms modify accepted response has a 4xx status code
+func (o *GcpKmsModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this gcp kms modify accepted response has a 5xx status code
+func (o *GcpKmsModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this gcp kms modify accepted response a status code equal to that given
+func (o *GcpKmsModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *GcpKmsModifyAccepted) Error() string {
+	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyAccepted ", 202)
+}
+
+func (o *GcpKmsModifyAccepted) String() string {
 	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcpKmsModifyAccepted ", 202)
 }
 
@@ -96,9 +156,11 @@ func NewGcpKmsModifyDefault(code int) *GcpKmsModifyDefault {
 	}
 }
 
-/* GcpKmsModifyDefault describes a response with status code -1, with default header values.
+/*
+	GcpKmsModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65537541 | No inputs were provided for the patch request. |
@@ -109,7 +171,6 @@ func NewGcpKmsModifyDefault(code int) *GcpKmsModifyDefault {
 | 65537724 | Failed to update the Google Cloud Key Management Service because invalid application credentials were provided. |
 | 65537729 | External rekey failed on one or more nodes. Use the REST API PATCH method \"/api/security/gcp-kms/{uuid}\" to try the rekey operation again. |
 | 65537732 | ONTAP 9.9.1 does not allow modification of the following fields, \"project_id\", \"key_ring_name\" and \"key_ring_location\". |
-
 */
 type GcpKmsModifyDefault struct {
 	_statusCode int
@@ -122,9 +183,39 @@ func (o *GcpKmsModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this gcp kms modify default response has a 2xx status code
+func (o *GcpKmsModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this gcp kms modify default response has a 3xx status code
+func (o *GcpKmsModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this gcp kms modify default response has a 4xx status code
+func (o *GcpKmsModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this gcp kms modify default response has a 5xx status code
+func (o *GcpKmsModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this gcp kms modify default response a status code equal to that given
+func (o *GcpKmsModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GcpKmsModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcp_kms_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GcpKmsModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/gcp-kms/{uuid}][%d] gcp_kms_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GcpKmsModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

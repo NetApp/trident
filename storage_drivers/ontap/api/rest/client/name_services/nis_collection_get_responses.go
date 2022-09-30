@@ -46,7 +46,8 @@ func NewNisCollectionGetOK() *NisCollectionGetOK {
 	return &NisCollectionGetOK{}
 }
 
-/* NisCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NisCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NisCollectionGetOK struct {
 	Payload *models.NisServiceResponse
 }
 
+// IsSuccess returns true when this nis collection get o k response has a 2xx status code
+func (o *NisCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nis collection get o k response has a 3xx status code
+func (o *NisCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nis collection get o k response has a 4xx status code
+func (o *NisCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nis collection get o k response has a 5xx status code
+func (o *NisCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nis collection get o k response a status code equal to that given
+func (o *NisCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NisCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/nis][%d] nisCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NisCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/nis][%d] nisCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NisCollectionGetOK) GetPayload() *models.NisServiceResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNisCollectionGetDefault(code int) *NisCollectionGetDefault {
 	}
 }
 
-/* NisCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+NisCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NisCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nis collection get default response has a 2xx status code
+func (o *NisCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nis collection get default response has a 3xx status code
+func (o *NisCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nis collection get default response has a 4xx status code
+func (o *NisCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nis collection get default response has a 5xx status code
+func (o *NisCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nis collection get default response a status code equal to that given
+func (o *NisCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NisCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/nis][%d] nis_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NisCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/nis][%d] nis_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NisCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

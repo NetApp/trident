@@ -46,14 +46,44 @@ func NewS3PolicyModifyOK() *S3PolicyModifyOK {
 	return &S3PolicyModifyOK{}
 }
 
-/* S3PolicyModifyOK describes a response with status code 200, with default header values.
+/*
+S3PolicyModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type S3PolicyModifyOK struct {
 }
 
+// IsSuccess returns true when this s3 policy modify o k response has a 2xx status code
+func (o *S3PolicyModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 policy modify o k response has a 3xx status code
+func (o *S3PolicyModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 policy modify o k response has a 4xx status code
+func (o *S3PolicyModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 policy modify o k response has a 5xx status code
+func (o *S3PolicyModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 policy modify o k response a status code equal to that given
+func (o *S3PolicyModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3PolicyModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyModifyOK ", 200)
+}
+
+func (o *S3PolicyModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3PolicyModifyOK ", 200)
 }
 
@@ -69,15 +99,16 @@ func NewS3PolicyModifyDefault(code int) *S3PolicyModifyDefault {
 	}
 }
 
-/* S3PolicyModifyDefault describes a response with status code -1, with default header values.
+/*
+	S3PolicyModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405906   | The specified action name is invalid.
 | 92405963   | Failed to create policy statements for policy. Reason: "{reason of failure}". Resolve all issues and retry the operation.
 | 92405954   | Object store server read-only policies do not support create, modify, delete, add-statement, delete-statement and modify-statement operations.
-
 */
 type S3PolicyModifyDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *S3PolicyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 policy modify default response has a 2xx status code
+func (o *S3PolicyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 policy modify default response has a 3xx status code
+func (o *S3PolicyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 policy modify default response has a 4xx status code
+func (o *S3PolicyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 policy modify default response has a 5xx status code
+func (o *S3PolicyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 policy modify default response a status code equal to that given
+func (o *S3PolicyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3PolicyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3PolicyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/policies/{name}][%d] s3_policy_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3PolicyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

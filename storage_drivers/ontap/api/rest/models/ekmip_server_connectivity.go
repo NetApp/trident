@@ -16,7 +16,6 @@ import (
 // EkmipServerConnectivity Provides the connectivity status for the given SVM on the given node to all EKMIP servers configured on all nodes of the cluster.
 // This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
-//
 // swagger:model ekmip_server_connectivity
 type EkmipServerConnectivity struct {
 

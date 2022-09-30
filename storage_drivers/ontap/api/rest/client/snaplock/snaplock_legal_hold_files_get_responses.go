@@ -46,7 +46,8 @@ func NewSnaplockLegalHoldFilesGetOK() *SnaplockLegalHoldFilesGetOK {
 	return &SnaplockLegalHoldFilesGetOK{}
 }
 
-/* SnaplockLegalHoldFilesGetOK describes a response with status code 200, with default header values.
+/*
+SnaplockLegalHoldFilesGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnaplockLegalHoldFilesGetOK struct {
 	Payload *models.SnaplockLitigationFileResponse
 }
 
+// IsSuccess returns true when this snaplock legal hold files get o k response has a 2xx status code
+func (o *SnaplockLegalHoldFilesGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock legal hold files get o k response has a 3xx status code
+func (o *SnaplockLegalHoldFilesGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock legal hold files get o k response has a 4xx status code
+func (o *SnaplockLegalHoldFilesGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock legal hold files get o k response has a 5xx status code
+func (o *SnaplockLegalHoldFilesGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock legal hold files get o k response a status code equal to that given
+func (o *SnaplockLegalHoldFilesGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnaplockLegalHoldFilesGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplockLegalHoldFilesGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnaplockLegalHoldFilesGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplockLegalHoldFilesGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnaplockLegalHoldFilesGetOK) GetPayload() *models.SnaplockLitigationFileResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSnaplockLegalHoldFilesGetDefault(code int) *SnaplockLegalHoldFilesGetDef
 	}
 }
 
-/* SnaplockLegalHoldFilesGetDefault describes a response with status code -1, with default header values.
+/*
+SnaplockLegalHoldFilesGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SnaplockLegalHoldFilesGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock legal hold files get default response has a 2xx status code
+func (o *SnaplockLegalHoldFilesGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock legal hold files get default response has a 3xx status code
+func (o *SnaplockLegalHoldFilesGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock legal hold files get default response has a 4xx status code
+func (o *SnaplockLegalHoldFilesGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock legal hold files get default response has a 5xx status code
+func (o *SnaplockLegalHoldFilesGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock legal hold files get default response a status code equal to that given
+func (o *SnaplockLegalHoldFilesGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockLegalHoldFilesGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplock_legal_hold_files_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockLegalHoldFilesGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/litigations/{litigation.id}/files][%d] snaplock_legal_hold_files_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockLegalHoldFilesGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

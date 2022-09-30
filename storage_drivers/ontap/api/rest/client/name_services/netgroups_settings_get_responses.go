@@ -46,7 +46,8 @@ func NewNetgroupsSettingsGetOK() *NetgroupsSettingsGetOK {
 	return &NetgroupsSettingsGetOK{}
 }
 
-/* NetgroupsSettingsGetOK describes a response with status code 200, with default header values.
+/*
+NetgroupsSettingsGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NetgroupsSettingsGetOK struct {
 	Payload *models.NetgroupsSettings
 }
 
+// IsSuccess returns true when this netgroups settings get o k response has a 2xx status code
+func (o *NetgroupsSettingsGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this netgroups settings get o k response has a 3xx status code
+func (o *NetgroupsSettingsGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this netgroups settings get o k response has a 4xx status code
+func (o *NetgroupsSettingsGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this netgroups settings get o k response has a 5xx status code
+func (o *NetgroupsSettingsGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this netgroups settings get o k response a status code equal to that given
+func (o *NetgroupsSettingsGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetgroupsSettingsGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroupsSettingsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NetgroupsSettingsGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroupsSettingsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NetgroupsSettingsGetOK) GetPayload() *models.NetgroupsSettings {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNetgroupsSettingsGetDefault(code int) *NetgroupsSettingsGetDefault {
 	}
 }
 
-/* NetgroupsSettingsGetDefault describes a response with status code -1, with default header values.
+/*
+NetgroupsSettingsGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NetgroupsSettingsGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this netgroups settings get default response has a 2xx status code
+func (o *NetgroupsSettingsGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this netgroups settings get default response has a 3xx status code
+func (o *NetgroupsSettingsGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this netgroups settings get default response has a 4xx status code
+func (o *NetgroupsSettingsGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this netgroups settings get default response has a 5xx status code
+func (o *NetgroupsSettingsGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this netgroups settings get default response a status code equal to that given
+func (o *NetgroupsSettingsGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetgroupsSettingsGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroups_settings_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetgroupsSettingsGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/netgroup/settings/{svm.uuid}][%d] netgroups_settings_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetgroupsSettingsGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

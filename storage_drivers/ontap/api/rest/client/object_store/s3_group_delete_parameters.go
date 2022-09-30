@@ -52,10 +52,12 @@ func NewS3GroupDeleteParamsWithHTTPClient(client *http.Client) *S3GroupDeletePar
 	}
 }
 
-/* S3GroupDeleteParams contains all the parameters to send to the API endpoint
-   for the s3 group delete operation.
+/*
+S3GroupDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 group delete operation.
+
+	Typically these are written to a http.Request.
 */
 type S3GroupDeleteParams struct {
 

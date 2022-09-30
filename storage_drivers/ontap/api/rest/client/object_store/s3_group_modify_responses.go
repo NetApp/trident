@@ -46,14 +46,44 @@ func NewS3GroupModifyOK() *S3GroupModifyOK {
 	return &S3GroupModifyOK{}
 }
 
-/* S3GroupModifyOK describes a response with status code 200, with default header values.
+/*
+S3GroupModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type S3GroupModifyOK struct {
 }
 
+// IsSuccess returns true when this s3 group modify o k response has a 2xx status code
+func (o *S3GroupModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 group modify o k response has a 3xx status code
+func (o *S3GroupModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 group modify o k response has a 4xx status code
+func (o *S3GroupModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 group modify o k response has a 5xx status code
+func (o *S3GroupModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 group modify o k response a status code equal to that given
+func (o *S3GroupModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3GroupModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupModifyOK ", 200)
+}
+
+func (o *S3GroupModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewS3GroupModifyDefault(code int) *S3GroupModifyDefault {
 	}
 }
 
-/* S3GroupModifyDefault describes a response with status code -1, with default header values.
+/*
+	S3GroupModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405896   | Users list cannot be empty.
@@ -81,7 +113,6 @@ func NewS3GroupModifyDefault(code int) *S3GroupModifyDefault {
 | 92405936   | Query characters such as * are not supported in the user list.
 | 92405937   | Policy name specified in the policy list do not exist for SVM.
 | 92405966   | User name is present more than once in the users field.
-
 */
 type S3GroupModifyDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *S3GroupModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 group modify default response has a 2xx status code
+func (o *S3GroupModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 group modify default response has a 3xx status code
+func (o *S3GroupModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 group modify default response has a 4xx status code
+func (o *S3GroupModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 group modify default response has a 5xx status code
+func (o *S3GroupModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 group modify default response a status code equal to that given
+func (o *S3GroupModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3GroupModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3GroupModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3GroupModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

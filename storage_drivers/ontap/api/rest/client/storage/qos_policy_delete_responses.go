@@ -46,7 +46,8 @@ func NewQosPolicyDeleteAccepted() *QosPolicyDeleteAccepted {
 	return &QosPolicyDeleteAccepted{}
 }
 
-/* QosPolicyDeleteAccepted describes a response with status code 202, with default header values.
+/*
+QosPolicyDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type QosPolicyDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this qos policy delete accepted response has a 2xx status code
+func (o *QosPolicyDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this qos policy delete accepted response has a 3xx status code
+func (o *QosPolicyDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this qos policy delete accepted response has a 4xx status code
+func (o *QosPolicyDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this qos policy delete accepted response has a 5xx status code
+func (o *QosPolicyDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this qos policy delete accepted response a status code equal to that given
+func (o *QosPolicyDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *QosPolicyDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qosPolicyDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *QosPolicyDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qosPolicyDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *QosPolicyDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewQosPolicyDeleteDefault(code int) *QosPolicyDeleteDefault {
 	}
 }
 
-/* QosPolicyDeleteDefault describes a response with status code -1, with default header values.
+/*
+QosPolicyDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *QosPolicyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this qos policy delete default response has a 2xx status code
+func (o *QosPolicyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this qos policy delete default response has a 3xx status code
+func (o *QosPolicyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this qos policy delete default response has a 4xx status code
+func (o *QosPolicyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this qos policy delete default response has a 5xx status code
+func (o *QosPolicyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this qos policy delete default response a status code equal to that given
+func (o *QosPolicyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QosPolicyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qos_policy_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QosPolicyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qos_policy_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QosPolicyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

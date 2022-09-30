@@ -46,7 +46,8 @@ func NewConfigurationBackupGetOK() *ConfigurationBackupGetOK {
 	return &ConfigurationBackupGetOK{}
 }
 
-/* ConfigurationBackupGetOK describes a response with status code 200, with default header values.
+/*
+ConfigurationBackupGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ConfigurationBackupGetOK struct {
 	Payload *models.ConfigurationBackup
 }
 
+// IsSuccess returns true when this configuration backup get o k response has a 2xx status code
+func (o *ConfigurationBackupGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this configuration backup get o k response has a 3xx status code
+func (o *ConfigurationBackupGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this configuration backup get o k response has a 4xx status code
+func (o *ConfigurationBackupGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this configuration backup get o k response has a 5xx status code
+func (o *ConfigurationBackupGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this configuration backup get o k response a status code equal to that given
+func (o *ConfigurationBackupGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ConfigurationBackupGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/configuration-backup][%d] configurationBackupGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ConfigurationBackupGetOK) String() string {
+	return fmt.Sprintf("[GET /support/configuration-backup][%d] configurationBackupGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ConfigurationBackupGetOK) GetPayload() *models.ConfigurationBackup {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewConfigurationBackupGetDefault(code int) *ConfigurationBackupGetDefault {
 	}
 }
 
-/* ConfigurationBackupGetDefault describes a response with status code -1, with default header values.
+/*
+ConfigurationBackupGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ConfigurationBackupGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this configuration backup get default response has a 2xx status code
+func (o *ConfigurationBackupGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this configuration backup get default response has a 3xx status code
+func (o *ConfigurationBackupGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this configuration backup get default response has a 4xx status code
+func (o *ConfigurationBackupGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this configuration backup get default response has a 5xx status code
+func (o *ConfigurationBackupGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this configuration backup get default response a status code equal to that given
+func (o *ConfigurationBackupGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ConfigurationBackupGetDefault) Error() string {
 	return fmt.Sprintf("[GET /support/configuration-backup][%d] configuration_backup_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ConfigurationBackupGetDefault) String() string {
+	return fmt.Sprintf("[GET /support/configuration-backup][%d] configuration_backup_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ConfigurationBackupGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

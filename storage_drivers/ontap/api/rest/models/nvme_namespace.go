@@ -20,7 +20,6 @@ import (
 // An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 // An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
 //
-//
 // swagger:model nvme_namespace
 type NvmeNamespace struct {
 
@@ -683,7 +682,6 @@ func (m *NvmeNamespace) UnmarshalBinary(b []byte) error {
 // NvmeNamespaceClone This sub-object is used in POST to create a new NVMe namespace as a clone of an existing namespace, or PATCH to overwrite an existing namespace as a clone of another. Setting a property in this sub-object indicates that a namespace clone is desired.<br/>
 // When used in a PATCH, the patched NVMe namespace's data is over-written as a clone of the source and the following properties are preserved from the patched namespace unless otherwise specified as part of the PATCH: `auto_delete` (unless specified in the request), `subsystem_map`, `status.state`, and `uuid`.
 //
-//
 // swagger:model NvmeNamespaceClone
 type NvmeNamespaceClone struct {
 
@@ -772,7 +770,6 @@ func (m *NvmeNamespaceClone) UnmarshalBinary(b []byte) error {
 // Valid in POST to create a new NVMe namespace as a clone of the source.<br/>
 // Valid in PATCH to overwrite an existing NVMe namespace's data as a clone of another.
 //
-//
 // swagger:model NvmeNamespaceCloneSource
 type NvmeNamespaceCloneSource struct {
 
@@ -816,7 +813,6 @@ func (m *NvmeNamespaceCloneSource) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeNamespaceConvert This sub-object is used in POST to convert a valid in-place LUN to an NVMe namespace. Setting a property in this sub-object indicates that a conversion from the specified LUN to NVMe namespace is desired.<br/>
-//
 //
 // swagger:model NvmeNamespaceConvert
 type NvmeNamespaceConvert struct {
@@ -904,7 +900,6 @@ func (m *NvmeNamespaceConvert) UnmarshalBinary(b []byte) error {
 
 // NvmeNamespaceConvertLun The source LUN for convert operation. This can be specified using property `convert.lun.uuid` or `convert.lun.name`. If both properties are supplied, they must refer to the same LUN.<br/>
 // Valid in POST. A convert request from LUN to NVMe namespace cannot be combined with setting any other namespace properties. All other properties of the converted NVMe namespace comes from the source LUN.<br/>
-//
 //
 // swagger:model NvmeNamespaceConvertLun
 type NvmeNamespaceConvertLun struct {
@@ -1036,7 +1031,6 @@ func (m *NvmeNamespaceLinks) UnmarshalBinary(b []byte) error {
 
 // NvmeNamespaceLocation The location of the NVMe namespace within the ONTAP cluster. Valid in POST.<br/>
 // NVMe namespaces do not support rename, or movement between volumes.
-//
 //
 // swagger:model NvmeNamespaceLocation
 type NvmeNamespaceLocation struct {
@@ -1214,7 +1208,6 @@ func (m *NvmeNamespaceLocation) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeNamespaceLocationNode The cluster node that hosts the NVMe namespace.
-//
 //
 // swagger:model NvmeNamespaceLocationNode
 type NvmeNamespaceLocationNode struct {
@@ -1397,7 +1390,6 @@ func (m *NvmeNamespaceLocationNodeLinks) UnmarshalBinary(b []byte) error {
 // NvmeNamespaceLocationQtree The qtree in which the NVMe namespace is optionally located. Valid in POST.<br/>
 // If properties `name` and `location.qtree.name` and/or `location.qtree.uuid` are specified in the same request, they must refer to the same qtree.<br/>
 // NVMe namespaces do not support rename.
-//
 //
 // swagger:model NvmeNamespaceLocationQtree
 type NvmeNamespaceLocationQtree struct {
@@ -1603,7 +1595,6 @@ func (m *NvmeNamespaceLocationQtreeLinks) UnmarshalBinary(b []byte) error {
 // NvmeNamespaceLocationVolume The volume in which the NVMe namespace is located. Valid in POST.<br/>
 // If properties `name` and `location.volume.name` and/or `location.volume.uuid` are specified in the same request, they must refer to the same volume.<br/>
 // NVMe namespaces do not support movement between volumes.
-//
 //
 // swagger:model NvmeNamespaceLocationVolume
 type NvmeNamespaceLocationVolume struct {
@@ -2566,7 +2557,6 @@ func (m *NvmeNamespaceMetricThroughput) UnmarshalBinary(b []byte) error {
 
 // NvmeNamespaceSpace The storage space related properties of the NVMe namespace.
 //
-//
 // swagger:model NvmeNamespaceSpace
 type NvmeNamespaceSpace struct {
 
@@ -2745,7 +2735,6 @@ func (m *NvmeNamespaceSpace) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeNamespaceSpaceGuarantee Properties that request and report the space guarantee for the NVMe namespace.
-//
 //
 // swagger:model NvmeNamespaceSpaceGuarantee
 type NvmeNamespaceSpaceGuarantee struct {
@@ -3357,7 +3346,6 @@ func (m *NvmeNamespaceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 
 // NvmeNamespaceStatus Status information about the NVMe namespace.
 //
-//
 // swagger:model NvmeNamespaceStatus
 type NvmeNamespaceStatus struct {
 
@@ -3629,7 +3617,6 @@ func (m *NvmeNamespaceStatus) UnmarshalBinary(b []byte) error {
 // NvmeNamespaceSubsystemMap The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
 // There is an added cost to retrieving property values for `subsystem_map`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 //
-//
 // swagger:model NvmeNamespaceSubsystemMap
 type NvmeNamespaceSubsystemMap struct {
 
@@ -3883,7 +3870,6 @@ func (m *NvmeNamespaceSubsystemMapLinks) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeNamespaceSubsystemMapSubsystem The NVMe subsystem to which the NVMe namespace is mapped.
-//
 //
 // swagger:model NvmeNamespaceSubsystemMapSubsystem
 type NvmeNamespaceSubsystemMapSubsystem struct {

@@ -46,7 +46,8 @@ func NewIscsiCredentialsCreateCreated() *IscsiCredentialsCreateCreated {
 	return &IscsiCredentialsCreateCreated{}
 }
 
-/* IscsiCredentialsCreateCreated describes a response with status code 201, with default header values.
+/*
+IscsiCredentialsCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type IscsiCredentialsCreateCreated struct {
 	Payload *models.IscsiCredentialsResponse
 }
 
+// IsSuccess returns true when this iscsi credentials create created response has a 2xx status code
+func (o *IscsiCredentialsCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this iscsi credentials create created response has a 3xx status code
+func (o *IscsiCredentialsCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this iscsi credentials create created response has a 4xx status code
+func (o *IscsiCredentialsCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this iscsi credentials create created response has a 5xx status code
+func (o *IscsiCredentialsCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this iscsi credentials create created response a status code equal to that given
+func (o *IscsiCredentialsCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *IscsiCredentialsCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsiCredentialsCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *IscsiCredentialsCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsiCredentialsCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *IscsiCredentialsCreateCreated) GetPayload() *models.IscsiCredentialsResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewIscsiCredentialsCreateDefault(code int) *IscsiCredentialsCreateDefault {
 	}
 }
 
-/* IscsiCredentialsCreateDefault describes a response with status code -1, with default header values.
+/*
+	IscsiCredentialsCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | An SVM with the specified UUID does not exist. |
@@ -104,7 +137,6 @@ func NewIscsiCredentialsCreateDefault(code int) *IscsiCredentialsCreateDefault {
 | 5374855 | The value for property `initiator_address.ranges.start` is greater than the value for property `initiator_address.ranges.end`. |
 | 5374856 | The value for property `initiator_address.ranges.start` does not belong to the same IP address family as the value for property `initiator_address.ranges.end`. |
 | 5374900 | Setting the CHAP authentication properties are not supported with authentication types _none_ or _deny_. |
-
 */
 type IscsiCredentialsCreateDefault struct {
 	_statusCode int
@@ -117,9 +149,39 @@ func (o *IscsiCredentialsCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this iscsi credentials create default response has a 2xx status code
+func (o *IscsiCredentialsCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this iscsi credentials create default response has a 3xx status code
+func (o *IscsiCredentialsCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this iscsi credentials create default response has a 4xx status code
+func (o *IscsiCredentialsCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this iscsi credentials create default response has a 5xx status code
+func (o *IscsiCredentialsCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this iscsi credentials create default response a status code equal to that given
+func (o *IscsiCredentialsCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IscsiCredentialsCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsi_credentials_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IscsiCredentialsCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/san/iscsi/credentials][%d] iscsi_credentials_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IscsiCredentialsCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewAutosupportGetOK() *AutosupportGetOK {
 	return &AutosupportGetOK{}
 }
 
-/* AutosupportGetOK describes a response with status code 200, with default header values.
+/*
+AutosupportGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AutosupportGetOK struct {
 	Payload *models.Autosupport
 }
 
+// IsSuccess returns true when this autosupport get o k response has a 2xx status code
+func (o *AutosupportGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this autosupport get o k response has a 3xx status code
+func (o *AutosupportGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this autosupport get o k response has a 4xx status code
+func (o *AutosupportGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this autosupport get o k response has a 5xx status code
+func (o *AutosupportGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this autosupport get o k response a status code equal to that given
+func (o *AutosupportGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AutosupportGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/autosupport][%d] autosupportGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AutosupportGetOK) String() string {
+	return fmt.Sprintf("[GET /support/autosupport][%d] autosupportGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AutosupportGetOK) GetPayload() *models.Autosupport {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAutosupportGetDefault(code int) *AutosupportGetDefault {
 	}
 }
 
-/* AutosupportGetDefault describes a response with status code -1, with default header values.
+/*
+AutosupportGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AutosupportGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this autosupport get default response has a 2xx status code
+func (o *AutosupportGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this autosupport get default response has a 3xx status code
+func (o *AutosupportGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this autosupport get default response has a 4xx status code
+func (o *AutosupportGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this autosupport get default response has a 5xx status code
+func (o *AutosupportGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this autosupport get default response a status code equal to that given
+func (o *AutosupportGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AutosupportGetDefault) Error() string {
 	return fmt.Sprintf("[GET /support/autosupport][%d] autosupport_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AutosupportGetDefault) String() string {
+	return fmt.Sprintf("[GET /support/autosupport][%d] autosupport_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AutosupportGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewSnmpUsersCreateCreated() *SnmpUsersCreateCreated {
 	return &SnmpUsersCreateCreated{}
 }
 
-/* SnmpUsersCreateCreated describes a response with status code 201, with default header values.
+/*
+SnmpUsersCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type SnmpUsersCreateCreated struct {
 	Payload *models.SnmpUser
 }
 
+// IsSuccess returns true when this snmp users create created response has a 2xx status code
+func (o *SnmpUsersCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snmp users create created response has a 3xx status code
+func (o *SnmpUsersCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snmp users create created response has a 4xx status code
+func (o *SnmpUsersCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snmp users create created response has a 5xx status code
+func (o *SnmpUsersCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snmp users create created response a status code equal to that given
+func (o *SnmpUsersCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *SnmpUsersCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /support/snmp/users][%d] snmpUsersCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *SnmpUsersCreateCreated) String() string {
+	return fmt.Sprintf("[POST /support/snmp/users][%d] snmpUsersCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *SnmpUsersCreateCreated) GetPayload() *models.SnmpUser {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSnmpUsersCreateDefault(code int) *SnmpUsersCreateDefault {
 	}
 }
 
-/* SnmpUsersCreateDefault describes a response with status code -1, with default header values.
+/*
+	SnmpUsersCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621475 | This operation is not allowed on a node SVM. |
@@ -112,7 +145,6 @@ func NewSnmpUsersCreateDefault(code int) *SnmpUsersCreateDefault {
 | 7077906 | Cannot use given role with this SVM because a role with that name has not been defined for the SVM. |
 | 9043995 | Failed to create SNMP community. Reason\":\" SNMPv1 and SNMPv2c are not supported when cluster FIPS mode is enabled. |
 | 9043999 | ONTAP failed to create an SNMPv3 user because SNMPv3 is disabled in the cluster. |
-
 */
 type SnmpUsersCreateDefault struct {
 	_statusCode int
@@ -125,9 +157,39 @@ func (o *SnmpUsersCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snmp users create default response has a 2xx status code
+func (o *SnmpUsersCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snmp users create default response has a 3xx status code
+func (o *SnmpUsersCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snmp users create default response has a 4xx status code
+func (o *SnmpUsersCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snmp users create default response has a 5xx status code
+func (o *SnmpUsersCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snmp users create default response a status code equal to that given
+func (o *SnmpUsersCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnmpUsersCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /support/snmp/users][%d] snmp_users_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnmpUsersCreateDefault) String() string {
+	return fmt.Sprintf("[POST /support/snmp/users][%d] snmp_users_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnmpUsersCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

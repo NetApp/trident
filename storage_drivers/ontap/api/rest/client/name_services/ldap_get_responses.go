@@ -46,7 +46,8 @@ func NewLdapGetOK() *LdapGetOK {
 	return &LdapGetOK{}
 }
 
-/* LdapGetOK describes a response with status code 200, with default header values.
+/*
+LdapGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LdapGetOK struct {
 	Payload *models.LdapService
 }
 
+// IsSuccess returns true when this ldap get o k response has a 2xx status code
+func (o *LdapGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ldap get o k response has a 3xx status code
+func (o *LdapGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ldap get o k response has a 4xx status code
+func (o *LdapGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ldap get o k response has a 5xx status code
+func (o *LdapGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ldap get o k response a status code equal to that given
+func (o *LdapGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LdapGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldapGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LdapGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldapGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LdapGetOK) GetPayload() *models.LdapService {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLdapGetDefault(code int) *LdapGetDefault {
 	}
 }
 
-/* LdapGetDefault describes a response with status code -1, with default header values.
+/*
+LdapGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LdapGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ldap get default response has a 2xx status code
+func (o *LdapGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ldap get default response has a 3xx status code
+func (o *LdapGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ldap get default response has a 4xx status code
+func (o *LdapGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ldap get default response has a 5xx status code
+func (o *LdapGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ldap get default response a status code equal to that given
+func (o *LdapGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LdapGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldap_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LdapGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/ldap/{svm.uuid}][%d] ldap_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LdapGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

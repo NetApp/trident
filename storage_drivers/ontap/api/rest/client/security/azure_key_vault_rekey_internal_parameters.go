@@ -53,10 +53,12 @@ func NewAzureKeyVaultRekeyInternalParamsWithHTTPClient(client *http.Client) *Azu
 	}
 }
 
-/* AzureKeyVaultRekeyInternalParams contains all the parameters to send to the API endpoint
-   for the azure key vault rekey internal operation.
+/*
+AzureKeyVaultRekeyInternalParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the azure key vault rekey internal operation.
+
+	Typically these are written to a http.Request.
 */
 type AzureKeyVaultRekeyInternalParams struct {
 

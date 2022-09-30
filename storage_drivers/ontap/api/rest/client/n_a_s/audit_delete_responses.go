@@ -46,14 +46,44 @@ func NewAuditDeleteAccepted() *AuditDeleteAccepted {
 	return &AuditDeleteAccepted{}
 }
 
-/* AuditDeleteAccepted describes a response with status code 202, with default header values.
+/*
+AuditDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type AuditDeleteAccepted struct {
 }
 
+// IsSuccess returns true when this audit delete accepted response has a 2xx status code
+func (o *AuditDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this audit delete accepted response has a 3xx status code
+func (o *AuditDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this audit delete accepted response has a 4xx status code
+func (o *AuditDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this audit delete accepted response has a 5xx status code
+func (o *AuditDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this audit delete accepted response a status code equal to that given
+func (o *AuditDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *AuditDeleteAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] auditDeleteAccepted ", 202)
+}
+
+func (o *AuditDeleteAccepted) String() string {
 	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] auditDeleteAccepted ", 202)
 }
 
@@ -69,9 +99,11 @@ func NewAuditDeleteDefault(code int) *AuditDeleteDefault {
 	}
 }
 
-/* AuditDeleteDefault describes a response with status code -1, with default header values.
+/*
+	AuditDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 9699349    | Auditing should be disabled before deleting the audit configuration           |
@@ -79,7 +111,6 @@ func NewAuditDeleteDefault(code int) *AuditDeleteDefault {
 | 9699410    | Failed to disable multiproto.audit.evtxlog.support support capability         |
 | 9699430    | Failed to disable multiproto.audit.cifslogonlogoff.support support capability |
 | 9699433    | Failed to disable multiproto.audit.capstaging.support support capability      |
-
 */
 type AuditDeleteDefault struct {
 	_statusCode int
@@ -92,9 +123,39 @@ func (o *AuditDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this audit delete default response has a 2xx status code
+func (o *AuditDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this audit delete default response has a 3xx status code
+func (o *AuditDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this audit delete default response has a 4xx status code
+func (o *AuditDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this audit delete default response has a 5xx status code
+func (o *AuditDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this audit delete default response a status code equal to that given
+func (o *AuditDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AuditDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] audit_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AuditDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}][%d] audit_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AuditDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

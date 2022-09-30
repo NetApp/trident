@@ -172,13 +172,13 @@ type ClientService interface {
 }
 
 /*
-  FcLoginCollectionGet Retrieves FC logins.
+	FcLoginCollectionGet Retrieves FC logins.
+
 ### Related ONTAP commands
 * `vserver fcp initiator show`
 ### Learn more
 * SAN: [`DOC /network/fc/logins`](#docs-SAN-network_fc_logins)
 * NVMe: [`DOC /network/fc/logins`](#docs-NVMe-network_fc_logins)
-
 */
 func (a *Client) FcLoginCollectionGet(params *FcLoginCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcLoginCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -216,13 +216,13 @@ func (a *Client) FcLoginCollectionGet(params *FcLoginCollectionGetParams, authIn
 }
 
 /*
-  FcLoginGet Retrieves an FC login.
+	FcLoginGet Retrieves an FC login.
+
 ### Related ONTAP commands
 * `vserver fcp initiator show`
 ### Learn more
 * SAN: [`DOC /network/fc/logins`](#docs-SAN-network_fc_logins)
 * NVMe: [`DOC /network/fc/logins`](#docs-NVMe-network_fc_logins)
-
 */
 func (a *Client) FcLoginGet(params *FcLoginGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcLoginGetOK, error) {
 	// TODO: Validate the params before sending
@@ -260,7 +260,7 @@ func (a *Client) FcLoginGet(params *FcLoginGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  FcpCollectionPerformanceMetricsGet Retrieves historical performance metrics for the FC Protocol service of an SVM.
+FcpCollectionPerformanceMetricsGet Retrieves historical performance metrics for the FC Protocol service of an SVM.
 */
 func (a *Client) FcpCollectionPerformanceMetricsGet(params *FcpCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpCollectionPerformanceMetricsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -298,7 +298,8 @@ func (a *Client) FcpCollectionPerformanceMetricsGet(params *FcpCollectionPerform
 }
 
 /*
-  FcpServiceCollectionGet Retrieves FC Protocol services.
+	FcpServiceCollectionGet Retrieves FC Protocol services.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
@@ -307,7 +308,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver fcp show`
 ### Learn more
 * [`DOC /protocols/san/fcp/services`](#docs-SAN-protocols_san_fcp_services)
-
 */
 func (a *Client) FcpServiceCollectionGet(params *FcpServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -345,14 +345,14 @@ func (a *Client) FcpServiceCollectionGet(params *FcpServiceCollectionGetParams, 
 }
 
 /*
-  FcpServiceCreate Creates an FC Protocol service.
+	FcpServiceCreate Creates an FC Protocol service.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the FC Protocol service.
 ### Related ONTAP commands
 * `vserver fcp create`
 ### Learn more
 * [`DOC /protocols/san/fcp/services`](#docs-SAN-protocols_san_fcp_services)
-
 */
 func (a *Client) FcpServiceCreate(params *FcpServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -390,12 +390,12 @@ func (a *Client) FcpServiceCreate(params *FcpServiceCreateParams, authInfo runti
 }
 
 /*
-  FcpServiceDelete Deletes an FC Protocol service. An FC Protocol service must be disabled before it can be deleted.
+	FcpServiceDelete Deletes an FC Protocol service. An FC Protocol service must be disabled before it can be deleted.
+
 ### Related ONTAP commands
 * `vserver fcp delete`
 ### Learn more
 * [`DOC /protocols/san/fcp/services`](#docs-SAN-protocols_san_fcp_services)
-
 */
 func (a *Client) FcpServiceDelete(params *FcpServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -433,12 +433,12 @@ func (a *Client) FcpServiceDelete(params *FcpServiceDeleteParams, authInfo runti
 }
 
 /*
-  FcpServiceGet Retrieves an FC Protocol service.
+	FcpServiceGet Retrieves an FC Protocol service.
+
 ### Related ONTAP commands
 * `vserver fcp show`
 ### Learn more
 * [`DOC /protocols/san/fcp/services`](#docs-SAN-protocols_san_fcp_services)
-
 */
 func (a *Client) FcpServiceGet(params *FcpServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -476,14 +476,14 @@ func (a *Client) FcpServiceGet(params *FcpServiceGetParams, authInfo runtime.Cli
 }
 
 /*
-  FcpServiceModify Updates an FC Protocol service.
+	FcpServiceModify Updates an FC Protocol service.
+
 ### Related ONTAP commands
 * `vserver fcp modify`
 * `vserver fcp start`
 * `vserver fcp stop`
 ### Learn more
 * [`DOC /protocols/san/fcp/services`](#docs-SAN-protocols_san_fcp_services)
-
 */
 func (a *Client) FcpServiceModify(params *FcpServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FcpServiceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -521,7 +521,8 @@ func (a *Client) FcpServiceModify(params *FcpServiceModifyParams, authInfo runti
 }
 
 /*
-  IgroupCollectionGet Retrieves initiator groups.
+	IgroupCollectionGet Retrieves initiator groups.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connectivity_tracking.*`
@@ -534,7 +535,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `lun mapping show`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupCollectionGet(params *IgroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -572,7 +572,8 @@ func (a *Client) IgroupCollectionGet(params *IgroupCollectionGetParams, authInfo
 }
 
 /*
-  IgroupCreate Creates an initiator group.
+	IgroupCreate Creates an initiator group.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the initiator group.
 * `name` - Name of the initiator group.
@@ -586,7 +587,6 @@ If not specified in POST, the following default property values are assigned.
 * `lun igroup create`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupCreate(params *IgroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -624,12 +624,12 @@ func (a *Client) IgroupCreate(params *IgroupCreateParams, authInfo runtime.Clien
 }
 
 /*
-  IgroupDelete Deletes an initiator group.
+	IgroupDelete Deletes an initiator group.
+
 ### Related ONTAP commands
 * `lun igroup delete`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupDelete(params *IgroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -667,7 +667,8 @@ func (a *Client) IgroupDelete(params *IgroupDeleteParams, authInfo runtime.Clien
 }
 
 /*
-  IgroupGet Retrieves an initiator group.
+	IgroupGet Retrieves an initiator group.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `igroups.*`
@@ -679,7 +680,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `lun mapping show`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupGet(params *IgroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -717,7 +717,8 @@ func (a *Client) IgroupGet(params *IgroupGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  IgroupInitiatorCollectionGet Retrieves initiators of an initiator group.
+	IgroupInitiatorCollectionGet Retrieves initiators of an initiator group.
+
 This API only reports initiators owned directly by the initiator group.
 Initiators of nested initiator groups are not included in this
 collection.
@@ -728,7 +729,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `lun igroup show`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupInitiatorCollectionGet(params *IgroupInitiatorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -766,7 +766,8 @@ func (a *Client) IgroupInitiatorCollectionGet(params *IgroupInitiatorCollectionG
 }
 
 /*
-  IgroupInitiatorCreate Adds one or more initiators to an initiator group.
+	IgroupInitiatorCreate Adds one or more initiators to an initiator group.
+
 This API does not support adding initiators to an initiator group that
 already contains nested initiator groups.
 ### Required properties
@@ -775,7 +776,6 @@ already contains nested initiator groups.
 * `lun igroup add`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupInitiatorCreate(params *IgroupInitiatorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -813,7 +813,8 @@ func (a *Client) IgroupInitiatorCreate(params *IgroupInitiatorCreateParams, auth
 }
 
 /*
-  IgroupInitiatorDelete Deletes an initiator from an initiator group.
+	IgroupInitiatorDelete Deletes an initiator from an initiator group.
+
 This API only supports removal of initiators owned directly by the
 initiator group. Initiators of nested initiator groups must be
 removed on the initiator group that directly owns the initiator.
@@ -821,7 +822,6 @@ removed on the initiator group that directly owns the initiator.
 * `lun igroup remove`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupInitiatorDelete(params *IgroupInitiatorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -859,7 +859,8 @@ func (a *Client) IgroupInitiatorDelete(params *IgroupInitiatorDeleteParams, auth
 }
 
 /*
-  IgroupInitiatorGet Retrieves an initiator of an initiator group.
+	IgroupInitiatorGet Retrieves an initiator of an initiator group.
+
 This API only reports initiators owned directly by the initiator group.
 Initiators of nested initiator groups are not part of this collection.
 ### Expensive properties
@@ -869,7 +870,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `lun igroup show`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupInitiatorGet(params *IgroupInitiatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorGetOK, error) {
 	// TODO: Validate the params before sending
@@ -907,7 +907,8 @@ func (a *Client) IgroupInitiatorGet(params *IgroupInitiatorGetParams, authInfo r
 }
 
 /*
-  IgroupInitiatorModify Updates an initiator of an initiator group.
+	IgroupInitiatorModify Updates an initiator of an initiator group.
+
 This API only supports modification of initiators owned directly by the
 initiator group. Initiators of nested initiator groups must be
 modified on the initiator group that directly owns the initiator.
@@ -915,7 +916,6 @@ modified on the initiator group that directly owns the initiator.
 * `lun igroup initiator modify`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupInitiatorModify(params *IgroupInitiatorModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -953,7 +953,8 @@ func (a *Client) IgroupInitiatorModify(params *IgroupInitiatorModifyParams, auth
 }
 
 /*
-  IgroupModify Updates an initiator group.
+	IgroupModify Updates an initiator group.
+
 ### Related ONTAP commands
 * `lun igroup modify`
 * `lun igroup rename`
@@ -961,7 +962,6 @@ func (a *Client) IgroupInitiatorModify(params *IgroupInitiatorModifyParams, auth
 * `lun igroup unbind`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupModify(params *IgroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -999,7 +999,8 @@ func (a *Client) IgroupModify(params *IgroupModifyParams, authInfo runtime.Clien
 }
 
 /*
-  IgroupNestedCollectionGet Retrieves nested initiator groups of an initiator group.
+	IgroupNestedCollectionGet Retrieves nested initiator groups of an initiator group.
+
 This API only reports the nested initiator groups that are direct
 children of the initiator group. Further nested initiator groups are
 reported by their direct parent initiator group.
@@ -1007,7 +1008,6 @@ reported by their direct parent initiator group.
 * `lun igroup show`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupNestedCollectionGet(params *IgroupNestedCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1045,7 +1045,8 @@ func (a *Client) IgroupNestedCollectionGet(params *IgroupNestedCollectionGetPara
 }
 
 /*
-  IgroupNestedCreate Adds one or more nested initiator groups to an initiator group. A single
+	IgroupNestedCreate Adds one or more nested initiator groups to an initiator group. A single
+
 nested initiator group can be added by directly specifying the name or
 UUID. Multiple nested initiator groups can be added by specifying the
 names or UUIDs in the records array. Nested initiator groups cannot be
@@ -1056,7 +1057,6 @@ added to an initiator group that already directly contains initiators.
 * `lun igroup add`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupNestedCreate(params *IgroupNestedCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1094,7 +1094,8 @@ func (a *Client) IgroupNestedCreate(params *IgroupNestedCreateParams, authInfo r
 }
 
 /*
-  IgroupNestedDelete Removes a nested initiator group from an initiator group. This API does
+	IgroupNestedDelete Removes a nested initiator group from an initiator group. This API does
+
 not delete the nested initiator group itself. It removes the relationship
 between a parent and child initiator group.
 This API only supports removal of initiator groups owned directly by the
@@ -1104,7 +1105,6 @@ direct parent initiator group.
 * `lun igroup remove`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupNestedDelete(params *IgroupNestedDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1142,7 +1142,8 @@ func (a *Client) IgroupNestedDelete(params *IgroupNestedDeleteParams, authInfo r
 }
 
 /*
-  IgroupNestedGet Retrieves a nested initiator group of an initiator group.
+	IgroupNestedGet Retrieves a nested initiator group of an initiator group.
+
 This API only reports the nested initiator groups that are direct
 children of the initiator group. Further nested initiator groups are
 reported by their direct parent initiator group.
@@ -1150,7 +1151,6 @@ reported by their direct parent initiator group.
 * `lun igroup show`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
-
 */
 func (a *Client) IgroupNestedGet(params *IgroupNestedGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1188,7 +1188,7 @@ func (a *Client) IgroupNestedGet(params *IgroupNestedGetParams, authInfo runtime
 }
 
 /*
-  IscsiCollectionPerformanceMetricsGet Retrieves historical performance metrics for the iSCSI protocol of an SVM.
+IscsiCollectionPerformanceMetricsGet Retrieves historical performance metrics for the iSCSI protocol of an SVM.
 */
 func (a *Client) IscsiCollectionPerformanceMetricsGet(params *IscsiCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCollectionPerformanceMetricsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1226,12 +1226,12 @@ func (a *Client) IscsiCollectionPerformanceMetricsGet(params *IscsiCollectionPer
 }
 
 /*
-  IscsiCredentialsCollectionGet Retrieves iSCSI credentials.
+	IscsiCredentialsCollectionGet Retrieves iSCSI credentials.
+
 ### Related ONTAP commands
 * `vserver iscsi security show`
 ### Learn more
 * [`DOC /protocols/san/iscsi/credentials`](#docs-SAN-protocols_san_iscsi_credentials)
-
 */
 func (a *Client) IscsiCredentialsCollectionGet(params *IscsiCredentialsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1269,7 +1269,8 @@ func (a *Client) IscsiCredentialsCollectionGet(params *IscsiCredentialsCollectio
 }
 
 /*
-  IscsiCredentialsCreate Creates iSCSI credentials.
+	IscsiCredentialsCreate Creates iSCSI credentials.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the iSCSI credentials.
 * `initiator` - Initiator for which the iSCSI credentials are to be created.
@@ -1283,7 +1284,6 @@ func (a *Client) IscsiCredentialsCollectionGet(params *IscsiCredentialsCollectio
 * `vserver iscsi security create`
 ### Learn more
 * [`DOC /protocols/san/iscsi/credentials`](#docs-SAN-protocols_san_iscsi_credentials)
-
 */
 func (a *Client) IscsiCredentialsCreate(params *IscsiCredentialsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1321,12 +1321,12 @@ func (a *Client) IscsiCredentialsCreate(params *IscsiCredentialsCreateParams, au
 }
 
 /*
-  IscsiCredentialsDelete Deletes specified iSCSI credentials.
+	IscsiCredentialsDelete Deletes specified iSCSI credentials.
+
 ### Related ONTAP commands
 * `vserver iscsi security delete`
 ### Learn more
 * [`DOC /protocols/san/iscsi/credentials`](#docs-SAN-protocols_san_iscsi_credentials)
-
 */
 func (a *Client) IscsiCredentialsDelete(params *IscsiCredentialsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1364,12 +1364,12 @@ func (a *Client) IscsiCredentialsDelete(params *IscsiCredentialsDeleteParams, au
 }
 
 /*
-  IscsiCredentialsGet Retrieves specified iSCSI credentials.
+	IscsiCredentialsGet Retrieves specified iSCSI credentials.
+
 ### Related ONTAP commands
 * `vserver iscsi security show`
 ### Learn more
 * [`DOC /protocols/san/iscsi/credentials`](#docs-SAN-protocols_san_iscsi_credentials)
-
 */
 func (a *Client) IscsiCredentialsGet(params *IscsiCredentialsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1407,7 +1407,8 @@ func (a *Client) IscsiCredentialsGet(params *IscsiCredentialsGetParams, authInfo
 }
 
 /*
-  IscsiCredentialsModify Updates specified iSCSI credentials.
+	IscsiCredentialsModify Updates specified iSCSI credentials.
+
 ### Related ONTAP commands
 * `vserver iscsi security add-initiator-address-ranges`
 * `vserver iscsi security default`
@@ -1415,7 +1416,6 @@ func (a *Client) IscsiCredentialsGet(params *IscsiCredentialsGetParams, authInfo
 * `vserver iscsi security remove-initiator-address-ranges`
 ### Learn more
 * [`DOC /protocols/san/iscsi/credentials`](#docs-SAN-protocols_san_iscsi_credentials)
-
 */
 func (a *Client) IscsiCredentialsModify(params *IscsiCredentialsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCredentialsModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1453,7 +1453,8 @@ func (a *Client) IscsiCredentialsModify(params *IscsiCredentialsModifyParams, au
 }
 
 /*
-  IscsiServiceCollectionGet Retrieves iSCSI services.
+	IscsiServiceCollectionGet Retrieves iSCSI services.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
@@ -1462,7 +1463,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `vserver iscsi show`
 ### Learn more
 * [`DOC /protocols/san/iscsi/services`](#docs-SAN-protocols_san_iscsi_services)
-
 */
 func (a *Client) IscsiServiceCollectionGet(params *IscsiServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1500,14 +1500,14 @@ func (a *Client) IscsiServiceCollectionGet(params *IscsiServiceCollectionGetPara
 }
 
 /*
-  IscsiServiceCreate Creates an iSCSI service.
+	IscsiServiceCreate Creates an iSCSI service.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the iSCSI service.
 ### Related ONTAP commands
 * `vserver iscsi create`
 ### Learn more
 * [`DOC /protocols/san/iscsi/services`](#docs-SAN-protocols_san_iscsi_services)
-
 */
 func (a *Client) IscsiServiceCreate(params *IscsiServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1545,12 +1545,12 @@ func (a *Client) IscsiServiceCreate(params *IscsiServiceCreateParams, authInfo r
 }
 
 /*
-  IscsiServiceDelete Deletes an iSCSI service. An iSCSI service must be disabled before it can be deleted.
+	IscsiServiceDelete Deletes an iSCSI service. An iSCSI service must be disabled before it can be deleted.
+
 ### Related ONTAP commands
 * `vserver iscsi delete`
 ### Learn more
 * [`DOC /protocols/san/iscsi/services`](#docs-SAN-protocols_san_iscsi_services)
-
 */
 func (a *Client) IscsiServiceDelete(params *IscsiServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1588,12 +1588,12 @@ func (a *Client) IscsiServiceDelete(params *IscsiServiceDeleteParams, authInfo r
 }
 
 /*
-  IscsiServiceGet Retrieves an iSCSI service.
+	IscsiServiceGet Retrieves an iSCSI service.
+
 ### Related ONTAP commands
 * `vserver iscsi show`
 ### Learn more
 * [`DOC /protocols/san/iscsi/services`](#docs-SAN-protocols_san_iscsi_services)
-
 */
 func (a *Client) IscsiServiceGet(params *IscsiServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1631,14 +1631,14 @@ func (a *Client) IscsiServiceGet(params *IscsiServiceGetParams, authInfo runtime
 }
 
 /*
-  IscsiServiceModify Updates an iSCSI service.
+	IscsiServiceModify Updates an iSCSI service.
+
 ### Related ONTAP commands
 * `vserver iscsi modify`
 * `vserver iscsi start`
 * `vserver iscsi stop`
 ### Learn more
 * [`DOC /protocols/san/iscsi/services`](#docs-SAN-protocols_san_iscsi_services)
-
 */
 func (a *Client) IscsiServiceModify(params *IscsiServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiServiceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1676,14 +1676,14 @@ func (a *Client) IscsiServiceModify(params *IscsiServiceModifyParams, authInfo r
 }
 
 /*
-  IscsiSessionCollectionGet Retrieves iSCSI sessions.
+	IscsiSessionCollectionGet Retrieves iSCSI sessions.
+
 ### Related ONTAP commands
 * `vserver iscsi connection show`
 * `vserver iscsi session parameter show`
 * `vserver iscsi session show`
 ### Learn more
 * [`DOC /protocols/san/iscsi/sessions`](#docs-SAN-protocols_san_iscsi_sessions)
-
 */
 func (a *Client) IscsiSessionCollectionGet(params *IscsiSessionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiSessionCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1721,14 +1721,14 @@ func (a *Client) IscsiSessionCollectionGet(params *IscsiSessionCollectionGetPara
 }
 
 /*
-  IscsiSessionGet Retrieves an iSCSI session.
+	IscsiSessionGet Retrieves an iSCSI session.
+
 ### Related ONTAP commands
 * `vserver iscsi connection show`
 * `vserver iscsi session parameter show`
 * `vserver iscsi session show`
 ### Learn more
 * [`DOC /protocols/san/iscsi/sessions`](#docs-SAN-protocols_san_iscsi_sessions)
-
 */
 func (a *Client) IscsiSessionGet(params *IscsiSessionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiSessionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1766,10 +1766,10 @@ func (a *Client) IscsiSessionGet(params *IscsiSessionGetParams, authInfo runtime
 }
 
 /*
-  LunAttributeCollectionGet Retrieves LUN attributes.
+	LunAttributeCollectionGet Retrieves LUN attributes.
+
 ### Learn more
 * [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
-
 */
 func (a *Client) LunAttributeCollectionGet(params *LunAttributeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1807,13 +1807,13 @@ func (a *Client) LunAttributeCollectionGet(params *LunAttributeCollectionGetPara
 }
 
 /*
-  LunAttributeCreate Adds an attribute to a LUN.
+	LunAttributeCreate Adds an attribute to a LUN.
+
 ### Required properties
 * `name` - The name of the attribute to add.
 * `value` - The value of the attribute to add.
 ### Learn more
 * [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
-
 */
 func (a *Client) LunAttributeCreate(params *LunAttributeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1851,10 +1851,10 @@ func (a *Client) LunAttributeCreate(params *LunAttributeCreateParams, authInfo r
 }
 
 /*
-  LunAttributeDelete Deletes a LUN attribute.
+	LunAttributeDelete Deletes a LUN attribute.
+
 ### Learn more
 * [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
-
 */
 func (a *Client) LunAttributeDelete(params *LunAttributeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1892,10 +1892,10 @@ func (a *Client) LunAttributeDelete(params *LunAttributeDeleteParams, authInfo r
 }
 
 /*
-  LunAttributeGet Retrieves a LUN attribute.
+	LunAttributeGet Retrieves a LUN attribute.
+
 ### Learn more
 * [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
-
 */
 func (a *Client) LunAttributeGet(params *LunAttributeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1933,10 +1933,10 @@ func (a *Client) LunAttributeGet(params *LunAttributeGetParams, authInfo runtime
 }
 
 /*
-  LunAttributeModify Updates a LUN attribute value.
+	LunAttributeModify Updates a LUN attribute value.
+
 ### Learn more
 * [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
-
 */
 func (a *Client) LunAttributeModify(params *LunAttributeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1974,7 +1974,8 @@ func (a *Client) LunAttributeModify(params *LunAttributeModifyParams, authInfo r
 }
 
 /*
-  LunCollectionGet Retrieves LUNs.
+	LunCollectionGet Retrieves LUNs.
+
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `attributes.*`
@@ -1994,7 +1995,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `volume file clone show-autodelete`
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
-
 */
 func (a *Client) LunCollectionGet(params *LunCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2032,7 +2032,7 @@ func (a *Client) LunCollectionGet(params *LunCollectionGetParams, authInfo runti
 }
 
 /*
-  LunCollectionPerformanceMetricsGet Retrieves historical performance metrics for a LUN.
+LunCollectionPerformanceMetricsGet Retrieves historical performance metrics for a LUN.
 */
 func (a *Client) LunCollectionPerformanceMetricsGet(params *LunCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCollectionPerformanceMetricsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2070,7 +2070,8 @@ func (a *Client) LunCollectionPerformanceMetricsGet(params *LunCollectionPerform
 }
 
 /*
-  LunCreate Creates a LUN.
+	LunCreate Creates a LUN.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the LUN.
 * `name`, `location.volume.name` or `location.volume.uuid` - Existing volume in which to create the LUN.
@@ -2090,7 +2091,6 @@ If not specified in POST, the follow default property values are assigned.
 * `volume file clone create`
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
-
 */
 func (a *Client) LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2128,13 +2128,13 @@ func (a *Client) LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  LunDelete Deletes a LUN.
+	LunDelete Deletes a LUN.
+
 ### Related ONTAP commands
 * `lun copy cancel`
 * `lun delete`
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
-
 */
 func (a *Client) LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2172,7 +2172,8 @@ func (a *Client) LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  LunGet Retrieves a LUN's properties or a LUN's data.<br/>
+	LunGet Retrieves a LUN's properties or a LUN's data.<br/>
+
 LUN data read requests are distinguished by the header entry `Accept: multipart/form-data`. When this header entry is provided, query parameters `data.offset` and `data.size` are required and used to specify the portion of the LUN's data to read; no other query parameters are allowed. Reads are limited to one megabyte (1MB) per request. Data is returned as `multipart/form-data` content with exactly one form entry containing the data. The form entry has content type `application/octet-stream`.
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
@@ -2193,7 +2194,6 @@ There is an added cost to retrieving values for these properties. They are not i
 * `volume file clone show-autodelete`
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
-
 */
 func (a *Client) LunGet(params *LunGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2231,12 +2231,12 @@ func (a *Client) LunGet(params *LunGetParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-  LunMapCollectionGet Retrieves LUN maps.
+	LunMapCollectionGet Retrieves LUN maps.
+
 ### Related ONTAP commands
 * `lun mapping show`
 ### Learn more
 * [`DOC /protocols/san/lun-maps`](#docs-SAN-protocols_san_lun-maps)
-
 */
 func (a *Client) LunMapCollectionGet(params *LunMapCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2274,7 +2274,8 @@ func (a *Client) LunMapCollectionGet(params *LunMapCollectionGetParams, authInfo
 }
 
 /*
-  LunMapCreate Creates a LUN map.
+	LunMapCreate Creates a LUN map.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the LUN map.
 * `igroup.uuid` or `igroup.name` - Existing initiator group to map to the specified LUN.
@@ -2286,7 +2287,6 @@ If not specified in POST, the following default property values are assigned.
 * `lun mapping create`
 ### Learn more
 * [`DOC /protocols/san/lun-maps`](#docs-SAN-protocols_san_lun-maps)
-
 */
 func (a *Client) LunMapCreate(params *LunMapCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2324,12 +2324,12 @@ func (a *Client) LunMapCreate(params *LunMapCreateParams, authInfo runtime.Clien
 }
 
 /*
-  LunMapDelete Deletes a LUN map.
+	LunMapDelete Deletes a LUN map.
+
 ### Related ONTAP commands
 * `lun mapping delete`
 ### Learn more
 * [`DOC /protocols/san/lun-maps`](#docs-SAN-protocols_san_lun-maps)
-
 */
 func (a *Client) LunMapDelete(params *LunMapDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2367,12 +2367,12 @@ func (a *Client) LunMapDelete(params *LunMapDeleteParams, authInfo runtime.Clien
 }
 
 /*
-  LunMapGet Retrieves a LUN map.
+	LunMapGet Retrieves a LUN map.
+
 ### Related ONTAP commands
 * `lun mapping show`
 ### Learn more
 * [`DOC /protocols/san/lun-maps`](#docs-SAN-protocols_san_lun-maps)
-
 */
 func (a *Client) LunMapGet(params *LunMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2410,12 +2410,12 @@ func (a *Client) LunMapGet(params *LunMapGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  LunMapReportingNodeCollectionGet Retrieves LUN map reporting nodes.
+	LunMapReportingNodeCollectionGet Retrieves LUN map reporting nodes.
+
 ### Related ONTAP commands
 * `lun mapping show`
 ### Learn more
 * [`DOC /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes`](#docs-SAN-protocols_san_lun-maps_{lun.uuid}_{igroup.uuid}_reporting-nodes)
-
 */
 func (a *Client) LunMapReportingNodeCollectionGet(params *LunMapReportingNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2453,14 +2453,14 @@ func (a *Client) LunMapReportingNodeCollectionGet(params *LunMapReportingNodeCol
 }
 
 /*
-  LunMapReportingNodeCreate Adds a reporting node and its HA partner to a LUN map.
+	LunMapReportingNodeCreate Adds a reporting node and its HA partner to a LUN map.
+
 ### Required properties
 * `node.uuid` or `node.name` - A cluster node to add.
 ### Related ONTAP commands
 * `lun mapping add-reporting-nodes`
 ### Learn more
 * [`DOC /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes`](#docs-SAN-protocols_san_lun-maps_{lun.uuid}_{igroup.uuid}_reporting-nodes)
-
 */
 func (a *Client) LunMapReportingNodeCreate(params *LunMapReportingNodeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2498,12 +2498,12 @@ func (a *Client) LunMapReportingNodeCreate(params *LunMapReportingNodeCreatePara
 }
 
 /*
-  LunMapReportingNodeDelete Removes a reporting node and its HA partner from a LUN map.
+	LunMapReportingNodeDelete Removes a reporting node and its HA partner from a LUN map.
+
 ### Related ONTAP commands
 * `lun mapping remove-reporting-nodes`
 ### Learn more
 * [`DOC /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes`](#docs-SAN-protocols_san_lun-maps_{lun.uuid}_{igroup.uuid}_reporting-nodes)
-
 */
 func (a *Client) LunMapReportingNodeDelete(params *LunMapReportingNodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2541,12 +2541,12 @@ func (a *Client) LunMapReportingNodeDelete(params *LunMapReportingNodeDeletePara
 }
 
 /*
-  LunMapReportingNodeGet Retrieves a LUN map reporting node.
+	LunMapReportingNodeGet Retrieves a LUN map reporting node.
+
 ### Related ONTAP commands
 * `lun mapping show`
 ### Learn more
 * [`DOC /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes`](#docs-SAN-protocols_san_lun-maps_{lun.uuid}_{igroup.uuid}_reporting-nodes)
-
 */
 func (a *Client) LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2584,7 +2584,8 @@ func (a *Client) LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, au
 }
 
 /*
-  LunModify Updates an existing LUN in one of several ways:
+	LunModify Updates an existing LUN in one of several ways:
+
 - Updates the properties of a LUN.
 - Writes data to a LUN. LUN data write requests are distinguished by the header entry `Content-Type: multipart/form-data`. When this header entry is provided, query parameter `data.offset` is required and used to specify the location within the LUN at which to write the data; no other query parameters are allowed. The request body must be `multipart/form-data` content with exactly one form entry containing the data to write. The content type entry of the form data is ignored and always treated as `application/octet-stream`. Writes are limited to one megabyte (1MB) per request.
 - Overwrites the contents of a LUN as a clone of another.
@@ -2603,7 +2604,6 @@ func (a *Client) LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, au
 * `volume file clone autodelete`
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
-
 */
 func (a *Client) LunModify(params *LunModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -2641,12 +2641,12 @@ func (a *Client) LunModify(params *LunModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  PortsetCollectionGet Retrieves portsets.
+	PortsetCollectionGet Retrieves portsets.
+
 ### Related ONTAP commands
 * `lun portset show`
 ### Learn more
 * [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
-
 */
 func (a *Client) PortsetCollectionGet(params *PortsetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2684,7 +2684,8 @@ func (a *Client) PortsetCollectionGet(params *PortsetCollectionGetParams, authIn
 }
 
 /*
-  PortsetCreate Creates a portset.
+	PortsetCreate Creates a portset.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the portset.
 * `name` - Name of the portset.
@@ -2698,7 +2699,6 @@ If not specified in POST, the following default property values are assigned.
 * `lun portset create`
 ### Learn more
 * [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
-
 */
 func (a *Client) PortsetCreate(params *PortsetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2736,12 +2736,12 @@ func (a *Client) PortsetCreate(params *PortsetCreateParams, authInfo runtime.Cli
 }
 
 /*
-  PortsetDelete Deletes a portset.
+	PortsetDelete Deletes a portset.
+
 ### Related ONTAP commands
 * `lun portset delete`
 ### Learn more
 * [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
-
 */
 func (a *Client) PortsetDelete(params *PortsetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2779,12 +2779,12 @@ func (a *Client) PortsetDelete(params *PortsetDeleteParams, authInfo runtime.Cli
 }
 
 /*
-  PortsetGet Retrieves a portset.
+	PortsetGet Retrieves a portset.
+
 ### Related ONTAP commands
 * `lun portset show`
 ### Learn more
 * [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
-
 */
 func (a *Client) PortsetGet(params *PortsetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2822,12 +2822,12 @@ func (a *Client) PortsetGet(params *PortsetGetParams, authInfo runtime.ClientAut
 }
 
 /*
-  PortsetInterfaceCollectionGet Retrieves interfaces of a portset.
+	PortsetInterfaceCollectionGet Retrieves interfaces of a portset.
+
 ### Related ONTAP commands
 * `lun portset show`
 ### Learn more
 * [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
-
 */
 func (a *Client) PortsetInterfaceCollectionGet(params *PortsetInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2865,14 +2865,14 @@ func (a *Client) PortsetInterfaceCollectionGet(params *PortsetInterfaceCollectio
 }
 
 /*
-  PortsetInterfaceCreate Adds one or more interfaces to a portset.
+	PortsetInterfaceCreate Adds one or more interfaces to a portset.
+
 ### Required properties
 * `fc`, `ip` or `records` - Network interface(s) to add to the portset.
 ### Related ONTAP commands
 * `lun portset add`
 ### Learn more
 * [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
-
 */
 func (a *Client) PortsetInterfaceCreate(params *PortsetInterfaceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2910,12 +2910,12 @@ func (a *Client) PortsetInterfaceCreate(params *PortsetInterfaceCreateParams, au
 }
 
 /*
-  PortsetInterfaceDelete Deletes a network interface from a portset.
+	PortsetInterfaceDelete Deletes a network interface from a portset.
+
 ### Related ONTAP commands
 * `lun portset remove`
 ### Learn more
 * [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
-
 */
 func (a *Client) PortsetInterfaceDelete(params *PortsetInterfaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -2953,12 +2953,12 @@ func (a *Client) PortsetInterfaceDelete(params *PortsetInterfaceDeleteParams, au
 }
 
 /*
-  PortsetInterfaceGet Retrieves a network interface of a portset.
+	PortsetInterfaceGet Retrieves a network interface of a portset.
+
 ### Related ONTAP commands
 * `lun portset show`
 ### Learn more
 * [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
-
 */
 func (a *Client) PortsetInterfaceGet(params *PortsetInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2996,11 +2996,11 @@ func (a *Client) PortsetInterfaceGet(params *PortsetInterfaceGetParams, authInfo
 }
 
 /*
-  VvolBindingCollectionGet Retrieves vVol bindings.
+	VvolBindingCollectionGet Retrieves vVol bindings.
+
 ### Related ONTAP commands
 * `lun bind show`
 * [`DOC /protocols/san/vvol-bindings`](#docs-SAN-protocols_san_vvol-bindings)
-
 */
 func (a *Client) VvolBindingCollectionGet(params *VvolBindingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3038,7 +3038,8 @@ func (a *Client) VvolBindingCollectionGet(params *VvolBindingCollectionGetParams
 }
 
 /*
-  VvolBindingCreate Creates a vVol binding. The binding between any two specific LUNs is reference counted. When a binding is created that already exists, the binding count is incremented.
+	VvolBindingCreate Creates a vVol binding. The binding between any two specific LUNs is reference counted. When a binding is created that already exists, the binding count is incremented.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the vVol binding.
 * `protocol_endpoint.uuid` or `protocol_endpoint.name` - Existing class `protocol_endpoint` LUN to bind to the specified class `vvol` LUN.
@@ -3047,7 +3048,6 @@ func (a *Client) VvolBindingCollectionGet(params *VvolBindingCollectionGetParams
 * `lun bind create`
 ### Learn more
 * [`DOC /protocols/san/vvol-bindings`](#docs-SAN-protocols_san_vvol-bindings)
-
 */
 func (a *Client) VvolBindingCreate(params *VvolBindingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3085,12 +3085,12 @@ func (a *Client) VvolBindingCreate(params *VvolBindingCreateParams, authInfo run
 }
 
 /*
-  VvolBindingDelete Deletes a vVol binding. The binding between any two specific LUNs is reference counted. When a binding is deleted, the binding count is decremented, but the LUNs remain bound if the resultant reference count is greater than zero. When the binding count reaches zero, the binding is destroyed.
+	VvolBindingDelete Deletes a vVol binding. The binding between any two specific LUNs is reference counted. When a binding is deleted, the binding count is decremented, but the LUNs remain bound if the resultant reference count is greater than zero. When the binding count reaches zero, the binding is destroyed.
+
 ### Related ONTAP commands
 * `lun bind destroy`
 ### Learn more
 * [`DOC /protocols/san/vvol-bindings`](#docs-SAN-protocols_san_vvol-bindings)
-
 */
 func (a *Client) VvolBindingDelete(params *VvolBindingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3128,12 +3128,12 @@ func (a *Client) VvolBindingDelete(params *VvolBindingDeleteParams, authInfo run
 }
 
 /*
-  VvolBindingGet Retrieves a vVol binding.
+	VvolBindingGet Retrieves a vVol binding.
+
 ### Related ONTAP commands
 * `lun bind show`
 ### Learn more
 * [`DOC /protocols/san/vvol-bindings`](#docs-SAN-protocols_san_vvol-bindings)
-
 */
 func (a *Client) VvolBindingGet(params *VvolBindingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3171,12 +3171,12 @@ func (a *Client) VvolBindingGet(params *VvolBindingGetParams, authInfo runtime.C
 }
 
 /*
-  WwpnAliasCollectionGet Retrieves FC WWPN aliases.
+	WwpnAliasCollectionGet Retrieves FC WWPN aliases.
+
 ### Related ONTAP commands
 * `vserver fcp wwpn-alias show`
 ### Learn more
 * [`DOC /network/fc/wwpn-aliases`](#docs-SAN-network_fc_wwpn-aliases)
-
 */
 func (a *Client) WwpnAliasCollectionGet(params *WwpnAliasCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3214,7 +3214,8 @@ func (a *Client) WwpnAliasCollectionGet(params *WwpnAliasCollectionGetParams, au
 }
 
 /*
-  WwpnAliasCreate Creates an FC WWPN alias.
+	WwpnAliasCreate Creates an FC WWPN alias.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the FC alias.
 * `alias` - Name of the FC alias.
@@ -3223,7 +3224,6 @@ func (a *Client) WwpnAliasCollectionGet(params *WwpnAliasCollectionGetParams, au
 * `vserver fcp wwpn-alias set`
 ### Learn more
 * [`DOC /network/fc/wwpn-aliases`](#docs-SAN-network_fc_wwpn-aliases)
-
 */
 func (a *Client) WwpnAliasCreate(params *WwpnAliasCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -3261,12 +3261,12 @@ func (a *Client) WwpnAliasCreate(params *WwpnAliasCreateParams, authInfo runtime
 }
 
 /*
-  WwpnAliasDelete Deletes an FC WWPN alias.
+	WwpnAliasDelete Deletes an FC WWPN alias.
+
 ### Related ONTAP commands
 * `vserver fcp wwpn-alias remove`
 ### Learn more
 * [`DOC /network/fc/wwpn-aliases`](#docs-SAN-network_fc_wwpn-aliases)
-
 */
 func (a *Client) WwpnAliasDelete(params *WwpnAliasDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -3304,12 +3304,12 @@ func (a *Client) WwpnAliasDelete(params *WwpnAliasDeleteParams, authInfo runtime
 }
 
 /*
-  WwpnAliasGet Retrieves an FC WWPN alias.
+	WwpnAliasGet Retrieves an FC WWPN alias.
+
 ### Related ONTAP commands
 * `vserver fcp wwpn-alias show`
 ### Learn more
 * [`DOC /network/fc/wwpn-aliases`](#docs-SAN-network_fc_wwpn-aliases)
-
 */
 func (a *Client) WwpnAliasGet(params *WwpnAliasGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasGetOK, error) {
 	// TODO: Validate the params before sending

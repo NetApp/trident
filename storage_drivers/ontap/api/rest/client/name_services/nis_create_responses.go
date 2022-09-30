@@ -46,7 +46,8 @@ func NewNisCreateCreated() *NisCreateCreated {
 	return &NisCreateCreated{}
 }
 
-/* NisCreateCreated describes a response with status code 201, with default header values.
+/*
+NisCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type NisCreateCreated struct {
 	Payload *models.NisServiceResponse
 }
 
+// IsSuccess returns true when this nis create created response has a 2xx status code
+func (o *NisCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nis create created response has a 3xx status code
+func (o *NisCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nis create created response has a 4xx status code
+func (o *NisCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nis create created response has a 5xx status code
+func (o *NisCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nis create created response a status code equal to that given
+func (o *NisCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *NisCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /name-services/nis][%d] nisCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *NisCreateCreated) String() string {
+	return fmt.Sprintf("[POST /name-services/nis][%d] nisCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *NisCreateCreated) GetPayload() *models.NisServiceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewNisCreateDefault(code int) *NisCreateDefault {
 	}
 }
 
-/* NisCreateDefault describes a response with status code -1, with default header values.
+/*
+	NisCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1966253    | IPv6 is not enabled in the cluster |
@@ -95,7 +128,6 @@ func NewNisCreateDefault(code int) *NisCreateDefault {
 | 23724112   | DNS resolution failed due to an internal error. Contact technical support if this issue persists  |
 | 23724132   | DNS resolution failed for all the specified servers  |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
-
 */
 type NisCreateDefault struct {
 	_statusCode int
@@ -108,9 +140,39 @@ func (o *NisCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nis create default response has a 2xx status code
+func (o *NisCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nis create default response has a 3xx status code
+func (o *NisCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nis create default response has a 4xx status code
+func (o *NisCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nis create default response has a 5xx status code
+func (o *NisCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nis create default response a status code equal to that given
+func (o *NisCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NisCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /name-services/nis][%d] nis_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NisCreateDefault) String() string {
+	return fmt.Sprintf("[POST /name-services/nis][%d] nis_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NisCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

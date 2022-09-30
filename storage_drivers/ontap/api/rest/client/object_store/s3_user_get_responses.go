@@ -46,7 +46,8 @@ func NewS3UserGetOK() *S3UserGetOK {
 	return &S3UserGetOK{}
 }
 
-/* S3UserGetOK describes a response with status code 200, with default header values.
+/*
+S3UserGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type S3UserGetOK struct {
 	Payload *models.S3User
 }
 
+// IsSuccess returns true when this s3 user get o k response has a 2xx status code
+func (o *S3UserGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 user get o k response has a 3xx status code
+func (o *S3UserGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 user get o k response has a 4xx status code
+func (o *S3UserGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 user get o k response has a 5xx status code
+func (o *S3UserGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 user get o k response a status code equal to that given
+func (o *S3UserGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3UserGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3UserGetOK  %+v", 200, o.Payload)
 }
+
+func (o *S3UserGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3UserGetOK  %+v", 200, o.Payload)
+}
+
 func (o *S3UserGetOK) GetPayload() *models.S3User {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewS3UserGetDefault(code int) *S3UserGetDefault {
 	}
 }
 
-/* S3UserGetDefault describes a response with status code -1, with default header values.
+/*
+S3UserGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *S3UserGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 user get default response has a 2xx status code
+func (o *S3UserGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 user get default response has a 3xx status code
+func (o *S3UserGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 user get default response has a 4xx status code
+func (o *S3UserGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 user get default response has a 5xx status code
+func (o *S3UserGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 user get default response a status code equal to that given
+func (o *S3UserGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3UserGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3_user_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3UserGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/services/{svm.uuid}/users/{name}][%d] s3_user_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3UserGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

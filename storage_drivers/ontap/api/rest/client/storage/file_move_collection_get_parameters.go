@@ -53,10 +53,12 @@ func NewFileMoveCollectionGetParamsWithHTTPClient(client *http.Client) *FileMove
 	}
 }
 
-/* FileMoveCollectionGetParams contains all the parameters to send to the API endpoint
-   for the file move collection get operation.
+/*
+FileMoveCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file move collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type FileMoveCollectionGetParams struct {
 

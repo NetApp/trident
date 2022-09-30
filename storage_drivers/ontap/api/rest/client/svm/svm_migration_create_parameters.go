@@ -55,10 +55,12 @@ func NewSvmMigrationCreateParamsWithHTTPClient(client *http.Client) *SvmMigratio
 	}
 }
 
-/* SvmMigrationCreateParams contains all the parameters to send to the API endpoint
-   for the svm migration create operation.
+/*
+SvmMigrationCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm migration create operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmMigrationCreateParams struct {
 

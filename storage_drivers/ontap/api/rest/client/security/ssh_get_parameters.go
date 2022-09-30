@@ -52,10 +52,12 @@ func NewSSHGetParamsWithHTTPClient(client *http.Client) *SSHGetParams {
 	}
 }
 
-/* SSHGetParams contains all the parameters to send to the API endpoint
-   for the ssh get operation.
+/*
+SSHGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ssh get operation.
+
+	Typically these are written to a http.Request.
 */
 type SSHGetParams struct {
 	timeout    time.Duration

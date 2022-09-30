@@ -275,7 +275,6 @@ func (m *FpolicyEvent) UnmarshalBinary(b []byte) error {
 // FpolicyEventFileOperations Specifies the file operations for the FPolicy event. You must specify a valid protocol in the protocol parameter.
 // The event will check the operations specified from all client requests using the protocol.
 //
-//
 // swagger:model FpolicyEventFileOperations
 type FpolicyEventFileOperations struct {
 
@@ -355,7 +354,6 @@ func (m *FpolicyEventFileOperations) UnmarshalBinary(b []byte) error {
 
 // FpolicyEventFilters Specifies the list of filters for a given file operation for the specified protocol.
 // When you specify the filters, you must specify the valid protocols and a valid file operations.
-//
 //
 // swagger:model FpolicyEventFilters
 type FpolicyEventFilters struct {

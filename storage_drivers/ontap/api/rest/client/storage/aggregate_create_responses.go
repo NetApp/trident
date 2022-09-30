@@ -46,7 +46,8 @@ func NewAggregateCreateAccepted() *AggregateCreateAccepted {
 	return &AggregateCreateAccepted{}
 }
 
-/* AggregateCreateAccepted describes a response with status code 202, with default header values.
+/*
+AggregateCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type AggregateCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this aggregate create accepted response has a 2xx status code
+func (o *AggregateCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aggregate create accepted response has a 3xx status code
+func (o *AggregateCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aggregate create accepted response has a 4xx status code
+func (o *AggregateCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aggregate create accepted response has a 5xx status code
+func (o *AggregateCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aggregate create accepted response a status code equal to that given
+func (o *AggregateCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *AggregateCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *AggregateCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregateCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *AggregateCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewAggregateCreateDefault(code int) *AggregateCreateDefault {
 	}
 }
 
-/* AggregateCreateDefault describes a response with status code -1, with default header values.
+/*
+	AggregateCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 460770 | The aggregate create job failed to create the aggregate. |
@@ -112,7 +145,6 @@ func NewAggregateCreateDefault(code int) *AggregateCreateDefault {
 | 19726403 | Aggregate recommendation is not supported when there are no healthy target connections to remote storage. |
 | 196608055 | Aggregate recommendation is not supported on this node because it does not support NetApp Aggregate Encryption (NAE). |
 | 196608206 | Internal error. Failed to get encryption operation status. |
-
 */
 type AggregateCreateDefault struct {
 	_statusCode int
@@ -125,9 +157,39 @@ func (o *AggregateCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this aggregate create default response has a 2xx status code
+func (o *AggregateCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this aggregate create default response has a 3xx status code
+func (o *AggregateCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this aggregate create default response has a 4xx status code
+func (o *AggregateCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this aggregate create default response has a 5xx status code
+func (o *AggregateCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this aggregate create default response a status code equal to that given
+func (o *AggregateCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AggregateCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregate_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AggregateCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/aggregates][%d] aggregate_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AggregateCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

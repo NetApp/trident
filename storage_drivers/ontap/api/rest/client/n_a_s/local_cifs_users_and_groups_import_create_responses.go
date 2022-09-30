@@ -46,7 +46,8 @@ func NewLocalCifsUsersAndGroupsImportCreateAccepted() *LocalCifsUsersAndGroupsIm
 	return &LocalCifsUsersAndGroupsImportCreateAccepted{}
 }
 
-/* LocalCifsUsersAndGroupsImportCreateAccepted describes a response with status code 202, with default header values.
+/*
+LocalCifsUsersAndGroupsImportCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type LocalCifsUsersAndGroupsImportCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this local cifs users and groups import create accepted response has a 2xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local cifs users and groups import create accepted response has a 3xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local cifs users and groups import create accepted response has a 4xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local cifs users and groups import create accepted response has a 5xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local cifs users and groups import create accepted response a status code equal to that given
+func (o *LocalCifsUsersAndGroupsImportCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *LocalCifsUsersAndGroupsImportCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *LocalCifsUsersAndGroupsImportCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] localCifsUsersAndGroupsImportCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *LocalCifsUsersAndGroupsImportCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewLocalCifsUsersAndGroupsImportCreateDefault(code int) *LocalCifsUsersAndG
 	}
 }
 
-/* LocalCifsUsersAndGroupsImportCreateDefault describes a response with status code -1, with default header values.
+/*
+	LocalCifsUsersAndGroupsImportCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 655688     | Invalid file decryption password. Valid password characters are: a-z, A-Z, and 0-9. |
@@ -105,7 +138,6 @@ func NewLocalCifsUsersAndGroupsImportCreateDefault(code int) *LocalCifsUsersAndG
 | 655701     | Unknown element type. |
 | 655702     | Invalid URI. |
 | 655703     | Failed to download the import file. Network error occured. |
-
 */
 type LocalCifsUsersAndGroupsImportCreateDefault struct {
 	_statusCode int
@@ -118,9 +150,39 @@ func (o *LocalCifsUsersAndGroupsImportCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this local cifs users and groups import create default response has a 2xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this local cifs users and groups import create default response has a 3xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this local cifs users and groups import create default response has a 4xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this local cifs users and groups import create default response has a 5xx status code
+func (o *LocalCifsUsersAndGroupsImportCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this local cifs users and groups import create default response a status code equal to that given
+func (o *LocalCifsUsersAndGroupsImportCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LocalCifsUsersAndGroupsImportCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LocalCifsUsersAndGroupsImportCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/bulk-import/{svm.uuid}][%d] local_cifs_users_and_groups_import_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LocalCifsUsersAndGroupsImportCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

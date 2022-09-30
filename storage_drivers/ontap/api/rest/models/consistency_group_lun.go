@@ -21,7 +21,6 @@ import (
 // A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, and moved to a different volume. LUNs support the assignment of a quality of service (QoS) policy for performance management or a QoS policy can be assigned to the volume containing the LUN. See the LUN object model to learn more about each of the properties supported by the LUN REST API.<br/>
 // A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the Fibre Channel Protocol or a TCP/IP network using iSCSI.
 //
-//
 // swagger:model consistency_group_lun
 type ConsistencyGroupLun struct {
 
@@ -596,7 +595,6 @@ func (m *ConsistencyGroupLun) UnmarshalBinary(b []byte) error {
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
 // Persistent reservations for the patched LUN are also preserved.
 //
-//
 // swagger:model ConsistencyGroupLunClone
 type ConsistencyGroupLunClone struct {
 
@@ -685,7 +683,6 @@ func (m *ConsistencyGroupLunClone) UnmarshalBinary(b []byte) error {
 // Valid in POST to create a new LUN as a clone of the source.<br/>
 // Valid in PATCH to overwrite an existing LUN's data as a clone of another.
 //
-//
 // swagger:model ConsistencyGroupLunCloneSource
 type ConsistencyGroupLunCloneSource struct {
 
@@ -730,7 +727,6 @@ func (m *ConsistencyGroupLunCloneSource) UnmarshalBinary(b []byte) error {
 
 // ConsistencyGroupLunLunMapsItems0 A LUN map is an association between a LUN and an initiator group.<br/>
 // When a LUN is mapped to an initiator group, the initiator group's initiators are granted access to the LUN. The relationship between a LUN and an initiator group is many LUNs to many initiator groups.
-//
 //
 // swagger:model ConsistencyGroupLunLunMapsItems0
 type ConsistencyGroupLunLunMapsItems0 struct {
@@ -821,7 +817,6 @@ func (m *ConsistencyGroupLunLunMapsItems0) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupLunLunMapsItems0Igroup The initiator group that directly owns the initiator, which is where modification of the initiator is supported. This property will only be populated when the initiator is a member of a nested initiator group.
-//
 //
 // swagger:model ConsistencyGroupLunLunMapsItems0Igroup
 type ConsistencyGroupLunLunMapsItems0Igroup struct {
@@ -1639,7 +1634,6 @@ func (m *ConsistencyGroupLunQos) UnmarshalBinary(b []byte) error {
 
 // ConsistencyGroupLunQosPolicy The QoS policy
 //
-//
 // swagger:model ConsistencyGroupLunQosPolicy
 type ConsistencyGroupLunQosPolicy struct {
 
@@ -1749,7 +1743,6 @@ func (m *ConsistencyGroupLunQosPolicy) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupLunSpaceType The storage space related properties of the LUN.
-//
 //
 // swagger:model ConsistencyGroupLunSpaceType
 type ConsistencyGroupLunSpaceType struct {
@@ -1871,7 +1864,6 @@ func (m *ConsistencyGroupLunSpaceType) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupLunSpaceTypeGuaranteeType Properties that request and report the space guarantee for the LUN.
-//
 //
 // swagger:model ConsistencyGroupLunSpaceTypeGuaranteeType
 type ConsistencyGroupLunSpaceTypeGuaranteeType struct {

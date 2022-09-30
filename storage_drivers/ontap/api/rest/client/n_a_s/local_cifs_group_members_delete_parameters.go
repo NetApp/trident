@@ -52,10 +52,12 @@ func NewLocalCifsGroupMembersDeleteParamsWithHTTPClient(client *http.Client) *Lo
 	}
 }
 
-/* LocalCifsGroupMembersDeleteParams contains all the parameters to send to the API endpoint
-   for the local cifs group members delete operation.
+/*
+LocalCifsGroupMembersDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the local cifs group members delete operation.
+
+	Typically these are written to a http.Request.
 */
 type LocalCifsGroupMembersDeleteParams struct {
 

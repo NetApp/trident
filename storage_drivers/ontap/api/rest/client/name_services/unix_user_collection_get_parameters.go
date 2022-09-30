@@ -53,10 +53,12 @@ func NewUnixUserCollectionGetParamsWithHTTPClient(client *http.Client) *UnixUser
 	}
 }
 
-/* UnixUserCollectionGetParams contains all the parameters to send to the API endpoint
-   for the unix user collection get operation.
+/*
+UnixUserCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the unix user collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type UnixUserCollectionGetParams struct {
 

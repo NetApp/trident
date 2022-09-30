@@ -46,14 +46,44 @@ func NewExportPolicyDeleteOK() *ExportPolicyDeleteOK {
 	return &ExportPolicyDeleteOK{}
 }
 
-/* ExportPolicyDeleteOK describes a response with status code 200, with default header values.
+/*
+ExportPolicyDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ExportPolicyDeleteOK struct {
 }
 
+// IsSuccess returns true when this export policy delete o k response has a 2xx status code
+func (o *ExportPolicyDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this export policy delete o k response has a 3xx status code
+func (o *ExportPolicyDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this export policy delete o k response has a 4xx status code
+func (o *ExportPolicyDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this export policy delete o k response has a 5xx status code
+func (o *ExportPolicyDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this export policy delete o k response a status code equal to that given
+func (o *ExportPolicyDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ExportPolicyDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] exportPolicyDeleteOK ", 200)
+}
+
+func (o *ExportPolicyDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] exportPolicyDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewExportPolicyDeleteDefault(code int) *ExportPolicyDeleteDefault {
 	}
 }
 
-/* ExportPolicyDeleteDefault describes a response with status code -1, with default header values.
+/*
+	ExportPolicyDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1703944    | Failed to delete rule |
@@ -80,7 +112,6 @@ func NewExportPolicyDeleteDefault(code int) *ExportPolicyDeleteDefault {
 | 1703947    | Cannot delete default ruleset.  This ruleset will be deleted when the owning Vserver is deleted|
 | 1703952    | Invalid ruleset name provided. No spaces are allowed in a ruleset name|
 | 1703953    | This ruleset is in use by a qtree export policy.  It cannot be deleted until all qtree policies that refer to it are first deleted|
-
 */
 type ExportPolicyDeleteDefault struct {
 	_statusCode int
@@ -93,9 +124,39 @@ func (o *ExportPolicyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this export policy delete default response has a 2xx status code
+func (o *ExportPolicyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this export policy delete default response has a 3xx status code
+func (o *ExportPolicyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this export policy delete default response has a 4xx status code
+func (o *ExportPolicyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this export policy delete default response has a 5xx status code
+func (o *ExportPolicyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this export policy delete default response a status code equal to that given
+func (o *ExportPolicyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ExportPolicyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] export_policy_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ExportPolicyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{id}][%d] export_policy_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ExportPolicyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

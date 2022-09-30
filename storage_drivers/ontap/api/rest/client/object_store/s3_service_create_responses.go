@@ -46,7 +46,8 @@ func NewS3ServiceCreateCreated() *S3ServiceCreateCreated {
 	return &S3ServiceCreateCreated{}
 }
 
-/* S3ServiceCreateCreated describes a response with status code 201, with default header values.
+/*
+S3ServiceCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type S3ServiceCreateCreated struct {
 	Payload *models.S3ServicePostResponse
 }
 
+// IsSuccess returns true when this s3 service create created response has a 2xx status code
+func (o *S3ServiceCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 service create created response has a 3xx status code
+func (o *S3ServiceCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 service create created response has a 4xx status code
+func (o *S3ServiceCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 service create created response has a 5xx status code
+func (o *S3ServiceCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 service create created response a status code equal to that given
+func (o *S3ServiceCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *S3ServiceCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/services][%d] s3ServiceCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *S3ServiceCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/services][%d] s3ServiceCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *S3ServiceCreateCreated) GetPayload() *models.S3ServicePostResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewS3ServiceCreateDefault(code int) *S3ServiceCreateDefault {
 	}
 }
 
-/* S3ServiceCreateDefault describes a response with status code -1, with default header values.
+/*
+	S3ServiceCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name. |
@@ -92,7 +125,6 @@ func NewS3ServiceCreateDefault(code int) *S3ServiceCreateDefault {
 | 92405853   | Failed to create the object store server because Cloud Volumes ONTAP does not support object store servers. |
 | 92405863   | An error occurs when creating an S3 user or bucket. The reason for failure is detailed in the error message. Follow the error codes specified for the user or bucket endpoints to see details for the failure. |
 | 92405884   | An object store server can only be created on a data SVM. An object store server can also be created on a system SVM on a mixed platform cluster. |
-
 */
 type S3ServiceCreateDefault struct {
 	_statusCode int
@@ -105,9 +137,39 @@ func (o *S3ServiceCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 service create default response has a 2xx status code
+func (o *S3ServiceCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 service create default response has a 3xx status code
+func (o *S3ServiceCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 service create default response has a 4xx status code
+func (o *S3ServiceCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 service create default response has a 5xx status code
+func (o *S3ServiceCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 service create default response a status code equal to that given
+func (o *S3ServiceCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3ServiceCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/services][%d] s3_service_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3ServiceCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/services][%d] s3_service_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3ServiceCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

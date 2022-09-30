@@ -55,10 +55,12 @@ func NewSnapmirrorRelationshipModifyParamsWithHTTPClient(client *http.Client) *S
 	}
 }
 
-/* SnapmirrorRelationshipModifyParams contains all the parameters to send to the API endpoint
-   for the snapmirror relationship modify operation.
+/*
+SnapmirrorRelationshipModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snapmirror relationship modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SnapmirrorRelationshipModifyParams struct {
 

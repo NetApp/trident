@@ -53,10 +53,12 @@ func NewIgroupNestedCollectionGetParamsWithHTTPClient(client *http.Client) *Igro
 	}
 }
 
-/* IgroupNestedCollectionGetParams contains all the parameters to send to the API endpoint
-   for the igroup nested collection get operation.
+/*
+IgroupNestedCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the igroup nested collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type IgroupNestedCollectionGetParams struct {
 

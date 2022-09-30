@@ -46,7 +46,8 @@ func NewClusterNisGetOK() *ClusterNisGetOK {
 	return &ClusterNisGetOK{}
 }
 
-/* ClusterNisGetOK describes a response with status code 200, with default header values.
+/*
+ClusterNisGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ClusterNisGetOK struct {
 	Payload *models.ClusterNisService
 }
 
+// IsSuccess returns true when this cluster nis get o k response has a 2xx status code
+func (o *ClusterNisGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster nis get o k response has a 3xx status code
+func (o *ClusterNisGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster nis get o k response has a 4xx status code
+func (o *ClusterNisGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster nis get o k response has a 5xx status code
+func (o *ClusterNisGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster nis get o k response a status code equal to that given
+func (o *ClusterNisGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterNisGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] clusterNisGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ClusterNisGetOK) String() string {
+	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] clusterNisGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ClusterNisGetOK) GetPayload() *models.ClusterNisService {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewClusterNisGetDefault(code int) *ClusterNisGetDefault {
 	}
 }
 
-/* ClusterNisGetDefault describes a response with status code -1, with default header values.
+/*
+ClusterNisGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ClusterNisGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster nis get default response has a 2xx status code
+func (o *ClusterNisGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster nis get default response has a 3xx status code
+func (o *ClusterNisGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster nis get default response has a 4xx status code
+func (o *ClusterNisGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster nis get default response has a 5xx status code
+func (o *ClusterNisGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster nis get default response a status code equal to that given
+func (o *ClusterNisGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNisGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] cluster_nis_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNisGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/authentication/cluster/nis][%d] cluster_nis_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNisGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

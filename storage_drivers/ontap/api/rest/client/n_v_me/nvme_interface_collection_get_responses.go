@@ -46,7 +46,8 @@ func NewNvmeInterfaceCollectionGetOK() *NvmeInterfaceCollectionGetOK {
 	return &NvmeInterfaceCollectionGetOK{}
 }
 
-/* NvmeInterfaceCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NvmeInterfaceCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NvmeInterfaceCollectionGetOK struct {
 	Payload *models.NvmeInterfaceResponse
 }
 
+// IsSuccess returns true when this nvme interface collection get o k response has a 2xx status code
+func (o *NvmeInterfaceCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme interface collection get o k response has a 3xx status code
+func (o *NvmeInterfaceCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme interface collection get o k response has a 4xx status code
+func (o *NvmeInterfaceCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme interface collection get o k response has a 5xx status code
+func (o *NvmeInterfaceCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme interface collection get o k response a status code equal to that given
+func (o *NvmeInterfaceCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeInterfaceCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvmeInterfaceCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NvmeInterfaceCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvmeInterfaceCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NvmeInterfaceCollectionGetOK) GetPayload() *models.NvmeInterfaceResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNvmeInterfaceCollectionGetDefault(code int) *NvmeInterfaceCollectionGetD
 	}
 }
 
-/* NvmeInterfaceCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+NvmeInterfaceCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NvmeInterfaceCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme interface collection get default response has a 2xx status code
+func (o *NvmeInterfaceCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme interface collection get default response has a 3xx status code
+func (o *NvmeInterfaceCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme interface collection get default response has a 4xx status code
+func (o *NvmeInterfaceCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme interface collection get default response has a 5xx status code
+func (o *NvmeInterfaceCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme interface collection get default response a status code equal to that given
+func (o *NvmeInterfaceCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeInterfaceCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvme_interface_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeInterfaceCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/interfaces][%d] nvme_interface_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeInterfaceCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

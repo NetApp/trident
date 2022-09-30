@@ -46,14 +46,44 @@ func NewNetworkEthernetBroadcastDomainsCreateCreated() *NetworkEthernetBroadcast
 	return &NetworkEthernetBroadcastDomainsCreateCreated{}
 }
 
-/* NetworkEthernetBroadcastDomainsCreateCreated describes a response with status code 201, with default header values.
+/*
+NetworkEthernetBroadcastDomainsCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type NetworkEthernetBroadcastDomainsCreateCreated struct {
 }
 
+// IsSuccess returns true when this network ethernet broadcast domains create created response has a 2xx status code
+func (o *NetworkEthernetBroadcastDomainsCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network ethernet broadcast domains create created response has a 3xx status code
+func (o *NetworkEthernetBroadcastDomainsCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network ethernet broadcast domains create created response has a 4xx status code
+func (o *NetworkEthernetBroadcastDomainsCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network ethernet broadcast domains create created response has a 5xx status code
+func (o *NetworkEthernetBroadcastDomainsCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network ethernet broadcast domains create created response a status code equal to that given
+func (o *NetworkEthernetBroadcastDomainsCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *NetworkEthernetBroadcastDomainsCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] networkEthernetBroadcastDomainsCreateCreated ", 201)
+}
+
+func (o *NetworkEthernetBroadcastDomainsCreateCreated) String() string {
 	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] networkEthernetBroadcastDomainsCreateCreated ", 201)
 }
 
@@ -69,16 +99,17 @@ func NewNetworkEthernetBroadcastDomainsCreateDefault(code int) *NetworkEthernetB
 	}
 }
 
-/* NetworkEthernetBroadcastDomainsCreateDefault describes a response with status code -1, with default header values.
+/*
+	NetworkEthernetBroadcastDomainsCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1377267 | The specified IPspace does not exist. |
 | 1967082 | The specified ipspace.name does not match the IPspace name of ipspace.uuid. |
 | 1967102 | A POST operation might have left the configuration in an inconsistent state. Check the configuration. |
 | 53281982 | The specified broadcast domain name is reserved by the system. |
-
 */
 type NetworkEthernetBroadcastDomainsCreateDefault struct {
 	_statusCode int
@@ -91,9 +122,39 @@ func (o *NetworkEthernetBroadcastDomainsCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ethernet broadcast domains create default response has a 2xx status code
+func (o *NetworkEthernetBroadcastDomainsCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ethernet broadcast domains create default response has a 3xx status code
+func (o *NetworkEthernetBroadcastDomainsCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ethernet broadcast domains create default response has a 4xx status code
+func (o *NetworkEthernetBroadcastDomainsCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ethernet broadcast domains create default response has a 5xx status code
+func (o *NetworkEthernetBroadcastDomainsCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ethernet broadcast domains create default response a status code equal to that given
+func (o *NetworkEthernetBroadcastDomainsCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkEthernetBroadcastDomainsCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] network_ethernet_broadcast_domains_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkEthernetBroadcastDomainsCreateDefault) String() string {
+	return fmt.Sprintf("[POST /network/ethernet/broadcast-domains][%d] network_ethernet_broadcast_domains_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkEthernetBroadcastDomainsCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

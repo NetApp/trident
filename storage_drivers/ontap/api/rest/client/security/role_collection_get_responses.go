@@ -46,7 +46,8 @@ func NewRoleCollectionGetOK() *RoleCollectionGetOK {
 	return &RoleCollectionGetOK{}
 }
 
-/* RoleCollectionGetOK describes a response with status code 200, with default header values.
+/*
+RoleCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type RoleCollectionGetOK struct {
 	Payload *models.RoleResponse
 }
 
+// IsSuccess returns true when this role collection get o k response has a 2xx status code
+func (o *RoleCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this role collection get o k response has a 3xx status code
+func (o *RoleCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this role collection get o k response has a 4xx status code
+func (o *RoleCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this role collection get o k response has a 5xx status code
+func (o *RoleCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this role collection get o k response a status code equal to that given
+func (o *RoleCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *RoleCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/roles][%d] roleCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *RoleCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/roles][%d] roleCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *RoleCollectionGetOK) GetPayload() *models.RoleResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewRoleCollectionGetDefault(code int) *RoleCollectionGetDefault {
 	}
 }
 
-/* RoleCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+RoleCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *RoleCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this role collection get default response has a 2xx status code
+func (o *RoleCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this role collection get default response has a 3xx status code
+func (o *RoleCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this role collection get default response has a 4xx status code
+func (o *RoleCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this role collection get default response has a 5xx status code
+func (o *RoleCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this role collection get default response a status code equal to that given
+func (o *RoleCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *RoleCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/roles][%d] role_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *RoleCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/roles][%d] role_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *RoleCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewLdapSchemaModifyOK() *LdapSchemaModifyOK {
 	return &LdapSchemaModifyOK{}
 }
 
-/* LdapSchemaModifyOK describes a response with status code 200, with default header values.
+/*
+LdapSchemaModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LdapSchemaModifyOK struct {
 }
 
+// IsSuccess returns true when this ldap schema modify o k response has a 2xx status code
+func (o *LdapSchemaModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ldap schema modify o k response has a 3xx status code
+func (o *LdapSchemaModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ldap schema modify o k response has a 4xx status code
+func (o *LdapSchemaModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ldap schema modify o k response has a 5xx status code
+func (o *LdapSchemaModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ldap schema modify o k response a status code equal to that given
+func (o *LdapSchemaModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LdapSchemaModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaModifyOK ", 200)
+}
+
+func (o *LdapSchemaModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaModifyOK ", 200)
 }
 
@@ -69,15 +99,16 @@ func NewLdapSchemaModifyDefault(code int) *LdapSchemaModifyDefault {
 	}
 }
 
-/* LdapSchemaModifyDefault describes a response with status code -1, with default header values.
+/*
+	LdapSchemaModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4915205    | The LDAP schema is a default schema and cannot be modified or deleted. |
 | 4915217    | LDAP schema is owned by the admin SVM. |
 | 4915223    | LDAP schema does not belong to the admin SVM. |
-
 */
 type LdapSchemaModifyDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *LdapSchemaModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ldap schema modify default response has a 2xx status code
+func (o *LdapSchemaModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ldap schema modify default response has a 3xx status code
+func (o *LdapSchemaModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ldap schema modify default response has a 4xx status code
+func (o *LdapSchemaModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ldap schema modify default response has a 5xx status code
+func (o *LdapSchemaModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ldap schema modify default response a status code equal to that given
+func (o *LdapSchemaModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LdapSchemaModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LdapSchemaModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LdapSchemaModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -18,7 +18,6 @@ import (
 // FcpService A Fibre Channel (FC) Protocol service defines the properties of the FC Protocol target for an SVM. There can be at most one FC Protocol service for an SVM. An SVM's FC Protocol service must be created before FC Protocol initiators can login to the SVM.<br/>
 // A FC Protocol service is identified by the UUID of its SVM.
 //
-//
 // swagger:model fcp_service
 type FcpService struct {
 

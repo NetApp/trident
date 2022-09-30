@@ -53,10 +53,12 @@ func NewLdapSchemaCollectionGetParamsWithHTTPClient(client *http.Client) *LdapSc
 	}
 }
 
-/* LdapSchemaCollectionGetParams contains all the parameters to send to the API endpoint
-   for the ldap schema collection get operation.
+/*
+LdapSchemaCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ldap schema collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type LdapSchemaCollectionGetParams struct {
 

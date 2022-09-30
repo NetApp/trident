@@ -46,7 +46,8 @@ func NewQuotaReportCollectionGetOK() *QuotaReportCollectionGetOK {
 	return &QuotaReportCollectionGetOK{}
 }
 
-/* QuotaReportCollectionGetOK describes a response with status code 200, with default header values.
+/*
+QuotaReportCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type QuotaReportCollectionGetOK struct {
 	Payload *models.QuotaReportResponse
 }
 
+// IsSuccess returns true when this quota report collection get o k response has a 2xx status code
+func (o *QuotaReportCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this quota report collection get o k response has a 3xx status code
+func (o *QuotaReportCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this quota report collection get o k response has a 4xx status code
+func (o *QuotaReportCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this quota report collection get o k response has a 5xx status code
+func (o *QuotaReportCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this quota report collection get o k response a status code equal to that given
+func (o *QuotaReportCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *QuotaReportCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/quota/reports][%d] quotaReportCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *QuotaReportCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/quota/reports][%d] quotaReportCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *QuotaReportCollectionGetOK) GetPayload() *models.QuotaReportResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewQuotaReportCollectionGetDefault(code int) *QuotaReportCollectionGetDefau
 	}
 }
 
-/* QuotaReportCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+QuotaReportCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *QuotaReportCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this quota report collection get default response has a 2xx status code
+func (o *QuotaReportCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this quota report collection get default response has a 3xx status code
+func (o *QuotaReportCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this quota report collection get default response has a 4xx status code
+func (o *QuotaReportCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this quota report collection get default response has a 5xx status code
+func (o *QuotaReportCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this quota report collection get default response a status code equal to that given
+func (o *QuotaReportCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QuotaReportCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/quota/reports][%d] quota_report_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QuotaReportCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/quota/reports][%d] quota_report_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QuotaReportCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

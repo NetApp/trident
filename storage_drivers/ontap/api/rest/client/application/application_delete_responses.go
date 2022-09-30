@@ -46,7 +46,8 @@ func NewApplicationDeleteAccepted() *ApplicationDeleteAccepted {
 	return &ApplicationDeleteAccepted{}
 }
 
-/* ApplicationDeleteAccepted describes a response with status code 202, with default header values.
+/*
+ApplicationDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type ApplicationDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this application delete accepted response has a 2xx status code
+func (o *ApplicationDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application delete accepted response has a 3xx status code
+func (o *ApplicationDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application delete accepted response has a 4xx status code
+func (o *ApplicationDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application delete accepted response has a 5xx status code
+func (o *ApplicationDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application delete accepted response a status code equal to that given
+func (o *ApplicationDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ApplicationDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /application/applications/{uuid}][%d] applicationDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ApplicationDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /application/applications/{uuid}][%d] applicationDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ApplicationDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewApplicationDeleteDefault(code int) *ApplicationDeleteDefault {
 	}
 }
 
-/* ApplicationDeleteDefault describes a response with status code -1, with default header values.
+/*
+ApplicationDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ApplicationDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this application delete default response has a 2xx status code
+func (o *ApplicationDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this application delete default response has a 3xx status code
+func (o *ApplicationDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this application delete default response has a 4xx status code
+func (o *ApplicationDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this application delete default response has a 5xx status code
+func (o *ApplicationDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this application delete default response a status code equal to that given
+func (o *ApplicationDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ApplicationDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /application/applications/{uuid}][%d] application_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ApplicationDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /application/applications/{uuid}][%d] application_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ApplicationDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewUnixUserGetOK() *UnixUserGetOK {
 	return &UnixUserGetOK{}
 }
 
-/* UnixUserGetOK describes a response with status code 200, with default header values.
+/*
+UnixUserGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type UnixUserGetOK struct {
 	Payload *models.UnixUser
 }
 
+// IsSuccess returns true when this unix user get o k response has a 2xx status code
+func (o *UnixUserGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix user get o k response has a 3xx status code
+func (o *UnixUserGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix user get o k response has a 4xx status code
+func (o *UnixUserGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix user get o k response has a 5xx status code
+func (o *UnixUserGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix user get o k response a status code equal to that given
+func (o *UnixUserGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixUserGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserGetOK  %+v", 200, o.Payload)
 }
+
+func (o *UnixUserGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unixUserGetOK  %+v", 200, o.Payload)
+}
+
 func (o *UnixUserGetOK) GetPayload() *models.UnixUser {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewUnixUserGetDefault(code int) *UnixUserGetDefault {
 	}
 }
 
-/* UnixUserGetDefault describes a response with status code -1, with default header values.
+/*
+UnixUserGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *UnixUserGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix user get default response has a 2xx status code
+func (o *UnixUserGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix user get default response has a 3xx status code
+func (o *UnixUserGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix user get default response has a 4xx status code
+func (o *UnixUserGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix user get default response has a 5xx status code
+func (o *UnixUserGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix user get default response a status code equal to that given
+func (o *UnixUserGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixUserGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixUserGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/unix-users/{svm.uuid}/{name}][%d] unix_user_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixUserGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

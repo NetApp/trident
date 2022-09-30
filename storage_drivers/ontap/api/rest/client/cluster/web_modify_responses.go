@@ -52,14 +52,44 @@ func NewWebModifyOK() *WebModifyOK {
 	return &WebModifyOK{}
 }
 
-/* WebModifyOK describes a response with status code 200, with default header values.
+/*
+WebModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type WebModifyOK struct {
 }
 
+// IsSuccess returns true when this web modify o k response has a 2xx status code
+func (o *WebModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this web modify o k response has a 3xx status code
+func (o *WebModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this web modify o k response has a 4xx status code
+func (o *WebModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this web modify o k response has a 5xx status code
+func (o *WebModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this web modify o k response a status code equal to that given
+func (o *WebModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *WebModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyOK ", 200)
+}
+
+func (o *WebModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyOK ", 200)
 }
 
@@ -73,7 +103,8 @@ func NewWebModifyAccepted() *WebModifyAccepted {
 	return &WebModifyAccepted{}
 }
 
-/* WebModifyAccepted describes a response with status code 202, with default header values.
+/*
+WebModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -81,9 +112,39 @@ type WebModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this web modify accepted response has a 2xx status code
+func (o *WebModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this web modify accepted response has a 3xx status code
+func (o *WebModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this web modify accepted response has a 4xx status code
+func (o *WebModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this web modify accepted response has a 5xx status code
+func (o *WebModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this web modify accepted response a status code equal to that given
+func (o *WebModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *WebModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *WebModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /cluster/web][%d] webModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *WebModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -107,9 +168,11 @@ func NewWebModifyDefault(code int) *WebModifyDefault {
 	}
 }
 
-/* WebModifyDefault describes a response with status code -1, with default header values.
+/*
+	WebModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 9830406 | Reconfiguration of the web services failed. |
@@ -125,7 +188,6 @@ func NewWebModifyDefault(code int) *WebModifyDefault {
 | 9830487 | The HTTP and HTTPS ports must not have the same value. |
 | 9830488 | The certificate is not a "server" certificate. |
 | 9830489 | The certificate does not exist for the given SVM. |
-
 */
 type WebModifyDefault struct {
 	_statusCode int
@@ -138,9 +200,39 @@ func (o *WebModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this web modify default response has a 2xx status code
+func (o *WebModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this web modify default response has a 3xx status code
+func (o *WebModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this web modify default response has a 4xx status code
+func (o *WebModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this web modify default response has a 5xx status code
+func (o *WebModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this web modify default response a status code equal to that given
+func (o *WebModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *WebModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /cluster/web][%d] web_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *WebModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /cluster/web][%d] web_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *WebModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

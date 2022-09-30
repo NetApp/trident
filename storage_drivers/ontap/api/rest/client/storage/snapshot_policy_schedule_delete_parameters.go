@@ -52,10 +52,12 @@ func NewSnapshotPolicyScheduleDeleteParamsWithHTTPClient(client *http.Client) *S
 	}
 }
 
-/* SnapshotPolicyScheduleDeleteParams contains all the parameters to send to the API endpoint
-   for the snapshot policy schedule delete operation.
+/*
+SnapshotPolicyScheduleDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snapshot policy schedule delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SnapshotPolicyScheduleDeleteParams struct {
 

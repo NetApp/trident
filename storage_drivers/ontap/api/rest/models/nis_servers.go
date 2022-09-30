@@ -17,7 +17,6 @@ import (
 // NisServers A list of hostnames or IP addresses of NIS servers used
 // by the NIS domain configuration.
 //
-//
 // swagger:model nis_servers
 type NisServers []string
 

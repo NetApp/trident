@@ -46,7 +46,8 @@ func NewAuditCollectionGetOK() *AuditCollectionGetOK {
 	return &AuditCollectionGetOK{}
 }
 
-/* AuditCollectionGetOK describes a response with status code 200, with default header values.
+/*
+AuditCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AuditCollectionGetOK struct {
 	Payload *models.AuditResponse
 }
 
+// IsSuccess returns true when this audit collection get o k response has a 2xx status code
+func (o *AuditCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this audit collection get o k response has a 3xx status code
+func (o *AuditCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this audit collection get o k response has a 4xx status code
+func (o *AuditCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this audit collection get o k response has a 5xx status code
+func (o *AuditCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this audit collection get o k response a status code equal to that given
+func (o *AuditCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AuditCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/audit][%d] auditCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AuditCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/audit][%d] auditCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AuditCollectionGetOK) GetPayload() *models.AuditResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAuditCollectionGetDefault(code int) *AuditCollectionGetDefault {
 	}
 }
 
-/* AuditCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+AuditCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AuditCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this audit collection get default response has a 2xx status code
+func (o *AuditCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this audit collection get default response has a 3xx status code
+func (o *AuditCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this audit collection get default response has a 4xx status code
+func (o *AuditCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this audit collection get default response has a 5xx status code
+func (o *AuditCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this audit collection get default response a status code equal to that given
+func (o *AuditCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AuditCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/audit][%d] audit_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AuditCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/audit][%d] audit_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AuditCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

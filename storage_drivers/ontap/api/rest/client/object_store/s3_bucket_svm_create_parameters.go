@@ -55,10 +55,12 @@ func NewS3BucketSvmCreateParamsWithHTTPClient(client *http.Client) *S3BucketSvmC
 	}
 }
 
-/* S3BucketSvmCreateParams contains all the parameters to send to the API endpoint
-   for the s3 bucket svm create operation.
+/*
+S3BucketSvmCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 bucket svm create operation.
+
+	Typically these are written to a http.Request.
 */
 type S3BucketSvmCreateParams struct {
 

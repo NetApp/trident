@@ -53,10 +53,12 @@ func NewCifsOpenFileDeleteParamsWithHTTPClient(client *http.Client) *CifsOpenFil
 	}
 }
 
-/* CifsOpenFileDeleteParams contains all the parameters to send to the API endpoint
-   for the cifs open file delete operation.
+/*
+CifsOpenFileDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs open file delete operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsOpenFileDeleteParams struct {
 

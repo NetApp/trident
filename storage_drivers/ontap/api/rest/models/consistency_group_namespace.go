@@ -21,7 +21,6 @@ import (
 // An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 // An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
 //
-//
 // swagger:model consistency_group_namespace
 type ConsistencyGroupNamespace struct {
 
@@ -457,7 +456,6 @@ func (m *ConsistencyGroupNamespaceProvisioningOptions) UnmarshalBinary(b []byte)
 // ConsistencyGroupNamespaceSubsystemMapItems0 The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
 // There is an added cost to retrieving property values for `subsystem_map`.
 // They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter.
-//
 //
 // swagger:model ConsistencyGroupNamespaceSubsystemMapItems0
 type ConsistencyGroupNamespaceSubsystemMapItems0 struct {

@@ -96,12 +96,12 @@ type ClientService interface {
 }
 
 /*
-  SnaplockComplianceClockCollectionGet Retrieves the SnapLock ComplianceClock for all of the nodes in the cluster.
+	SnaplockComplianceClockCollectionGet Retrieves the SnapLock ComplianceClock for all of the nodes in the cluster.
+
 ### Related ONTAP commands
 * `snaplock compliance-clock show`
 ### Learn more
 * [`DOC /storage/snaplock/compliance-clocks`](#docs-snaplock-storage_snaplock_compliance-clocks)
-
 */
 func (a *Client) SnaplockComplianceClockCollectionGet(params *SnaplockComplianceClockCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockComplianceClockCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -139,14 +139,14 @@ func (a *Client) SnaplockComplianceClockCollectionGet(params *SnaplockCompliance
 }
 
 /*
-  SnaplockComplianceClockCreate Initializes the SnapLock ComplianceClock.
+	SnaplockComplianceClockCreate Initializes the SnapLock ComplianceClock.
+
 ### Required properties
 * `node.name` or `node.uuid` - Name or UUID of the node.
 ### Related ONTAP commands
 * `snaplock compliance-clock initialize`
 ### Learn more
 * [`DOC /storage/snaplock/compliance-clocks`](#docs-snaplock-storage_snaplock_compliance-clocks)
-
 */
 func (a *Client) SnaplockComplianceClockCreate(params *SnaplockComplianceClockCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockComplianceClockCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -184,12 +184,12 @@ func (a *Client) SnaplockComplianceClockCreate(params *SnaplockComplianceClockCr
 }
 
 /*
-  SnaplockComplianceClockGet Retrieves the SnapLock ComplianceClock for a specific node.
+	SnaplockComplianceClockGet Retrieves the SnapLock ComplianceClock for a specific node.
+
 ### Related ONTAP commands
 * `snaplock compliance-clock show`
 ### Learn more
 * [`DOC /storage/snaplock/compliance-clocks`](#docs-snaplock-storage_snaplock_compliance-clocks)
-
 */
 func (a *Client) SnaplockComplianceClockGet(params *SnaplockComplianceClockGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockComplianceClockGetOK, error) {
 	// TODO: Validate the params before sending
@@ -227,12 +227,12 @@ func (a *Client) SnaplockComplianceClockGet(params *SnaplockComplianceClockGetPa
 }
 
 /*
-  SnaplockFilePrivilegedDelete Deletes unexpired WORM files of a SnapLock Enterprise volume. This is a privileged-delete operation. The only built-in role that has access to the command is vsadmin-snaplock.
+	SnaplockFilePrivilegedDelete Deletes unexpired WORM files of a SnapLock Enterprise volume. This is a privileged-delete operation. The only built-in role that has access to the command is vsadmin-snaplock.
+
 ### Related ONTAP commands
 * `volume file privileged-delete`
 ### Learn more
 * [`DOC /storage/snaplock/file/{volume.uuid}/{path}`](#docs-snaplock-storage_snaplock_file_{volume.uuid}_{path})
-
 */
 func (a *Client) SnaplockFilePrivilegedDelete(params *SnaplockFilePrivilegedDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFilePrivilegedDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -270,12 +270,12 @@ func (a *Client) SnaplockFilePrivilegedDelete(params *SnaplockFilePrivilegedDele
 }
 
 /*
-  SnaplockFileRetentionGet Retrieves the SnapLock retention details of the specified file. An indefinite expiry time indicates the file is under a Legal-Hold.
+	SnaplockFileRetentionGet Retrieves the SnapLock retention details of the specified file. An indefinite expiry time indicates the file is under a Legal-Hold.
+
 ### Related ONTAP commands
 * `volume file retention show`
 ### Learn more
 * [`DOC /storage/snaplock/file/{volume.uuid}/{path}`](#docs-snaplock-storage_snaplock_file_{volume.uuid}_{path})
-
 */
 func (a *Client) SnaplockFileRetentionGet(params *SnaplockFileRetentionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFileRetentionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -313,12 +313,12 @@ func (a *Client) SnaplockFileRetentionGet(params *SnaplockFileRetentionGetParams
 }
 
 /*
-  SnaplockFileRetentionTimeModify Updates the SnapLock retention time of a file or extends the retention time of a WORM file. Input parameter "expiry_time" expects the date in ISO 8601 format, "infinite", or "unspecified".
+	SnaplockFileRetentionTimeModify Updates the SnapLock retention time of a file or extends the retention time of a WORM file. Input parameter "expiry_time" expects the date in ISO 8601 format, "infinite", or "unspecified".
+
 ### Related ONTAP commands
 * `volume file retention set`
 ### Learn more
 * [`DOC /storage/snaplock/file/{volume.uuid}/{path}`](#docs-snaplock-storage_snaplock_file_{volume.uuid}_{path})
-
 */
 func (a *Client) SnaplockFileRetentionTimeModify(params *SnaplockFileRetentionTimeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFileRetentionTimeModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -356,7 +356,8 @@ func (a *Client) SnaplockFileRetentionTimeModify(params *SnaplockFileRetentionTi
 }
 
 /*
-  SnaplockFingerprintOperationCollectionGet Retrieves a list of all the fingerprint operations of the specified SVM and volume.
+	SnaplockFingerprintOperationCollectionGet Retrieves a list of all the fingerprint operations of the specified SVM and volume.
+
 ### Related ONTAP commands
 * `volume file fingerprint show`
 ### Example
@@ -367,7 +368,6 @@ GET "/api/storage/snaplock/file-fingerprints/?svm.uuid=23940494-3f3a-11e9-8675-0
 <br/>
 ### Learn more
 * [`DOC /storage/snaplock/file-fingerprints`](#docs-snaplock-storage_snaplock_file-fingerprints)
-
 */
 func (a *Client) SnaplockFingerprintOperationCollectionGet(params *SnaplockFingerprintOperationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -405,7 +405,8 @@ func (a *Client) SnaplockFingerprintOperationCollectionGet(params *SnaplockFinge
 }
 
 /*
-  SnaplockFingerprintOperationCreate Creates a fingerprint computation session on the file and returns a session-id. This session-id is a unique identifier that you can use to retrieve the progress of an ongoing fingerprint operation. When the operation is complete, you can use the session-id to retrieve the complete fingerprint output for the file .
+	SnaplockFingerprintOperationCreate Creates a fingerprint computation session on the file and returns a session-id. This session-id is a unique identifier that you can use to retrieve the progress of an ongoing fingerprint operation. When the operation is complete, you can use the session-id to retrieve the complete fingerprint output for the file .
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Name or UUID of the SVM.
 * `volume.name` or `volume.uuid` - Name or UUID of the volume.
@@ -423,7 +424,6 @@ POST "/api/storage/snaplock/file-fingerprints" '{"svm":{"uuid":"23940494-3f3a-11
 <br/>
 ### Learn more
 * [`DOC /storage/snaplock/file-fingerprints`](#docs-snaplock-storage_snaplock_file-fingerprints)
-
 */
 func (a *Client) SnaplockFingerprintOperationCreate(params *SnaplockFingerprintOperationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -461,12 +461,12 @@ func (a *Client) SnaplockFingerprintOperationCreate(params *SnaplockFingerprintO
 }
 
 /*
-  SnaplockFingerprintOperationDelete Aborts an in-progress fingerprint operation. This API takes session-id as input and aborts the fingerprint operation that is associated with the specified session-id.
+	SnaplockFingerprintOperationDelete Aborts an in-progress fingerprint operation. This API takes session-id as input and aborts the fingerprint operation that is associated with the specified session-id.
+
 ### Related ONTAP commands
 * `volume file fingerprint abort`
 ### Learn more
 * [`DOC /storage/snaplock/file-fingerprints`](#docs-snaplock-storage_snaplock_file-fingerprints)
-
 */
 func (a *Client) SnaplockFingerprintOperationDelete(params *SnaplockFingerprintOperationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -504,12 +504,12 @@ func (a *Client) SnaplockFingerprintOperationDelete(params *SnaplockFingerprintO
 }
 
 /*
-  SnaplockFingerprintOperationGet Retrieves the file fingerprint information for a specific session ID.
+	SnaplockFingerprintOperationGet Retrieves the file fingerprint information for a specific session ID.
+
 ### Related ONTAP commands
 * `volume file fingerprint dump`
 ### Learn more
 * [`DOC /storage/snaplock/file-fingerprints`](#docs-snaplock-storage_snaplock_file-fingerprints)
-
 */
 func (a *Client) SnaplockFingerprintOperationGet(params *SnaplockFingerprintOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFingerprintOperationGetOK, error) {
 	// TODO: Validate the params before sending
@@ -547,7 +547,8 @@ func (a *Client) SnaplockFingerprintOperationGet(params *SnaplockFingerprintOper
 }
 
 /*
-  SnaplockLegalHoldBegin Starts a  Legal-Hold.
+	SnaplockLegalHoldBegin Starts a  Legal-Hold.
+
 ### Required properties
 * `path` - Path of the file.
 * `name` - Litigation name.
@@ -562,7 +563,6 @@ POST "/api/storage/snaplock/litigations" '{"volume.name":"SLC1","name":"l3","pat
 <br/>
 ### Learn more
 * [`DOC /storage/snaplock/litigations`](#docs-snaplock-storage_snaplock_litigations)
-
 */
 func (a *Client) SnaplockLegalHoldBegin(params *SnaplockLegalHoldBeginParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldBeginCreated, error) {
 	// TODO: Validate the params before sending
@@ -600,12 +600,12 @@ func (a *Client) SnaplockLegalHoldBegin(params *SnaplockLegalHoldBeginParams, au
 }
 
 /*
-  SnaplockLegalHoldCollectionGet Retrieves the list of litigations under an SVM.
+	SnaplockLegalHoldCollectionGet Retrieves the list of litigations under an SVM.
+
 ### Related ONTAP commands
 * `snaplock legal-hold show`
 ### Learn more
 * [`DOC /storage/snaplock/litigations`](#docs-snaplock-storage_snaplock_litigations)
-
 */
 func (a *Client) SnaplockLegalHoldCollectionGet(params *SnaplockLegalHoldCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -643,7 +643,8 @@ func (a *Client) SnaplockLegalHoldCollectionGet(params *SnaplockLegalHoldCollect
 }
 
 /*
-  SnaplockLegalHoldCreate Creates or removes litigations for the specified path.
+	SnaplockLegalHoldCreate Creates or removes litigations for the specified path.
+
 ### Required properties
 * `type` - Legal-Hold operation type.
 * `path` - Litigation path.
@@ -652,7 +653,6 @@ func (a *Client) SnaplockLegalHoldCollectionGet(params *SnaplockLegalHoldCollect
 * `snaplock legal-hold end`
 ### Learn more
 * [`DOC /storage/snaplock/litigations/{litigation.id}/operations`](#docs-snaplock-storage_snaplock_litigations_{litigation.id}_operations)
-
 */
 func (a *Client) SnaplockLegalHoldCreate(params *SnaplockLegalHoldCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -690,7 +690,8 @@ func (a *Client) SnaplockLegalHoldCreate(params *SnaplockLegalHoldCreateParams, 
 }
 
 /*
-  SnaplockLegalHoldDelete Creates a legal-hold end on all of the files for the specified litigation ID. This is only allowed when an operation is no longer in progress.
+	SnaplockLegalHoldDelete Creates a legal-hold end on all of the files for the specified litigation ID. This is only allowed when an operation is no longer in progress.
+
 ### Related ONTAP commands
 * `snaplock legal-hold end`
 ### Example
@@ -701,7 +702,6 @@ DELETE "/api/storage/snaplock/litigations/fd72e138-4bc3-11e9-a85f-0050568eb48f%3
 <br/>
 ### Learn more
 * [`DOC /storage/snaplock/litigations`](#docs-snaplock-storage_snaplock_litigations)
-
 */
 func (a *Client) SnaplockLegalHoldDelete(params *SnaplockLegalHoldDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -739,7 +739,7 @@ func (a *Client) SnaplockLegalHoldDelete(params *SnaplockLegalHoldDeleteParams, 
 }
 
 /*
-  SnaplockLegalHoldFilesGet Displays the list of files for the specified litigation ID.
+SnaplockLegalHoldFilesGet Displays the list of files for the specified litigation ID.
 */
 func (a *Client) SnaplockLegalHoldFilesGet(params *SnaplockLegalHoldFilesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldFilesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -777,12 +777,12 @@ func (a *Client) SnaplockLegalHoldFilesGet(params *SnaplockLegalHoldFilesGetPara
 }
 
 /*
-  SnaplockLegalHoldGet Retrieves the list of ongoing operations for the specified litigation ID.
+	SnaplockLegalHoldGet Retrieves the list of ongoing operations for the specified litigation ID.
+
 ### Related ONTAP commands
 * `snaplock legal-hold show`
 ### Learn more
 * [`DOC /storage/snaplock/litigations`](#docs-snaplock-storage_snaplock_litigations)
-
 */
 func (a *Client) SnaplockLegalHoldGet(params *SnaplockLegalHoldGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldGetOK, error) {
 	// TODO: Validate the params before sending
@@ -820,7 +820,8 @@ func (a *Client) SnaplockLegalHoldGet(params *SnaplockLegalHoldGetParams, authIn
 }
 
 /*
-  SnaplockLegalHoldOperationDelete Aborts the ongoing legal-hold operation. An abort does not rollback any changes already made. You must re-run begin or end for cleanup.
+	SnaplockLegalHoldOperationDelete Aborts the ongoing legal-hold operation. An abort does not rollback any changes already made. You must re-run begin or end for cleanup.
+
 ### Related ONTAP commands
 * `snaplock legal-hold abort`
 ### Example
@@ -831,7 +832,6 @@ DELETE "/api/storage/snaplock/litigations/f8a67b60-4461-11e9-b327-0050568ebef5:l
 <br/>
 ### Learn more
 * [`DOC /storage/snaplock/litigations/{litigation.id}/operations`](#docs-snaplock-storage_snaplock_litigations_{litigation.id}_operations)
-
 */
 func (a *Client) SnaplockLegalHoldOperationDelete(params *SnaplockLegalHoldOperationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldOperationDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -869,12 +869,12 @@ func (a *Client) SnaplockLegalHoldOperationDelete(params *SnaplockLegalHoldOpera
 }
 
 /*
-  SnaplockLegalHoldOperationGet Retrieves the status of legal-hold for the specified operation ID.
+	SnaplockLegalHoldOperationGet Retrieves the status of legal-hold for the specified operation ID.
+
 ### Related ONTAP commands
 * `snaplock legal-hold show`
 ### Learn more
 * [`DOC /storage/snaplock/litigations/{litigation.id}/operations`](#docs-snaplock-storage_snaplock_litigations_{litigation.id}_operations)
-
 */
 func (a *Client) SnaplockLegalHoldOperationGet(params *SnaplockLegalHoldOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldOperationGetOK, error) {
 	// TODO: Validate the params before sending
@@ -912,12 +912,12 @@ func (a *Client) SnaplockLegalHoldOperationGet(params *SnaplockLegalHoldOperatio
 }
 
 /*
-  SnaplockLogCollectionGet Retrieves a list of SVMs configured with audit log volumes.
+	SnaplockLogCollectionGet Retrieves a list of SVMs configured with audit log volumes.
+
 ### Related ONTAP commands
 * `snaplock log show`
 ### Learn more
 * [`DOC /storage/snaplock/audit-logs`](#docs-snaplock-storage_snaplock_audit-logs)
-
 */
 func (a *Client) SnaplockLogCollectionGet(params *SnaplockLogCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -955,7 +955,8 @@ func (a *Client) SnaplockLogCollectionGet(params *SnaplockLogCollectionGetParams
 }
 
 /*
-  SnaplockLogCreate Creates a SnapLock log configuration for an SVM. A SnapLock log configuration consists of a volume to store the log, the maximum size of the log file, and the default period of time for which the log file should be retained. The input parameter retention_period expects the duration in ISO 8601 format.
+	SnaplockLogCreate Creates a SnapLock log configuration for an SVM. A SnapLock log configuration consists of a volume to store the log, the maximum size of the log file, and the default period of time for which the log file should be retained. The input parameter retention_period expects the duration in ISO 8601 format.
+
 ### Required properties
 * `svm.uuid` or `svm.name` - Name or UUID of the SVM.
 * `log_volume.volume.name` or `log_volume.volume.uuid` - Name or UUID of audit log volume.
@@ -970,7 +971,6 @@ If not specified in POST, the following default property values are assigned:
 * `snaplock log create`
 ### Learn more
 * [`DOC /storage/snaplock/audit-logs`](#docs-snaplock-storage_snaplock_audit-logs)
-
 */
 func (a *Client) SnaplockLogCreate(params *SnaplockLogCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1008,12 +1008,12 @@ func (a *Client) SnaplockLogCreate(params *SnaplockLogCreateParams, authInfo run
 }
 
 /*
-  SnaplockLogDelete Disassociates a SnapLock volume as the audit log volume for an SVM. This API closes all the active log files in the log volume and marks the volume as disabled for SnapLock logging.
+	SnaplockLogDelete Disassociates a SnapLock volume as the audit log volume for an SVM. This API closes all the active log files in the log volume and marks the volume as disabled for SnapLock logging.
+
 ### Related ONTAP commands
 * `snaplock log delete`
 ### Learn more
 * [`DOC /storage/snaplock/audit-logs`](#docs-snaplock-storage_snaplock_audit-logs)
-
 */
 func (a *Client) SnaplockLogDelete(params *SnaplockLogDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1051,12 +1051,12 @@ func (a *Client) SnaplockLogDelete(params *SnaplockLogDeleteParams, authInfo run
 }
 
 /*
-  SnaplockLogGet Retrieves SnapLock logs for the specified SVM.
+	SnaplockLogGet Retrieves SnapLock logs for the specified SVM.
+
 ### Related ONTAP commands
 * `snaplock log show`
 ### Learn more
 * [`DOC /storage/snaplock/audit-logs`](#docs-snaplock-storage_snaplock_audit-logs)
-
 */
 func (a *Client) SnaplockLogGet(params *SnaplockLogGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1094,15 +1094,15 @@ func (a *Client) SnaplockLogGet(params *SnaplockLogGetParams, authInfo runtime.C
 }
 
 /*
-  SnaplockLogModify Updates one of the following:
-  - the audit log volume,
-  - the attributes of the audit log volume present, or
-  - archive the current audit log files
+	SnaplockLogModify Updates one of the following:
+	- the audit log volume,
+	- the attributes of the audit log volume present, or
+	- archive the current audit log files
+
 ### Related ONTAP commands
 * `snaplock log modify`
 ### Learn more
 * [`DOC /storage/snaplock/audit-logs`](#docs-snaplock-storage_snaplock_audit-logs)
-
 */
 func (a *Client) SnaplockLogModify(params *SnaplockLogModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLogModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1140,12 +1140,12 @@ func (a *Client) SnaplockLogModify(params *SnaplockLogModifyParams, authInfo run
 }
 
 /*
-  SnaplockRetentionOperationCollectionGet Retrieves a list of all EBR operations.
+	SnaplockRetentionOperationCollectionGet Retrieves a list of all EBR operations.
+
 ### Related ONTAP commands
 * `snaplock event-retention show`
 ### Learn more
 * [`DOC /storage/snaplock/event-retention/operations`](#docs-snaplock-storage_snaplock_event-retention_operations)
-
 */
 func (a *Client) SnaplockRetentionOperationCollectionGet(params *SnaplockRetentionOperationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionOperationCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1183,7 +1183,8 @@ func (a *Client) SnaplockRetentionOperationCollectionGet(params *SnaplockRetenti
 }
 
 /*
-  SnaplockRetentionOperationCreate Creates an EBR policy.
+	SnaplockRetentionOperationCreate Creates an EBR policy.
+
 ### Required properties
 * `path` - Path of the file.
 * `policy.name` - Name of the EBR policy.
@@ -1191,7 +1192,6 @@ func (a *Client) SnaplockRetentionOperationCollectionGet(params *SnaplockRetenti
 * `snaplock event-retention apply`
 ### Learn more
 * [`DOC /storage/snaplock/event-retention/operations`](#docs-snaplock-storage_snaplock_event-retention_operations)
-
 */
 func (a *Client) SnaplockRetentionOperationCreate(params *SnaplockRetentionOperationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionOperationCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1229,12 +1229,12 @@ func (a *Client) SnaplockRetentionOperationCreate(params *SnaplockRetentionOpera
 }
 
 /*
-  SnaplockRetentionOperationDelete Aborts an ongoing EBR operation.
+	SnaplockRetentionOperationDelete Aborts an ongoing EBR operation.
+
 ### Related ONTAP commands
 * `snaplock event-retention abort`
 ### Learn more
 * [`DOC /storage/snaplock/event-retention/operations`](#docs-snaplock-storage_snaplock_event-retention_operations)
-
 */
 func (a *Client) SnaplockRetentionOperationDelete(params *SnaplockRetentionOperationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionOperationDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1272,12 +1272,12 @@ func (a *Client) SnaplockRetentionOperationDelete(params *SnaplockRetentionOpera
 }
 
 /*
-  SnaplockRetentionOperationGet Retrieves a list of attributes for an EBR operation.
+	SnaplockRetentionOperationGet Retrieves a list of attributes for an EBR operation.
+
 ### Related ONTAP commands
 * `snaplock event-retention show`
 ### Learn more
 * [`DOC /storage/snaplock/event-retention/operations`](#docs-snaplock-storage_snaplock_event-retention_operations)
-
 */
 func (a *Client) SnaplockRetentionOperationGet(params *SnaplockRetentionOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionOperationGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1315,12 +1315,12 @@ func (a *Client) SnaplockRetentionOperationGet(params *SnaplockRetentionOperatio
 }
 
 /*
-  SnaplockRetentionPolicyCollectionGet Retrieves all event retention policies for an SVM.
+	SnaplockRetentionPolicyCollectionGet Retrieves all event retention policies for an SVM.
+
 ### Related ONTAP commands
 * `snaplock event-retention policy show`
 ### Learn more
 * [`DOC /storage/snaplock/event-retention/policies`](#docs-snaplock-storage_snaplock_event-retention_policies)
-
 */
 func (a *Client) SnaplockRetentionPolicyCollectionGet(params *SnaplockRetentionPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1358,7 +1358,8 @@ func (a *Client) SnaplockRetentionPolicyCollectionGet(params *SnaplockRetentionP
 }
 
 /*
-  SnaplockRetentionPolicyCreate Creates an Event Based Retention (EBR) policy for an SVM. The input parameter retention_period expects the duration in ISO 8601 format or infinite.
+	SnaplockRetentionPolicyCreate Creates an Event Based Retention (EBR) policy for an SVM. The input parameter retention_period expects the duration in ISO 8601 format or infinite.
+
 ### Required properties
 * `name` - Event retention policy name.
 * `retention_period` - Retention period of the EBR policy.
@@ -1366,7 +1367,6 @@ func (a *Client) SnaplockRetentionPolicyCollectionGet(params *SnaplockRetentionP
 * `snaplock event-retention policy create`
 ### Learn more
 * [`DOC /storage/snaplock/event-retention/policies`](#docs-snaplock-storage_snaplock_event-retention_policies)
-
 */
 func (a *Client) SnaplockRetentionPolicyCreate(params *SnaplockRetentionPolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1404,12 +1404,12 @@ func (a *Client) SnaplockRetentionPolicyCreate(params *SnaplockRetentionPolicyCr
 }
 
 /*
-  SnaplockRetentionPolicyDelete Deletes the specified Event Based Retention (EBR) policy.
+	SnaplockRetentionPolicyDelete Deletes the specified Event Based Retention (EBR) policy.
+
 ### Related ONTAP commands
 * `snaplock event-retention policy delete`
 ### Learn more
 * [`DOC /storage/snaplock/event-retention/policies`](#docs-snaplock-storage_snaplock_event-retention_policies)
-
 */
 func (a *Client) SnaplockRetentionPolicyDelete(params *SnaplockRetentionPolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1447,12 +1447,12 @@ func (a *Client) SnaplockRetentionPolicyDelete(params *SnaplockRetentionPolicyDe
 }
 
 /*
-  SnaplockRetentionPolicyGet Retrieves a list of attributes of the specified Event Based Retention (EBR) policy.
+	SnaplockRetentionPolicyGet Retrieves a list of attributes of the specified Event Based Retention (EBR) policy.
+
 ### Related ONTAP commands
 * `snaplock event-retention policy show`
 ### Learn more
 * [`DOC /storage/snaplock/event-retention/policies`](#docs-snaplock-storage_snaplock_event-retention_policies)
-
 */
 func (a *Client) SnaplockRetentionPolicyGet(params *SnaplockRetentionPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1490,7 +1490,8 @@ func (a *Client) SnaplockRetentionPolicyGet(params *SnaplockRetentionPolicyGetPa
 }
 
 /*
-  SnaplockRetentionPolicyModify Updates the retention period of an Event Based Retention (EBR) policy.
+	SnaplockRetentionPolicyModify Updates the retention period of an Event Based Retention (EBR) policy.
+
 ### Related ONTAP commands
 * `snaplock event-retention policy modify`
 ### Example
@@ -1502,7 +1503,6 @@ PATCH "/api/storage/snaplock/event-retention/policies/" '{"name": "policy_name",
 <br/>
 ### Learn more
 * [`DOC /storage/snaplock/event-retention/policies`](#docs-snaplock-storage_snaplock_event-retention_policies)
-
 */
 func (a *Client) SnaplockRetentionPolicyModify(params *SnaplockRetentionPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockRetentionPolicyModifyOK, error) {
 	// TODO: Validate the params before sending

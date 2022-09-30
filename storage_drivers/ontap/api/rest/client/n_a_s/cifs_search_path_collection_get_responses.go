@@ -46,7 +46,8 @@ func NewCifsSearchPathCollectionGetOK() *CifsSearchPathCollectionGetOK {
 	return &CifsSearchPathCollectionGetOK{}
 }
 
-/* CifsSearchPathCollectionGetOK describes a response with status code 200, with default header values.
+/*
+CifsSearchPathCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CifsSearchPathCollectionGetOK struct {
 	Payload *models.CifsSearchPathResponse
 }
 
+// IsSuccess returns true when this cifs search path collection get o k response has a 2xx status code
+func (o *CifsSearchPathCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs search path collection get o k response has a 3xx status code
+func (o *CifsSearchPathCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs search path collection get o k response has a 4xx status code
+func (o *CifsSearchPathCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs search path collection get o k response has a 5xx status code
+func (o *CifsSearchPathCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs search path collection get o k response a status code equal to that given
+func (o *CifsSearchPathCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsSearchPathCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths][%d] cifsSearchPathCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CifsSearchPathCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths][%d] cifsSearchPathCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CifsSearchPathCollectionGetOK) GetPayload() *models.CifsSearchPathResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewCifsSearchPathCollectionGetDefault(code int) *CifsSearchPathCollectionGe
 	}
 }
 
-/* CifsSearchPathCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+CifsSearchPathCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *CifsSearchPathCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs search path collection get default response has a 2xx status code
+func (o *CifsSearchPathCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs search path collection get default response has a 3xx status code
+func (o *CifsSearchPathCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs search path collection get default response has a 4xx status code
+func (o *CifsSearchPathCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs search path collection get default response has a 5xx status code
+func (o *CifsSearchPathCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs search path collection get default response a status code equal to that given
+func (o *CifsSearchPathCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsSearchPathCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths][%d] cifs_search_path_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsSearchPathCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/home-directory/search-paths][%d] cifs_search_path_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsSearchPathCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

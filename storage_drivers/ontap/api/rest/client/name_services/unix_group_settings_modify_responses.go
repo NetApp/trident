@@ -46,14 +46,44 @@ func NewUnixGroupSettingsModifyOK() *UnixGroupSettingsModifyOK {
 	return &UnixGroupSettingsModifyOK{}
 }
 
-/* UnixGroupSettingsModifyOK describes a response with status code 200, with default header values.
+/*
+UnixGroupSettingsModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type UnixGroupSettingsModifyOK struct {
 }
 
+// IsSuccess returns true when this unix group settings modify o k response has a 2xx status code
+func (o *UnixGroupSettingsModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix group settings modify o k response has a 3xx status code
+func (o *UnixGroupSettingsModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix group settings modify o k response has a 4xx status code
+func (o *UnixGroupSettingsModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix group settings modify o k response has a 5xx status code
+func (o *UnixGroupSettingsModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix group settings modify o k response a status code equal to that given
+func (o *UnixGroupSettingsModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixGroupSettingsModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unixGroupSettingsModifyOK ", 200)
+}
+
+func (o *UnixGroupSettingsModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unixGroupSettingsModifyOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewUnixGroupSettingsModifyDefault(code int) *UnixGroupSettingsModifyDefault
 	}
 }
 
-/* UnixGroupSettingsModifyDefault describes a response with status code -1, with default header values.
+/*
+	UnixGroupSettingsModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
-
 */
 type UnixGroupSettingsModifyDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *UnixGroupSettingsModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix group settings modify default response has a 2xx status code
+func (o *UnixGroupSettingsModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix group settings modify default response has a 3xx status code
+func (o *UnixGroupSettingsModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix group settings modify default response has a 4xx status code
+func (o *UnixGroupSettingsModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix group settings modify default response has a 5xx status code
+func (o *UnixGroupSettingsModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix group settings modify default response a status code equal to that given
+func (o *UnixGroupSettingsModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixGroupSettingsModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unix_group_settings_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixGroupSettingsModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/cache/unix-group/settings/{svm.uuid}][%d] unix_group_settings_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixGroupSettingsModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

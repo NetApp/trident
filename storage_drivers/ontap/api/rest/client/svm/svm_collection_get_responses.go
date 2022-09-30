@@ -46,7 +46,8 @@ func NewSvmCollectionGetOK() *SvmCollectionGetOK {
 	return &SvmCollectionGetOK{}
 }
 
-/* SvmCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SvmCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SvmCollectionGetOK struct {
 	Payload *models.SvmResponse
 }
 
+// IsSuccess returns true when this svm collection get o k response has a 2xx status code
+func (o *SvmCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm collection get o k response has a 3xx status code
+func (o *SvmCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm collection get o k response has a 4xx status code
+func (o *SvmCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm collection get o k response has a 5xx status code
+func (o *SvmCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm collection get o k response a status code equal to that given
+func (o *SvmCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SvmCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /svm/svms][%d] svmCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SvmCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /svm/svms][%d] svmCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SvmCollectionGetOK) GetPayload() *models.SvmResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSvmCollectionGetDefault(code int) *SvmCollectionGetDefault {
 	}
 }
 
-/* SvmCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+SvmCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SvmCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm collection get default response has a 2xx status code
+func (o *SvmCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm collection get default response has a 3xx status code
+func (o *SvmCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm collection get default response has a 4xx status code
+func (o *SvmCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm collection get default response has a 5xx status code
+func (o *SvmCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm collection get default response a status code equal to that given
+func (o *SvmCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /svm/svms][%d] svm_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /svm/svms][%d] svm_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

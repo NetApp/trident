@@ -17,7 +17,6 @@ import (
 
 // ConsistencyGroupNamespaceStatus Status information about the NVMe namespace.
 //
-//
 // swagger:model consistency_group_namespace_status
 type ConsistencyGroupNamespaceStatus struct {
 

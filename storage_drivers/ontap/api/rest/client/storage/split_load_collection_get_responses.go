@@ -46,7 +46,8 @@ func NewSplitLoadCollectionGetOK() *SplitLoadCollectionGetOK {
 	return &SplitLoadCollectionGetOK{}
 }
 
-/* SplitLoadCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SplitLoadCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SplitLoadCollectionGetOK struct {
 	Payload *models.SplitLoadResponse
 }
 
+// IsSuccess returns true when this split load collection get o k response has a 2xx status code
+func (o *SplitLoadCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this split load collection get o k response has a 3xx status code
+func (o *SplitLoadCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this split load collection get o k response has a 4xx status code
+func (o *SplitLoadCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this split load collection get o k response has a 5xx status code
+func (o *SplitLoadCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this split load collection get o k response a status code equal to that given
+func (o *SplitLoadCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SplitLoadCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/file/clone/split-loads][%d] splitLoadCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SplitLoadCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/file/clone/split-loads][%d] splitLoadCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SplitLoadCollectionGetOK) GetPayload() *models.SplitLoadResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSplitLoadCollectionGetDefault(code int) *SplitLoadCollectionGetDefault {
 	}
 }
 
-/* SplitLoadCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+SplitLoadCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SplitLoadCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this split load collection get default response has a 2xx status code
+func (o *SplitLoadCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this split load collection get default response has a 3xx status code
+func (o *SplitLoadCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this split load collection get default response has a 4xx status code
+func (o *SplitLoadCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this split load collection get default response has a 5xx status code
+func (o *SplitLoadCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this split load collection get default response a status code equal to that given
+func (o *SplitLoadCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SplitLoadCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/file/clone/split-loads][%d] split_load_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SplitLoadCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/file/clone/split-loads][%d] split_load_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SplitLoadCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

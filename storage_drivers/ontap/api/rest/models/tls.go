@@ -18,7 +18,6 @@ import (
 
 // TLS Cluster-wide Transport Layer Security (TLS) configuration information
 //
-//
 // swagger:model tls
 type TLS struct {
 

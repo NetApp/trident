@@ -46,7 +46,8 @@ func NewMultiAdminVerifyRuleCreateCreated() *MultiAdminVerifyRuleCreateCreated {
 	return &MultiAdminVerifyRuleCreateCreated{}
 }
 
-/* MultiAdminVerifyRuleCreateCreated describes a response with status code 201, with default header values.
+/*
+MultiAdminVerifyRuleCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type MultiAdminVerifyRuleCreateCreated struct {
 	Payload *models.MultiAdminVerifyRuleResponse
 }
 
+// IsSuccess returns true when this multi admin verify rule create created response has a 2xx status code
+func (o *MultiAdminVerifyRuleCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this multi admin verify rule create created response has a 3xx status code
+func (o *MultiAdminVerifyRuleCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this multi admin verify rule create created response has a 4xx status code
+func (o *MultiAdminVerifyRuleCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this multi admin verify rule create created response has a 5xx status code
+func (o *MultiAdminVerifyRuleCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this multi admin verify rule create created response a status code equal to that given
+func (o *MultiAdminVerifyRuleCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *MultiAdminVerifyRuleCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multiAdminVerifyRuleCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *MultiAdminVerifyRuleCreateCreated) String() string {
+	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multiAdminVerifyRuleCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *MultiAdminVerifyRuleCreateCreated) GetPayload() *models.MultiAdminVerifyRuleResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewMultiAdminVerifyRuleCreateDefault(code int) *MultiAdminVerifyRuleCreateD
 	}
 }
 
-/* MultiAdminVerifyRuleCreateDefault describes a response with status code -1, with default header values.
+/*
+	MultiAdminVerifyRuleCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262148 | The specified command is not recognized. |
@@ -95,7 +128,6 @@ func NewMultiAdminVerifyRuleCreateDefault(code int) *MultiAdminVerifyRuleCreateD
 | 262316 | Value must be in the range one second to two weeks. |
 | 262326 | Failed to parse query. |
 | 262335 | The query string must be contained in either the "operation" or "query" parameters but not in both. |
-
 */
 type MultiAdminVerifyRuleCreateDefault struct {
 	_statusCode int
@@ -108,9 +140,39 @@ func (o *MultiAdminVerifyRuleCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this multi admin verify rule create default response has a 2xx status code
+func (o *MultiAdminVerifyRuleCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this multi admin verify rule create default response has a 3xx status code
+func (o *MultiAdminVerifyRuleCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this multi admin verify rule create default response has a 4xx status code
+func (o *MultiAdminVerifyRuleCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this multi admin verify rule create default response has a 5xx status code
+func (o *MultiAdminVerifyRuleCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this multi admin verify rule create default response a status code equal to that given
+func (o *MultiAdminVerifyRuleCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MultiAdminVerifyRuleCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multi_admin_verify_rule_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MultiAdminVerifyRuleCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/multi-admin-verify/rules][%d] multi_admin_verify_rule_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MultiAdminVerifyRuleCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

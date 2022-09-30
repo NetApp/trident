@@ -46,7 +46,8 @@ func NewSvmPeerPermissionInstanceGetOK() *SvmPeerPermissionInstanceGetOK {
 	return &SvmPeerPermissionInstanceGetOK{}
 }
 
-/* SvmPeerPermissionInstanceGetOK describes a response with status code 200, with default header values.
+/*
+SvmPeerPermissionInstanceGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SvmPeerPermissionInstanceGetOK struct {
 	Payload *models.SvmPeerPermission
 }
 
+// IsSuccess returns true when this svm peer permission instance get o k response has a 2xx status code
+func (o *SvmPeerPermissionInstanceGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm peer permission instance get o k response has a 3xx status code
+func (o *SvmPeerPermissionInstanceGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm peer permission instance get o k response has a 4xx status code
+func (o *SvmPeerPermissionInstanceGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm peer permission instance get o k response has a 5xx status code
+func (o *SvmPeerPermissionInstanceGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm peer permission instance get o k response a status code equal to that given
+func (o *SvmPeerPermissionInstanceGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SvmPeerPermissionInstanceGetOK) Error() string {
 	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionInstanceGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SvmPeerPermissionInstanceGetOK) String() string {
+	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svmPeerPermissionInstanceGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SvmPeerPermissionInstanceGetOK) GetPayload() *models.SvmPeerPermission {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSvmPeerPermissionInstanceGetDefault(code int) *SvmPeerPermissionInstance
 	}
 }
 
-/* SvmPeerPermissionInstanceGetDefault describes a response with status code -1, with default header values.
+/*
+	SvmPeerPermissionInstanceGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 <br/>
 ```
 | Error codes | Description |
@@ -90,7 +123,6 @@ func NewSvmPeerPermissionInstanceGetDefault(code int) *SvmPeerPermissionInstance
 | 26345574    | Failed to find the SVM or volume name with UUID. |
 ```
 <br/>
-
 */
 type SvmPeerPermissionInstanceGetDefault struct {
 	_statusCode int
@@ -103,9 +135,39 @@ func (o *SvmPeerPermissionInstanceGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm peer permission instance get default response has a 2xx status code
+func (o *SvmPeerPermissionInstanceGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm peer permission instance get default response has a 3xx status code
+func (o *SvmPeerPermissionInstanceGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm peer permission instance get default response has a 4xx status code
+func (o *SvmPeerPermissionInstanceGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm peer permission instance get default response has a 5xx status code
+func (o *SvmPeerPermissionInstanceGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm peer permission instance get default response a status code equal to that given
+func (o *SvmPeerPermissionInstanceGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmPeerPermissionInstanceGetDefault) Error() string {
 	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_instance_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmPeerPermissionInstanceGetDefault) String() string {
+	return fmt.Sprintf("[GET /svm/peer-permissions/{cluster_peer.uuid}/{svm.uuid}][%d] svm_peer_permission_instance_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmPeerPermissionInstanceGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

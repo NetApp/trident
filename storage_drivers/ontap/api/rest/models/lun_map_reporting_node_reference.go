@@ -15,7 +15,6 @@ import (
 
 // LunMapReportingNodeReference A cluster node from which network paths to the LUN are advertised by ONTAP via the SAN protocols.
 //
-//
 // swagger:model lun_map_reporting_node_reference
 type LunMapReportingNodeReference struct {
 

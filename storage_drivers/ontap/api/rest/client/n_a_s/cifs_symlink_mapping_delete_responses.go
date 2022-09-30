@@ -46,14 +46,44 @@ func NewCifsSymlinkMappingDeleteOK() *CifsSymlinkMappingDeleteOK {
 	return &CifsSymlinkMappingDeleteOK{}
 }
 
-/* CifsSymlinkMappingDeleteOK describes a response with status code 200, with default header values.
+/*
+CifsSymlinkMappingDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type CifsSymlinkMappingDeleteOK struct {
 }
 
+// IsSuccess returns true when this cifs symlink mapping delete o k response has a 2xx status code
+func (o *CifsSymlinkMappingDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs symlink mapping delete o k response has a 3xx status code
+func (o *CifsSymlinkMappingDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs symlink mapping delete o k response has a 4xx status code
+func (o *CifsSymlinkMappingDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs symlink mapping delete o k response has a 5xx status code
+func (o *CifsSymlinkMappingDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs symlink mapping delete o k response a status code equal to that given
+func (o *CifsSymlinkMappingDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsSymlinkMappingDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingDeleteOK ", 200)
+}
+
+func (o *CifsSymlinkMappingDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewCifsSymlinkMappingDeleteDefault(code int) *CifsSymlinkMappingDeleteDefau
 	}
 }
 
-/* CifsSymlinkMappingDeleteDefault describes a response with status code -1, with default header values.
+/*
+CifsSymlinkMappingDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *CifsSymlinkMappingDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs symlink mapping delete default response has a 2xx status code
+func (o *CifsSymlinkMappingDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs symlink mapping delete default response has a 3xx status code
+func (o *CifsSymlinkMappingDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs symlink mapping delete default response has a 4xx status code
+func (o *CifsSymlinkMappingDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs symlink mapping delete default response has a 5xx status code
+func (o *CifsSymlinkMappingDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs symlink mapping delete default response a status code equal to that given
+func (o *CifsSymlinkMappingDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsSymlinkMappingDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsSymlinkMappingDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsSymlinkMappingDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

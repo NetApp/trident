@@ -14,7 +14,6 @@ import (
 
 // ConsistencyGroupLunSpaceGuarantee Properties that request and report the space guarantee for the LUN.
 //
-//
 // swagger:model consistency_group_lun_space_guarantee
 type ConsistencyGroupLunSpaceGuarantee struct {
 

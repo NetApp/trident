@@ -46,7 +46,8 @@ func NewPortsetCreateCreated() *PortsetCreateCreated {
 	return &PortsetCreateCreated{}
 }
 
-/* PortsetCreateCreated describes a response with status code 201, with default header values.
+/*
+PortsetCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type PortsetCreateCreated struct {
 	Payload *models.PortsetResponse
 }
 
+// IsSuccess returns true when this portset create created response has a 2xx status code
+func (o *PortsetCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this portset create created response has a 3xx status code
+func (o *PortsetCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this portset create created response has a 4xx status code
+func (o *PortsetCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this portset create created response has a 5xx status code
+func (o *PortsetCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this portset create created response a status code equal to that given
+func (o *PortsetCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *PortsetCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portsetCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *PortsetCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portsetCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *PortsetCreateCreated) GetPayload() *models.PortsetResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewPortsetCreateDefault(code int) *PortsetCreateDefault {
 	}
 }
 
-/* PortsetCreateDefault describes a response with status code -1, with default header values.
+/*
+	PortsetCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1254259 | A portset with the same name already exists in the SVM. |
@@ -94,7 +127,6 @@ func NewPortsetCreateDefault(code int) *PortsetCreateDefault {
 | 5374906 | A specified network interface was not found. |
 | 5374907 | The specified network interface UUID and name don't identify the same network interface. |
 | 5374914 | An attempt was made to add a network interface of an incompatible protocol to a portset. |
-
 */
 type PortsetCreateDefault struct {
 	_statusCode int
@@ -107,9 +139,39 @@ func (o *PortsetCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this portset create default response has a 2xx status code
+func (o *PortsetCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this portset create default response has a 3xx status code
+func (o *PortsetCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this portset create default response has a 4xx status code
+func (o *PortsetCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this portset create default response has a 5xx status code
+func (o *PortsetCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this portset create default response a status code equal to that given
+func (o *PortsetCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *PortsetCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portset_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *PortsetCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/san/portsets][%d] portset_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *PortsetCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

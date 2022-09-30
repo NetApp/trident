@@ -55,10 +55,12 @@ func NewSvmCreateParamsWithHTTPClient(client *http.Client) *SvmCreateParams {
 	}
 }
 
-/* SvmCreateParams contains all the parameters to send to the API endpoint
-   for the svm create operation.
+/*
+SvmCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm create operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmCreateParams struct {
 

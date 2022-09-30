@@ -46,7 +46,8 @@ func NewFcpServiceCollectionGetOK() *FcpServiceCollectionGetOK {
 	return &FcpServiceCollectionGetOK{}
 }
 
-/* FcpServiceCollectionGetOK describes a response with status code 200, with default header values.
+/*
+FcpServiceCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FcpServiceCollectionGetOK struct {
 	Payload *models.FcpServiceResponse
 }
 
+// IsSuccess returns true when this fcp service collection get o k response has a 2xx status code
+func (o *FcpServiceCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fcp service collection get o k response has a 3xx status code
+func (o *FcpServiceCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fcp service collection get o k response has a 4xx status code
+func (o *FcpServiceCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fcp service collection get o k response has a 5xx status code
+func (o *FcpServiceCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fcp service collection get o k response a status code equal to that given
+func (o *FcpServiceCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcpServiceCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcpServiceCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FcpServiceCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcpServiceCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FcpServiceCollectionGetOK) GetPayload() *models.FcpServiceResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFcpServiceCollectionGetDefault(code int) *FcpServiceCollectionGetDefault
 	}
 }
 
-/* FcpServiceCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+FcpServiceCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FcpServiceCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fcp service collection get default response has a 2xx status code
+func (o *FcpServiceCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fcp service collection get default response has a 3xx status code
+func (o *FcpServiceCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fcp service collection get default response has a 4xx status code
+func (o *FcpServiceCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fcp service collection get default response has a 5xx status code
+func (o *FcpServiceCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fcp service collection get default response a status code equal to that given
+func (o *FcpServiceCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcpServiceCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcp_service_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcpServiceCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/fcp/services][%d] fcp_service_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcpServiceCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewIpsecGetOK() *IpsecGetOK {
 	return &IpsecGetOK{}
 }
 
-/* IpsecGetOK describes a response with status code 200, with default header values.
+/*
+IpsecGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IpsecGetOK struct {
 	Payload *models.Ipsec
 }
 
+// IsSuccess returns true when this ipsec get o k response has a 2xx status code
+func (o *IpsecGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipsec get o k response has a 3xx status code
+func (o *IpsecGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipsec get o k response has a 4xx status code
+func (o *IpsecGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipsec get o k response has a 5xx status code
+func (o *IpsecGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipsec get o k response a status code equal to that given
+func (o *IpsecGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IpsecGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/ipsec][%d] ipsecGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IpsecGetOK) String() string {
+	return fmt.Sprintf("[GET /security/ipsec][%d] ipsecGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IpsecGetOK) GetPayload() *models.Ipsec {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewIpsecGetDefault(code int) *IpsecGetDefault {
 	}
 }
 
-/* IpsecGetDefault describes a response with status code -1, with default header values.
+/*
+IpsecGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *IpsecGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ipsec get default response has a 2xx status code
+func (o *IpsecGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipsec get default response has a 3xx status code
+func (o *IpsecGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipsec get default response has a 4xx status code
+func (o *IpsecGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipsec get default response has a 5xx status code
+func (o *IpsecGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipsec get default response a status code equal to that given
+func (o *IpsecGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IpsecGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/ipsec][%d] ipsec_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IpsecGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/ipsec][%d] ipsec_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IpsecGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

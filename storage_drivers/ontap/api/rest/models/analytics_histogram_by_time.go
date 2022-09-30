@@ -16,7 +16,6 @@ import (
 // AnalyticsHistogramByTime Histogram maintained by file system analytics that associates data with specific periods of time. <br/>
 // The properties of this object are three parallel lists as described here. For any index *i*, the *i*th element of each list corresponds to the same logical bucket within the histogram.
 //
-//
 // swagger:model analytics_histogram_by_time
 type AnalyticsHistogramByTime struct {
 

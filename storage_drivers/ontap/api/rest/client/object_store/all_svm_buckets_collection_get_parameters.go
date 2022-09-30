@@ -53,10 +53,12 @@ func NewAllSvmBucketsCollectionGetParamsWithHTTPClient(client *http.Client) *All
 	}
 }
 
-/* AllSvmBucketsCollectionGetParams contains all the parameters to send to the API endpoint
-   for the all svm buckets collection get operation.
+/*
+AllSvmBucketsCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the all svm buckets collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type AllSvmBucketsCollectionGetParams struct {
 

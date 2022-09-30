@@ -55,10 +55,12 @@ func NewCloudTargetModifyParamsWithHTTPClient(client *http.Client) *CloudTargetM
 	}
 }
 
-/* CloudTargetModifyParams contains all the parameters to send to the API endpoint
-   for the cloud target modify operation.
+/*
+CloudTargetModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cloud target modify operation.
+
+	Typically these are written to a http.Request.
 */
 type CloudTargetModifyParams struct {
 

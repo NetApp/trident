@@ -55,10 +55,12 @@ func NewLdapSchemaCreateParamsWithHTTPClient(client *http.Client) *LdapSchemaCre
 	}
 }
 
-/* LdapSchemaCreateParams contains all the parameters to send to the API endpoint
-   for the ldap schema create operation.
+/*
+LdapSchemaCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ldap schema create operation.
+
+	Typically these are written to a http.Request.
 */
 type LdapSchemaCreateParams struct {
 

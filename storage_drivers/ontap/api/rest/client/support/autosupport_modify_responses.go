@@ -46,14 +46,44 @@ func NewAutosupportModifyOK() *AutosupportModifyOK {
 	return &AutosupportModifyOK{}
 }
 
-/* AutosupportModifyOK describes a response with status code 200, with default header values.
+/*
+AutosupportModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type AutosupportModifyOK struct {
 }
 
+// IsSuccess returns true when this autosupport modify o k response has a 2xx status code
+func (o *AutosupportModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this autosupport modify o k response has a 3xx status code
+func (o *AutosupportModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this autosupport modify o k response has a 4xx status code
+func (o *AutosupportModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this autosupport modify o k response has a 5xx status code
+func (o *AutosupportModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this autosupport modify o k response a status code equal to that given
+func (o *AutosupportModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AutosupportModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupportModifyOK ", 200)
+}
+
+func (o *AutosupportModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupportModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewAutosupportModifyDefault(code int) *AutosupportModifyDefault {
 	}
 }
 
-/* AutosupportModifyDefault describes a response with status code -1, with default header values.
+/*
+	AutosupportModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 8650862    | The SMTP mail host provided cannot be empty |
@@ -83,7 +115,6 @@ func NewAutosupportModifyDefault(code int) *AutosupportModifyDefault {
 | 8650882    | Automatic update requires AutoSupport OnDemand to be enabled. |
 | 53149727   | The proxy URI provided is invalid |
 | 53149728   | The mailhost URI provided is invalid |
-
 */
 type AutosupportModifyDefault struct {
 	_statusCode int
@@ -96,9 +127,39 @@ func (o *AutosupportModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this autosupport modify default response has a 2xx status code
+func (o *AutosupportModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this autosupport modify default response has a 3xx status code
+func (o *AutosupportModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this autosupport modify default response has a 4xx status code
+func (o *AutosupportModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this autosupport modify default response has a 5xx status code
+func (o *AutosupportModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this autosupport modify default response a status code equal to that given
+func (o *AutosupportModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AutosupportModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupport_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AutosupportModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /support/autosupport][%d] autosupport_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AutosupportModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewNetworkIPServicePoliciesGetOK() *NetworkIPServicePoliciesGetOK {
 	return &NetworkIPServicePoliciesGetOK{}
 }
 
-/* NetworkIPServicePoliciesGetOK describes a response with status code 200, with default header values.
+/*
+NetworkIPServicePoliciesGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NetworkIPServicePoliciesGetOK struct {
 	Payload *models.IPServicePolicyResponse
 }
 
+// IsSuccess returns true when this network Ip service policies get o k response has a 2xx status code
+func (o *NetworkIPServicePoliciesGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip service policies get o k response has a 3xx status code
+func (o *NetworkIPServicePoliciesGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip service policies get o k response has a 4xx status code
+func (o *NetworkIPServicePoliciesGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip service policies get o k response has a 5xx status code
+func (o *NetworkIPServicePoliciesGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip service policies get o k response a status code equal to that given
+func (o *NetworkIPServicePoliciesGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkIPServicePoliciesGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ip/service-policies][%d] networkIpServicePoliciesGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NetworkIPServicePoliciesGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ip/service-policies][%d] networkIpServicePoliciesGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NetworkIPServicePoliciesGetOK) GetPayload() *models.IPServicePolicyResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNetworkIPServicePoliciesGetDefault(code int) *NetworkIPServicePoliciesGe
 	}
 }
 
-/* NetworkIPServicePoliciesGetDefault describes a response with status code -1, with default header values.
+/*
+NetworkIPServicePoliciesGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NetworkIPServicePoliciesGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ip service policies get default response has a 2xx status code
+func (o *NetworkIPServicePoliciesGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ip service policies get default response has a 3xx status code
+func (o *NetworkIPServicePoliciesGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ip service policies get default response has a 4xx status code
+func (o *NetworkIPServicePoliciesGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ip service policies get default response has a 5xx status code
+func (o *NetworkIPServicePoliciesGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ip service policies get default response a status code equal to that given
+func (o *NetworkIPServicePoliciesGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkIPServicePoliciesGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ip/service-policies][%d] network_ip_service_policies_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkIPServicePoliciesGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ip/service-policies][%d] network_ip_service_policies_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkIPServicePoliciesGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

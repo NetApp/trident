@@ -46,14 +46,44 @@ func NewExportRuleClientsDeleteOK() *ExportRuleClientsDeleteOK {
 	return &ExportRuleClientsDeleteOK{}
 }
 
-/* ExportRuleClientsDeleteOK describes a response with status code 200, with default header values.
+/*
+ExportRuleClientsDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ExportRuleClientsDeleteOK struct {
 }
 
+// IsSuccess returns true when this export rule clients delete o k response has a 2xx status code
+func (o *ExportRuleClientsDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this export rule clients delete o k response has a 3xx status code
+func (o *ExportRuleClientsDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this export rule clients delete o k response has a 4xx status code
+func (o *ExportRuleClientsDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this export rule clients delete o k response has a 5xx status code
+func (o *ExportRuleClientsDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this export rule clients delete o k response a status code equal to that given
+func (o *ExportRuleClientsDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ExportRuleClientsDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] exportRuleClientsDeleteOK ", 200)
+}
+
+func (o *ExportRuleClientsDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] exportRuleClientsDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewExportRuleClientsDeleteDefault(code int) *ExportRuleClientsDeleteDefault
 	}
 }
 
-/* ExportRuleClientsDeleteDefault describes a response with status code -1, with default header values.
+/*
+	ExportRuleClientsDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1703954    | Export policy does not exist |
@@ -89,7 +121,6 @@ func NewExportRuleClientsDeleteDefault(code int) *ExportRuleClientsDeleteDefault
 | 1704052    | Warning: Not removing any strings from the clientmatch field for ruleindex. None of the match strings were found in the clientmatch list |
 | 1704064    | Clientmatch host name too long |
 | 1704065    | Clientmatch domain name too long |
-
 */
 type ExportRuleClientsDeleteDefault struct {
 	_statusCode int
@@ -102,9 +133,39 @@ func (o *ExportRuleClientsDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this export rule clients delete default response has a 2xx status code
+func (o *ExportRuleClientsDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this export rule clients delete default response has a 3xx status code
+func (o *ExportRuleClientsDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this export rule clients delete default response has a 4xx status code
+func (o *ExportRuleClientsDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this export rule clients delete default response has a 5xx status code
+func (o *ExportRuleClientsDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this export rule clients delete default response a status code equal to that given
+func (o *ExportRuleClientsDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ExportRuleClientsDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] export_rule_clients_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ExportRuleClientsDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/nfs/export-policies/{policy.id}/rules/{index}/clients/{match}][%d] export_rule_clients_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ExportRuleClientsDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

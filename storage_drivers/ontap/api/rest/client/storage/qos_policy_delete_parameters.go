@@ -53,10 +53,12 @@ func NewQosPolicyDeleteParamsWithHTTPClient(client *http.Client) *QosPolicyDelet
 	}
 }
 
-/* QosPolicyDeleteParams contains all the parameters to send to the API endpoint
-   for the qos policy delete operation.
+/*
+QosPolicyDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the qos policy delete operation.
+
+	Typically these are written to a http.Request.
 */
 type QosPolicyDeleteParams struct {
 

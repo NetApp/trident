@@ -46,14 +46,44 @@ func NewGcpKmsDeleteOK() *GcpKmsDeleteOK {
 	return &GcpKmsDeleteOK{}
 }
 
-/* GcpKmsDeleteOK describes a response with status code 200, with default header values.
+/*
+GcpKmsDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type GcpKmsDeleteOK struct {
 }
 
+// IsSuccess returns true when this gcp kms delete o k response has a 2xx status code
+func (o *GcpKmsDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this gcp kms delete o k response has a 3xx status code
+func (o *GcpKmsDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this gcp kms delete o k response has a 4xx status code
+func (o *GcpKmsDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this gcp kms delete o k response has a 5xx status code
+func (o *GcpKmsDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this gcp kms delete o k response a status code equal to that given
+func (o *GcpKmsDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GcpKmsDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/gcp-kms/{uuid}][%d] gcpKmsDeleteOK ", 200)
+}
+
+func (o *GcpKmsDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/gcp-kms/{uuid}][%d] gcpKmsDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewGcpKmsDeleteDefault(code int) *GcpKmsDeleteDefault {
 	}
 }
 
-/* GcpKmsDeleteDefault describes a response with status code -1, with default header values.
+/*
+	GcpKmsDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65536242 | One or more self-encrypting drives are assigned an authentication key. |
@@ -87,7 +119,6 @@ func NewGcpKmsDeleteDefault(code int) *GcpKmsDeleteDefault {
 | 196608080 | One or more nodes in the cluster have the root volume encrypted using NVE (NetApp Volume Encryption). |
 | 196608301 | Internal error. Failed to get encryption type. |
 | 196608305 | NAE aggregates found in the cluster. |
-
 */
 type GcpKmsDeleteDefault struct {
 	_statusCode int
@@ -100,9 +131,39 @@ func (o *GcpKmsDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this gcp kms delete default response has a 2xx status code
+func (o *GcpKmsDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this gcp kms delete default response has a 3xx status code
+func (o *GcpKmsDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this gcp kms delete default response has a 4xx status code
+func (o *GcpKmsDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this gcp kms delete default response has a 5xx status code
+func (o *GcpKmsDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this gcp kms delete default response a status code equal to that given
+func (o *GcpKmsDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GcpKmsDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/gcp-kms/{uuid}][%d] gcp_kms_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GcpKmsDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/gcp-kms/{uuid}][%d] gcp_kms_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GcpKmsDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

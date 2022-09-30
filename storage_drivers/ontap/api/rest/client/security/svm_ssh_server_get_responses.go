@@ -46,7 +46,8 @@ func NewSvmSSHServerGetOK() *SvmSSHServerGetOK {
 	return &SvmSSHServerGetOK{}
 }
 
-/* SvmSSHServerGetOK describes a response with status code 200, with default header values.
+/*
+SvmSSHServerGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SvmSSHServerGetOK struct {
 	Payload *models.SvmSSHServer
 }
 
+// IsSuccess returns true when this svm Ssh server get o k response has a 2xx status code
+func (o *SvmSSHServerGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm Ssh server get o k response has a 3xx status code
+func (o *SvmSSHServerGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm Ssh server get o k response has a 4xx status code
+func (o *SvmSSHServerGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm Ssh server get o k response has a 5xx status code
+func (o *SvmSSHServerGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm Ssh server get o k response a status code equal to that given
+func (o *SvmSSHServerGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SvmSSHServerGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svmSshServerGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SvmSSHServerGetOK) String() string {
+	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svmSshServerGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SvmSSHServerGetOK) GetPayload() *models.SvmSSHServer {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSvmSSHServerGetDefault(code int) *SvmSSHServerGetDefault {
 	}
 }
 
-/* SvmSSHServerGetDefault describes a response with status code -1, with default header values.
+/*
+SvmSSHServerGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SvmSSHServerGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm ssh server get default response has a 2xx status code
+func (o *SvmSSHServerGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm ssh server get default response has a 3xx status code
+func (o *SvmSSHServerGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm ssh server get default response has a 4xx status code
+func (o *SvmSSHServerGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm ssh server get default response has a 5xx status code
+func (o *SvmSSHServerGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm ssh server get default response a status code equal to that given
+func (o *SvmSSHServerGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmSSHServerGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svm_ssh_server_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmSSHServerGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/ssh/svms/{svm.uuid}][%d] svm_ssh_server_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmSSHServerGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewCifsServiceCreateAccepted() *CifsServiceCreateAccepted {
 	return &CifsServiceCreateAccepted{}
 }
 
-/* CifsServiceCreateAccepted describes a response with status code 202, with default header values.
+/*
+CifsServiceCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type CifsServiceCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cifs service create accepted response has a 2xx status code
+func (o *CifsServiceCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs service create accepted response has a 3xx status code
+func (o *CifsServiceCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs service create accepted response has a 4xx status code
+func (o *CifsServiceCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs service create accepted response has a 5xx status code
+func (o *CifsServiceCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs service create accepted response a status code equal to that given
+func (o *CifsServiceCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *CifsServiceCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifsServiceCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *CifsServiceCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifsServiceCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *CifsServiceCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewCifsServiceCreateDefault(code int) *CifsServiceCreateDefault {
 	}
 }
 
-/* CifsServiceCreateDefault describes a response with status code -1, with default header values.
+/*
+	CifsServiceCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4915251    | STARTTLS and LDAPS cannot be used together.|
-
 */
 type CifsServiceCreateDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *CifsServiceCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs service create default response has a 2xx status code
+func (o *CifsServiceCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs service create default response has a 3xx status code
+func (o *CifsServiceCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs service create default response has a 4xx status code
+func (o *CifsServiceCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs service create default response has a 5xx status code
+func (o *CifsServiceCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs service create default response a status code equal to that given
+func (o *CifsServiceCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsServiceCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifs_service_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsServiceCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/services][%d] cifs_service_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsServiceCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

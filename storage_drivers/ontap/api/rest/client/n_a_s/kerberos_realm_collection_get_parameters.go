@@ -53,10 +53,12 @@ func NewKerberosRealmCollectionGetParamsWithHTTPClient(client *http.Client) *Ker
 	}
 }
 
-/* KerberosRealmCollectionGetParams contains all the parameters to send to the API endpoint
-   for the kerberos realm collection get operation.
+/*
+KerberosRealmCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the kerberos realm collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type KerberosRealmCollectionGetParams struct {
 

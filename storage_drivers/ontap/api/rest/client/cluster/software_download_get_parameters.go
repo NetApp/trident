@@ -53,10 +53,12 @@ func NewSoftwareDownloadGetParamsWithHTTPClient(client *http.Client) *SoftwareDo
 	}
 }
 
-/* SoftwareDownloadGetParams contains all the parameters to send to the API endpoint
-   for the software download get operation.
+/*
+SoftwareDownloadGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the software download get operation.
+
+	Typically these are written to a http.Request.
 */
 type SoftwareDownloadGetParams struct {
 

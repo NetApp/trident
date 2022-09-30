@@ -46,7 +46,8 @@ func NewAccountCollectionGetOK() *AccountCollectionGetOK {
 	return &AccountCollectionGetOK{}
 }
 
-/* AccountCollectionGetOK describes a response with status code 200, with default header values.
+/*
+AccountCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AccountCollectionGetOK struct {
 	Payload *models.AccountResponse
 }
 
+// IsSuccess returns true when this account collection get o k response has a 2xx status code
+func (o *AccountCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this account collection get o k response has a 3xx status code
+func (o *AccountCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this account collection get o k response has a 4xx status code
+func (o *AccountCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this account collection get o k response has a 5xx status code
+func (o *AccountCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this account collection get o k response a status code equal to that given
+func (o *AccountCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AccountCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/accounts][%d] accountCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AccountCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/accounts][%d] accountCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AccountCollectionGetOK) GetPayload() *models.AccountResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewAccountCollectionGetDefault(code int) *AccountCollectionGetDefault {
 	}
 }
 
-/* AccountCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+AccountCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *AccountCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this account collection get default response has a 2xx status code
+func (o *AccountCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this account collection get default response has a 3xx status code
+func (o *AccountCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this account collection get default response has a 4xx status code
+func (o *AccountCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this account collection get default response has a 5xx status code
+func (o *AccountCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this account collection get default response a status code equal to that given
+func (o *AccountCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AccountCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/accounts][%d] account_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AccountCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/accounts][%d] account_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AccountCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

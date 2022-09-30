@@ -383,7 +383,6 @@ func (m *IgroupInitiatorListItemConnectivityTracking) UnmarshalBinary(b []byte) 
 
 // IgroupInitiatorListItemIgroup The initiator group that directly owns the initiator, which is where modification of the initiator is supported. This property will only be populated when the initiator is a member of a nested initiator group.
 //
-//
 // swagger:model IgroupInitiatorListItemIgroup
 type IgroupInitiatorListItemIgroup struct {
 

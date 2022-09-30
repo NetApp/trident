@@ -14,7 +14,6 @@ import (
 
 // Counter2d Counters that represent the second dimension of a two-dimension counter.
 //
-//
 // swagger:model counter2d
 type Counter2d struct {
 

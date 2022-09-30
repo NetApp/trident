@@ -55,10 +55,12 @@ func NewEmsFilterRuleModifyParamsWithHTTPClient(client *http.Client) *EmsFilterR
 	}
 }
 
-/* EmsFilterRuleModifyParams contains all the parameters to send to the API endpoint
-   for the ems filter rule modify operation.
+/*
+EmsFilterRuleModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ems filter rule modify operation.
+
+	Typically these are written to a http.Request.
 */
 type EmsFilterRuleModifyParams struct {
 

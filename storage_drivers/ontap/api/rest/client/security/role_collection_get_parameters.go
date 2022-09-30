@@ -53,10 +53,12 @@ func NewRoleCollectionGetParamsWithHTTPClient(client *http.Client) *RoleCollecti
 	}
 }
 
-/* RoleCollectionGetParams contains all the parameters to send to the API endpoint
-   for the role collection get operation.
+/*
+RoleCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the role collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type RoleCollectionGetParams struct {
 

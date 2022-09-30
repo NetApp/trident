@@ -46,14 +46,44 @@ func NewKerberosInterfaceModifyOK() *KerberosInterfaceModifyOK {
 	return &KerberosInterfaceModifyOK{}
 }
 
-/* KerberosInterfaceModifyOK describes a response with status code 200, with default header values.
+/*
+KerberosInterfaceModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type KerberosInterfaceModifyOK struct {
 }
 
+// IsSuccess returns true when this kerberos interface modify o k response has a 2xx status code
+func (o *KerberosInterfaceModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this kerberos interface modify o k response has a 3xx status code
+func (o *KerberosInterfaceModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this kerberos interface modify o k response has a 4xx status code
+func (o *KerberosInterfaceModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this kerberos interface modify o k response has a 5xx status code
+func (o *KerberosInterfaceModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this kerberos interface modify o k response a status code equal to that given
+func (o *KerberosInterfaceModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *KerberosInterfaceModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceModifyOK ", 200)
+}
+
+func (o *KerberosInterfaceModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberosInterfaceModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewKerberosInterfaceModifyDefault(code int) *KerberosInterfaceModifyDefault
 	}
 }
 
-/* KerberosInterfaceModifyDefault describes a response with status code -1, with default header values.
+/*
+	KerberosInterfaceModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error codes | Description |
 | ----------- | ----------- |
 | 1966082     | LIF could not be found in database. Contact technical support for assistance.|
@@ -93,7 +125,6 @@ func NewKerberosInterfaceModifyDefault(code int) *KerberosInterfaceModifyDefault
 | 3277019     | Cannot specify -force when enabling Kerberos.|
 | 3277020     | Modifying the NFS Kerberos configuration for a LIF that is not configured for NFS is not supported.|
 | 3277043     | Keytab import failed due to missing keys. Keys for encryption types are required for  Vserver but found no matching keys for service principal name. Generate the keytab file with all required keys and try again.|
-
 */
 type KerberosInterfaceModifyDefault struct {
 	_statusCode int
@@ -106,9 +137,39 @@ func (o *KerberosInterfaceModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this kerberos interface modify default response has a 2xx status code
+func (o *KerberosInterfaceModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this kerberos interface modify default response has a 3xx status code
+func (o *KerberosInterfaceModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this kerberos interface modify default response has a 4xx status code
+func (o *KerberosInterfaceModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this kerberos interface modify default response has a 5xx status code
+func (o *KerberosInterfaceModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this kerberos interface modify default response a status code equal to that given
+func (o *KerberosInterfaceModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *KerberosInterfaceModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *KerberosInterfaceModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/nfs/kerberos/interfaces/{interface.uuid}][%d] kerberos_interface_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *KerberosInterfaceModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewCloudStoreGetParamsWithHTTPClient(client *http.Client) *CloudStoreGetPar
 	}
 }
 
-/* CloudStoreGetParams contains all the parameters to send to the API endpoint
-   for the cloud store get operation.
+/*
+CloudStoreGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cloud store get operation.
+
+	Typically these are written to a http.Request.
 */
 type CloudStoreGetParams struct {
 

@@ -15,7 +15,6 @@ import (
 
 // UnixGroupSettings UNIX groups cache setting.
 //
-//
 // swagger:model unix_group_settings
 type UnixGroupSettings struct {
 

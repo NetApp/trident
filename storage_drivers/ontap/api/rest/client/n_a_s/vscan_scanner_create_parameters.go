@@ -55,10 +55,12 @@ func NewVscanScannerCreateParamsWithHTTPClient(client *http.Client) *VscanScanne
 	}
 }
 
-/* VscanScannerCreateParams contains all the parameters to send to the API endpoint
-   for the vscan scanner create operation.
+/*
+VscanScannerCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vscan scanner create operation.
+
+	Typically these are written to a http.Request.
 */
 type VscanScannerCreateParams struct {
 

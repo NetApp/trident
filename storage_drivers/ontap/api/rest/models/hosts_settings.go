@@ -15,7 +15,6 @@ import (
 
 // HostsSettings Hosts cache setting.
 //
-//
 // swagger:model hosts_settings
 type HostsSettings struct {
 

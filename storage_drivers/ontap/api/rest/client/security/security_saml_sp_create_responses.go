@@ -46,7 +46,8 @@ func NewSecuritySamlSpCreateAccepted() *SecuritySamlSpCreateAccepted {
 	return &SecuritySamlSpCreateAccepted{}
 }
 
-/* SecuritySamlSpCreateAccepted describes a response with status code 202, with default header values.
+/*
+SecuritySamlSpCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SecuritySamlSpCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this security saml sp create accepted response has a 2xx status code
+func (o *SecuritySamlSpCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security saml sp create accepted response has a 3xx status code
+func (o *SecuritySamlSpCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security saml sp create accepted response has a 4xx status code
+func (o *SecuritySamlSpCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security saml sp create accepted response has a 5xx status code
+func (o *SecuritySamlSpCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security saml sp create accepted response a status code equal to that given
+func (o *SecuritySamlSpCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SecuritySamlSpCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] securitySamlSpCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SecuritySamlSpCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] securitySamlSpCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SecuritySamlSpCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSecuritySamlSpCreateDefault(code int) *SecuritySamlSpCreateDefault {
 	}
 }
 
-/* SecuritySamlSpCreateDefault describes a response with status code -1, with default header values.
+/*
+	SecuritySamlSpCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 12320789 | Failed to download data file from specified URI. |
@@ -92,7 +125,6 @@ func NewSecuritySamlSpCreateDefault(code int) *SecuritySamlSpCreateDefault {
 | 12320806 | The certificate information entered does not match any installed certificates. |
 | 12320814 | An invalid IDP URI has been entered. |
 | 12320815 | An IDP URI must be an HTTPS or FTPS URI. |
-
 */
 type SecuritySamlSpCreateDefault struct {
 	_statusCode int
@@ -105,9 +137,39 @@ func (o *SecuritySamlSpCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security saml sp create default response has a 2xx status code
+func (o *SecuritySamlSpCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security saml sp create default response has a 3xx status code
+func (o *SecuritySamlSpCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security saml sp create default response has a 4xx status code
+func (o *SecuritySamlSpCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security saml sp create default response has a 5xx status code
+func (o *SecuritySamlSpCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security saml sp create default response a status code equal to that given
+func (o *SecuritySamlSpCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecuritySamlSpCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] security_saml_sp_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecuritySamlSpCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/authentication/cluster/saml-sp][%d] security_saml_sp_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecuritySamlSpCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewNameMappingCollectionGetOK() *NameMappingCollectionGetOK {
 	return &NameMappingCollectionGetOK{}
 }
 
-/* NameMappingCollectionGetOK describes a response with status code 200, with default header values.
+/*
+NameMappingCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NameMappingCollectionGetOK struct {
 	Payload *models.NameMappingResponse
 }
 
+// IsSuccess returns true when this name mapping collection get o k response has a 2xx status code
+func (o *NameMappingCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this name mapping collection get o k response has a 3xx status code
+func (o *NameMappingCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this name mapping collection get o k response has a 4xx status code
+func (o *NameMappingCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this name mapping collection get o k response has a 5xx status code
+func (o *NameMappingCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this name mapping collection get o k response a status code equal to that given
+func (o *NameMappingCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NameMappingCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/name-mappings][%d] nameMappingCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NameMappingCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/name-mappings][%d] nameMappingCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NameMappingCollectionGetOK) GetPayload() *models.NameMappingResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNameMappingCollectionGetDefault(code int) *NameMappingCollectionGetDefau
 	}
 }
 
-/* NameMappingCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+NameMappingCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NameMappingCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this name mapping collection get default response has a 2xx status code
+func (o *NameMappingCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this name mapping collection get default response has a 3xx status code
+func (o *NameMappingCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this name mapping collection get default response has a 4xx status code
+func (o *NameMappingCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this name mapping collection get default response has a 5xx status code
+func (o *NameMappingCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this name mapping collection get default response a status code equal to that given
+func (o *NameMappingCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NameMappingCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/name-mappings][%d] name_mapping_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NameMappingCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/name-mappings][%d] name_mapping_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NameMappingCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -55,10 +55,12 @@ func NewApplicationCreateParamsWithHTTPClient(client *http.Client) *ApplicationC
 	}
 }
 
-/* ApplicationCreateParams contains all the parameters to send to the API endpoint
-   for the application create operation.
+/*
+ApplicationCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the application create operation.
+
+	Typically these are written to a http.Request.
 */
 type ApplicationCreateParams struct {
 

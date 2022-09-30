@@ -46,14 +46,44 @@ func NewSvmPeerModifyAccepted() *SvmPeerModifyAccepted {
 	return &SvmPeerModifyAccepted{}
 }
 
-/* SvmPeerModifyAccepted describes a response with status code 202, with default header values.
+/*
+SvmPeerModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type SvmPeerModifyAccepted struct {
 }
 
+// IsSuccess returns true when this svm peer modify accepted response has a 2xx status code
+func (o *SvmPeerModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm peer modify accepted response has a 3xx status code
+func (o *SvmPeerModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm peer modify accepted response has a 4xx status code
+func (o *SvmPeerModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm peer modify accepted response has a 5xx status code
+func (o *SvmPeerModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm peer modify accepted response a status code equal to that given
+func (o *SvmPeerModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SvmPeerModifyAccepted) Error() string {
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyAccepted ", 202)
+}
+
+func (o *SvmPeerModifyAccepted) String() string {
 	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyAccepted ", 202)
 }
 
@@ -69,9 +99,11 @@ func NewSvmPeerModifyDefault(code int) *SvmPeerModifyDefault {
 	}
 }
 
-/* SvmPeerModifyDefault describes a response with status code -1, with default header values.
+/*
+	SvmPeerModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 <br/>
 ```
 | Error codes | Description |
@@ -85,7 +117,6 @@ func NewSvmPeerModifyDefault(code int) *SvmPeerModifyDefault {
 | 26345581    | Peer cluster name could not be retrieved or validated. |
 ```
 <br/>
-
 */
 type SvmPeerModifyDefault struct {
 	_statusCode int
@@ -98,9 +129,39 @@ func (o *SvmPeerModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm peer modify default response has a 2xx status code
+func (o *SvmPeerModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm peer modify default response has a 3xx status code
+func (o *SvmPeerModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm peer modify default response has a 4xx status code
+func (o *SvmPeerModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm peer modify default response has a 5xx status code
+func (o *SvmPeerModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm peer modify default response a status code equal to that given
+func (o *SvmPeerModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmPeerModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svm_peer_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmPeerModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svm_peer_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmPeerModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewNdmpPasswordGetOK() *NdmpPasswordGetOK {
 	return &NdmpPasswordGetOK{}
 }
 
-/* NdmpPasswordGetOK describes a response with status code 200, with default header values.
+/*
+NdmpPasswordGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NdmpPasswordGetOK struct {
 	Payload *models.NdmpPassword
 }
 
+// IsSuccess returns true when this ndmp password get o k response has a 2xx status code
+func (o *NdmpPasswordGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ndmp password get o k response has a 3xx status code
+func (o *NdmpPasswordGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ndmp password get o k response has a 4xx status code
+func (o *NdmpPasswordGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ndmp password get o k response has a 5xx status code
+func (o *NdmpPasswordGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ndmp password get o k response a status code equal to that given
+func (o *NdmpPasswordGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NdmpPasswordGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmpPasswordGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NdmpPasswordGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmpPasswordGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NdmpPasswordGetOK) GetPayload() *models.NdmpPassword {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNdmpPasswordGetDefault(code int) *NdmpPasswordGetDefault {
 	}
 }
 
-/* NdmpPasswordGetDefault describes a response with status code -1, with default header values.
+/*
+NdmpPasswordGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NdmpPasswordGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ndmp password get default response has a 2xx status code
+func (o *NdmpPasswordGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ndmp password get default response has a 3xx status code
+func (o *NdmpPasswordGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ndmp password get default response has a 4xx status code
+func (o *NdmpPasswordGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ndmp password get default response has a 5xx status code
+func (o *NdmpPasswordGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ndmp password get default response a status code equal to that given
+func (o *NdmpPasswordGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NdmpPasswordGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmp_password_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NdmpPasswordGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/svms/{svm.uuid}/passwords/{user}][%d] ndmp_password_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NdmpPasswordGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

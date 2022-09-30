@@ -46,14 +46,44 @@ func NewClusterAccountAdProxyDeleteOK() *ClusterAccountAdProxyDeleteOK {
 	return &ClusterAccountAdProxyDeleteOK{}
 }
 
-/* ClusterAccountAdProxyDeleteOK describes a response with status code 200, with default header values.
+/*
+ClusterAccountAdProxyDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ClusterAccountAdProxyDeleteOK struct {
 }
 
+// IsSuccess returns true when this cluster account ad proxy delete o k response has a 2xx status code
+func (o *ClusterAccountAdProxyDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster account ad proxy delete o k response has a 3xx status code
+func (o *ClusterAccountAdProxyDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster account ad proxy delete o k response has a 4xx status code
+func (o *ClusterAccountAdProxyDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster account ad proxy delete o k response has a 5xx status code
+func (o *ClusterAccountAdProxyDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster account ad proxy delete o k response a status code equal to that given
+func (o *ClusterAccountAdProxyDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterAccountAdProxyDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyDeleteOK ", 200)
+}
+
+func (o *ClusterAccountAdProxyDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] clusterAccountAdProxyDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewClusterAccountAdProxyDeleteDefault(code int) *ClusterAccountAdProxyDelet
 	}
 }
 
-/* ClusterAccountAdProxyDeleteDefault describes a response with status code -1, with default header values.
+/*
+ClusterAccountAdProxyDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *ClusterAccountAdProxyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster account ad proxy delete default response has a 2xx status code
+func (o *ClusterAccountAdProxyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster account ad proxy delete default response has a 3xx status code
+func (o *ClusterAccountAdProxyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster account ad proxy delete default response has a 4xx status code
+func (o *ClusterAccountAdProxyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster account ad proxy delete default response has a 5xx status code
+func (o *ClusterAccountAdProxyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster account ad proxy delete default response a status code equal to that given
+func (o *ClusterAccountAdProxyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterAccountAdProxyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterAccountAdProxyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/authentication/cluster/ad-proxy][%d] cluster_account_ad_proxy_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterAccountAdProxyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

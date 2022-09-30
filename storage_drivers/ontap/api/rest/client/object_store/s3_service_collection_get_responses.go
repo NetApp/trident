@@ -46,7 +46,8 @@ func NewS3ServiceCollectionGetOK() *S3ServiceCollectionGetOK {
 	return &S3ServiceCollectionGetOK{}
 }
 
-/* S3ServiceCollectionGetOK describes a response with status code 200, with default header values.
+/*
+S3ServiceCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type S3ServiceCollectionGetOK struct {
 	Payload *models.S3ServiceResponse
 }
 
+// IsSuccess returns true when this s3 service collection get o k response has a 2xx status code
+func (o *S3ServiceCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 service collection get o k response has a 3xx status code
+func (o *S3ServiceCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 service collection get o k response has a 4xx status code
+func (o *S3ServiceCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 service collection get o k response has a 5xx status code
+func (o *S3ServiceCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 service collection get o k response a status code equal to that given
+func (o *S3ServiceCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3ServiceCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/services][%d] s3ServiceCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *S3ServiceCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/services][%d] s3ServiceCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *S3ServiceCollectionGetOK) GetPayload() *models.S3ServiceResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewS3ServiceCollectionGetDefault(code int) *S3ServiceCollectionGetDefault {
 	}
 }
 
-/* S3ServiceCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+S3ServiceCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *S3ServiceCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 service collection get default response has a 2xx status code
+func (o *S3ServiceCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 service collection get default response has a 3xx status code
+func (o *S3ServiceCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 service collection get default response has a 4xx status code
+func (o *S3ServiceCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 service collection get default response has a 5xx status code
+func (o *S3ServiceCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 service collection get default response a status code equal to that given
+func (o *S3ServiceCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3ServiceCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/services][%d] s3_service_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3ServiceCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/services][%d] s3_service_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3ServiceCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

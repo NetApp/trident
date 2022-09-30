@@ -53,10 +53,12 @@ func NewAccountPublickeyDeleteParamsWithHTTPClient(client *http.Client) *Account
 	}
 }
 
-/* AccountPublickeyDeleteParams contains all the parameters to send to the API endpoint
-   for the account publickey delete operation.
+/*
+AccountPublickeyDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the account publickey delete operation.
+
+	Typically these are written to a http.Request.
 */
 type AccountPublickeyDeleteParams struct {
 

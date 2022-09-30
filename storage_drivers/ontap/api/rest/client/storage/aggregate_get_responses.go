@@ -46,7 +46,8 @@ func NewAggregateGetOK() *AggregateGetOK {
 	return &AggregateGetOK{}
 }
 
-/* AggregateGetOK describes a response with status code 200, with default header values.
+/*
+AggregateGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type AggregateGetOK struct {
 	Payload *models.Aggregate
 }
 
+// IsSuccess returns true when this aggregate get o k response has a 2xx status code
+func (o *AggregateGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this aggregate get o k response has a 3xx status code
+func (o *AggregateGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this aggregate get o k response has a 4xx status code
+func (o *AggregateGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this aggregate get o k response has a 5xx status code
+func (o *AggregateGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this aggregate get o k response a status code equal to that given
+func (o *AggregateGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AggregateGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregateGetOK  %+v", 200, o.Payload)
 }
+
+func (o *AggregateGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregateGetOK  %+v", 200, o.Payload)
+}
+
 func (o *AggregateGetOK) GetPayload() *models.Aggregate {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewAggregateGetDefault(code int) *AggregateGetDefault {
 	}
 }
 
-/* AggregateGetDefault describes a response with status code -1, with default header values.
+/*
+	AggregateGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 787092 | The target field cannot be specified for this operation. |
@@ -99,7 +132,6 @@ func NewAggregateGetDefault(code int) *AggregateGetDefault {
 | 19726397 | Aggregates must contain disks with identical disk-types and disk-sizes. |
 | 19726402 | Internal error. Unable to determine the MetroCluster configuration state. |
 | 19726538 | Cannot perform the operation because the aggregate is not in a healthy state. |
-
 */
 type AggregateGetDefault struct {
 	_statusCode int
@@ -112,9 +144,39 @@ func (o *AggregateGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this aggregate get default response has a 2xx status code
+func (o *AggregateGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this aggregate get default response has a 3xx status code
+func (o *AggregateGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this aggregate get default response has a 4xx status code
+func (o *AggregateGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this aggregate get default response has a 5xx status code
+func (o *AggregateGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this aggregate get default response a status code equal to that given
+func (o *AggregateGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AggregateGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregate_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AggregateGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/aggregates/{uuid}][%d] aggregate_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AggregateGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

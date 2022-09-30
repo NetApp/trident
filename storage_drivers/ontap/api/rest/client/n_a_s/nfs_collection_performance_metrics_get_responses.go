@@ -46,7 +46,8 @@ func NewNfsCollectionPerformanceMetricsGetOK() *NfsCollectionPerformanceMetricsG
 	return &NfsCollectionPerformanceMetricsGetOK{}
 }
 
-/* NfsCollectionPerformanceMetricsGetOK describes a response with status code 200, with default header values.
+/*
+NfsCollectionPerformanceMetricsGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NfsCollectionPerformanceMetricsGetOK struct {
 	Payload *models.PerformanceSvmNfsResponse
 }
 
+// IsSuccess returns true when this nfs collection performance metrics get o k response has a 2xx status code
+func (o *NfsCollectionPerformanceMetricsGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nfs collection performance metrics get o k response has a 3xx status code
+func (o *NfsCollectionPerformanceMetricsGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nfs collection performance metrics get o k response has a 4xx status code
+func (o *NfsCollectionPerformanceMetricsGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nfs collection performance metrics get o k response has a 5xx status code
+func (o *NfsCollectionPerformanceMetricsGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nfs collection performance metrics get o k response a status code equal to that given
+func (o *NfsCollectionPerformanceMetricsGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NfsCollectionPerformanceMetricsGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfsCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NfsCollectionPerformanceMetricsGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfsCollectionPerformanceMetricsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NfsCollectionPerformanceMetricsGetOK) GetPayload() *models.PerformanceSvmNfsResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNfsCollectionPerformanceMetricsGetDefault(code int) *NfsCollectionPerfor
 	}
 }
 
-/* NfsCollectionPerformanceMetricsGetDefault describes a response with status code -1, with default header values.
+/*
+NfsCollectionPerformanceMetricsGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NfsCollectionPerformanceMetricsGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nfs collection performance metrics get default response has a 2xx status code
+func (o *NfsCollectionPerformanceMetricsGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nfs collection performance metrics get default response has a 3xx status code
+func (o *NfsCollectionPerformanceMetricsGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nfs collection performance metrics get default response has a 4xx status code
+func (o *NfsCollectionPerformanceMetricsGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nfs collection performance metrics get default response has a 5xx status code
+func (o *NfsCollectionPerformanceMetricsGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nfs collection performance metrics get default response a status code equal to that given
+func (o *NfsCollectionPerformanceMetricsGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NfsCollectionPerformanceMetricsGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfs_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NfsCollectionPerformanceMetricsGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nfs/services/{svm.uuid}/metrics][%d] nfs_collection_performance_metrics_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NfsCollectionPerformanceMetricsGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewApplicationComponentGetOK() *ApplicationComponentGetOK {
 	return &ApplicationComponentGetOK{}
 }
 
-/* ApplicationComponentGetOK describes a response with status code 200, with default header values.
+/*
+ApplicationComponentGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ApplicationComponentGetOK struct {
 	Payload *models.ApplicationComponent
 }
 
+// IsSuccess returns true when this application component get o k response has a 2xx status code
+func (o *ApplicationComponentGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application component get o k response has a 3xx status code
+func (o *ApplicationComponentGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application component get o k response has a 4xx status code
+func (o *ApplicationComponentGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application component get o k response has a 5xx status code
+func (o *ApplicationComponentGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application component get o k response a status code equal to that given
+func (o *ApplicationComponentGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ApplicationComponentGetOK) Error() string {
 	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] applicationComponentGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ApplicationComponentGetOK) String() string {
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] applicationComponentGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ApplicationComponentGetOK) GetPayload() *models.ApplicationComponent {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewApplicationComponentGetDefault(code int) *ApplicationComponentGetDefault
 	}
 }
 
-/* ApplicationComponentGetDefault describes a response with status code -1, with default header values.
+/*
+ApplicationComponentGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ApplicationComponentGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this application component get default response has a 2xx status code
+func (o *ApplicationComponentGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this application component get default response has a 3xx status code
+func (o *ApplicationComponentGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this application component get default response has a 4xx status code
+func (o *ApplicationComponentGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this application component get default response has a 5xx status code
+func (o *ApplicationComponentGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this application component get default response a status code equal to that given
+func (o *ApplicationComponentGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ApplicationComponentGetDefault) Error() string {
 	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] application_component_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ApplicationComponentGetDefault) String() string {
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/components/{uuid}][%d] application_component_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ApplicationComponentGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

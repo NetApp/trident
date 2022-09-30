@@ -46,7 +46,8 @@ func NewFlexcacheGetOK() *FlexcacheGetOK {
 	return &FlexcacheGetOK{}
 }
 
-/* FlexcacheGetOK describes a response with status code 200, with default header values.
+/*
+FlexcacheGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FlexcacheGetOK struct {
 	Payload *models.Flexcache
 }
 
+// IsSuccess returns true when this flexcache get o k response has a 2xx status code
+func (o *FlexcacheGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this flexcache get o k response has a 3xx status code
+func (o *FlexcacheGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this flexcache get o k response has a 4xx status code
+func (o *FlexcacheGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this flexcache get o k response has a 5xx status code
+func (o *FlexcacheGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this flexcache get o k response a status code equal to that given
+func (o *FlexcacheGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FlexcacheGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/flexcache/flexcaches/{uuid}][%d] flexcacheGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FlexcacheGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/flexcache/flexcaches/{uuid}][%d] flexcacheGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FlexcacheGetOK) GetPayload() *models.Flexcache {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFlexcacheGetDefault(code int) *FlexcacheGetDefault {
 	}
 }
 
-/* FlexcacheGetDefault describes a response with status code -1, with default header values.
+/*
+FlexcacheGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FlexcacheGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this flexcache get default response has a 2xx status code
+func (o *FlexcacheGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this flexcache get default response has a 3xx status code
+func (o *FlexcacheGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this flexcache get default response has a 4xx status code
+func (o *FlexcacheGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this flexcache get default response has a 5xx status code
+func (o *FlexcacheGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this flexcache get default response a status code equal to that given
+func (o *FlexcacheGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FlexcacheGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/flexcache/flexcaches/{uuid}][%d] flexcache_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FlexcacheGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/flexcache/flexcaches/{uuid}][%d] flexcache_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FlexcacheGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewNvmeServiceCreateCreated() *NvmeServiceCreateCreated {
 	return &NvmeServiceCreateCreated{}
 }
 
-/* NvmeServiceCreateCreated describes a response with status code 201, with default header values.
+/*
+NvmeServiceCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type NvmeServiceCreateCreated struct {
 	Payload *models.NvmeServiceResponse
 }
 
+// IsSuccess returns true when this nvme service create created response has a 2xx status code
+func (o *NvmeServiceCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme service create created response has a 3xx status code
+func (o *NvmeServiceCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme service create created response has a 4xx status code
+func (o *NvmeServiceCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme service create created response has a 5xx status code
+func (o *NvmeServiceCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme service create created response a status code equal to that given
+func (o *NvmeServiceCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *NvmeServiceCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvmeServiceCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *NvmeServiceCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvmeServiceCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *NvmeServiceCreateCreated) GetPayload() *models.NvmeServiceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewNvmeServiceCreateDefault(code int) *NvmeServiceCreateDefault {
 	}
 }
 
-/* NvmeServiceCreateDefault describes a response with status code -1, with default header values.
+/*
+	NvmeServiceCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1115127 | The cluster lacks a valid NVMe license. |
@@ -93,7 +126,6 @@ func NewNvmeServiceCreateDefault(code int) *NvmeServiceCreateDefault {
 | 5374893 | The SVM is stopped. The SVM must be running to create an NVMe service. |
 | 72089650 | An NVMe service already exists for the specified SVM. |
 | 72089900 | An NVMe service cannot be creating in an SVM that is configured for a SAN protocol. |
-
 */
 type NvmeServiceCreateDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *NvmeServiceCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme service create default response has a 2xx status code
+func (o *NvmeServiceCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme service create default response has a 3xx status code
+func (o *NvmeServiceCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme service create default response has a 4xx status code
+func (o *NvmeServiceCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme service create default response has a 5xx status code
+func (o *NvmeServiceCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme service create default response a status code equal to that given
+func (o *NvmeServiceCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeServiceCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvme_service_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeServiceCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/nvme/services][%d] nvme_service_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeServiceCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

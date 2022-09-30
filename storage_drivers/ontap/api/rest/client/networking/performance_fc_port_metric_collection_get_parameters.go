@@ -53,10 +53,12 @@ func NewPerformanceFcPortMetricCollectionGetParamsWithHTTPClient(client *http.Cl
 	}
 }
 
-/* PerformanceFcPortMetricCollectionGetParams contains all the parameters to send to the API endpoint
-   for the performance fc port metric collection get operation.
+/*
+PerformanceFcPortMetricCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the performance fc port metric collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type PerformanceFcPortMetricCollectionGetParams struct {
 

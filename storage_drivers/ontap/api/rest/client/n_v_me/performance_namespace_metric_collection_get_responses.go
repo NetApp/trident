@@ -46,7 +46,8 @@ func NewPerformanceNamespaceMetricCollectionGetOK() *PerformanceNamespaceMetricC
 	return &PerformanceNamespaceMetricCollectionGetOK{}
 }
 
-/* PerformanceNamespaceMetricCollectionGetOK describes a response with status code 200, with default header values.
+/*
+PerformanceNamespaceMetricCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type PerformanceNamespaceMetricCollectionGetOK struct {
 	Payload *models.PerformanceNamespaceMetricResponse
 }
 
+// IsSuccess returns true when this performance namespace metric collection get o k response has a 2xx status code
+func (o *PerformanceNamespaceMetricCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this performance namespace metric collection get o k response has a 3xx status code
+func (o *PerformanceNamespaceMetricCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this performance namespace metric collection get o k response has a 4xx status code
+func (o *PerformanceNamespaceMetricCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this performance namespace metric collection get o k response has a 5xx status code
+func (o *PerformanceNamespaceMetricCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this performance namespace metric collection get o k response a status code equal to that given
+func (o *PerformanceNamespaceMetricCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *PerformanceNamespaceMetricCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/namespaces/{uuid}/metrics][%d] performanceNamespaceMetricCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *PerformanceNamespaceMetricCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/namespaces/{uuid}/metrics][%d] performanceNamespaceMetricCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *PerformanceNamespaceMetricCollectionGetOK) GetPayload() *models.PerformanceNamespaceMetricResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewPerformanceNamespaceMetricCollectionGetDefault(code int) *PerformanceNam
 	}
 }
 
-/* PerformanceNamespaceMetricCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+PerformanceNamespaceMetricCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *PerformanceNamespaceMetricCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this performance namespace metric collection get default response has a 2xx status code
+func (o *PerformanceNamespaceMetricCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this performance namespace metric collection get default response has a 3xx status code
+func (o *PerformanceNamespaceMetricCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this performance namespace metric collection get default response has a 4xx status code
+func (o *PerformanceNamespaceMetricCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this performance namespace metric collection get default response has a 5xx status code
+func (o *PerformanceNamespaceMetricCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this performance namespace metric collection get default response a status code equal to that given
+func (o *PerformanceNamespaceMetricCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *PerformanceNamespaceMetricCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/namespaces/{uuid}/metrics][%d] performance_namespace_metric_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *PerformanceNamespaceMetricCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/namespaces/{uuid}/metrics][%d] performance_namespace_metric_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *PerformanceNamespaceMetricCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

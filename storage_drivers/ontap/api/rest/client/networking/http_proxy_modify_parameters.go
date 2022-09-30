@@ -54,10 +54,12 @@ func NewHTTPProxyModifyParamsWithHTTPClient(client *http.Client) *HTTPProxyModif
 	}
 }
 
-/* HTTPProxyModifyParams contains all the parameters to send to the API endpoint
-   for the http proxy modify operation.
+/*
+HTTPProxyModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the http proxy modify operation.
+
+	Typically these are written to a http.Request.
 */
 type HTTPProxyModifyParams struct {
 

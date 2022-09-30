@@ -46,14 +46,44 @@ func NewS3ServiceModifyOK() *S3ServiceModifyOK {
 	return &S3ServiceModifyOK{}
 }
 
-/* S3ServiceModifyOK describes a response with status code 200, with default header values.
+/*
+S3ServiceModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type S3ServiceModifyOK struct {
 }
 
+// IsSuccess returns true when this s3 service modify o k response has a 2xx status code
+func (o *S3ServiceModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 service modify o k response has a 3xx status code
+func (o *S3ServiceModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 service modify o k response has a 4xx status code
+func (o *S3ServiceModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 service modify o k response has a 5xx status code
+func (o *S3ServiceModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 service modify o k response a status code equal to that given
+func (o *S3ServiceModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3ServiceModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3ServiceModifyOK ", 200)
+}
+
+func (o *S3ServiceModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3ServiceModifyOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewS3ServiceModifyDefault(code int) *S3ServiceModifyDefault {
 	}
 }
 
-/* S3ServiceModifyDefault describes a response with status code -1, with default header values.
+/*
+	S3ServiceModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405789   | The specified object server name contains invalid characters. Valid characters for an object store server name are 0-9, A-Z, a-z, \".\", and \"-\". |
 | 92405790   | Object store server names must have between 1 and 15 characters. |
-
 */
 type S3ServiceModifyDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *S3ServiceModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 service modify default response has a 2xx status code
+func (o *S3ServiceModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 service modify default response has a 3xx status code
+func (o *S3ServiceModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 service modify default response has a 4xx status code
+func (o *S3ServiceModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 service modify default response has a 5xx status code
+func (o *S3ServiceModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 service modify default response a status code equal to that given
+func (o *S3ServiceModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3ServiceModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3_service_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3ServiceModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/s3/services/{svm.uuid}][%d] s3_service_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3ServiceModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

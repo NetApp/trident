@@ -46,14 +46,44 @@ func NewIPSubnetCreateCreated() *IPSubnetCreateCreated {
 	return &IPSubnetCreateCreated{}
 }
 
-/* IPSubnetCreateCreated describes a response with status code 201, with default header values.
+/*
+IPSubnetCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type IPSubnetCreateCreated struct {
 }
 
+// IsSuccess returns true when this ip subnet create created response has a 2xx status code
+func (o *IPSubnetCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ip subnet create created response has a 3xx status code
+func (o *IPSubnetCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ip subnet create created response has a 4xx status code
+func (o *IPSubnetCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ip subnet create created response has a 5xx status code
+func (o *IPSubnetCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ip subnet create created response a status code equal to that given
+func (o *IPSubnetCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *IPSubnetCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /network/ip/subnets][%d] ipSubnetCreateCreated ", 201)
+}
+
+func (o *IPSubnetCreateCreated) String() string {
 	return fmt.Sprintf("[POST /network/ip/subnets][%d] ipSubnetCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewIPSubnetCreateDefault(code int) *IPSubnetCreateDefault {
 	}
 }
 
-/* IPSubnetCreateDefault describes a response with status code -1, with default header values.
+/*
+	IPSubnetCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1377660 | A subnet with the name already exists in the IPspace. |
@@ -92,7 +124,6 @@ func NewIPSubnetCreateDefault(code int) *IPSubnetCreateDefault {
 | 53282577 | The specified broadcast_domain.uuid is invalid. |
 | 53282578 | The specified broadcast_domain.name does not match the IPspace name of specified broadcast_domain.uuid |
 | 53282579 | Missing the ipspace.name or ipspace.uuid parameter. |
-
 */
 type IPSubnetCreateDefault struct {
 	_statusCode int
@@ -105,9 +136,39 @@ func (o *IPSubnetCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ip subnet create default response has a 2xx status code
+func (o *IPSubnetCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ip subnet create default response has a 3xx status code
+func (o *IPSubnetCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ip subnet create default response has a 4xx status code
+func (o *IPSubnetCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ip subnet create default response has a 5xx status code
+func (o *IPSubnetCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ip subnet create default response a status code equal to that given
+func (o *IPSubnetCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IPSubnetCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /network/ip/subnets][%d] ip_subnet_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IPSubnetCreateDefault) String() string {
+	return fmt.Sprintf("[POST /network/ip/subnets][%d] ip_subnet_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IPSubnetCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

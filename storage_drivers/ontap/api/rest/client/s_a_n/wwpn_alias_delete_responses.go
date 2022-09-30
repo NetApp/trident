@@ -46,14 +46,44 @@ func NewWwpnAliasDeleteOK() *WwpnAliasDeleteOK {
 	return &WwpnAliasDeleteOK{}
 }
 
-/* WwpnAliasDeleteOK describes a response with status code 200, with default header values.
+/*
+WwpnAliasDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type WwpnAliasDeleteOK struct {
 }
 
+// IsSuccess returns true when this wwpn alias delete o k response has a 2xx status code
+func (o *WwpnAliasDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this wwpn alias delete o k response has a 3xx status code
+func (o *WwpnAliasDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this wwpn alias delete o k response has a 4xx status code
+func (o *WwpnAliasDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this wwpn alias delete o k response has a 5xx status code
+func (o *WwpnAliasDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this wwpn alias delete o k response a status code equal to that given
+func (o *WwpnAliasDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *WwpnAliasDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpnAliasDeleteOK ", 200)
+}
+
+func (o *WwpnAliasDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpnAliasDeleteOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewWwpnAliasDeleteDefault(code int) *WwpnAliasDeleteDefault {
 	}
 }
 
-/* WwpnAliasDeleteDefault describes a response with status code -1, with default header values.
+/*
+	WwpnAliasDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1260882    | An SVM with the specified UUID does not exist. |
 | 5374046    | The alias could not be found. |
-
 */
 type WwpnAliasDeleteDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *WwpnAliasDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this wwpn alias delete default response has a 2xx status code
+func (o *WwpnAliasDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this wwpn alias delete default response has a 3xx status code
+func (o *WwpnAliasDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this wwpn alias delete default response has a 4xx status code
+func (o *WwpnAliasDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this wwpn alias delete default response has a 5xx status code
+func (o *WwpnAliasDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this wwpn alias delete default response a status code equal to that given
+func (o *WwpnAliasDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *WwpnAliasDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpn_alias_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *WwpnAliasDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /network/fc/wwpn-aliases/{svm.uuid}/{alias}][%d] wwpn_alias_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *WwpnAliasDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

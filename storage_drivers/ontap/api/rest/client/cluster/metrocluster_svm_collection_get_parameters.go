@@ -53,10 +53,12 @@ func NewMetroclusterSvmCollectionGetParamsWithHTTPClient(client *http.Client) *M
 	}
 }
 
-/* MetroclusterSvmCollectionGetParams contains all the parameters to send to the API endpoint
-   for the metrocluster svm collection get operation.
+/*
+MetroclusterSvmCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the metrocluster svm collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type MetroclusterSvmCollectionGetParams struct {
 

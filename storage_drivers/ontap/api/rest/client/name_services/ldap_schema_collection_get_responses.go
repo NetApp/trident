@@ -46,7 +46,8 @@ func NewLdapSchemaCollectionGetOK() *LdapSchemaCollectionGetOK {
 	return &LdapSchemaCollectionGetOK{}
 }
 
-/* LdapSchemaCollectionGetOK describes a response with status code 200, with default header values.
+/*
+LdapSchemaCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LdapSchemaCollectionGetOK struct {
 	Payload *models.LdapSchemaResponse
 }
 
+// IsSuccess returns true when this ldap schema collection get o k response has a 2xx status code
+func (o *LdapSchemaCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ldap schema collection get o k response has a 3xx status code
+func (o *LdapSchemaCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ldap schema collection get o k response has a 4xx status code
+func (o *LdapSchemaCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ldap schema collection get o k response has a 5xx status code
+func (o *LdapSchemaCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ldap schema collection get o k response a status code equal to that given
+func (o *LdapSchemaCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LdapSchemaCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/ldap-schemas][%d] ldapSchemaCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LdapSchemaCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/ldap-schemas][%d] ldapSchemaCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LdapSchemaCollectionGetOK) GetPayload() *models.LdapSchemaResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLdapSchemaCollectionGetDefault(code int) *LdapSchemaCollectionGetDefault
 	}
 }
 
-/* LdapSchemaCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+LdapSchemaCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LdapSchemaCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ldap schema collection get default response has a 2xx status code
+func (o *LdapSchemaCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ldap schema collection get default response has a 3xx status code
+func (o *LdapSchemaCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ldap schema collection get default response has a 4xx status code
+func (o *LdapSchemaCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ldap schema collection get default response has a 5xx status code
+func (o *LdapSchemaCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ldap schema collection get default response a status code equal to that given
+func (o *LdapSchemaCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LdapSchemaCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/ldap-schemas][%d] ldap_schema_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LdapSchemaCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/ldap-schemas][%d] ldap_schema_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LdapSchemaCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

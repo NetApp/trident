@@ -46,7 +46,8 @@ func NewSnaplockRetentionPolicyGetOK() *SnaplockRetentionPolicyGetOK {
 	return &SnaplockRetentionPolicyGetOK{}
 }
 
-/* SnaplockRetentionPolicyGetOK describes a response with status code 200, with default header values.
+/*
+SnaplockRetentionPolicyGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnaplockRetentionPolicyGetOK struct {
 	Payload *models.SnaplockRetentionPolicy
 }
 
+// IsSuccess returns true when this snaplock retention policy get o k response has a 2xx status code
+func (o *SnaplockRetentionPolicyGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock retention policy get o k response has a 3xx status code
+func (o *SnaplockRetentionPolicyGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock retention policy get o k response has a 4xx status code
+func (o *SnaplockRetentionPolicyGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock retention policy get o k response has a 5xx status code
+func (o *SnaplockRetentionPolicyGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock retention policy get o k response a status code equal to that given
+func (o *SnaplockRetentionPolicyGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnaplockRetentionPolicyGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplockRetentionPolicyGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnaplockRetentionPolicyGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplockRetentionPolicyGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnaplockRetentionPolicyGetOK) GetPayload() *models.SnaplockRetentionPolicy {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSnaplockRetentionPolicyGetDefault(code int) *SnaplockRetentionPolicyGetD
 	}
 }
 
-/* SnaplockRetentionPolicyGetDefault describes a response with status code -1, with default header values.
+/*
+SnaplockRetentionPolicyGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SnaplockRetentionPolicyGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock retention policy get default response has a 2xx status code
+func (o *SnaplockRetentionPolicyGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock retention policy get default response has a 3xx status code
+func (o *SnaplockRetentionPolicyGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock retention policy get default response has a 4xx status code
+func (o *SnaplockRetentionPolicyGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock retention policy get default response has a 5xx status code
+func (o *SnaplockRetentionPolicyGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock retention policy get default response a status code equal to that given
+func (o *SnaplockRetentionPolicyGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockRetentionPolicyGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplock_retention_policy_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockRetentionPolicyGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/event-retention/policies/{policy.name}][%d] snaplock_retention_policy_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockRetentionPolicyGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

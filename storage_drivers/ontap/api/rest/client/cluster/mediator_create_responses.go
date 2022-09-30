@@ -46,7 +46,8 @@ func NewMediatorCreateAccepted() *MediatorCreateAccepted {
 	return &MediatorCreateAccepted{}
 }
 
-/* MediatorCreateAccepted describes a response with status code 202, with default header values.
+/*
+MediatorCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type MediatorCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this mediator create accepted response has a 2xx status code
+func (o *MediatorCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this mediator create accepted response has a 3xx status code
+func (o *MediatorCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this mediator create accepted response has a 4xx status code
+func (o *MediatorCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this mediator create accepted response has a 5xx status code
+func (o *MediatorCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this mediator create accepted response a status code equal to that given
+func (o *MediatorCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *MediatorCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /cluster/mediators][%d] mediatorCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *MediatorCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /cluster/mediators][%d] mediatorCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *MediatorCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewMediatorCreateDefault(code int) *MediatorCreateDefault {
 	}
 }
 
-/* MediatorCreateDefault describes a response with status code -1, with default header values.
+/*
+	MediatorCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 13369351    | Update to mediator failed. Reason: does not authorized for that command. Check that the peer cluster and mediator are reachable.|
-
 */
 type MediatorCreateDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *MediatorCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this mediator create default response has a 2xx status code
+func (o *MediatorCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this mediator create default response has a 3xx status code
+func (o *MediatorCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this mediator create default response has a 4xx status code
+func (o *MediatorCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this mediator create default response has a 5xx status code
+func (o *MediatorCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this mediator create default response a status code equal to that given
+func (o *MediatorCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MediatorCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /cluster/mediators][%d] mediator_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MediatorCreateDefault) String() string {
+	return fmt.Sprintf("[POST /cluster/mediators][%d] mediator_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MediatorCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

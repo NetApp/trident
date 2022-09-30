@@ -46,7 +46,8 @@ func NewSvmPeerPermissionCreateCreated() *SvmPeerPermissionCreateCreated {
 	return &SvmPeerPermissionCreateCreated{}
 }
 
-/* SvmPeerPermissionCreateCreated describes a response with status code 201, with default header values.
+/*
+SvmPeerPermissionCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type SvmPeerPermissionCreateCreated struct {
 	Payload *models.SvmPeerPermission
 }
 
+// IsSuccess returns true when this svm peer permission create created response has a 2xx status code
+func (o *SvmPeerPermissionCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm peer permission create created response has a 3xx status code
+func (o *SvmPeerPermissionCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm peer permission create created response has a 4xx status code
+func (o *SvmPeerPermissionCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm peer permission create created response has a 5xx status code
+func (o *SvmPeerPermissionCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm peer permission create created response a status code equal to that given
+func (o *SvmPeerPermissionCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *SvmPeerPermissionCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svmPeerPermissionCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *SvmPeerPermissionCreateCreated) String() string {
+	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svmPeerPermissionCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *SvmPeerPermissionCreateCreated) GetPayload() *models.SvmPeerPermission {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSvmPeerPermissionCreateDefault(code int) *SvmPeerPermissionCreateDefault
 	}
 }
 
-/* SvmPeerPermissionCreateDefault describes a response with status code -1, with default header values.
+/*
+	SvmPeerPermissionCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 <br/>
 ```
 | Error codes | Description |
@@ -93,7 +126,6 @@ func NewSvmPeerPermissionCreateDefault(code int) *SvmPeerPermissionCreateDefault
 | 26345575    | The specified peer cluster name and peer cluster UUID do not match. |
 ```
 <br/>
-
 */
 type SvmPeerPermissionCreateDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *SvmPeerPermissionCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm peer permission create default response has a 2xx status code
+func (o *SvmPeerPermissionCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm peer permission create default response has a 3xx status code
+func (o *SvmPeerPermissionCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm peer permission create default response has a 4xx status code
+func (o *SvmPeerPermissionCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm peer permission create default response has a 5xx status code
+func (o *SvmPeerPermissionCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm peer permission create default response a status code equal to that given
+func (o *SvmPeerPermissionCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmPeerPermissionCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svm_peer_permission_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmPeerPermissionCreateDefault) String() string {
+	return fmt.Sprintf("[POST /svm/peer-permissions][%d] svm_peer_permission_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmPeerPermissionCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

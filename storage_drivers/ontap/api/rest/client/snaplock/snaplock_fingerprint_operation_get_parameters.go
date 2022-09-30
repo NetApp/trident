@@ -53,10 +53,12 @@ func NewSnaplockFingerprintOperationGetParamsWithHTTPClient(client *http.Client)
 	}
 }
 
-/* SnaplockFingerprintOperationGetParams contains all the parameters to send to the API endpoint
-   for the snaplock fingerprint operation get operation.
+/*
+SnaplockFingerprintOperationGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock fingerprint operation get operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockFingerprintOperationGetParams struct {
 

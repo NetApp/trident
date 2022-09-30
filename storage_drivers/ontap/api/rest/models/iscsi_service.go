@@ -18,7 +18,6 @@ import (
 // IscsiService An iSCSI service defines the properties of the iSCSI target for an SVM. There can be at most one iSCSI service for an SVM. An SVM's iSCSI service must be created before iSCSI initiators can log in to the SVM.<br/>
 // An iSCSI service is identified by the UUID of its SVM.
 //
-//
 // swagger:model iscsi_service
 type IscsiService struct {
 

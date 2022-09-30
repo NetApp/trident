@@ -46,7 +46,8 @@ func NewS3BucketGetOK() *S3BucketGetOK {
 	return &S3BucketGetOK{}
 }
 
-/* S3BucketGetOK describes a response with status code 200, with default header values.
+/*
+S3BucketGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type S3BucketGetOK struct {
 	Payload *models.S3Bucket
 }
 
+// IsSuccess returns true when this s3 bucket get o k response has a 2xx status code
+func (o *S3BucketGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 bucket get o k response has a 3xx status code
+func (o *S3BucketGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 bucket get o k response has a 4xx status code
+func (o *S3BucketGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 bucket get o k response has a 5xx status code
+func (o *S3BucketGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 bucket get o k response a status code equal to that given
+func (o *S3BucketGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3BucketGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3BucketGetOK  %+v", 200, o.Payload)
 }
+
+func (o *S3BucketGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3BucketGetOK  %+v", 200, o.Payload)
+}
+
 func (o *S3BucketGetOK) GetPayload() *models.S3Bucket {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewS3BucketGetDefault(code int) *S3BucketGetDefault {
 	}
 }
 
-/* S3BucketGetDefault describes a response with status code -1, with default header values.
+/*
+S3BucketGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *S3BucketGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 bucket get default response has a 2xx status code
+func (o *S3BucketGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 bucket get default response has a 3xx status code
+func (o *S3BucketGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 bucket get default response has a 4xx status code
+func (o *S3BucketGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 bucket get default response has a 5xx status code
+func (o *S3BucketGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 bucket get default response a status code equal to that given
+func (o *S3BucketGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3BucketGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3_bucket_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3BucketGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/s3/buckets/{svm.uuid}/{uuid}][%d] s3_bucket_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3BucketGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

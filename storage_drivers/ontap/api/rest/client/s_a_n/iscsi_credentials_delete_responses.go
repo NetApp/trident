@@ -46,14 +46,44 @@ func NewIscsiCredentialsDeleteOK() *IscsiCredentialsDeleteOK {
 	return &IscsiCredentialsDeleteOK{}
 }
 
-/* IscsiCredentialsDeleteOK describes a response with status code 200, with default header values.
+/*
+IscsiCredentialsDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IscsiCredentialsDeleteOK struct {
 }
 
+// IsSuccess returns true when this iscsi credentials delete o k response has a 2xx status code
+func (o *IscsiCredentialsDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this iscsi credentials delete o k response has a 3xx status code
+func (o *IscsiCredentialsDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this iscsi credentials delete o k response has a 4xx status code
+func (o *IscsiCredentialsDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this iscsi credentials delete o k response has a 5xx status code
+func (o *IscsiCredentialsDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this iscsi credentials delete o k response a status code equal to that given
+func (o *IscsiCredentialsDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IscsiCredentialsDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsDeleteOK ", 200)
+}
+
+func (o *IscsiCredentialsDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsiCredentialsDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewIscsiCredentialsDeleteDefault(code int) *IscsiCredentialsDeleteDefault {
 	}
 }
 
-/* IscsiCredentialsDeleteDefault describes a response with status code -1, with default header values.
+/*
+	IscsiCredentialsDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621462 | An SVM with the specified UUID does not exist. |
@@ -79,7 +111,6 @@ func NewIscsiCredentialsDeleteDefault(code int) *IscsiCredentialsDeleteDefault {
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
 | 5374148 | The default security credential cannot be deleted for an SVM. |
 | 5374895 | The iSCSI security credential does not exist on the specified SVM. |
-
 */
 type IscsiCredentialsDeleteDefault struct {
 	_statusCode int
@@ -92,9 +123,39 @@ func (o *IscsiCredentialsDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this iscsi credentials delete default response has a 2xx status code
+func (o *IscsiCredentialsDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this iscsi credentials delete default response has a 3xx status code
+func (o *IscsiCredentialsDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this iscsi credentials delete default response has a 4xx status code
+func (o *IscsiCredentialsDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this iscsi credentials delete default response has a 5xx status code
+func (o *IscsiCredentialsDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this iscsi credentials delete default response a status code equal to that given
+func (o *IscsiCredentialsDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IscsiCredentialsDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IscsiCredentialsDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/san/iscsi/credentials/{svm.uuid}/{initiator}][%d] iscsi_credentials_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IscsiCredentialsDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

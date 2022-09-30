@@ -46,7 +46,8 @@ func NewFileDirectorySecurityModifyAccepted() *FileDirectorySecurityModifyAccept
 	return &FileDirectorySecurityModifyAccepted{}
 }
 
-/* FileDirectorySecurityModifyAccepted describes a response with status code 202, with default header values.
+/*
+FileDirectorySecurityModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type FileDirectorySecurityModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this file directory security modify accepted response has a 2xx status code
+func (o *FileDirectorySecurityModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file directory security modify accepted response has a 3xx status code
+func (o *FileDirectorySecurityModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file directory security modify accepted response has a 4xx status code
+func (o *FileDirectorySecurityModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file directory security modify accepted response has a 5xx status code
+func (o *FileDirectorySecurityModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file directory security modify accepted response a status code equal to that given
+func (o *FileDirectorySecurityModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *FileDirectorySecurityModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *FileDirectorySecurityModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] fileDirectorySecurityModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *FileDirectorySecurityModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFileDirectorySecurityModifyDefault(code int) *FileDirectorySecurityModif
 	}
 }
 
-/* FileDirectorySecurityModifyDefault describes a response with status code -1, with default header values.
+/*
+FileDirectorySecurityModifyDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FileDirectorySecurityModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file directory security modify default response has a 2xx status code
+func (o *FileDirectorySecurityModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file directory security modify default response has a 3xx status code
+func (o *FileDirectorySecurityModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file directory security modify default response has a 4xx status code
+func (o *FileDirectorySecurityModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file directory security modify default response has a 5xx status code
+func (o *FileDirectorySecurityModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file directory security modify default response a status code equal to that given
+func (o *FileDirectorySecurityModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileDirectorySecurityModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileDirectorySecurityModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/file-security/permissions/{svm.uuid}/{path}][%d] file_directory_security_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileDirectorySecurityModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewNetworkIPInterfacesCreateCreated() *NetworkIPInterfacesCreateCreated {
 	return &NetworkIPInterfacesCreateCreated{}
 }
 
-/* NetworkIPInterfacesCreateCreated describes a response with status code 201, with default header values.
+/*
+NetworkIPInterfacesCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type NetworkIPInterfacesCreateCreated struct {
 }
 
+// IsSuccess returns true when this network Ip interfaces create created response has a 2xx status code
+func (o *NetworkIPInterfacesCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip interfaces create created response has a 3xx status code
+func (o *NetworkIPInterfacesCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip interfaces create created response has a 4xx status code
+func (o *NetworkIPInterfacesCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip interfaces create created response has a 5xx status code
+func (o *NetworkIPInterfacesCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip interfaces create created response a status code equal to that given
+func (o *NetworkIPInterfacesCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *NetworkIPInterfacesCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /network/ip/interfaces][%d] networkIpInterfacesCreateCreated ", 201)
+}
+
+func (o *NetworkIPInterfacesCreateCreated) String() string {
 	return fmt.Sprintf("[POST /network/ip/interfaces][%d] networkIpInterfacesCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 	}
 }
 
-/* NetworkIPInterfacesCreateDefault describes a response with status code -1, with default header values.
+/*
+	NetworkIPInterfacesCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376656 | Cluster interfaces must be in the same subnet. Verify the address and netmask are set to the correct values. |
@@ -135,7 +167,6 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | 53281065 | The service_policy does not exist in the SVM. |
 | 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |
 | 53281087 | Cannot configure SAN LIF on SVM. |
-
 */
 type NetworkIPInterfacesCreateDefault struct {
 	_statusCode int
@@ -148,9 +179,39 @@ func (o *NetworkIPInterfacesCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ip interfaces create default response has a 2xx status code
+func (o *NetworkIPInterfacesCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ip interfaces create default response has a 3xx status code
+func (o *NetworkIPInterfacesCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ip interfaces create default response has a 4xx status code
+func (o *NetworkIPInterfacesCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ip interfaces create default response has a 5xx status code
+func (o *NetworkIPInterfacesCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ip interfaces create default response a status code equal to that given
+func (o *NetworkIPInterfacesCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkIPInterfacesCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /network/ip/interfaces][%d] network_ip_interfaces_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkIPInterfacesCreateDefault) String() string {
+	return fmt.Sprintf("[POST /network/ip/interfaces][%d] network_ip_interfaces_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkIPInterfacesCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

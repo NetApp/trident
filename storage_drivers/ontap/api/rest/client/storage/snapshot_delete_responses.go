@@ -46,7 +46,8 @@ func NewSnapshotDeleteAccepted() *SnapshotDeleteAccepted {
 	return &SnapshotDeleteAccepted{}
 }
 
-/* SnapshotDeleteAccepted describes a response with status code 202, with default header values.
+/*
+SnapshotDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SnapshotDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this snapshot delete accepted response has a 2xx status code
+func (o *SnapshotDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot delete accepted response has a 3xx status code
+func (o *SnapshotDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot delete accepted response has a 4xx status code
+func (o *SnapshotDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot delete accepted response has a 5xx status code
+func (o *SnapshotDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot delete accepted response a status code equal to that given
+func (o *SnapshotDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SnapshotDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshotDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SnapshotDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshotDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SnapshotDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSnapshotDeleteDefault(code int) *SnapshotDeleteDefault {
 	}
 }
 
-/* SnapshotDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SnapshotDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Code
+	ONTAP Error Response Code
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2          | An invalid value was entered for one of the fields. |
@@ -91,7 +124,6 @@ func NewSnapshotDeleteDefault(code int) *SnapshotDeleteDefault {
 | 1638543    | Failed to delete Snapshot copy because it has an owner. |
 | 1638555    | The specified Snapshot copy has not expired or is locked. |
 | 1638600    | The Snapshot copy does not exist. |
-
 */
 type SnapshotDeleteDefault struct {
 	_statusCode int
@@ -104,9 +136,39 @@ func (o *SnapshotDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapshot delete default response has a 2xx status code
+func (o *SnapshotDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapshot delete default response has a 3xx status code
+func (o *SnapshotDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapshot delete default response has a 4xx status code
+func (o *SnapshotDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapshot delete default response has a 5xx status code
+func (o *SnapshotDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapshot delete default response a status code equal to that given
+func (o *SnapshotDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapshotDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshot_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapshotDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/volumes/{volume.uuid}/snapshots/{uuid}][%d] snapshot_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapshotDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

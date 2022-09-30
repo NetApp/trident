@@ -46,14 +46,44 @@ func NewLocalCifsGroupCreateCreated() *LocalCifsGroupCreateCreated {
 	return &LocalCifsGroupCreateCreated{}
 }
 
-/* LocalCifsGroupCreateCreated describes a response with status code 201, with default header values.
+/*
+LocalCifsGroupCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type LocalCifsGroupCreateCreated struct {
 }
 
+// IsSuccess returns true when this local cifs group create created response has a 2xx status code
+func (o *LocalCifsGroupCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local cifs group create created response has a 3xx status code
+func (o *LocalCifsGroupCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local cifs group create created response has a 4xx status code
+func (o *LocalCifsGroupCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local cifs group create created response has a 5xx status code
+func (o *LocalCifsGroupCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local cifs group create created response a status code equal to that given
+func (o *LocalCifsGroupCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *LocalCifsGroupCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] localCifsGroupCreateCreated ", 201)
+}
+
+func (o *LocalCifsGroupCreateCreated) String() string {
 	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] localCifsGroupCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewLocalCifsGroupCreateDefault(code int) *LocalCifsGroupCreateDefault {
 	}
 }
 
-/* LocalCifsGroupCreateDefault describes a response with status code -1, with default header values.
+/*
+	LocalCifsGroupCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262278     | Name is a required field. |
@@ -84,7 +116,6 @@ func NewLocalCifsGroupCreateDefault(code int) *LocalCifsGroupCreateDefault {
 | 655682     | The group name cannot be blank. |
 | 655717     | The specified group name already exists. |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name. |
-
 */
 type LocalCifsGroupCreateDefault struct {
 	_statusCode int
@@ -97,9 +128,39 @@ func (o *LocalCifsGroupCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this local cifs group create default response has a 2xx status code
+func (o *LocalCifsGroupCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this local cifs group create default response has a 3xx status code
+func (o *LocalCifsGroupCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this local cifs group create default response has a 4xx status code
+func (o *LocalCifsGroupCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this local cifs group create default response has a 5xx status code
+func (o *LocalCifsGroupCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this local cifs group create default response a status code equal to that given
+func (o *LocalCifsGroupCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LocalCifsGroupCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] local_cifs_group_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LocalCifsGroupCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/local-groups][%d] local_cifs_group_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LocalCifsGroupCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

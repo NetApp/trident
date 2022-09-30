@@ -261,7 +261,6 @@ func (m *AutoUpdateConfiguration) UnmarshalBinary(b []byte) error {
 // | 131072401 | Storage Firmware |
 // | 131072402 | SP/BMC Firmware |
 //
-//
 // swagger:model AutoUpdateConfigurationDescription
 type AutoUpdateConfigurationDescription struct {
 

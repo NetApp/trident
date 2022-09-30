@@ -46,14 +46,44 @@ func NewNdmpNodeSessionDeleteOK() *NdmpNodeSessionDeleteOK {
 	return &NdmpNodeSessionDeleteOK{}
 }
 
-/* NdmpNodeSessionDeleteOK describes a response with status code 200, with default header values.
+/*
+NdmpNodeSessionDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NdmpNodeSessionDeleteOK struct {
 }
 
+// IsSuccess returns true when this ndmp node session delete o k response has a 2xx status code
+func (o *NdmpNodeSessionDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ndmp node session delete o k response has a 3xx status code
+func (o *NdmpNodeSessionDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ndmp node session delete o k response has a 4xx status code
+func (o *NdmpNodeSessionDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ndmp node session delete o k response has a 5xx status code
+func (o *NdmpNodeSessionDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ndmp node session delete o k response a status code equal to that given
+func (o *NdmpNodeSessionDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NdmpNodeSessionDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/ndmp/sessions/{owner.uuid}/{session.id}][%d] ndmpNodeSessionDeleteOK ", 200)
+}
+
+func (o *NdmpNodeSessionDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/ndmp/sessions/{owner.uuid}/{session.id}][%d] ndmpNodeSessionDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewNdmpNodeSessionDeleteDefault(code int) *NdmpNodeSessionDeleteDefault {
 	}
 }
 
-/* NdmpNodeSessionDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NdmpNodeSessionDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 68812802    | The UUID is not valid.|
@@ -79,7 +111,6 @@ func NewNdmpNodeSessionDeleteDefault(code int) *NdmpNodeSessionDeleteDefault {
 | 68812804    | Failed to get the node name from the specified node UUID.|
 | 68812805    | Failed to obtain the NDMP mode of operation.|
 | 68812806    | UUID and Session ID are required.|
-
 */
 type NdmpNodeSessionDeleteDefault struct {
 	_statusCode int
@@ -92,9 +123,39 @@ func (o *NdmpNodeSessionDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ndmp node session delete default response has a 2xx status code
+func (o *NdmpNodeSessionDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ndmp node session delete default response has a 3xx status code
+func (o *NdmpNodeSessionDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ndmp node session delete default response has a 4xx status code
+func (o *NdmpNodeSessionDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ndmp node session delete default response has a 5xx status code
+func (o *NdmpNodeSessionDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ndmp node session delete default response a status code equal to that given
+func (o *NdmpNodeSessionDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NdmpNodeSessionDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/ndmp/sessions/{owner.uuid}/{session.id}][%d] ndmp_node_session_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NdmpNodeSessionDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/ndmp/sessions/{owner.uuid}/{session.id}][%d] ndmp_node_session_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NdmpNodeSessionDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

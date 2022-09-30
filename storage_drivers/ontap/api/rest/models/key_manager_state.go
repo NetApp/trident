@@ -14,7 +14,6 @@ import (
 
 // KeyManagerState Optional status information on the current state of the key manager indicating if it is fully setup or requires more action.
 //
-//
 // swagger:model key_manager_state
 type KeyManagerState struct {
 

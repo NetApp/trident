@@ -53,10 +53,12 @@ func NewNvmeServiceCollectionGetParamsWithHTTPClient(client *http.Client) *NvmeS
 	}
 }
 
-/* NvmeServiceCollectionGetParams contains all the parameters to send to the API endpoint
-   for the nvme service collection get operation.
+/*
+NvmeServiceCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme service collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeServiceCollectionGetParams struct {
 

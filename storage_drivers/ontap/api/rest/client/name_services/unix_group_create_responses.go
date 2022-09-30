@@ -46,14 +46,44 @@ func NewUnixGroupCreateCreated() *UnixGroupCreateCreated {
 	return &UnixGroupCreateCreated{}
 }
 
-/* UnixGroupCreateCreated describes a response with status code 201, with default header values.
+/*
+UnixGroupCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type UnixGroupCreateCreated struct {
 }
 
+// IsSuccess returns true when this unix group create created response has a 2xx status code
+func (o *UnixGroupCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix group create created response has a 3xx status code
+func (o *UnixGroupCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix group create created response has a 4xx status code
+func (o *UnixGroupCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix group create created response has a 5xx status code
+func (o *UnixGroupCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix group create created response a status code equal to that given
+func (o *UnixGroupCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *UnixGroupCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unixGroupCreateCreated ", 201)
+}
+
+func (o *UnixGroupCreateCreated) String() string {
 	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unixGroupCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewUnixGroupCreateDefault(code int) *UnixGroupCreateDefault {
 	}
 }
 
-/* UnixGroupCreateDefault describes a response with status code -1, with default header values.
+/*
+	UnixGroupCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name. |
@@ -79,7 +111,6 @@ func NewUnixGroupCreateDefault(code int) *UnixGroupCreateDefault {
 | 3277051    | Invalid characters in group name. Valid characters are 0-9, A-Z, a-z, ".", "_" and "-". Names cannot start with "-". |
 | 23724067   | Group name too long. Maximum supported length is 64 characters. |
 | 23724141   | Duplicate group ID. Group ID must be unique.|
-
 */
 type UnixGroupCreateDefault struct {
 	_statusCode int
@@ -92,9 +123,39 @@ func (o *UnixGroupCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix group create default response has a 2xx status code
+func (o *UnixGroupCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix group create default response has a 3xx status code
+func (o *UnixGroupCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix group create default response has a 4xx status code
+func (o *UnixGroupCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix group create default response has a 5xx status code
+func (o *UnixGroupCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix group create default response a status code equal to that given
+func (o *UnixGroupCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixGroupCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unix_group_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixGroupCreateDefault) String() string {
+	return fmt.Sprintf("[POST /name-services/unix-groups][%d] unix_group_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixGroupCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

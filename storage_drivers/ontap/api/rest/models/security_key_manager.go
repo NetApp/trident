@@ -1143,7 +1143,6 @@ func (m *SecurityKeyManagerOnboard) UnmarshalBinary(b []byte) error {
 
 // SecurityKeyManagerStatus Optional status information on the current state of the key manager indicating if it is fully setup or requires more action.
 //
-//
 // swagger:model SecurityKeyManagerStatus
 type SecurityKeyManagerStatus struct {
 
@@ -1367,7 +1366,6 @@ func (m *SecurityKeyManagerSvmLinks) UnmarshalBinary(b []byte) error {
 }
 
 // SecurityKeyManagerVolumeEncryption Indicates whether volume encryption is supported in the cluster.
-//
 //
 // swagger:model SecurityKeyManagerVolumeEncryption
 type SecurityKeyManagerVolumeEncryption struct {

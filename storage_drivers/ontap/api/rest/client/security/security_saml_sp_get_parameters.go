@@ -53,10 +53,12 @@ func NewSecuritySamlSpGetParamsWithHTTPClient(client *http.Client) *SecuritySaml
 	}
 }
 
-/* SecuritySamlSpGetParams contains all the parameters to send to the API endpoint
-   for the security saml sp get operation.
+/*
+SecuritySamlSpGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security saml sp get operation.
+
+	Typically these are written to a http.Request.
 */
 type SecuritySamlSpGetParams struct {
 

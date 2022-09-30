@@ -54,10 +54,12 @@ func NewVscanOnAccessModifyParamsWithHTTPClient(client *http.Client) *VscanOnAcc
 	}
 }
 
-/* VscanOnAccessModifyParams contains all the parameters to send to the API endpoint
-   for the vscan on access modify operation.
+/*
+VscanOnAccessModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vscan on access modify operation.
+
+	Typically these are written to a http.Request.
 */
 type VscanOnAccessModifyParams struct {
 

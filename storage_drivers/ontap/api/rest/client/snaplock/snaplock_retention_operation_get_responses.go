@@ -46,7 +46,8 @@ func NewSnaplockRetentionOperationGetOK() *SnaplockRetentionOperationGetOK {
 	return &SnaplockRetentionOperationGetOK{}
 }
 
-/* SnaplockRetentionOperationGetOK describes a response with status code 200, with default header values.
+/*
+SnaplockRetentionOperationGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SnaplockRetentionOperationGetOK struct {
 	Payload *models.EbrOperation
 }
 
+// IsSuccess returns true when this snaplock retention operation get o k response has a 2xx status code
+func (o *SnaplockRetentionOperationGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock retention operation get o k response has a 3xx status code
+func (o *SnaplockRetentionOperationGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock retention operation get o k response has a 4xx status code
+func (o *SnaplockRetentionOperationGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock retention operation get o k response has a 5xx status code
+func (o *SnaplockRetentionOperationGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock retention operation get o k response a status code equal to that given
+func (o *SnaplockRetentionOperationGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnaplockRetentionOperationGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/event-retention/operations/{id}][%d] snaplockRetentionOperationGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SnaplockRetentionOperationGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/event-retention/operations/{id}][%d] snaplockRetentionOperationGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SnaplockRetentionOperationGetOK) GetPayload() *models.EbrOperation {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSnaplockRetentionOperationGetDefault(code int) *SnaplockRetentionOperati
 	}
 }
 
-/* SnaplockRetentionOperationGetDefault describes a response with status code -1, with default header values.
+/*
+SnaplockRetentionOperationGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SnaplockRetentionOperationGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock retention operation get default response has a 2xx status code
+func (o *SnaplockRetentionOperationGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock retention operation get default response has a 3xx status code
+func (o *SnaplockRetentionOperationGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock retention operation get default response has a 4xx status code
+func (o *SnaplockRetentionOperationGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock retention operation get default response has a 5xx status code
+func (o *SnaplockRetentionOperationGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock retention operation get default response a status code equal to that given
+func (o *SnaplockRetentionOperationGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockRetentionOperationGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/snaplock/event-retention/operations/{id}][%d] snaplock_retention_operation_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockRetentionOperationGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/snaplock/event-retention/operations/{id}][%d] snaplock_retention_operation_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockRetentionOperationGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

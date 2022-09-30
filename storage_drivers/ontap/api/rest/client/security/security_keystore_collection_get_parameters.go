@@ -53,10 +53,12 @@ func NewSecurityKeystoreCollectionGetParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* SecurityKeystoreCollectionGetParams contains all the parameters to send to the API endpoint
-   for the security keystore collection get operation.
+/*
+SecurityKeystoreCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security keystore collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityKeystoreCollectionGetParams struct {
 

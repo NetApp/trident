@@ -46,7 +46,8 @@ func NewNetgroupFileGetOK() *NetgroupFileGetOK {
 	return &NetgroupFileGetOK{}
 }
 
-/* NetgroupFileGetOK describes a response with status code 200, with default header values.
+/*
+NetgroupFileGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NetgroupFileGetOK struct {
 	Payload *models.NetgroupFile
 }
 
+// IsSuccess returns true when this netgroup file get o k response has a 2xx status code
+func (o *NetgroupFileGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this netgroup file get o k response has a 3xx status code
+func (o *NetgroupFileGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this netgroup file get o k response has a 4xx status code
+func (o *NetgroupFileGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this netgroup file get o k response has a 5xx status code
+func (o *NetgroupFileGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this netgroup file get o k response a status code equal to that given
+func (o *NetgroupFileGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetgroupFileGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NetgroupFileGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroupFileGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NetgroupFileGetOK) GetPayload() *models.NetgroupFile {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNetgroupFileGetDefault(code int) *NetgroupFileGetDefault {
 	}
 }
 
-/* NetgroupFileGetDefault describes a response with status code -1, with default header values.
+/*
+NetgroupFileGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NetgroupFileGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this netgroup file get default response has a 2xx status code
+func (o *NetgroupFileGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this netgroup file get default response has a 3xx status code
+func (o *NetgroupFileGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this netgroup file get default response has a 4xx status code
+func (o *NetgroupFileGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this netgroup file get default response has a 5xx status code
+func (o *NetgroupFileGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this netgroup file get default response a status code equal to that given
+func (o *NetgroupFileGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetgroupFileGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetgroupFileGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/netgroup-files/{svm.uuid}][%d] netgroup_file_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetgroupFileGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

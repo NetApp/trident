@@ -496,7 +496,6 @@ func (m *FpolicyConnection) UnmarshalBinary(b []byte) error {
 
 // FpolicyConnectionDisconnectedReason Indicates the reason for FPolicy server disconnection.
 //
-//
 // swagger:model FpolicyConnectionDisconnectedReason
 type FpolicyConnectionDisconnectedReason struct {
 

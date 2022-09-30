@@ -55,10 +55,12 @@ func NewCreateCertificateSigningRequestParamsWithHTTPClient(client *http.Client)
 	}
 }
 
-/* CreateCertificateSigningRequestParams contains all the parameters to send to the API endpoint
-   for the create certificate signing request operation.
+/*
+CreateCertificateSigningRequestParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the create certificate signing request operation.
+
+	Typically these are written to a http.Request.
 */
 type CreateCertificateSigningRequestParams struct {
 

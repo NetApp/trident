@@ -46,14 +46,44 @@ func NewVolumeEfficiencyPolicyDeleteOK() *VolumeEfficiencyPolicyDeleteOK {
 	return &VolumeEfficiencyPolicyDeleteOK{}
 }
 
-/* VolumeEfficiencyPolicyDeleteOK describes a response with status code 200, with default header values.
+/*
+VolumeEfficiencyPolicyDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type VolumeEfficiencyPolicyDeleteOK struct {
 }
 
+// IsSuccess returns true when this volume efficiency policy delete o k response has a 2xx status code
+func (o *VolumeEfficiencyPolicyDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume efficiency policy delete o k response has a 3xx status code
+func (o *VolumeEfficiencyPolicyDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume efficiency policy delete o k response has a 4xx status code
+func (o *VolumeEfficiencyPolicyDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume efficiency policy delete o k response has a 5xx status code
+func (o *VolumeEfficiencyPolicyDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume efficiency policy delete o k response a status code equal to that given
+func (o *VolumeEfficiencyPolicyDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VolumeEfficiencyPolicyDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyDeleteOK ", 200)
+}
+
+func (o *VolumeEfficiencyPolicyDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volumeEfficiencyPolicyDeleteOK ", 200)
 }
 
@@ -69,15 +99,16 @@ func NewVolumeEfficiencyPolicyDeleteDefault(code int) *VolumeEfficiencyPolicyDel
 	}
 }
 
-/* VolumeEfficiencyPolicyDeleteDefault describes a response with status code -1, with default header values.
+/*
+	VolumeEfficiencyPolicyDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Code
+	ONTAP Error Response Code
+
 | Error Code | Description |
 | ---------  | ----------- |
 |  6881346   | The policy was not deleted because the policy is in use by at least one volume. |
 |  6881347   | This operation cannot be performed because the specified policy is owned by the cluster admin. |
 |  6881431   | The specified policy is a predefined policy and cannot be deleted. |
-
 */
 type VolumeEfficiencyPolicyDeleteDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *VolumeEfficiencyPolicyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this volume efficiency policy delete default response has a 2xx status code
+func (o *VolumeEfficiencyPolicyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this volume efficiency policy delete default response has a 3xx status code
+func (o *VolumeEfficiencyPolicyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this volume efficiency policy delete default response has a 4xx status code
+func (o *VolumeEfficiencyPolicyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this volume efficiency policy delete default response has a 5xx status code
+func (o *VolumeEfficiencyPolicyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this volume efficiency policy delete default response a status code equal to that given
+func (o *VolumeEfficiencyPolicyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VolumeEfficiencyPolicyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VolumeEfficiencyPolicyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/volume-efficiency-policies/{uuid}][%d] volume_efficiency_policy_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VolumeEfficiencyPolicyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

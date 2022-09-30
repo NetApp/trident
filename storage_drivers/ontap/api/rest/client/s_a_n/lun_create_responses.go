@@ -46,7 +46,8 @@ func NewLunCreateCreated() *LunCreateCreated {
 	return &LunCreateCreated{}
 }
 
-/* LunCreateCreated describes a response with status code 201, with default header values.
+/*
+LunCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type LunCreateCreated struct {
 	Payload *models.LunResponse
 }
 
+// IsSuccess returns true when this lun create created response has a 2xx status code
+func (o *LunCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun create created response has a 3xx status code
+func (o *LunCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun create created response has a 4xx status code
+func (o *LunCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun create created response has a 5xx status code
+func (o *LunCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun create created response a status code equal to that given
+func (o *LunCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *LunCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /storage/luns][%d] lunCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *LunCreateCreated) String() string {
+	return fmt.Sprintf("[POST /storage/luns][%d] lunCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *LunCreateCreated) GetPayload() *models.LunResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 	}
 }
 
-/* LunCreateDefault describes a response with status code -1, with default header values.
+/*
+	LunCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 917927 | The specified volume was not found. |
@@ -127,7 +160,6 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 | 72089755 | NVMe namespace with a block size of 4096 bytes cannot be converted to a LUN. |
 | 72089756 | Namespace is currently mapped to subsystem. |
 | 72089757 | NVMe namespace in a Snapshot copy cannot be converted to a LUN. |
-
 */
 type LunCreateDefault struct {
 	_statusCode int
@@ -140,9 +172,39 @@ func (o *LunCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this lun create default response has a 2xx status code
+func (o *LunCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this lun create default response has a 3xx status code
+func (o *LunCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this lun create default response has a 4xx status code
+func (o *LunCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this lun create default response has a 5xx status code
+func (o *LunCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this lun create default response a status code equal to that given
+func (o *LunCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LunCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/luns][%d] lun_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LunCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/luns][%d] lun_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LunCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -36,14 +36,44 @@ func NewNetworkIPInterfaceDeleteOK() *NetworkIPInterfaceDeleteOK {
 	return &NetworkIPInterfaceDeleteOK{}
 }
 
-/* NetworkIPInterfaceDeleteOK describes a response with status code 200, with default header values.
+/*
+NetworkIPInterfaceDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NetworkIPInterfaceDeleteOK struct {
 }
 
+// IsSuccess returns true when this network Ip interface delete o k response has a 2xx status code
+func (o *NetworkIPInterfaceDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip interface delete o k response has a 3xx status code
+func (o *NetworkIPInterfaceDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip interface delete o k response has a 4xx status code
+func (o *NetworkIPInterfaceDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip interface delete o k response has a 5xx status code
+func (o *NetworkIPInterfaceDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip interface delete o k response a status code equal to that given
+func (o *NetworkIPInterfaceDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkIPInterfaceDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/ip/interfaces/{uuid}][%d] networkIpInterfaceDeleteOK ", 200)
+}
+
+func (o *NetworkIPInterfaceDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/ip/interfaces/{uuid}][%d] networkIpInterfaceDeleteOK ", 200)
 }
 

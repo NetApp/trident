@@ -46,7 +46,8 @@ func NewWwpnAliasCollectionGetOK() *WwpnAliasCollectionGetOK {
 	return &WwpnAliasCollectionGetOK{}
 }
 
-/* WwpnAliasCollectionGetOK describes a response with status code 200, with default header values.
+/*
+WwpnAliasCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type WwpnAliasCollectionGetOK struct {
 	Payload *models.WwpnAliasResponse
 }
 
+// IsSuccess returns true when this wwpn alias collection get o k response has a 2xx status code
+func (o *WwpnAliasCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this wwpn alias collection get o k response has a 3xx status code
+func (o *WwpnAliasCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this wwpn alias collection get o k response has a 4xx status code
+func (o *WwpnAliasCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this wwpn alias collection get o k response has a 5xx status code
+func (o *WwpnAliasCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this wwpn alias collection get o k response a status code equal to that given
+func (o *WwpnAliasCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *WwpnAliasCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpnAliasCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *WwpnAliasCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpnAliasCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *WwpnAliasCollectionGetOK) GetPayload() *models.WwpnAliasResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewWwpnAliasCollectionGetDefault(code int) *WwpnAliasCollectionGetDefault {
 	}
 }
 
-/* WwpnAliasCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+WwpnAliasCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *WwpnAliasCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this wwpn alias collection get default response has a 2xx status code
+func (o *WwpnAliasCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this wwpn alias collection get default response has a 3xx status code
+func (o *WwpnAliasCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this wwpn alias collection get default response has a 4xx status code
+func (o *WwpnAliasCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this wwpn alias collection get default response has a 5xx status code
+func (o *WwpnAliasCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this wwpn alias collection get default response a status code equal to that given
+func (o *WwpnAliasCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *WwpnAliasCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpn_alias_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *WwpnAliasCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/fc/wwpn-aliases][%d] wwpn_alias_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *WwpnAliasCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

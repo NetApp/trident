@@ -55,10 +55,12 @@ func NewGcpKmsCreateParamsWithHTTPClient(client *http.Client) *GcpKmsCreateParam
 	}
 }
 
-/* GcpKmsCreateParams contains all the parameters to send to the API endpoint
-   for the gcp kms create operation.
+/*
+GcpKmsCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the gcp kms create operation.
+
+	Typically these are written to a http.Request.
 */
 type GcpKmsCreateParams struct {
 

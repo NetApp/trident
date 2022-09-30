@@ -46,7 +46,8 @@ func NewVolumeMetricsCollectionGetOK() *VolumeMetricsCollectionGetOK {
 	return &VolumeMetricsCollectionGetOK{}
 }
 
-/* VolumeMetricsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+VolumeMetricsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type VolumeMetricsCollectionGetOK struct {
 	Payload *models.VolumeMetricsResponse
 }
 
+// IsSuccess returns true when this volume metrics collection get o k response has a 2xx status code
+func (o *VolumeMetricsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this volume metrics collection get o k response has a 3xx status code
+func (o *VolumeMetricsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this volume metrics collection get o k response has a 4xx status code
+func (o *VolumeMetricsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this volume metrics collection get o k response has a 5xx status code
+func (o *VolumeMetricsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this volume metrics collection get o k response a status code equal to that given
+func (o *VolumeMetricsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VolumeMetricsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volumeMetricsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *VolumeMetricsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volumeMetricsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *VolumeMetricsCollectionGetOK) GetPayload() *models.VolumeMetricsResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewVolumeMetricsCollectionGetDefault(code int) *VolumeMetricsCollectionGetD
 	}
 }
 
-/* VolumeMetricsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+VolumeMetricsCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *VolumeMetricsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this volume metrics collection get default response has a 2xx status code
+func (o *VolumeMetricsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this volume metrics collection get default response has a 3xx status code
+func (o *VolumeMetricsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this volume metrics collection get default response has a 4xx status code
+func (o *VolumeMetricsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this volume metrics collection get default response has a 5xx status code
+func (o *VolumeMetricsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this volume metrics collection get default response a status code equal to that given
+func (o *VolumeMetricsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VolumeMetricsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volume_metrics_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VolumeMetricsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/volumes/{volume.uuid}/metrics][%d] volume_metrics_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VolumeMetricsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

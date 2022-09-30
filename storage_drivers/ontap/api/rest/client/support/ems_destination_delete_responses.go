@@ -46,14 +46,44 @@ func NewEmsDestinationDeleteOK() *EmsDestinationDeleteOK {
 	return &EmsDestinationDeleteOK{}
 }
 
-/* EmsDestinationDeleteOK describes a response with status code 200, with default header values.
+/*
+EmsDestinationDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type EmsDestinationDeleteOK struct {
 }
 
+// IsSuccess returns true when this ems destination delete o k response has a 2xx status code
+func (o *EmsDestinationDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems destination delete o k response has a 3xx status code
+func (o *EmsDestinationDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems destination delete o k response has a 4xx status code
+func (o *EmsDestinationDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems destination delete o k response has a 5xx status code
+func (o *EmsDestinationDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems destination delete o k response a status code equal to that given
+func (o *EmsDestinationDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EmsDestinationDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] emsDestinationDeleteOK ", 200)
+}
+
+func (o *EmsDestinationDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] emsDestinationDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewEmsDestinationDeleteDefault(code int) *EmsDestinationDeleteDefault {
 	}
 }
 
-/* EmsDestinationDeleteDefault describes a response with status code -1, with default header values.
+/*
+	EmsDestinationDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 983152     | Default destinations cannot be modified or removed |
-
 */
 type EmsDestinationDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *EmsDestinationDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems destination delete default response has a 2xx status code
+func (o *EmsDestinationDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems destination delete default response has a 3xx status code
+func (o *EmsDestinationDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems destination delete default response has a 4xx status code
+func (o *EmsDestinationDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems destination delete default response has a 5xx status code
+func (o *EmsDestinationDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems destination delete default response a status code equal to that given
+func (o *EmsDestinationDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsDestinationDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] ems_destination_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsDestinationDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /support/ems/destinations/{name}][%d] ems_destination_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsDestinationDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -55,10 +55,12 @@ func NewCifsServiceDeleteParamsWithHTTPClient(client *http.Client) *CifsServiceD
 	}
 }
 
-/* CifsServiceDeleteParams contains all the parameters to send to the API endpoint
-   for the cifs service delete operation.
+/*
+CifsServiceDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs service delete operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsServiceDeleteParams struct {
 

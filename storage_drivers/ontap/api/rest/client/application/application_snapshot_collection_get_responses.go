@@ -46,7 +46,8 @@ func NewApplicationSnapshotCollectionGetOK() *ApplicationSnapshotCollectionGetOK
 	return &ApplicationSnapshotCollectionGetOK{}
 }
 
-/* ApplicationSnapshotCollectionGetOK describes a response with status code 200, with default header values.
+/*
+ApplicationSnapshotCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ApplicationSnapshotCollectionGetOK struct {
 	Payload *models.ApplicationSnapshotResponse
 }
 
+// IsSuccess returns true when this application snapshot collection get o k response has a 2xx status code
+func (o *ApplicationSnapshotCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application snapshot collection get o k response has a 3xx status code
+func (o *ApplicationSnapshotCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application snapshot collection get o k response has a 4xx status code
+func (o *ApplicationSnapshotCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application snapshot collection get o k response has a 5xx status code
+func (o *ApplicationSnapshotCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application snapshot collection get o k response a status code equal to that given
+func (o *ApplicationSnapshotCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ApplicationSnapshotCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /application/applications/{application.uuid}/snapshots][%d] applicationSnapshotCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ApplicationSnapshotCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/snapshots][%d] applicationSnapshotCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ApplicationSnapshotCollectionGetOK) GetPayload() *models.ApplicationSnapshotResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewApplicationSnapshotCollectionGetDefault(code int) *ApplicationSnapshotCo
 	}
 }
 
-/* ApplicationSnapshotCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+ApplicationSnapshotCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ApplicationSnapshotCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this application snapshot collection get default response has a 2xx status code
+func (o *ApplicationSnapshotCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this application snapshot collection get default response has a 3xx status code
+func (o *ApplicationSnapshotCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this application snapshot collection get default response has a 4xx status code
+func (o *ApplicationSnapshotCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this application snapshot collection get default response has a 5xx status code
+func (o *ApplicationSnapshotCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this application snapshot collection get default response a status code equal to that given
+func (o *ApplicationSnapshotCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ApplicationSnapshotCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /application/applications/{application.uuid}/snapshots][%d] application_snapshot_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ApplicationSnapshotCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /application/applications/{application.uuid}/snapshots][%d] application_snapshot_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ApplicationSnapshotCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewFcPortGetParamsWithHTTPClient(client *http.Client) *FcPortGetParams {
 	}
 }
 
-/* FcPortGetParams contains all the parameters to send to the API endpoint
-   for the fc port get operation.
+/*
+FcPortGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fc port get operation.
+
+	Typically these are written to a http.Request.
 */
 type FcPortGetParams struct {
 

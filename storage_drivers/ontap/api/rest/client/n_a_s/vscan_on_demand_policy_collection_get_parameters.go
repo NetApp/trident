@@ -53,10 +53,12 @@ func NewVscanOnDemandPolicyCollectionGetParamsWithHTTPClient(client *http.Client
 	}
 }
 
-/* VscanOnDemandPolicyCollectionGetParams contains all the parameters to send to the API endpoint
-   for the vscan on demand policy collection get operation.
+/*
+VscanOnDemandPolicyCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the vscan on demand policy collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type VscanOnDemandPolicyCollectionGetParams struct {
 

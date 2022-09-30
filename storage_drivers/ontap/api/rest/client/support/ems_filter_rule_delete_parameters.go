@@ -52,10 +52,12 @@ func NewEmsFilterRuleDeleteParamsWithHTTPClient(client *http.Client) *EmsFilterR
 	}
 }
 
-/* EmsFilterRuleDeleteParams contains all the parameters to send to the API endpoint
-   for the ems filter rule delete operation.
+/*
+EmsFilterRuleDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ems filter rule delete operation.
+
+	Typically these are written to a http.Request.
 */
 type EmsFilterRuleDeleteParams struct {
 

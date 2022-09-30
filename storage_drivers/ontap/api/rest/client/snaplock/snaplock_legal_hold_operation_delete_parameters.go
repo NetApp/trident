@@ -52,10 +52,12 @@ func NewSnaplockLegalHoldOperationDeleteParamsWithHTTPClient(client *http.Client
 	}
 }
 
-/* SnaplockLegalHoldOperationDeleteParams contains all the parameters to send to the API endpoint
-   for the snaplock legal hold operation delete operation.
+/*
+SnaplockLegalHoldOperationDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock legal hold operation delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockLegalHoldOperationDeleteParams struct {
 

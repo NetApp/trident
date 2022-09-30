@@ -53,10 +53,12 @@ func NewFcSwitchCollectionGetParamsWithHTTPClient(client *http.Client) *FcSwitch
 	}
 }
 
-/* FcSwitchCollectionGetParams contains all the parameters to send to the API endpoint
-   for the fc switch collection get operation.
+/*
+FcSwitchCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fc switch collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type FcSwitchCollectionGetParams struct {
 

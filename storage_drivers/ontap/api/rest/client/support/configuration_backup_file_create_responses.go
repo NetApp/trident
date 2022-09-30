@@ -46,7 +46,8 @@ func NewConfigurationBackupFileCreateAccepted() *ConfigurationBackupFileCreateAc
 	return &ConfigurationBackupFileCreateAccepted{}
 }
 
-/* ConfigurationBackupFileCreateAccepted describes a response with status code 202, with default header values.
+/*
+ConfigurationBackupFileCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type ConfigurationBackupFileCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this configuration backup file create accepted response has a 2xx status code
+func (o *ConfigurationBackupFileCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this configuration backup file create accepted response has a 3xx status code
+func (o *ConfigurationBackupFileCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this configuration backup file create accepted response has a 4xx status code
+func (o *ConfigurationBackupFileCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this configuration backup file create accepted response has a 5xx status code
+func (o *ConfigurationBackupFileCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this configuration backup file create accepted response a status code equal to that given
+func (o *ConfigurationBackupFileCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ConfigurationBackupFileCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configurationBackupFileCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ConfigurationBackupFileCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configurationBackupFileCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ConfigurationBackupFileCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewConfigurationBackupFileCreateDefault(code int) *ConfigurationBackupFileC
 	}
 }
 
-/* ConfigurationBackupFileCreateDefault describes a response with status code -1, with default header values.
+/*
+	ConfigurationBackupFileCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5963818 | Failed to queue private job. |
 | 5963819 | Failed to queue cluster job. |
 | 5963871 | Requested backup name is missing .7z suffix. |
-
 */
 type ConfigurationBackupFileCreateDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *ConfigurationBackupFileCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this configuration backup file create default response has a 2xx status code
+func (o *ConfigurationBackupFileCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this configuration backup file create default response has a 3xx status code
+func (o *ConfigurationBackupFileCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this configuration backup file create default response has a 4xx status code
+func (o *ConfigurationBackupFileCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this configuration backup file create default response has a 5xx status code
+func (o *ConfigurationBackupFileCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this configuration backup file create default response a status code equal to that given
+func (o *ConfigurationBackupFileCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ConfigurationBackupFileCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configuration_backup_file_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ConfigurationBackupFileCreateDefault) String() string {
+	return fmt.Sprintf("[POST /support/configuration-backup/backups][%d] configuration_backup_file_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ConfigurationBackupFileCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

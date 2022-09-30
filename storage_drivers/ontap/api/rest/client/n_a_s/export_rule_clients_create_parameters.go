@@ -55,10 +55,12 @@ func NewExportRuleClientsCreateParamsWithHTTPClient(client *http.Client) *Export
 	}
 }
 
-/* ExportRuleClientsCreateParams contains all the parameters to send to the API endpoint
-   for the export rule clients create operation.
+/*
+ExportRuleClientsCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the export rule clients create operation.
+
+	Typically these are written to a http.Request.
 */
 type ExportRuleClientsCreateParams struct {
 

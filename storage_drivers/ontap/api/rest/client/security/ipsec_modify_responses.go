@@ -46,14 +46,44 @@ func NewIpsecModifyOK() *IpsecModifyOK {
 	return &IpsecModifyOK{}
 }
 
-/* IpsecModifyOK describes a response with status code 200, with default header values.
+/*
+IpsecModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IpsecModifyOK struct {
 }
 
+// IsSuccess returns true when this ipsec modify o k response has a 2xx status code
+func (o *IpsecModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipsec modify o k response has a 3xx status code
+func (o *IpsecModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipsec modify o k response has a 4xx status code
+func (o *IpsecModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipsec modify o k response has a 5xx status code
+func (o *IpsecModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipsec modify o k response a status code equal to that given
+func (o *IpsecModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IpsecModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsecModifyOK ", 200)
+}
+
+func (o *IpsecModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsecModifyOK ", 200)
 }
 
@@ -69,15 +99,16 @@ func NewIpsecModifyDefault(code int) *IpsecModifyDefault {
 	}
 }
 
-/* IpsecModifyDefault describes a response with status code -1, with default header values.
+/*
+	IpsecModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 66256898 | Internal error. Failed to enable IPsec. |
 | 66256899 | Internal error. Failed to disable IPsec. |
 | 66257199 | IPsec is not supported in the current cluster version. |
-
 */
 type IpsecModifyDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *IpsecModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ipsec modify default response has a 2xx status code
+func (o *IpsecModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipsec modify default response has a 3xx status code
+func (o *IpsecModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipsec modify default response has a 4xx status code
+func (o *IpsecModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipsec modify default response has a 5xx status code
+func (o *IpsecModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipsec modify default response a status code equal to that given
+func (o *IpsecModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IpsecModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsec_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IpsecModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/ipsec][%d] ipsec_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IpsecModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

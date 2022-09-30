@@ -16,7 +16,6 @@ import (
 
 // PortsetInterfaceNoRecords A container for either a Fibre Channel network interface or an IP network interface. On POST `fc` and `ip` are mutually exclusive.
 //
-//
 // swagger:model portset_interface_no_records
 type PortsetInterfaceNoRecords struct {
 
@@ -205,7 +204,6 @@ func (m *PortsetInterfaceNoRecords) UnmarshalBinary(b []byte) error {
 }
 
 // PortsetInterfaceNoRecordsFc An FC interface.
-//
 //
 // swagger:model PortsetInterfaceNoRecordsFc
 type PortsetInterfaceNoRecordsFc struct {

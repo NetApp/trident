@@ -46,7 +46,8 @@ func NewVscanOnAccessGetOK() *VscanOnAccessGetOK {
 	return &VscanOnAccessGetOK{}
 }
 
-/* VscanOnAccessGetOK describes a response with status code 200, with default header values.
+/*
+VscanOnAccessGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type VscanOnAccessGetOK struct {
 	Payload *models.VscanOnAccess
 }
 
+// IsSuccess returns true when this vscan on access get o k response has a 2xx status code
+func (o *VscanOnAccessGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan on access get o k response has a 3xx status code
+func (o *VscanOnAccessGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan on access get o k response has a 4xx status code
+func (o *VscanOnAccessGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan on access get o k response has a 5xx status code
+func (o *VscanOnAccessGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan on access get o k response a status code equal to that given
+func (o *VscanOnAccessGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanOnAccessGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessGetOK  %+v", 200, o.Payload)
 }
+
+func (o *VscanOnAccessGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscanOnAccessGetOK  %+v", 200, o.Payload)
+}
+
 func (o *VscanOnAccessGetOK) GetPayload() *models.VscanOnAccess {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewVscanOnAccessGetDefault(code int) *VscanOnAccessGetDefault {
 	}
 }
 
-/* VscanOnAccessGetDefault describes a response with status code -1, with default header values.
+/*
+VscanOnAccessGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *VscanOnAccessGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan on access get default response has a 2xx status code
+func (o *VscanOnAccessGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan on access get default response has a 3xx status code
+func (o *VscanOnAccessGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan on access get default response has a 4xx status code
+func (o *VscanOnAccessGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan on access get default response has a 5xx status code
+func (o *VscanOnAccessGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan on access get default response a status code equal to that given
+func (o *VscanOnAccessGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanOnAccessGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanOnAccessGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-access-policies/{name}][%d] vscan_on_access_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanOnAccessGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

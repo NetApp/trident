@@ -55,10 +55,12 @@ func NewCifsSearchPathCreateParamsWithHTTPClient(client *http.Client) *CifsSearc
 	}
 }
 
-/* CifsSearchPathCreateParams contains all the parameters to send to the API endpoint
-   for the cifs search path create operation.
+/*
+CifsSearchPathCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs search path create operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsSearchPathCreateParams struct {
 

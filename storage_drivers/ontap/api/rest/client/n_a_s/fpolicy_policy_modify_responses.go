@@ -46,14 +46,44 @@ func NewFpolicyPolicyModifyOK() *FpolicyPolicyModifyOK {
 	return &FpolicyPolicyModifyOK{}
 }
 
-/* FpolicyPolicyModifyOK describes a response with status code 200, with default header values.
+/*
+FpolicyPolicyModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type FpolicyPolicyModifyOK struct {
 }
 
+// IsSuccess returns true when this fpolicy policy modify o k response has a 2xx status code
+func (o *FpolicyPolicyModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fpolicy policy modify o k response has a 3xx status code
+func (o *FpolicyPolicyModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fpolicy policy modify o k response has a 4xx status code
+func (o *FpolicyPolicyModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fpolicy policy modify o k response has a 5xx status code
+func (o *FpolicyPolicyModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fpolicy policy modify o k response a status code equal to that given
+func (o *FpolicyPolicyModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FpolicyPolicyModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyModifyOK ", 200)
+}
+
+func (o *FpolicyPolicyModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicyPolicyModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewFpolicyPolicyModifyDefault(code int) *FpolicyPolicyModifyDefault {
 	}
 }
 
-/* FpolicyPolicyModifyDefault describes a response with status code -1, with default header values.
+/*
+	FpolicyPolicyModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 9765026    | The priority must be specified when enabling the FPolicy policy |
@@ -85,7 +117,6 @@ func NewFpolicyPolicyModifyDefault(code int) *FpolicyPolicyModifyDefault {
 | 9765038    | Passthrough-read policies are not supported with an external engine of type "asynchronous" |
 | 9765039    | Passthrough-read policies are not supported with native engine |
 | 9765040    | Cannot modify an FPolicy policy as passthrough-read could not be enabled/disabled when the policy is enabled |
-
 */
 type FpolicyPolicyModifyDefault struct {
 	_statusCode int
@@ -98,9 +129,39 @@ func (o *FpolicyPolicyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fpolicy policy modify default response has a 2xx status code
+func (o *FpolicyPolicyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fpolicy policy modify default response has a 3xx status code
+func (o *FpolicyPolicyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fpolicy policy modify default response has a 4xx status code
+func (o *FpolicyPolicyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fpolicy policy modify default response has a 5xx status code
+func (o *FpolicyPolicyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fpolicy policy modify default response a status code equal to that given
+func (o *FpolicyPolicyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FpolicyPolicyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FpolicyPolicyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/fpolicy/{svm.uuid}/policies/{name}][%d] fpolicy_policy_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FpolicyPolicyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

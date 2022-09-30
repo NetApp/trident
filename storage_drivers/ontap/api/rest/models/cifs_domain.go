@@ -914,7 +914,6 @@ func (m *CifsDomainDiscoveredServersItems0NodeLinks) UnmarshalBinary(b []byte) e
 
 // CifsDomainNameMappingType Specifies the name mapping search records.
 //
-//
 // swagger:model CifsDomainNameMappingType
 type CifsDomainNameMappingType struct {
 
@@ -951,7 +950,6 @@ func (m *CifsDomainNameMappingType) UnmarshalBinary(b []byte) error {
 }
 
 // CifsDomainPasswordScheduleType Specifies the password schedule records.
-//
 //
 // swagger:model CifsDomainPasswordScheduleType
 type CifsDomainPasswordScheduleType struct {

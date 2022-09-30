@@ -18,7 +18,6 @@ import (
 
 // NvmeSubsystem An NVMe subsystem maintains configuration state and namespace access control for a set of NVMe-connected hosts.
 //
-//
 // swagger:model nvme_subsystem
 type NvmeSubsystem struct {
 
@@ -589,7 +588,6 @@ func (m *NvmeSubsystemHostsItems0) UnmarshalBinary(b []byte) error {
 
 // NvmeSubsystemIoQueue The properties of the submission queue used to submit I/O commands for execution by the NVMe controller.
 //
-//
 // swagger:model NvmeSubsystemIoQueue
 type NvmeSubsystemIoQueue struct {
 
@@ -675,7 +673,6 @@ func (m *NvmeSubsystemIoQueue) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeSubsystemIoQueueDefault The default I/O queue parameters inherited by NVMe hosts in the NVMe subsystem.
-//
 //
 // swagger:model NvmeSubsystemIoQueueDefault
 type NvmeSubsystemIoQueueDefault struct {
@@ -888,7 +885,6 @@ func (m *NvmeSubsystemLinks) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeSubsystemSubsystemMapsItems0 An NVMe namespace mapped to the NVMe subsystem.
-//
 //
 // swagger:model NvmeSubsystemSubsystemMapsItems0
 type NvmeSubsystemSubsystemMapsItems0 struct {
@@ -1143,7 +1139,6 @@ func (m *NvmeSubsystemSubsystemMapsItems0Links) UnmarshalBinary(b []byte) error 
 }
 
 // NvmeSubsystemSubsystemMapsItems0Namespace An NVMe namespace mapped to the NVMe subsystem.
-//
 //
 // swagger:model NvmeSubsystemSubsystemMapsItems0Namespace
 type NvmeSubsystemSubsystemMapsItems0Namespace struct {

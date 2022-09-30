@@ -46,7 +46,8 @@ func NewClusterLdapCreateCreated() *ClusterLdapCreateCreated {
 	return &ClusterLdapCreateCreated{}
 }
 
-/* ClusterLdapCreateCreated describes a response with status code 201, with default header values.
+/*
+ClusterLdapCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type ClusterLdapCreateCreated struct {
 	Payload *models.LdapServiceResponse
 }
 
+// IsSuccess returns true when this cluster ldap create created response has a 2xx status code
+func (o *ClusterLdapCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ldap create created response has a 3xx status code
+func (o *ClusterLdapCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ldap create created response has a 4xx status code
+func (o *ClusterLdapCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ldap create created response has a 5xx status code
+func (o *ClusterLdapCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ldap create created response a status code equal to that given
+func (o *ClusterLdapCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *ClusterLdapCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] clusterLdapCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *ClusterLdapCreateCreated) String() string {
+	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] clusterLdapCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *ClusterLdapCreateCreated) GetPayload() *models.LdapServiceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewClusterLdapCreateDefault(code int) *ClusterLdapCreateDefault {
 	}
 }
 
-/* ClusterLdapCreateDefault describes a response with status code -1, with default header values.
+/*
+	ClusterLdapCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4915203    | The specified LDAP schema does not exist. |
@@ -98,7 +131,6 @@ func NewClusterLdapCreateDefault(code int) *ClusterLdapCreateDefault {
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
 | 4915252    | LDAP referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
-
 */
 type ClusterLdapCreateDefault struct {
 	_statusCode int
@@ -111,9 +143,39 @@ func (o *ClusterLdapCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ldap create default response has a 2xx status code
+func (o *ClusterLdapCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ldap create default response has a 3xx status code
+func (o *ClusterLdapCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ldap create default response has a 4xx status code
+func (o *ClusterLdapCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ldap create default response has a 5xx status code
+func (o *ClusterLdapCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ldap create default response a status code equal to that given
+func (o *ClusterLdapCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterLdapCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] cluster_ldap_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterLdapCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/authentication/cluster/ldap][%d] cluster_ldap_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterLdapCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

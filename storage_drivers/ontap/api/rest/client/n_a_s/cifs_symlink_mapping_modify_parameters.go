@@ -54,10 +54,12 @@ func NewCifsSymlinkMappingModifyParamsWithHTTPClient(client *http.Client) *CifsS
 	}
 }
 
-/* CifsSymlinkMappingModifyParams contains all the parameters to send to the API endpoint
-   for the cifs symlink mapping modify operation.
+/*
+CifsSymlinkMappingModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs symlink mapping modify operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsSymlinkMappingModifyParams struct {
 

@@ -52,10 +52,12 @@ func NewNetgroupFileDeleteParamsWithHTTPClient(client *http.Client) *NetgroupFil
 	}
 }
 
-/* NetgroupFileDeleteParams contains all the parameters to send to the API endpoint
-   for the netgroup file delete operation.
+/*
+NetgroupFileDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the netgroup file delete operation.
+
+	Typically these are written to a http.Request.
 */
 type NetgroupFileDeleteParams struct {
 

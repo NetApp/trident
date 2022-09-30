@@ -46,14 +46,44 @@ func NewLoginMessagesModifyOK() *LoginMessagesModifyOK {
 	return &LoginMessagesModifyOK{}
 }
 
-/* LoginMessagesModifyOK describes a response with status code 200, with default header values.
+/*
+LoginMessagesModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LoginMessagesModifyOK struct {
 }
 
+// IsSuccess returns true when this login messages modify o k response has a 2xx status code
+func (o *LoginMessagesModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this login messages modify o k response has a 3xx status code
+func (o *LoginMessagesModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this login messages modify o k response has a 4xx status code
+func (o *LoginMessagesModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this login messages modify o k response has a 5xx status code
+func (o *LoginMessagesModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this login messages modify o k response a status code equal to that given
+func (o *LoginMessagesModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LoginMessagesModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] loginMessagesModifyOK ", 200)
+}
+
+func (o *LoginMessagesModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] loginMessagesModifyOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewLoginMessagesModifyDefault(code int) *LoginMessagesModifyDefault {
 	}
 }
 
-/* LoginMessagesModifyDefault describes a response with status code -1, with default header values.
+/*
+	LoginMessagesModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error codes | Description |
 | ----------- | ----------- |
 | 10225636    | Only a cluster administrator can modify the `show_cluster_message` property. |
-
 */
 type LoginMessagesModifyDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *LoginMessagesModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this login messages modify default response has a 2xx status code
+func (o *LoginMessagesModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this login messages modify default response has a 3xx status code
+func (o *LoginMessagesModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this login messages modify default response has a 4xx status code
+func (o *LoginMessagesModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this login messages modify default response has a 5xx status code
+func (o *LoginMessagesModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this login messages modify default response a status code equal to that given
+func (o *LoginMessagesModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LoginMessagesModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] login_messages_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LoginMessagesModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/login/messages/{uuid}][%d] login_messages_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LoginMessagesModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewQtreeGetOK() *QtreeGetOK {
 	return &QtreeGetOK{}
 }
 
-/* QtreeGetOK describes a response with status code 200, with default header values.
+/*
+QtreeGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type QtreeGetOK struct {
 	Payload *models.Qtree
 }
 
+// IsSuccess returns true when this qtree get o k response has a 2xx status code
+func (o *QtreeGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this qtree get o k response has a 3xx status code
+func (o *QtreeGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this qtree get o k response has a 4xx status code
+func (o *QtreeGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this qtree get o k response has a 5xx status code
+func (o *QtreeGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this qtree get o k response a status code equal to that given
+func (o *QtreeGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *QtreeGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtreeGetOK  %+v", 200, o.Payload)
 }
+
+func (o *QtreeGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtreeGetOK  %+v", 200, o.Payload)
+}
+
 func (o *QtreeGetOK) GetPayload() *models.Qtree {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewQtreeGetDefault(code int) *QtreeGetDefault {
 	}
 }
 
-/* QtreeGetDefault describes a response with status code -1, with default header values.
+/*
+	QtreeGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 918235 | A volume with UUID was not found. |
 | 5242956 | Failed to obtain a qtree with ID. |
-
 */
 type QtreeGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *QtreeGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this qtree get default response has a 2xx status code
+func (o *QtreeGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this qtree get default response has a 3xx status code
+func (o *QtreeGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this qtree get default response has a 4xx status code
+func (o *QtreeGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this qtree get default response has a 5xx status code
+func (o *QtreeGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this qtree get default response a status code equal to that given
+func (o *QtreeGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QtreeGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtree_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QtreeGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/qtrees/{volume.uuid}/{id}][%d] qtree_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QtreeGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

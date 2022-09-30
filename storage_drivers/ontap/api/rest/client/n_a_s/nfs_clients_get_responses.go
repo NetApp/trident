@@ -46,7 +46,8 @@ func NewNfsClientsGetOK() *NfsClientsGetOK {
 	return &NfsClientsGetOK{}
 }
 
-/* NfsClientsGetOK describes a response with status code 200, with default header values.
+/*
+NfsClientsGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NfsClientsGetOK struct {
 	Payload *models.NfsClientsResponse
 }
 
+// IsSuccess returns true when this nfs clients get o k response has a 2xx status code
+func (o *NfsClientsGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nfs clients get o k response has a 3xx status code
+func (o *NfsClientsGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nfs clients get o k response has a 4xx status code
+func (o *NfsClientsGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nfs clients get o k response has a 5xx status code
+func (o *NfsClientsGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nfs clients get o k response a status code equal to that given
+func (o *NfsClientsGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NfsClientsGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfsClientsGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NfsClientsGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfsClientsGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NfsClientsGetOK) GetPayload() *models.NfsClientsResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNfsClientsGetDefault(code int) *NfsClientsGetDefault {
 	}
 }
 
-/* NfsClientsGetDefault describes a response with status code -1, with default header values.
+/*
+NfsClientsGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NfsClientsGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nfs clients get default response has a 2xx status code
+func (o *NfsClientsGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nfs clients get default response has a 3xx status code
+func (o *NfsClientsGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nfs clients get default response has a 4xx status code
+func (o *NfsClientsGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nfs clients get default response has a 5xx status code
+func (o *NfsClientsGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nfs clients get default response a status code equal to that given
+func (o *NfsClientsGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NfsClientsGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfs_clients_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NfsClientsGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nfs/connected-clients][%d] nfs_clients_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NfsClientsGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

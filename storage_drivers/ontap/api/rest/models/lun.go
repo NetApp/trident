@@ -21,7 +21,6 @@ import (
 // A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, and moved to a different volume. LUNs support the assignment of a quality of service (QoS) policy for performance management or a QoS policy can be assigned to the volume containing the LUN. See the LUN object model to learn more about each of the properties supported by the LUN REST API.<br/>
 // A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the Fibre Channel Protocol or a TCP/IP network using iSCSI.
 //
-//
 // swagger:model lun
 type Lun struct {
 
@@ -1164,7 +1163,6 @@ func (m *Lun) UnmarshalBinary(b []byte) error {
 // Attribute names and values must be at least one byte and no more than 4091 bytes in length. The sum of the name and value lengths must be no more than 4092 bytes.<br/>
 // Optional in POST.
 //
-//
 // swagger:model LunAttributesItems0
 type LunAttributesItems0 struct {
 
@@ -1393,7 +1391,6 @@ func (m *LunAttributesItems0Links) UnmarshalBinary(b []byte) error {
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
 // Persistent reservations for the patched LUN are also preserved.
 //
-//
 // swagger:model LunClone
 type LunClone struct {
 
@@ -1482,7 +1479,6 @@ func (m *LunClone) UnmarshalBinary(b []byte) error {
 // Valid in POST to create a new LUN as a clone of the source.<br/>
 // Valid in PATCH to overwrite an existing LUN's data as a clone of another.
 //
-//
 // swagger:model LunCloneSource
 type LunCloneSource struct {
 
@@ -1526,7 +1522,6 @@ func (m *LunCloneSource) UnmarshalBinary(b []byte) error {
 }
 
 // LunConsistencyGroup The LUN's consistency group. This property is populated for LUNs whose volume is a member of a consistency group. If the volume is a member of a child consistency group, the parent consistency group is reported.
-//
 //
 // swagger:model LunConsistencyGroup
 type LunConsistencyGroup struct {
@@ -1738,7 +1733,6 @@ func (m *LunConsistencyGroupLinks) UnmarshalBinary(b []byte) error {
 
 // LunConvert This sub-object is used in POST to convert a valid in-place NVMe namespace to a LUN. Setting a property in this sub-object indicates that a conversion from the specified NVMe namespace to LUN is desired.<br/>
 //
-//
 // swagger:model LunConvert
 type LunConvert struct {
 
@@ -1826,7 +1820,6 @@ func (m *LunConvert) UnmarshalBinary(b []byte) error {
 // LunConvertNamespace The source namespace for convert operation. This can be specified using property `convert.namespace.uuid` or `convert.namespace.name`. If both properties are supplied, they must refer to the same NVMe namespace.<br/>
 // Valid in POST. A convert request from NVMe namespace to LUN cannot be combined with setting any other LUN properties. All other properties of the converted LUN comes from the source NVMe namespace.<br/>
 //
-//
 // swagger:model LunConvertNamespace
 type LunConvertNamespace struct {
 
@@ -1873,7 +1866,6 @@ func (m *LunConvertNamespace) UnmarshalBinary(b []byte) error {
 // Copying a LUN is an asynchronous activity begun by a POST request that specifies the source of the copy in the `copy.source` properties. The data for the LUN is then asynchronously copied from the source to the destination. The time required to complete the copy depends on the size of the LUN and the load on the cluster. The `copy` sub-object is populated while a LUN copy is in progress and for two (2) minutes following completion of a copy.<br/>
 // While LUNs are being copied, the status of the LUN copy operations can be obtained using a GET of the source or destination LUN that requests the `copy` properties. If the LUN is the source LUN for one or more copy operations, the `copy.destinations` array is populated in GET. If the containing LUN is the destination LUN for a copy operation, the `copy.source` sub-object is populated in GET. The LUN copy operation can be further modified using a PATCH on the properties on the `copy.source` sub-object of the copy destination LUN.<br/>
 // There is an added cost to retrieving property values for `copy`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-//
 //
 // swagger:model LunCopy
 type LunCopy struct {
@@ -2019,7 +2011,6 @@ func (m *LunCopy) UnmarshalBinary(b []byte) error {
 }
 
 // LunCopyDestinationsItems0 A LUN copy operation in which the containing LUN is the source of the copy.
-//
 //
 // swagger:model LunCopyDestinationsItems0
 type LunCopyDestinationsItems0 struct {
@@ -2290,7 +2281,6 @@ func (m *LunCopyDestinationsItems0Links) UnmarshalBinary(b []byte) error {
 }
 
 // LunCopyDestinationsItems0Progress Properties related to the progress of an active or recently completed LUN copy.
-//
 //
 // swagger:model LunCopyDestinationsItems0Progress
 type LunCopyDestinationsItems0Progress struct {
@@ -2586,7 +2576,6 @@ func (m *LunCopyDestinationsItems0Progress) UnmarshalBinary(b []byte) error {
 // LunCopySource The source LUN of a LUN copy operation in which the containing LUN is the destination of the copy.<br/>
 // Valid in POST except when creating a LUN clone. A LUN copy request cannot be combined with setting any other LUN properties except the destination location. All other properties of the destination LUN come from the source LUN.
 //
-//
 // swagger:model LunCopySource
 type LunCopySource struct {
 
@@ -2819,7 +2808,6 @@ func (m *LunCopySourceLinks) UnmarshalBinary(b []byte) error {
 }
 
 // LunCopySourceProgress Properties related to the progress of an active or recently completed LUN copy.
-//
 //
 // swagger:model LunCopySourceProgress
 type LunCopySourceProgress struct {
@@ -3187,7 +3175,6 @@ func (m *LunLinks) UnmarshalBinary(b []byte) error {
 
 // LunLocation The location of the LUN within the ONTAP cluster. Valid in POST and PATCH.
 //
-//
 // swagger:model LunLocation
 type LunLocation struct {
 
@@ -3364,7 +3351,6 @@ func (m *LunLocation) UnmarshalBinary(b []byte) error {
 }
 
 // LunLocationNode The cluster node that hosts the LUN.
-//
 //
 // swagger:model LunLocationNode
 type LunLocationNode struct {
@@ -3547,7 +3533,6 @@ func (m *LunLocationNodeLinks) UnmarshalBinary(b []byte) error {
 // LunLocationQtree The qtree in which the LUN is optionally located. Valid in POST and PATCH.<br/>
 // If properties `name` and `location.qtree.name` and/or `location.qtree.uuid` are specified in the same request, they must refer to the same qtree.<br/>
 // A PATCH that modifies the qtree of the LUN is considered a rename operation.
-//
 //
 // swagger:model LunLocationQtree
 type LunLocationQtree struct {
@@ -3754,7 +3739,6 @@ func (m *LunLocationQtreeLinks) UnmarshalBinary(b []byte) error {
 // If properties `name` and `location.volume.name` and/or `location.volume.uuid` are specified in the same request, they must refer to the same volume.<br/>
 // A PATCH that modifies the volume of the LUN begins an asynchronous LUN movement operation.
 //
-//
 // swagger:model LunLocationVolume
 type LunLocationVolume struct {
 
@@ -3935,7 +3919,6 @@ func (m *LunLocationVolumeLinks) UnmarshalBinary(b []byte) error {
 
 // LunLunMapsItems0 A LUN map with which the LUN is associated.
 //
-//
 // swagger:model LunLunMapsItems0
 type LunLunMapsItems0 struct {
 
@@ -4081,7 +4064,6 @@ func (m *LunLunMapsItems0) UnmarshalBinary(b []byte) error {
 }
 
 // LunLunMapsItems0Igroup The initiator group to which the LUN is mapped.
-//
 //
 // swagger:model LunLunMapsItems0Igroup
 type LunLunMapsItems0Igroup struct {
@@ -5166,7 +5148,6 @@ func (m *LunMetricThroughput) UnmarshalBinary(b []byte) error {
 // While the LUN is being moved, the status of the LUN movement operation can be obtained using a GET for the LUN that requests the `movement` properties. The LUN movement operation can be further modified using a PATCH on the properties on the `movement` sub-object.<br/>
 // There is an added cost to retrieving property values for `movement`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 //
-//
 // swagger:model LunMovement
 type LunMovement struct {
 
@@ -5302,7 +5283,6 @@ func (m *LunMovement) UnmarshalBinary(b []byte) error {
 
 // LunMovementPaths The fully qualified LUN path names involved in the LUN movement.
 //
-//
 // swagger:model LunMovementPaths
 type LunMovementPaths struct {
 
@@ -5379,7 +5359,6 @@ func (m *LunMovementPaths) UnmarshalBinary(b []byte) error {
 }
 
 // LunMovementProgress Properties related to the progress of an active or recently completed LUN movement.
-//
 //
 // swagger:model LunMovementProgress
 type LunMovementProgress struct {
@@ -5662,7 +5641,6 @@ func (m *LunMovementProgress) UnmarshalBinary(b []byte) error {
 // LunQosPolicy The QoS policy for the LUN. Both traditional and adaptive QoS policies are supported. If both property `qos_policy.uuid` and `qos_policy.name` are specified in the same request, they must refer to the same QoS policy. To remove the QoS policy from a LUN, leaving it with no QoS policy, set property `qos_policy.name` to an empty string ("") in a PATCH request. Valid in POST and PATCH.<br/>
 // Note that a QoS policy can be set on a LUN, or a LUN's volume, but not both.
 //
-//
 // swagger:model LunQosPolicy
 type LunQosPolicy struct {
 
@@ -5845,7 +5823,6 @@ func (m *LunQosPolicyLinks) UnmarshalBinary(b []byte) error {
 
 // LunSpace The storage space related properties of the LUN.
 //
-//
 // swagger:model LunSpace
 type LunSpace struct {
 
@@ -5990,7 +5967,6 @@ func (m *LunSpace) UnmarshalBinary(b []byte) error {
 }
 
 // LunSpaceGuarantee Properties that request and report the space guarantee for the LUN.
-//
 //
 // swagger:model LunSpaceGuarantee
 type LunSpaceGuarantee struct {
@@ -6590,7 +6566,6 @@ func (m *LunStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 
 // LunStatus Status information about the LUN.
 //
-//
 // swagger:model LunStatus
 type LunStatus struct {
 
@@ -6871,7 +6846,6 @@ func (m *LunStatus) UnmarshalBinary(b []byte) error {
 
 // LunSvm The SVM in which the LUN is located.
 //
-//
 // swagger:model LunSvm
 type LunSvm struct {
 
@@ -7056,7 +7030,6 @@ func (m *LunSvmLinks) UnmarshalBinary(b []byte) error {
 // See [`POST /protocols/san/vvol-bindings`](#/SAN/vvol_binding_create) to learn more about creating vVol bindings and [`DELETE /protocols/san/vvol-bindings`](#/SAN/vvol_binding_delete) to learn more about deleting vVol bindings.</br>
 // There is an added cost to retrieving property values for `vvol`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 //
-//
 // swagger:model LunVvol
 type LunVvol struct {
 
@@ -7180,7 +7153,6 @@ func (m *LunVvol) UnmarshalBinary(b []byte) error {
 }
 
 // LunVvolBindingsItems0 A vVol binding with which the LUN is associated.
-//
 //
 // swagger:model LunVvolBindingsItems0
 type LunVvolBindingsItems0 struct {
@@ -7414,7 +7386,6 @@ func (m *LunVvolBindingsItems0Links) UnmarshalBinary(b []byte) error {
 }
 
 // LunVvolBindingsItems0Partner The LUN partner that this LUN is bound to. If this LUN is a `vvol` class LUN, the partner is a `protocol_endpoint` class LUN.
-//
 //
 // swagger:model LunVvolBindingsItems0Partner
 type LunVvolBindingsItems0Partner struct {

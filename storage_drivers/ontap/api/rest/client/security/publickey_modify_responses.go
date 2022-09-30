@@ -46,14 +46,44 @@ func NewPublickeyModifyOK() *PublickeyModifyOK {
 	return &PublickeyModifyOK{}
 }
 
-/* PublickeyModifyOK describes a response with status code 200, with default header values.
+/*
+PublickeyModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type PublickeyModifyOK struct {
 }
 
+// IsSuccess returns true when this publickey modify o k response has a 2xx status code
+func (o *PublickeyModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this publickey modify o k response has a 3xx status code
+func (o *PublickeyModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this publickey modify o k response has a 4xx status code
+func (o *PublickeyModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this publickey modify o k response has a 5xx status code
+func (o *PublickeyModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this publickey modify o k response a status code equal to that given
+func (o *PublickeyModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *PublickeyModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickeyModifyOK ", 200)
+}
+
+func (o *PublickeyModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickeyModifyOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewPublickeyModifyDefault(code int) *PublickeyModifyDefault {
 	}
 }
 
-/* PublickeyModifyDefault describes a response with status code -1, with default header values.
+/*
+PublickeyModifyDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *PublickeyModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this publickey modify default response has a 2xx status code
+func (o *PublickeyModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this publickey modify default response has a 3xx status code
+func (o *PublickeyModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this publickey modify default response has a 4xx status code
+func (o *PublickeyModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this publickey modify default response has a 5xx status code
+func (o *PublickeyModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this publickey modify default response a status code equal to that given
+func (o *PublickeyModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *PublickeyModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickey_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *PublickeyModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] publickey_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *PublickeyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

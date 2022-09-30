@@ -46,7 +46,8 @@ func NewS3UserCreateCreated() *S3UserCreateCreated {
 	return &S3UserCreateCreated{}
 }
 
-/* S3UserCreateCreated describes a response with status code 201, with default header values.
+/*
+S3UserCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type S3UserCreateCreated struct {
 	Payload *models.S3UserPostPatchResponse
 }
 
+// IsSuccess returns true when this s3 user create created response has a 2xx status code
+func (o *S3UserCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 user create created response has a 3xx status code
+func (o *S3UserCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 user create created response has a 4xx status code
+func (o *S3UserCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 user create created response has a 5xx status code
+func (o *S3UserCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 user create created response a status code equal to that given
+func (o *S3UserCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *S3UserCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3UserCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *S3UserCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3UserCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *S3UserCreateCreated) GetPayload() *models.S3UserPostPatchResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewS3UserCreateDefault(code int) *S3UserCreateDefault {
 	}
 }
 
-/* S3UserCreateDefault describes a response with status code -1, with default header values.
+/*
+	S3UserCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 92405773   | Object store server is not present for specified SVM. Create a object store server and retry the operation. |
@@ -90,7 +123,6 @@ func NewS3UserCreateDefault(code int) *S3UserCreateDefault {
 | 92405788   | User names must have between 1 and 64 characters. |
 | 92405791   | Failed to create access-key and secret-key. |
 | 92405817   | S3 users can be created only on data SVM. |
-
 */
 type S3UserCreateDefault struct {
 	_statusCode int
@@ -103,9 +135,39 @@ func (o *S3UserCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 user create default response has a 2xx status code
+func (o *S3UserCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 user create default response has a 3xx status code
+func (o *S3UserCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 user create default response has a 4xx status code
+func (o *S3UserCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 user create default response has a 5xx status code
+func (o *S3UserCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 user create default response a status code equal to that given
+func (o *S3UserCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3UserCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3_user_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3UserCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/s3/services/{svm.uuid}/users][%d] s3_user_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3UserCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

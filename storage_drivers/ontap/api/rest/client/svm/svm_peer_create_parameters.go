@@ -55,10 +55,12 @@ func NewSvmPeerCreateParamsWithHTTPClient(client *http.Client) *SvmPeerCreatePar
 	}
 }
 
-/* SvmPeerCreateParams contains all the parameters to send to the API endpoint
-   for the svm peer create operation.
+/*
+SvmPeerCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the svm peer create operation.
+
+	Typically these are written to a http.Request.
 */
 type SvmPeerCreateParams struct {
 

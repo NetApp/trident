@@ -46,7 +46,8 @@ func NewSnapmirrorRelationshipCreateAccepted() *SnapmirrorRelationshipCreateAcce
 	return &SnapmirrorRelationshipCreateAccepted{}
 }
 
-/* SnapmirrorRelationshipCreateAccepted describes a response with status code 202, with default header values.
+/*
+SnapmirrorRelationshipCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SnapmirrorRelationshipCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this snapmirror relationship create accepted response has a 2xx status code
+func (o *SnapmirrorRelationshipCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror relationship create accepted response has a 3xx status code
+func (o *SnapmirrorRelationshipCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror relationship create accepted response has a 4xx status code
+func (o *SnapmirrorRelationshipCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror relationship create accepted response has a 5xx status code
+func (o *SnapmirrorRelationshipCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror relationship create accepted response a status code equal to that given
+func (o *SnapmirrorRelationshipCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SnapmirrorRelationshipCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirrorRelationshipCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SnapmirrorRelationshipCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirrorRelationshipCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SnapmirrorRelationshipCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 	}
 }
 
-/* SnapmirrorRelationshipCreateDefault describes a response with status code -1, with default header values.
+/*
+	SnapmirrorRelationshipCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1115545 | Access token has an invalid signature. |
@@ -178,7 +211,6 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13304080 | Specified UUID and name do not match. |
 | 13304082 | Specified properties are mutually exclusive. |
 | 13304083 | The specified property is not supported because all nodes in the cluster are not capable of supporting the property.<private> |
-
 */
 type SnapmirrorRelationshipCreateDefault struct {
 	_statusCode int
@@ -191,9 +223,39 @@ func (o *SnapmirrorRelationshipCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapmirror relationship create default response has a 2xx status code
+func (o *SnapmirrorRelationshipCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapmirror relationship create default response has a 3xx status code
+func (o *SnapmirrorRelationshipCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapmirror relationship create default response has a 4xx status code
+func (o *SnapmirrorRelationshipCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapmirror relationship create default response has a 5xx status code
+func (o *SnapmirrorRelationshipCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapmirror relationship create default response a status code equal to that given
+func (o *SnapmirrorRelationshipCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapmirrorRelationshipCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirror_relationship_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapmirrorRelationshipCreateDefault) String() string {
+	return fmt.Sprintf("[POST /snapmirror/relationships][%d] snapmirror_relationship_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapmirrorRelationshipCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

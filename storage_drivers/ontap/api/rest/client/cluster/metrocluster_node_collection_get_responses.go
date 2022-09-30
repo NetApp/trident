@@ -46,7 +46,8 @@ func NewMetroclusterNodeCollectionGetOK() *MetroclusterNodeCollectionGetOK {
 	return &MetroclusterNodeCollectionGetOK{}
 }
 
-/* MetroclusterNodeCollectionGetOK describes a response with status code 200, with default header values.
+/*
+MetroclusterNodeCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type MetroclusterNodeCollectionGetOK struct {
 	Payload *models.MetroclusterNodeResponse
 }
 
+// IsSuccess returns true when this metrocluster node collection get o k response has a 2xx status code
+func (o *MetroclusterNodeCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster node collection get o k response has a 3xx status code
+func (o *MetroclusterNodeCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster node collection get o k response has a 4xx status code
+func (o *MetroclusterNodeCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster node collection get o k response has a 5xx status code
+func (o *MetroclusterNodeCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster node collection get o k response a status code equal to that given
+func (o *MetroclusterNodeCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MetroclusterNodeCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/nodes][%d] metroclusterNodeCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *MetroclusterNodeCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/nodes][%d] metroclusterNodeCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *MetroclusterNodeCollectionGetOK) GetPayload() *models.MetroclusterNodeResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewMetroclusterNodeCollectionGetDefault(code int) *MetroclusterNodeCollecti
 	}
 }
 
-/* MetroclusterNodeCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	MetroclusterNodeCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
-
 */
 type MetroclusterNodeCollectionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *MetroclusterNodeCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster node collection get default response has a 2xx status code
+func (o *MetroclusterNodeCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster node collection get default response has a 3xx status code
+func (o *MetroclusterNodeCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster node collection get default response has a 4xx status code
+func (o *MetroclusterNodeCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster node collection get default response has a 5xx status code
+func (o *MetroclusterNodeCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster node collection get default response a status code equal to that given
+func (o *MetroclusterNodeCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterNodeCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/nodes][%d] metrocluster_node_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MetroclusterNodeCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/nodes][%d] metrocluster_node_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MetroclusterNodeCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewIPSubnetCollectionGetOK() *IPSubnetCollectionGetOK {
 	return &IPSubnetCollectionGetOK{}
 }
 
-/* IPSubnetCollectionGetOK describes a response with status code 200, with default header values.
+/*
+IPSubnetCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IPSubnetCollectionGetOK struct {
 	Payload *models.IPSubnetResponse
 }
 
+// IsSuccess returns true when this ip subnet collection get o k response has a 2xx status code
+func (o *IPSubnetCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ip subnet collection get o k response has a 3xx status code
+func (o *IPSubnetCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ip subnet collection get o k response has a 4xx status code
+func (o *IPSubnetCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ip subnet collection get o k response has a 5xx status code
+func (o *IPSubnetCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ip subnet collection get o k response a status code equal to that given
+func (o *IPSubnetCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IPSubnetCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/ip/subnets][%d] ipSubnetCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IPSubnetCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /network/ip/subnets][%d] ipSubnetCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IPSubnetCollectionGetOK) GetPayload() *models.IPSubnetResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewIPSubnetCollectionGetDefault(code int) *IPSubnetCollectionGetDefault {
 	}
 }
 
-/* IPSubnetCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+IPSubnetCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *IPSubnetCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ip subnet collection get default response has a 2xx status code
+func (o *IPSubnetCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ip subnet collection get default response has a 3xx status code
+func (o *IPSubnetCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ip subnet collection get default response has a 4xx status code
+func (o *IPSubnetCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ip subnet collection get default response has a 5xx status code
+func (o *IPSubnetCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ip subnet collection get default response a status code equal to that given
+func (o *IPSubnetCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IPSubnetCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/ip/subnets][%d] ip_subnet_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IPSubnetCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/ip/subnets][%d] ip_subnet_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IPSubnetCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

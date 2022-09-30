@@ -52,10 +52,12 @@ func NewNvmeSubsystemHostDeleteParamsWithHTTPClient(client *http.Client) *NvmeSu
 	}
 }
 
-/* NvmeSubsystemHostDeleteParams contains all the parameters to send to the API endpoint
-   for the nvme subsystem host delete operation.
+/*
+NvmeSubsystemHostDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme subsystem host delete operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeSubsystemHostDeleteParams struct {
 

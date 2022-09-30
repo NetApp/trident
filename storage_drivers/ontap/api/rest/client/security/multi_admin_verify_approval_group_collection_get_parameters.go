@@ -53,10 +53,12 @@ func NewMultiAdminVerifyApprovalGroupCollectionGetParamsWithHTTPClient(client *h
 	}
 }
 
-/* MultiAdminVerifyApprovalGroupCollectionGetParams contains all the parameters to send to the API endpoint
-   for the multi admin verify approval group collection get operation.
+/*
+MultiAdminVerifyApprovalGroupCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the multi admin verify approval group collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type MultiAdminVerifyApprovalGroupCollectionGetParams struct {
 

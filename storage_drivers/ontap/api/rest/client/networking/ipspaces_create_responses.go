@@ -46,14 +46,44 @@ func NewIpspacesCreateCreated() *IpspacesCreateCreated {
 	return &IpspacesCreateCreated{}
 }
 
-/* IpspacesCreateCreated describes a response with status code 201, with default header values.
+/*
+IpspacesCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type IpspacesCreateCreated struct {
 }
 
+// IsSuccess returns true when this ipspaces create created response has a 2xx status code
+func (o *IpspacesCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipspaces create created response has a 3xx status code
+func (o *IpspacesCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipspaces create created response has a 4xx status code
+func (o *IpspacesCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipspaces create created response has a 5xx status code
+func (o *IpspacesCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipspaces create created response a status code equal to that given
+func (o *IpspacesCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *IpspacesCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspacesCreateCreated ", 201)
+}
+
+func (o *IpspacesCreateCreated) String() string {
 	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspacesCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewIpspacesCreateDefault(code int) *IpspacesCreateDefault {
 	}
 }
 
-/* IpspacesCreateDefault describes a response with status code -1, with default header values.
+/*
+	IpspacesCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1966586 | The specified IPspace name is invalid because it is already used by a peered SVM. |
@@ -80,7 +112,6 @@ ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
 | 9240591 | The name is not valid. The name is already in use by a cluster node, Vserver, or it is the name of the local cluster. |
-
 */
 type IpspacesCreateDefault struct {
 	_statusCode int
@@ -93,9 +124,39 @@ func (o *IpspacesCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ipspaces create default response has a 2xx status code
+func (o *IpspacesCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipspaces create default response has a 3xx status code
+func (o *IpspacesCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipspaces create default response has a 4xx status code
+func (o *IpspacesCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipspaces create default response has a 5xx status code
+func (o *IpspacesCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipspaces create default response a status code equal to that given
+func (o *IpspacesCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IpspacesCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspaces_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IpspacesCreateDefault) String() string {
+	return fmt.Sprintf("[POST /network/ipspaces][%d] ipspaces_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IpspacesCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

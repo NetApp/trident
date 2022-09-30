@@ -53,10 +53,12 @@ func NewMetroclusterGetParamsWithHTTPClient(client *http.Client) *MetroclusterGe
 	}
 }
 
-/* MetroclusterGetParams contains all the parameters to send to the API endpoint
-   for the metrocluster get operation.
+/*
+MetroclusterGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the metrocluster get operation.
+
+	Typically these are written to a http.Request.
 */
 type MetroclusterGetParams struct {
 

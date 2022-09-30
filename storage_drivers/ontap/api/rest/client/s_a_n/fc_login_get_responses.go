@@ -46,7 +46,8 @@ func NewFcLoginGetOK() *FcLoginGetOK {
 	return &FcLoginGetOK{}
 }
 
-/* FcLoginGetOK describes a response with status code 200, with default header values.
+/*
+FcLoginGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FcLoginGetOK struct {
 	Payload *models.FcLogin
 }
 
+// IsSuccess returns true when this fc login get o k response has a 2xx status code
+func (o *FcLoginGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fc login get o k response has a 3xx status code
+func (o *FcLoginGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fc login get o k response has a 4xx status code
+func (o *FcLoginGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fc login get o k response has a 5xx status code
+func (o *FcLoginGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fc login get o k response a status code equal to that given
+func (o *FcLoginGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcLoginGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fcLoginGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FcLoginGetOK) String() string {
+	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fcLoginGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FcLoginGetOK) GetPayload() *models.FcLogin {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewFcLoginGetDefault(code int) *FcLoginGetDefault {
 	}
 }
 
-/* FcLoginGetDefault describes a response with status code -1, with default header values.
+/*
+	FcLoginGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4 | The Fibre Channel login specified does not exist. |
 | 5373983 | An invalid WWPN was supplied. |
 | 5374881 | The Fibre Channel interface specified does not exist. |
-
 */
 type FcLoginGetDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *FcLoginGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fc login get default response has a 2xx status code
+func (o *FcLoginGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fc login get default response has a 3xx status code
+func (o *FcLoginGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fc login get default response has a 4xx status code
+func (o *FcLoginGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fc login get default response has a 5xx status code
+func (o *FcLoginGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fc login get default response a status code equal to that given
+func (o *FcLoginGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcLoginGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fc_login_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcLoginGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/fc/logins/{interface.uuid}/{initiator.wwpn}][%d] fc_login_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcLoginGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

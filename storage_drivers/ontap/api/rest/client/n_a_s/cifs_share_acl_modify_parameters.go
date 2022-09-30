@@ -54,10 +54,12 @@ func NewCifsShareACLModifyParamsWithHTTPClient(client *http.Client) *CifsShareAC
 	}
 }
 
-/* CifsShareACLModifyParams contains all the parameters to send to the API endpoint
-   for the cifs share acl modify operation.
+/*
+CifsShareACLModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs share acl modify operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsShareACLModifyParams struct {
 

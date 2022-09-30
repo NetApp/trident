@@ -46,7 +46,8 @@ func NewLunCollectionGetOK() *LunCollectionGetOK {
 	return &LunCollectionGetOK{}
 }
 
-/* LunCollectionGetOK describes a response with status code 200, with default header values.
+/*
+LunCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LunCollectionGetOK struct {
 	Payload *models.LunResponse
 }
 
+// IsSuccess returns true when this lun collection get o k response has a 2xx status code
+func (o *LunCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun collection get o k response has a 3xx status code
+func (o *LunCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun collection get o k response has a 4xx status code
+func (o *LunCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun collection get o k response has a 5xx status code
+func (o *LunCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun collection get o k response a status code equal to that given
+func (o *LunCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LunCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/luns][%d] lunCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LunCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/luns][%d] lunCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LunCollectionGetOK) GetPayload() *models.LunResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLunCollectionGetDefault(code int) *LunCollectionGetDefault {
 	}
 }
 
-/* LunCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+LunCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LunCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this lun collection get default response has a 2xx status code
+func (o *LunCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this lun collection get default response has a 3xx status code
+func (o *LunCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this lun collection get default response has a 4xx status code
+func (o *LunCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this lun collection get default response has a 5xx status code
+func (o *LunCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this lun collection get default response a status code equal to that given
+func (o *LunCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LunCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/luns][%d] lun_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LunCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/luns][%d] lun_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LunCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

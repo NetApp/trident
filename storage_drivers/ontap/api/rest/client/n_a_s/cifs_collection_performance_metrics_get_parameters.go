@@ -53,10 +53,12 @@ func NewCifsCollectionPerformanceMetricsGetParamsWithHTTPClient(client *http.Cli
 	}
 }
 
-/* CifsCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
-   for the cifs collection performance metrics get operation.
+/*
+CifsCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs collection performance metrics get operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsCollectionPerformanceMetricsGetParams struct {
 

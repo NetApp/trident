@@ -46,14 +46,44 @@ func NewLunDeleteOK() *LunDeleteOK {
 	return &LunDeleteOK{}
 }
 
-/* LunDeleteOK describes a response with status code 200, with default header values.
+/*
+LunDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LunDeleteOK struct {
 }
 
+// IsSuccess returns true when this lun delete o k response has a 2xx status code
+func (o *LunDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun delete o k response has a 3xx status code
+func (o *LunDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun delete o k response has a 4xx status code
+func (o *LunDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun delete o k response has a 5xx status code
+func (o *LunDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun delete o k response a status code equal to that given
+func (o *LunDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LunDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /storage/luns/{uuid}][%d] lunDeleteOK ", 200)
+}
+
+func (o *LunDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /storage/luns/{uuid}][%d] lunDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewLunDeleteDefault(code int) *LunDeleteDefault {
 	}
 }
 
-/* LunDeleteDefault describes a response with status code -1, with default header values.
+/*
+	LunDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1254197 | The LUN is mapped and cannot be deleted without specifying the `allow_delete_while_mapped` query parameter. |
@@ -80,7 +112,6 @@ func NewLunDeleteDefault(code int) *LunDeleteDefault {
 | 5374866 | The LUN's volume is offline. The volume must be online to modify or remove the LUN. |
 | 5374875 | The specified LUN was not found. |
 | 5374876 | The specified LUN was not found. |
-
 */
 type LunDeleteDefault struct {
 	_statusCode int
@@ -93,9 +124,39 @@ func (o *LunDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this lun delete default response has a 2xx status code
+func (o *LunDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this lun delete default response has a 3xx status code
+func (o *LunDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this lun delete default response has a 4xx status code
+func (o *LunDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this lun delete default response has a 5xx status code
+func (o *LunDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this lun delete default response a status code equal to that given
+func (o *LunDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LunDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/luns/{uuid}][%d] lun_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LunDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/luns/{uuid}][%d] lun_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LunDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

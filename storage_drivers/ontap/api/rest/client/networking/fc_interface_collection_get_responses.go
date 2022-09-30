@@ -46,7 +46,8 @@ func NewFcInterfaceCollectionGetOK() *FcInterfaceCollectionGetOK {
 	return &FcInterfaceCollectionGetOK{}
 }
 
-/* FcInterfaceCollectionGetOK describes a response with status code 200, with default header values.
+/*
+FcInterfaceCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FcInterfaceCollectionGetOK struct {
 	Payload *models.FcInterfaceResponse
 }
 
+// IsSuccess returns true when this fc interface collection get o k response has a 2xx status code
+func (o *FcInterfaceCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fc interface collection get o k response has a 3xx status code
+func (o *FcInterfaceCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fc interface collection get o k response has a 4xx status code
+func (o *FcInterfaceCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fc interface collection get o k response has a 5xx status code
+func (o *FcInterfaceCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fc interface collection get o k response a status code equal to that given
+func (o *FcInterfaceCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcInterfaceCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fcInterfaceCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FcInterfaceCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fcInterfaceCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FcInterfaceCollectionGetOK) GetPayload() *models.FcInterfaceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewFcInterfaceCollectionGetDefault(code int) *FcInterfaceCollectionGetDefau
 	}
 }
 
-/* FcInterfaceCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	FcInterfaceCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374938 | Query parameter `recommend.data_protocol` is required when any other `recommend` query parameters are specified. |
@@ -94,7 +127,6 @@ func NewFcInterfaceCollectionGetDefault(code int) *FcInterfaceCollectionGetDefau
 | 5375956 | Query parameter `recommend.proposed.locations.port.uuid` specifies a port that is not located on a node specified by query parameter `recommend.nodes.name` or `recommend.nodes.uuid`. If the nodes are to be constrained, only ports on those nodes may be proposed. |
 | 5375957 | Query parameter `recommend.proposed.locations.port.uuid` specifies a port that is disabled. |
 | 5375958 | Query parameter `recommend.proposed.locations.port.uuid` specifies a port that is not reporting a connected FC fabric. |
-
 */
 type FcInterfaceCollectionGetDefault struct {
 	_statusCode int
@@ -107,9 +139,39 @@ func (o *FcInterfaceCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fc interface collection get default response has a 2xx status code
+func (o *FcInterfaceCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fc interface collection get default response has a 3xx status code
+func (o *FcInterfaceCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fc interface collection get default response has a 4xx status code
+func (o *FcInterfaceCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fc interface collection get default response has a 5xx status code
+func (o *FcInterfaceCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fc interface collection get default response a status code equal to that given
+func (o *FcInterfaceCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcInterfaceCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fc_interface_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcInterfaceCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/fc/interfaces][%d] fc_interface_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcInterfaceCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

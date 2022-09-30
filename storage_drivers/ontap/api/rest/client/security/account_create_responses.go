@@ -46,14 +46,44 @@ func NewAccountCreateCreated() *AccountCreateCreated {
 	return &AccountCreateCreated{}
 }
 
-/* AccountCreateCreated describes a response with status code 201, with default header values.
+/*
+AccountCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type AccountCreateCreated struct {
 }
 
+// IsSuccess returns true when this account create created response has a 2xx status code
+func (o *AccountCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this account create created response has a 3xx status code
+func (o *AccountCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this account create created response has a 4xx status code
+func (o *AccountCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this account create created response has a 5xx status code
+func (o *AccountCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this account create created response a status code equal to that given
+func (o *AccountCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *AccountCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /security/accounts][%d] accountCreateCreated ", 201)
+}
+
+func (o *AccountCreateCreated) String() string {
 	return fmt.Sprintf("[POST /security/accounts][%d] accountCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewAccountCreateDefault(code int) *AccountCreateDefault {
 	}
 }
 
-/* AccountCreateDefault describes a response with status code -1, with default header values.
+/*
+	AccountCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1261215 | The role was not found. |
@@ -100,7 +132,6 @@ func NewAccountCreateDefault(code int) *AccountCreateDefault {
 | 7077940 | The password exceeds the maximum supported length. |
 | 7077941 | The defined password composition exceeds the maximum password length of 128 characters. |
 | 7078900 | An admin password is not set. Set the password by including it in the request. |
-
 */
 type AccountCreateDefault struct {
 	_statusCode int
@@ -113,9 +144,39 @@ func (o *AccountCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this account create default response has a 2xx status code
+func (o *AccountCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this account create default response has a 3xx status code
+func (o *AccountCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this account create default response has a 4xx status code
+func (o *AccountCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this account create default response has a 5xx status code
+func (o *AccountCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this account create default response a status code equal to that given
+func (o *AccountCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AccountCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/accounts][%d] account_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AccountCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/accounts][%d] account_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AccountCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

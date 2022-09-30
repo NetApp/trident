@@ -46,14 +46,44 @@ func NewAutoUpdateStatusModifyOK() *AutoUpdateStatusModifyOK {
 	return &AutoUpdateStatusModifyOK{}
 }
 
-/* AutoUpdateStatusModifyOK describes a response with status code 200, with default header values.
+/*
+AutoUpdateStatusModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type AutoUpdateStatusModifyOK struct {
 }
 
+// IsSuccess returns true when this auto update status modify o k response has a 2xx status code
+func (o *AutoUpdateStatusModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this auto update status modify o k response has a 3xx status code
+func (o *AutoUpdateStatusModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this auto update status modify o k response has a 4xx status code
+func (o *AutoUpdateStatusModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this auto update status modify o k response has a 5xx status code
+func (o *AutoUpdateStatusModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this auto update status modify o k response a status code equal to that given
+func (o *AutoUpdateStatusModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AutoUpdateStatusModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /support/auto-update/updates/{uuid}][%d] autoUpdateStatusModifyOK ", 200)
+}
+
+func (o *AutoUpdateStatusModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /support/auto-update/updates/{uuid}][%d] autoUpdateStatusModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewAutoUpdateStatusModifyDefault(code int) *AutoUpdateStatusModifyDefault {
 	}
 }
 
-/* AutoUpdateStatusModifyDefault describes a response with status code -1, with default header values.
+/*
+	AutoUpdateStatusModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262248 | Unexpected parameter missing a delimiter. |
@@ -84,7 +116,6 @@ func NewAutoUpdateStatusModifyDefault(code int) *AutoUpdateStatusModifyDefault {
 | 131072206 | Cannot schedule an automatic update past its expiration date. |
 | 131072207 | Cannot schedule an automatic update in the past. |
 | 131072208 | Cannot schedule automatic update while the feature is disabled. |
-
 */
 type AutoUpdateStatusModifyDefault struct {
 	_statusCode int
@@ -97,9 +128,39 @@ func (o *AutoUpdateStatusModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this auto update status modify default response has a 2xx status code
+func (o *AutoUpdateStatusModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this auto update status modify default response has a 3xx status code
+func (o *AutoUpdateStatusModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this auto update status modify default response has a 4xx status code
+func (o *AutoUpdateStatusModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this auto update status modify default response has a 5xx status code
+func (o *AutoUpdateStatusModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this auto update status modify default response a status code equal to that given
+func (o *AutoUpdateStatusModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AutoUpdateStatusModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /support/auto-update/updates/{uuid}][%d] auto_update_status_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AutoUpdateStatusModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /support/auto-update/updates/{uuid}][%d] auto_update_status_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AutoUpdateStatusModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

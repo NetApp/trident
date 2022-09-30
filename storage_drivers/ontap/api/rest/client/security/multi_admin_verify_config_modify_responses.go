@@ -46,14 +46,44 @@ func NewMultiAdminVerifyConfigModifyOK() *MultiAdminVerifyConfigModifyOK {
 	return &MultiAdminVerifyConfigModifyOK{}
 }
 
-/* MultiAdminVerifyConfigModifyOK describes a response with status code 200, with default header values.
+/*
+MultiAdminVerifyConfigModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type MultiAdminVerifyConfigModifyOK struct {
 }
 
+// IsSuccess returns true when this multi admin verify config modify o k response has a 2xx status code
+func (o *MultiAdminVerifyConfigModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this multi admin verify config modify o k response has a 3xx status code
+func (o *MultiAdminVerifyConfigModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this multi admin verify config modify o k response has a 4xx status code
+func (o *MultiAdminVerifyConfigModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this multi admin verify config modify o k response has a 5xx status code
+func (o *MultiAdminVerifyConfigModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this multi admin verify config modify o k response a status code equal to that given
+func (o *MultiAdminVerifyConfigModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MultiAdminVerifyConfigModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify][%d] multiAdminVerifyConfigModifyOK ", 200)
+}
+
+func (o *MultiAdminVerifyConfigModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/multi-admin-verify][%d] multiAdminVerifyConfigModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewMultiAdminVerifyConfigModifyDefault(code int) *MultiAdminVerifyConfigMod
 	}
 }
 
-/* MultiAdminVerifyConfigModifyDefault describes a response with status code -1, with default header values.
+/*
+	MultiAdminVerifyConfigModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262309 | The feature must be enabled first. |
@@ -81,7 +113,6 @@ func NewMultiAdminVerifyConfigModifyDefault(code int) *MultiAdminVerifyConfigMod
 | 262315 | Approval-groups must be specified when enabling this feature. |
 | 262316 | Value must be in the range one second to two weeks. |
 | 262318 | multi-admin-verify requires an effective cluster version of ONTAP 9.11.1 or later. |
-
 */
 type MultiAdminVerifyConfigModifyDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *MultiAdminVerifyConfigModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this multi admin verify config modify default response has a 2xx status code
+func (o *MultiAdminVerifyConfigModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this multi admin verify config modify default response has a 3xx status code
+func (o *MultiAdminVerifyConfigModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this multi admin verify config modify default response has a 4xx status code
+func (o *MultiAdminVerifyConfigModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this multi admin verify config modify default response has a 5xx status code
+func (o *MultiAdminVerifyConfigModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this multi admin verify config modify default response a status code equal to that given
+func (o *MultiAdminVerifyConfigModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MultiAdminVerifyConfigModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/multi-admin-verify][%d] multi_admin_verify_config_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MultiAdminVerifyConfigModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify][%d] multi_admin_verify_config_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MultiAdminVerifyConfigModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

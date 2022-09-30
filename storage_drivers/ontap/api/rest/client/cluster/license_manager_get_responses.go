@@ -46,7 +46,8 @@ func NewLicenseManagerGetOK() *LicenseManagerGetOK {
 	return &LicenseManagerGetOK{}
 }
 
-/* LicenseManagerGetOK describes a response with status code 200, with default header values.
+/*
+LicenseManagerGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LicenseManagerGetOK struct {
 	Payload *models.LicenseManager
 }
 
+// IsSuccess returns true when this license manager get o k response has a 2xx status code
+func (o *LicenseManagerGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this license manager get o k response has a 3xx status code
+func (o *LicenseManagerGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this license manager get o k response has a 4xx status code
+func (o *LicenseManagerGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this license manager get o k response has a 5xx status code
+func (o *LicenseManagerGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this license manager get o k response a status code equal to that given
+func (o *LicenseManagerGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LicenseManagerGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] licenseManagerGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LicenseManagerGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] licenseManagerGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LicenseManagerGetOK) GetPayload() *models.LicenseManager {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLicenseManagerGetDefault(code int) *LicenseManagerGetDefault {
 	}
 }
 
-/* LicenseManagerGetDefault describes a response with status code -1, with default header values.
+/*
+LicenseManagerGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LicenseManagerGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this license manager get default response has a 2xx status code
+func (o *LicenseManagerGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this license manager get default response has a 3xx status code
+func (o *LicenseManagerGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this license manager get default response has a 4xx status code
+func (o *LicenseManagerGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this license manager get default response has a 5xx status code
+func (o *LicenseManagerGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this license manager get default response a status code equal to that given
+func (o *LicenseManagerGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LicenseManagerGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] license_manager_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LicenseManagerGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/licensing/license-managers/{uuid}][%d] license_manager_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LicenseManagerGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

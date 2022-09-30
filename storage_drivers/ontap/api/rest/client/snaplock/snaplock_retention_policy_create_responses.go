@@ -46,7 +46,8 @@ func NewSnaplockRetentionPolicyCreateCreated() *SnaplockRetentionPolicyCreateCre
 	return &SnaplockRetentionPolicyCreateCreated{}
 }
 
-/* SnaplockRetentionPolicyCreateCreated describes a response with status code 201, with default header values.
+/*
+SnaplockRetentionPolicyCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type SnaplockRetentionPolicyCreateCreated struct {
 	Payload *models.SnaplockRetentionPolicy
 }
 
+// IsSuccess returns true when this snaplock retention policy create created response has a 2xx status code
+func (o *SnaplockRetentionPolicyCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock retention policy create created response has a 3xx status code
+func (o *SnaplockRetentionPolicyCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock retention policy create created response has a 4xx status code
+func (o *SnaplockRetentionPolicyCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock retention policy create created response has a 5xx status code
+func (o *SnaplockRetentionPolicyCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock retention policy create created response a status code equal to that given
+func (o *SnaplockRetentionPolicyCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *SnaplockRetentionPolicyCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /storage/snaplock/event-retention/policies][%d] snaplockRetentionPolicyCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *SnaplockRetentionPolicyCreateCreated) String() string {
+	return fmt.Sprintf("[POST /storage/snaplock/event-retention/policies][%d] snaplockRetentionPolicyCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *SnaplockRetentionPolicyCreateCreated) GetPayload() *models.SnaplockRetentionPolicy {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSnaplockRetentionPolicyCreateDefault(code int) *SnaplockRetentionPolicyC
 	}
 }
 
-/* SnaplockRetentionPolicyCreateDefault describes a response with status code -1, with default header values.
+/*
+SnaplockRetentionPolicyCreateDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SnaplockRetentionPolicyCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock retention policy create default response has a 2xx status code
+func (o *SnaplockRetentionPolicyCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock retention policy create default response has a 3xx status code
+func (o *SnaplockRetentionPolicyCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock retention policy create default response has a 4xx status code
+func (o *SnaplockRetentionPolicyCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock retention policy create default response has a 5xx status code
+func (o *SnaplockRetentionPolicyCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock retention policy create default response a status code equal to that given
+func (o *SnaplockRetentionPolicyCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockRetentionPolicyCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /storage/snaplock/event-retention/policies][%d] snaplock_retention_policy_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockRetentionPolicyCreateDefault) String() string {
+	return fmt.Sprintf("[POST /storage/snaplock/event-retention/policies][%d] snaplock_retention_policy_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockRetentionPolicyCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

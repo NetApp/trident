@@ -46,14 +46,44 @@ func NewDNSModifyOK() *DNSModifyOK {
 	return &DNSModifyOK{}
 }
 
-/* DNSModifyOK describes a response with status code 200, with default header values.
+/*
+DNSModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type DNSModifyOK struct {
 }
 
+// IsSuccess returns true when this dns modify o k response has a 2xx status code
+func (o *DNSModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this dns modify o k response has a 3xx status code
+func (o *DNSModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this dns modify o k response has a 4xx status code
+func (o *DNSModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this dns modify o k response has a 5xx status code
+func (o *DNSModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this dns modify o k response a status code equal to that given
+func (o *DNSModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *DNSModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/dns/{svm.uuid}][%d] dnsModifyOK ", 200)
+}
+
+func (o *DNSModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/dns/{svm.uuid}][%d] dnsModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewDNSModifyDefault(code int) *DNSModifyDefault {
 	}
 }
 
-/* DNSModifyDefault describes a response with status code -1, with default header values.
+/*
+	DNSModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 8847360    | Only admin or data SVMs allowed |
@@ -94,7 +126,6 @@ func NewDNSModifyDefault(code int) *DNSModifyDefault {
 | 9240608    | FQDN does not contain a ".". At least one "." is mandatory for an FQDN. |
 | 9240607    | A label of the FQDN is too long (73 characters). Maximum supported length for each label is 63 characters. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
-
 */
 type DNSModifyDefault struct {
 	_statusCode int
@@ -107,9 +138,39 @@ func (o *DNSModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this dns modify default response has a 2xx status code
+func (o *DNSModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this dns modify default response has a 3xx status code
+func (o *DNSModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this dns modify default response has a 4xx status code
+func (o *DNSModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this dns modify default response has a 5xx status code
+func (o *DNSModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this dns modify default response a status code equal to that given
+func (o *DNSModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *DNSModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/dns/{svm.uuid}][%d] dns_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *DNSModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/dns/{svm.uuid}][%d] dns_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *DNSModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

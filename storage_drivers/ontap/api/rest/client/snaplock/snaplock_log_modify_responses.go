@@ -46,7 +46,8 @@ func NewSnaplockLogModifyAccepted() *SnaplockLogModifyAccepted {
 	return &SnaplockLogModifyAccepted{}
 }
 
-/* SnaplockLogModifyAccepted describes a response with status code 202, with default header values.
+/*
+SnaplockLogModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SnaplockLogModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this snaplock log modify accepted response has a 2xx status code
+func (o *SnaplockLogModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snaplock log modify accepted response has a 3xx status code
+func (o *SnaplockLogModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snaplock log modify accepted response has a 4xx status code
+func (o *SnaplockLogModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snaplock log modify accepted response has a 5xx status code
+func (o *SnaplockLogModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snaplock log modify accepted response a status code equal to that given
+func (o *SnaplockLogModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SnaplockLogModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplockLogModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SnaplockLogModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplockLogModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SnaplockLogModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewSnaplockLogModifyDefault(code int) *SnaplockLogModifyDefault {
 	}
 }
 
-/* SnaplockLogModifyDefault describes a response with status code -1, with default header values.
+/*
+	SnaplockLogModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 14090344    | If log_volume is specified, then log_archive must not be specified  |
 | 14090345    | If log_archive.base_name is specified, then log_archive.archive must also be specified  |
 | 14090346    | Internal Error. Wait a few minutes, then try the command again  |
-
 */
 type SnaplockLogModifyDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *SnaplockLogModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snaplock log modify default response has a 2xx status code
+func (o *SnaplockLogModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snaplock log modify default response has a 3xx status code
+func (o *SnaplockLogModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snaplock log modify default response has a 4xx status code
+func (o *SnaplockLogModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snaplock log modify default response has a 5xx status code
+func (o *SnaplockLogModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snaplock log modify default response a status code equal to that given
+func (o *SnaplockLogModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnaplockLogModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplock_log_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnaplockLogModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/snaplock/audit-logs/{svm.uuid}][%d] snaplock_log_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnaplockLogModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

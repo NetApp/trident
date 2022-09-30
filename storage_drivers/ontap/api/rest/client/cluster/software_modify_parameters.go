@@ -55,10 +55,12 @@ func NewSoftwareModifyParamsWithHTTPClient(client *http.Client) *SoftwareModifyP
 	}
 }
 
-/* SoftwareModifyParams contains all the parameters to send to the API endpoint
-   for the software modify operation.
+/*
+SoftwareModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the software modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SoftwareModifyParams struct {
 

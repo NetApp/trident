@@ -18,7 +18,6 @@ import (
 
 // FileDirectorySecurity Manages New Technology File System (NTFS) security and NTFS audit policies.
 //
-//
 // swagger:model file_directory_security
 type FileDirectorySecurity struct {
 

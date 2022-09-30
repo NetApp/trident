@@ -46,14 +46,44 @@ func NewSvmPeerDeleteAccepted() *SvmPeerDeleteAccepted {
 	return &SvmPeerDeleteAccepted{}
 }
 
-/* SvmPeerDeleteAccepted describes a response with status code 202, with default header values.
+/*
+SvmPeerDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type SvmPeerDeleteAccepted struct {
 }
 
+// IsSuccess returns true when this svm peer delete accepted response has a 2xx status code
+func (o *SvmPeerDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm peer delete accepted response has a 3xx status code
+func (o *SvmPeerDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm peer delete accepted response has a 4xx status code
+func (o *SvmPeerDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm peer delete accepted response has a 5xx status code
+func (o *SvmPeerDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm peer delete accepted response a status code equal to that given
+func (o *SvmPeerDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SvmPeerDeleteAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /svm/peers/{uuid}][%d] svmPeerDeleteAccepted ", 202)
+}
+
+func (o *SvmPeerDeleteAccepted) String() string {
 	return fmt.Sprintf("[DELETE /svm/peers/{uuid}][%d] svmPeerDeleteAccepted ", 202)
 }
 
@@ -69,9 +99,11 @@ func NewSvmPeerDeleteDefault(code int) *SvmPeerDeleteDefault {
 	}
 }
 
-/* SvmPeerDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SvmPeerDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 <br/>
 ```
 | Error codes | Description |
@@ -79,7 +111,6 @@ func NewSvmPeerDeleteDefault(code int) *SvmPeerDeleteDefault {
 | 26345578    | Internal error. Unable to retrieve local or peer SVM name. |
 ```
 <br/>
-
 */
 type SvmPeerDeleteDefault struct {
 	_statusCode int
@@ -92,9 +123,39 @@ func (o *SvmPeerDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm peer delete default response has a 2xx status code
+func (o *SvmPeerDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm peer delete default response has a 3xx status code
+func (o *SvmPeerDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm peer delete default response has a 4xx status code
+func (o *SvmPeerDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm peer delete default response has a 5xx status code
+func (o *SvmPeerDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm peer delete default response a status code equal to that given
+func (o *SvmPeerDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmPeerDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /svm/peers/{uuid}][%d] svm_peer_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmPeerDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /svm/peers/{uuid}][%d] svm_peer_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmPeerDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

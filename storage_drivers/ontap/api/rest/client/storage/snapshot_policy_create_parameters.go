@@ -55,10 +55,12 @@ func NewSnapshotPolicyCreateParamsWithHTTPClient(client *http.Client) *SnapshotP
 	}
 }
 
-/* SnapshotPolicyCreateParams contains all the parameters to send to the API endpoint
-   for the snapshot policy create operation.
+/*
+SnapshotPolicyCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snapshot policy create operation.
+
+	Typically these are written to a http.Request.
 */
 type SnapshotPolicyCreateParams struct {
 

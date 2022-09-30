@@ -43,14 +43,44 @@ func NewNetworkIPInterfaceModifyOK() *NetworkIPInterfaceModifyOK {
 	return &NetworkIPInterfaceModifyOK{}
 }
 
-/* NetworkIPInterfaceModifyOK describes a response with status code 200, with default header values.
+/*
+NetworkIPInterfaceModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NetworkIPInterfaceModifyOK struct {
 }
 
+// IsSuccess returns true when this network Ip interface modify o k response has a 2xx status code
+func (o *NetworkIPInterfaceModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip interface modify o k response has a 3xx status code
+func (o *NetworkIPInterfaceModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip interface modify o k response has a 4xx status code
+func (o *NetworkIPInterfaceModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip interface modify o k response has a 5xx status code
+func (o *NetworkIPInterfaceModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip interface modify o k response a status code equal to that given
+func (o *NetworkIPInterfaceModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkIPInterfaceModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] networkIpInterfaceModifyOK ", 200)
+}
+
+func (o *NetworkIPInterfaceModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] networkIpInterfaceModifyOK ", 200)
 }
 
@@ -66,9 +96,11 @@ func NewNetworkIPInterfaceModifyDefault(code int) *NetworkIPInterfaceModifyDefau
 	}
 }
 
-/* NetworkIPInterfaceModifyDefault describes a response with status code -1, with default header values.
+/*
+	NetworkIPInterfaceModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376663 | Cannot add interface to DNS zone because all interfaces from a single DNS zone must be in the same SVM. |
@@ -127,7 +159,6 @@ func NewNetworkIPInterfaceModifyDefault(code int) *NetworkIPInterfaceModifyDefau
 | 53281065 | The service_policy does not exist in the SVM. |
 | 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |
 | 53281089 | LIF on SVM cannot be updated to use service policy because that service policy includes SAN services and the target LIF is not home. |
-
 */
 type NetworkIPInterfaceModifyDefault struct {
 	_statusCode int
@@ -138,7 +169,36 @@ func (o *NetworkIPInterfaceModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ip interface modify default response has a 2xx status code
+func (o *NetworkIPInterfaceModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ip interface modify default response has a 3xx status code
+func (o *NetworkIPInterfaceModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ip interface modify default response has a 4xx status code
+func (o *NetworkIPInterfaceModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ip interface modify default response has a 5xx status code
+func (o *NetworkIPInterfaceModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ip interface modify default response a status code equal to that given
+func (o *NetworkIPInterfaceModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkIPInterfaceModifyDefault) Error() string {
+	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] network_ip_interface_modify default ", o._statusCode)
+}
+
+func (o *NetworkIPInterfaceModifyDefault) String() string {
 	return fmt.Sprintf("[PATCH /network/ip/interfaces/{uuid}][%d] network_ip_interface_modify default ", o._statusCode)
 }
 

@@ -46,14 +46,44 @@ func NewSvmMigrateDeleteAccepted() *SvmMigrateDeleteAccepted {
 	return &SvmMigrateDeleteAccepted{}
 }
 
-/* SvmMigrateDeleteAccepted describes a response with status code 202, with default header values.
+/*
+SvmMigrateDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type SvmMigrateDeleteAccepted struct {
 }
 
+// IsSuccess returns true when this svm migrate delete accepted response has a 2xx status code
+func (o *SvmMigrateDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm migrate delete accepted response has a 3xx status code
+func (o *SvmMigrateDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm migrate delete accepted response has a 4xx status code
+func (o *SvmMigrateDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm migrate delete accepted response has a 5xx status code
+func (o *SvmMigrateDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm migrate delete accepted response a status code equal to that given
+func (o *SvmMigrateDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SvmMigrateDeleteAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /svm/migrations/{uuid}][%d] svmMigrateDeleteAccepted ", 202)
+}
+
+func (o *SvmMigrateDeleteAccepted) String() string {
 	return fmt.Sprintf("[DELETE /svm/migrations/{uuid}][%d] svmMigrateDeleteAccepted ", 202)
 }
 
@@ -69,13 +99,14 @@ func NewSvmMigrateDeleteDefault(code int) *SvmMigrateDeleteDefault {
 	}
 }
 
-/* SvmMigrateDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SvmMigrateDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 13172783 | Migrate RDB lookup failed |
-
 */
 type SvmMigrateDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *SvmMigrateDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm migrate delete default response has a 2xx status code
+func (o *SvmMigrateDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm migrate delete default response has a 3xx status code
+func (o *SvmMigrateDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm migrate delete default response has a 4xx status code
+func (o *SvmMigrateDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm migrate delete default response has a 5xx status code
+func (o *SvmMigrateDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm migrate delete default response a status code equal to that given
+func (o *SvmMigrateDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmMigrateDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /svm/migrations/{uuid}][%d] svm_migrate_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmMigrateDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /svm/migrations/{uuid}][%d] svm_migrate_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmMigrateDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

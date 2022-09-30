@@ -46,14 +46,44 @@ func NewEmsFilterRuleDeleteOK() *EmsFilterRuleDeleteOK {
 	return &EmsFilterRuleDeleteOK{}
 }
 
-/* EmsFilterRuleDeleteOK describes a response with status code 200, with default header values.
+/*
+EmsFilterRuleDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type EmsFilterRuleDeleteOK struct {
 }
 
+// IsSuccess returns true when this ems filter rule delete o k response has a 2xx status code
+func (o *EmsFilterRuleDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems filter rule delete o k response has a 3xx status code
+func (o *EmsFilterRuleDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems filter rule delete o k response has a 4xx status code
+func (o *EmsFilterRuleDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems filter rule delete o k response has a 5xx status code
+func (o *EmsFilterRuleDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems filter rule delete o k response a status code equal to that given
+func (o *EmsFilterRuleDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EmsFilterRuleDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] emsFilterRuleDeleteOK ", 200)
+}
+
+func (o *EmsFilterRuleDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] emsFilterRuleDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewEmsFilterRuleDeleteDefault(code int) *EmsFilterRuleDeleteDefault {
 	}
 }
 
-/* EmsFilterRuleDeleteDefault describes a response with status code -1, with default header values.
+/*
+	EmsFilterRuleDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 983091     | A default rule cannot be removed |
@@ -79,7 +111,6 @@ func NewEmsFilterRuleDeleteDefault(code int) *EmsFilterRuleDeleteDefault {
 | 983095     | The rule index provided is invalid for the filter provided |
 | 983110     | There are no user defined rules in the filter provided |
 | 983113     | Default filters cannot be modified or removed |
-
 */
 type EmsFilterRuleDeleteDefault struct {
 	_statusCode int
@@ -92,9 +123,39 @@ func (o *EmsFilterRuleDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems filter rule delete default response has a 2xx status code
+func (o *EmsFilterRuleDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems filter rule delete default response has a 3xx status code
+func (o *EmsFilterRuleDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems filter rule delete default response has a 4xx status code
+func (o *EmsFilterRuleDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems filter rule delete default response has a 5xx status code
+func (o *EmsFilterRuleDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems filter rule delete default response a status code equal to that given
+func (o *EmsFilterRuleDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsFilterRuleDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] ems_filter_rule_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsFilterRuleDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /support/ems/filters/{name}/rules/{index}][%d] ems_filter_rule_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsFilterRuleDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

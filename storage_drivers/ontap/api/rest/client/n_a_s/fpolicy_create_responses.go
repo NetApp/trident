@@ -46,7 +46,8 @@ func NewFpolicyCreateCreated() *FpolicyCreateCreated {
 	return &FpolicyCreateCreated{}
 }
 
-/* FpolicyCreateCreated describes a response with status code 201, with default header values.
+/*
+FpolicyCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type FpolicyCreateCreated struct {
 	Payload *models.FpolicyResponse
 }
 
+// IsSuccess returns true when this fpolicy create created response has a 2xx status code
+func (o *FpolicyCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fpolicy create created response has a 3xx status code
+func (o *FpolicyCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fpolicy create created response has a 4xx status code
+func (o *FpolicyCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fpolicy create created response has a 5xx status code
+func (o *FpolicyCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fpolicy create created response a status code equal to that given
+func (o *FpolicyCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *FpolicyCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/fpolicy][%d] fpolicyCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *FpolicyCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/fpolicy][%d] fpolicyCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *FpolicyCreateCreated) GetPayload() *models.FpolicyResponse {
 	return o.Payload
 }
@@ -80,16 +111,17 @@ func NewFpolicyCreateDefault(code int) *FpolicyCreateDefault {
 	}
 }
 
-/* FpolicyCreateDefault describes a response with status code -1, with default header values.
+/*
+	FpolicyCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 9765032    | The FPolicy engine, FPolicy event or FPolicy policy specified already exists |
 | 9765031    | If any of the FPolicy engine, FPolicy event, or FPolicy policy creation fails due to a systematic error or hardware failure, the cause of the failure is detailed in the error message |
 | 2621706    | The SVM UUID specified belongs to different SVM |
 | 2621462    | The SVM name specified does not exist |
-
 */
 type FpolicyCreateDefault struct {
 	_statusCode int
@@ -102,9 +134,39 @@ func (o *FpolicyCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fpolicy create default response has a 2xx status code
+func (o *FpolicyCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fpolicy create default response has a 3xx status code
+func (o *FpolicyCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fpolicy create default response has a 4xx status code
+func (o *FpolicyCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fpolicy create default response has a 5xx status code
+func (o *FpolicyCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fpolicy create default response a status code equal to that given
+func (o *FpolicyCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FpolicyCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/fpolicy][%d] fpolicy_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FpolicyCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/fpolicy][%d] fpolicy_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FpolicyCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

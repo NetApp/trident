@@ -46,7 +46,8 @@ func NewSnapmirrorPolicyCreateAccepted() *SnapmirrorPolicyCreateAccepted {
 	return &SnapmirrorPolicyCreateAccepted{}
 }
 
-/* SnapmirrorPolicyCreateAccepted describes a response with status code 202, with default header values.
+/*
+SnapmirrorPolicyCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SnapmirrorPolicyCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this snapmirror policy create accepted response has a 2xx status code
+func (o *SnapmirrorPolicyCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror policy create accepted response has a 3xx status code
+func (o *SnapmirrorPolicyCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror policy create accepted response has a 4xx status code
+func (o *SnapmirrorPolicyCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror policy create accepted response has a 5xx status code
+func (o *SnapmirrorPolicyCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror policy create accepted response a status code equal to that given
+func (o *SnapmirrorPolicyCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SnapmirrorPolicyCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /snapmirror/policies][%d] snapmirrorPolicyCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SnapmirrorPolicyCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /snapmirror/policies][%d] snapmirrorPolicyCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SnapmirrorPolicyCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSnapmirrorPolicyCreateDefault(code int) *SnapmirrorPolicyCreateDefault {
 	}
 }
 
-/* SnapmirrorPolicyCreateDefault describes a response with status code -1, with default header values.
+/*
+	SnapmirrorPolicyCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 6619714     | Schedule specified is an interval schedule. SnapMirror does not support interval schedules. |
@@ -91,8 +124,6 @@ func NewSnapmirrorPolicyCreateDefault(code int) *SnapmirrorPolicyCreateDefault {
 | 13304083    | The specified property is not supported because all nodes in the cluster are not capable of supporting this property. |
 | 13304084    | Properties specified are mutually exclusive. Provide only one property. |
 | 13304085    | The specified property does not support the specified value. |
-
-
 */
 type SnapmirrorPolicyCreateDefault struct {
 	_statusCode int
@@ -105,9 +136,39 @@ func (o *SnapmirrorPolicyCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapmirror policy create default response has a 2xx status code
+func (o *SnapmirrorPolicyCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapmirror policy create default response has a 3xx status code
+func (o *SnapmirrorPolicyCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapmirror policy create default response has a 4xx status code
+func (o *SnapmirrorPolicyCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapmirror policy create default response has a 5xx status code
+func (o *SnapmirrorPolicyCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapmirror policy create default response a status code equal to that given
+func (o *SnapmirrorPolicyCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapmirrorPolicyCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /snapmirror/policies][%d] snapmirror_policy_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapmirrorPolicyCreateDefault) String() string {
+	return fmt.Sprintf("[POST /snapmirror/policies][%d] snapmirror_policy_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapmirrorPolicyCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

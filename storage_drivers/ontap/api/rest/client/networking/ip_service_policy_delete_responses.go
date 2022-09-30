@@ -46,14 +46,44 @@ func NewIPServicePolicyDeleteOK() *IPServicePolicyDeleteOK {
 	return &IPServicePolicyDeleteOK{}
 }
 
-/* IPServicePolicyDeleteOK describes a response with status code 200, with default header values.
+/*
+IPServicePolicyDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type IPServicePolicyDeleteOK struct {
 }
 
+// IsSuccess returns true when this ip service policy delete o k response has a 2xx status code
+func (o *IPServicePolicyDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ip service policy delete o k response has a 3xx status code
+func (o *IPServicePolicyDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ip service policy delete o k response has a 4xx status code
+func (o *IPServicePolicyDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ip service policy delete o k response has a 5xx status code
+func (o *IPServicePolicyDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ip service policy delete o k response a status code equal to that given
+func (o *IPServicePolicyDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IPServicePolicyDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ipServicePolicyDeleteOK ", 200)
+}
+
+func (o *IPServicePolicyDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ipServicePolicyDeleteOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewIPServicePolicyDeleteDefault(code int) *IPServicePolicyDeleteDefault {
 	}
 }
 
-/* IPServicePolicyDeleteDefault describes a response with status code -1, with default header values.
+/*
+	IPServicePolicyDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 53281927 | Service policies owned by the system cannot be deleted. |
 | 53281928 | Service policies assigned to LIFs cannot be deleted. |
-
 */
 type IPServicePolicyDeleteDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *IPServicePolicyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ip service policy delete default response has a 2xx status code
+func (o *IPServicePolicyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ip service policy delete default response has a 3xx status code
+func (o *IPServicePolicyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ip service policy delete default response has a 4xx status code
+func (o *IPServicePolicyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ip service policy delete default response has a 5xx status code
+func (o *IPServicePolicyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ip service policy delete default response a status code equal to that given
+func (o *IPServicePolicyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IPServicePolicyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ip_service_policy_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IPServicePolicyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /network/ip/service-policies/{uuid}][%d] ip_service_policy_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IPServicePolicyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewSvmMigrationCollectionGetOK() *SvmMigrationCollectionGetOK {
 	return &SvmMigrationCollectionGetOK{}
 }
 
-/* SvmMigrationCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SvmMigrationCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SvmMigrationCollectionGetOK struct {
 	Payload *models.SvmMigrationResponse
 }
 
+// IsSuccess returns true when this svm migration collection get o k response has a 2xx status code
+func (o *SvmMigrationCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm migration collection get o k response has a 3xx status code
+func (o *SvmMigrationCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm migration collection get o k response has a 4xx status code
+func (o *SvmMigrationCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm migration collection get o k response has a 5xx status code
+func (o *SvmMigrationCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm migration collection get o k response a status code equal to that given
+func (o *SvmMigrationCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SvmMigrationCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /svm/migrations][%d] svmMigrationCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SvmMigrationCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /svm/migrations][%d] svmMigrationCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SvmMigrationCollectionGetOK) GetPayload() *models.SvmMigrationResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewSvmMigrationCollectionGetDefault(code int) *SvmMigrationCollectionGetDef
 	}
 }
 
-/* SvmMigrationCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	SvmMigrationCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 13172783 | Migrate RDB lookup failed |
-
 */
 type SvmMigrationCollectionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *SvmMigrationCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm migration collection get default response has a 2xx status code
+func (o *SvmMigrationCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm migration collection get default response has a 3xx status code
+func (o *SvmMigrationCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm migration collection get default response has a 4xx status code
+func (o *SvmMigrationCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm migration collection get default response has a 5xx status code
+func (o *SvmMigrationCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm migration collection get default response a status code equal to that given
+func (o *SvmMigrationCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmMigrationCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /svm/migrations][%d] svm_migration_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmMigrationCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /svm/migrations][%d] svm_migration_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmMigrationCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

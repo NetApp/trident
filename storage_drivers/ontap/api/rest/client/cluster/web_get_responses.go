@@ -46,7 +46,8 @@ func NewWebGetOK() *WebGetOK {
 	return &WebGetOK{}
 }
 
-/* WebGetOK describes a response with status code 200, with default header values.
+/*
+WebGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type WebGetOK struct {
 	Payload *models.Web
 }
 
+// IsSuccess returns true when this web get o k response has a 2xx status code
+func (o *WebGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this web get o k response has a 3xx status code
+func (o *WebGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this web get o k response has a 4xx status code
+func (o *WebGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this web get o k response has a 5xx status code
+func (o *WebGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this web get o k response a status code equal to that given
+func (o *WebGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *WebGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/web][%d] webGetOK  %+v", 200, o.Payload)
 }
+
+func (o *WebGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/web][%d] webGetOK  %+v", 200, o.Payload)
+}
+
 func (o *WebGetOK) GetPayload() *models.Web {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewWebGetDefault(code int) *WebGetDefault {
 	}
 }
 
-/* WebGetDefault describes a response with status code -1, with default header values.
+/*
+WebGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *WebGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this web get default response has a 2xx status code
+func (o *WebGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this web get default response has a 3xx status code
+func (o *WebGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this web get default response has a 4xx status code
+func (o *WebGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this web get default response has a 5xx status code
+func (o *WebGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this web get default response a status code equal to that given
+func (o *WebGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *WebGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/web][%d] web_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *WebGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/web][%d] web_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *WebGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

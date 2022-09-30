@@ -53,10 +53,12 @@ func NewS3AuditDeleteParamsWithHTTPClient(client *http.Client) *S3AuditDeletePar
 	}
 }
 
-/* S3AuditDeleteParams contains all the parameters to send to the API endpoint
-   for the s3 audit delete operation.
+/*
+S3AuditDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 audit delete operation.
+
+	Typically these are written to a http.Request.
 */
 type S3AuditDeleteParams struct {
 

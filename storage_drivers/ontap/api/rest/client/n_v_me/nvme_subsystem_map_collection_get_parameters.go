@@ -53,10 +53,12 @@ func NewNvmeSubsystemMapCollectionGetParamsWithHTTPClient(client *http.Client) *
 	}
 }
 
-/* NvmeSubsystemMapCollectionGetParams contains all the parameters to send to the API endpoint
-   for the nvme subsystem map collection get operation.
+/*
+NvmeSubsystemMapCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme subsystem map collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeSubsystemMapCollectionGetParams struct {
 

@@ -14,7 +14,6 @@ import (
 
 // CounterDenominator Counter used as the denominator in calculating the resulting value of averages and percentages.
 //
-//
 // swagger:model counter_denominator
 type CounterDenominator struct {
 

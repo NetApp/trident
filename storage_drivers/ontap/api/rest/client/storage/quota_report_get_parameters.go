@@ -53,10 +53,12 @@ func NewQuotaReportGetParamsWithHTTPClient(client *http.Client) *QuotaReportGetP
 	}
 }
 
-/* QuotaReportGetParams contains all the parameters to send to the API endpoint
-   for the quota report get operation.
+/*
+QuotaReportGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the quota report get operation.
+
+	Typically these are written to a http.Request.
 */
 type QuotaReportGetParams struct {
 

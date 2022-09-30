@@ -46,7 +46,8 @@ func NewEmsDestinationCreateCreated() *EmsDestinationCreateCreated {
 	return &EmsDestinationCreateCreated{}
 }
 
-/* EmsDestinationCreateCreated describes a response with status code 201, with default header values.
+/*
+EmsDestinationCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type EmsDestinationCreateCreated struct {
 	Payload *models.EmsDestinationResponse
 }
 
+// IsSuccess returns true when this ems destination create created response has a 2xx status code
+func (o *EmsDestinationCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems destination create created response has a 3xx status code
+func (o *EmsDestinationCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems destination create created response has a 4xx status code
+func (o *EmsDestinationCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems destination create created response has a 5xx status code
+func (o *EmsDestinationCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems destination create created response a status code equal to that given
+func (o *EmsDestinationCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *EmsDestinationCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /support/ems/destinations][%d] emsDestinationCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *EmsDestinationCreateCreated) String() string {
+	return fmt.Sprintf("[POST /support/ems/destinations][%d] emsDestinationCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *EmsDestinationCreateCreated) GetPayload() *models.EmsDestinationResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewEmsDestinationCreateDefault(code int) *EmsDestinationCreateDefault {
 	}
 }
 
-/* EmsDestinationCreateDefault describes a response with status code -1, with default header values.
+/*
+	EmsDestinationCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 983088     | The destination name provided cannot be empty |
@@ -101,7 +134,6 @@ func NewEmsDestinationCreateDefault(code int) *EmsDestinationCreateDefault {
 | 983152     | Default destinations cannot be modified or removed |
 | 983153     | The security certificate provided does not exist |
 | 983154     | The necessary private key is not installed on the system |
-
 */
 type EmsDestinationCreateDefault struct {
 	_statusCode int
@@ -114,9 +146,39 @@ func (o *EmsDestinationCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems destination create default response has a 2xx status code
+func (o *EmsDestinationCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems destination create default response has a 3xx status code
+func (o *EmsDestinationCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems destination create default response has a 4xx status code
+func (o *EmsDestinationCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems destination create default response has a 5xx status code
+func (o *EmsDestinationCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems destination create default response a status code equal to that given
+func (o *EmsDestinationCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsDestinationCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /support/ems/destinations][%d] ems_destination_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsDestinationCreateDefault) String() string {
+	return fmt.Sprintf("[POST /support/ems/destinations][%d] ems_destination_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsDestinationCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

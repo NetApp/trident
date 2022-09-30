@@ -46,14 +46,44 @@ func NewS3AuditDeleteAccepted() *S3AuditDeleteAccepted {
 	return &S3AuditDeleteAccepted{}
 }
 
-/* S3AuditDeleteAccepted describes a response with status code 202, with default header values.
+/*
+S3AuditDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type S3AuditDeleteAccepted struct {
 }
 
+// IsSuccess returns true when this s3 audit delete accepted response has a 2xx status code
+func (o *S3AuditDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 audit delete accepted response has a 3xx status code
+func (o *S3AuditDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 audit delete accepted response has a 4xx status code
+func (o *S3AuditDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 audit delete accepted response has a 5xx status code
+func (o *S3AuditDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 audit delete accepted response a status code equal to that given
+func (o *S3AuditDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *S3AuditDeleteAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted ", 202)
+}
+
+func (o *S3AuditDeleteAccepted) String() string {
 	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted ", 202)
 }
 
@@ -69,15 +99,16 @@ func NewS3AuditDeleteDefault(code int) *S3AuditDeleteDefault {
 	}
 }
 
-/* S3AuditDeleteDefault describes a response with status code -1, with default header values.
+/*
+	S3AuditDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 140902420 | Failed to delete audit configuration for the SVM. |
 | 140902421 | Failed to delete audit configuration for the SVM because audit is enabled for the SVM. |
 | 140902422 | Failed to delete audit configuration for the SVM because final conolidation is in progress. Wait a few mintues, and try the operation again. |
-
 */
 type S3AuditDeleteDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *S3AuditDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 audit delete default response has a 2xx status code
+func (o *S3AuditDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 audit delete default response has a 3xx status code
+func (o *S3AuditDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 audit delete default response has a 4xx status code
+func (o *S3AuditDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 audit delete default response has a 5xx status code
+func (o *S3AuditDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 audit delete default response a status code equal to that given
+func (o *S3AuditDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3AuditDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3AuditDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3_audit_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3AuditDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

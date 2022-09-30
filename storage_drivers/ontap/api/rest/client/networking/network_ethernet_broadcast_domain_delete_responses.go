@@ -46,14 +46,44 @@ func NewNetworkEthernetBroadcastDomainDeleteOK() *NetworkEthernetBroadcastDomain
 	return &NetworkEthernetBroadcastDomainDeleteOK{}
 }
 
-/* NetworkEthernetBroadcastDomainDeleteOK describes a response with status code 200, with default header values.
+/*
+NetworkEthernetBroadcastDomainDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NetworkEthernetBroadcastDomainDeleteOK struct {
 }
 
+// IsSuccess returns true when this network ethernet broadcast domain delete o k response has a 2xx status code
+func (o *NetworkEthernetBroadcastDomainDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network ethernet broadcast domain delete o k response has a 3xx status code
+func (o *NetworkEthernetBroadcastDomainDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network ethernet broadcast domain delete o k response has a 4xx status code
+func (o *NetworkEthernetBroadcastDomainDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network ethernet broadcast domain delete o k response has a 5xx status code
+func (o *NetworkEthernetBroadcastDomainDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network ethernet broadcast domain delete o k response a status code equal to that given
+func (o *NetworkEthernetBroadcastDomainDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkEthernetBroadcastDomainDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/ethernet/broadcast-domains/{uuid}][%d] networkEthernetBroadcastDomainDeleteOK ", 200)
+}
+
+func (o *NetworkEthernetBroadcastDomainDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/ethernet/broadcast-domains/{uuid}][%d] networkEthernetBroadcastDomainDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewNetworkEthernetBroadcastDomainDeleteDefault(code int) *NetworkEthernetBr
 	}
 }
 
-/* NetworkEthernetBroadcastDomainDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NetworkEthernetBroadcastDomainDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1967103 | A broadcast domain with ports cannot be deleted. |
-
 */
 type NetworkEthernetBroadcastDomainDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *NetworkEthernetBroadcastDomainDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ethernet broadcast domain delete default response has a 2xx status code
+func (o *NetworkEthernetBroadcastDomainDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ethernet broadcast domain delete default response has a 3xx status code
+func (o *NetworkEthernetBroadcastDomainDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ethernet broadcast domain delete default response has a 4xx status code
+func (o *NetworkEthernetBroadcastDomainDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ethernet broadcast domain delete default response has a 5xx status code
+func (o *NetworkEthernetBroadcastDomainDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ethernet broadcast domain delete default response a status code equal to that given
+func (o *NetworkEthernetBroadcastDomainDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkEthernetBroadcastDomainDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /network/ethernet/broadcast-domains/{uuid}][%d] network_ethernet_broadcast_domain_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkEthernetBroadcastDomainDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /network/ethernet/broadcast-domains/{uuid}][%d] network_ethernet_broadcast_domain_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkEthernetBroadcastDomainDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

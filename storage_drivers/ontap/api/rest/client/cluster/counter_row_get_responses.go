@@ -46,7 +46,8 @@ func NewCounterRowGetOK() *CounterRowGetOK {
 	return &CounterRowGetOK{}
 }
 
-/* CounterRowGetOK describes a response with status code 200, with default header values.
+/*
+CounterRowGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type CounterRowGetOK struct {
 	Payload *models.CounterRow
 }
 
+// IsSuccess returns true when this counter row get o k response has a 2xx status code
+func (o *CounterRowGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this counter row get o k response has a 3xx status code
+func (o *CounterRowGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this counter row get o k response has a 4xx status code
+func (o *CounterRowGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this counter row get o k response has a 5xx status code
+func (o *CounterRowGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this counter row get o k response a status code equal to that given
+func (o *CounterRowGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CounterRowGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counterRowGetOK  %+v", 200, o.Payload)
 }
+
+func (o *CounterRowGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counterRowGetOK  %+v", 200, o.Payload)
+}
+
 func (o *CounterRowGetOK) GetPayload() *models.CounterRow {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewCounterRowGetDefault(code int) *CounterRowGetDefault {
 	}
 }
 
-/* CounterRowGetDefault describes a response with status code -1, with default header values.
+/*
+	CounterRowGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 8585320 | Table requested is not found |
 | 8586228 | Invalid counter name request. |
 | 8586229 | Invalid counter property request. |
-
 */
 type CounterRowGetDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *CounterRowGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this counter row get default response has a 2xx status code
+func (o *CounterRowGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this counter row get default response has a 3xx status code
+func (o *CounterRowGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this counter row get default response has a 4xx status code
+func (o *CounterRowGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this counter row get default response has a 5xx status code
+func (o *CounterRowGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this counter row get default response a status code equal to that given
+func (o *CounterRowGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CounterRowGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counter_row_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CounterRowGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/counter/tables/{counter_table.name}/rows/{id}][%d] counter_row_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CounterRowGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

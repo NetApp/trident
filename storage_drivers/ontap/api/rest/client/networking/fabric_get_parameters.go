@@ -53,10 +53,12 @@ func NewFabricGetParamsWithHTTPClient(client *http.Client) *FabricGetParams {
 	}
 }
 
-/* FabricGetParams contains all the parameters to send to the API endpoint
-   for the fabric get operation.
+/*
+FabricGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fabric get operation.
+
+	Typically these are written to a http.Request.
 */
 type FabricGetParams struct {
 

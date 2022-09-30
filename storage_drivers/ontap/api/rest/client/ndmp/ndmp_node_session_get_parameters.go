@@ -53,10 +53,12 @@ func NewNdmpNodeSessionGetParamsWithHTTPClient(client *http.Client) *NdmpNodeSes
 	}
 }
 
-/* NdmpNodeSessionGetParams contains all the parameters to send to the API endpoint
-   for the ndmp node session get operation.
+/*
+NdmpNodeSessionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ndmp node session get operation.
+
+	Typically these are written to a http.Request.
 */
 type NdmpNodeSessionGetParams struct {
 

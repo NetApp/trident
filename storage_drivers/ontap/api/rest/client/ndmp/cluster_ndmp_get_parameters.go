@@ -53,10 +53,12 @@ func NewClusterNdmpGetParamsWithHTTPClient(client *http.Client) *ClusterNdmpGetP
 	}
 }
 
-/* ClusterNdmpGetParams contains all the parameters to send to the API endpoint
-   for the cluster ndmp get operation.
+/*
+ClusterNdmpGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster ndmp get operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterNdmpGetParams struct {
 

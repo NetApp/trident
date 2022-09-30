@@ -46,14 +46,44 @@ func NewCifsSymlinkMappingModifyOK() *CifsSymlinkMappingModifyOK {
 	return &CifsSymlinkMappingModifyOK{}
 }
 
-/* CifsSymlinkMappingModifyOK describes a response with status code 200, with default header values.
+/*
+CifsSymlinkMappingModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type CifsSymlinkMappingModifyOK struct {
 }
 
+// IsSuccess returns true when this cifs symlink mapping modify o k response has a 2xx status code
+func (o *CifsSymlinkMappingModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs symlink mapping modify o k response has a 3xx status code
+func (o *CifsSymlinkMappingModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs symlink mapping modify o k response has a 4xx status code
+func (o *CifsSymlinkMappingModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs symlink mapping modify o k response has a 5xx status code
+func (o *CifsSymlinkMappingModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs symlink mapping modify o k response a status code equal to that given
+func (o *CifsSymlinkMappingModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *CifsSymlinkMappingModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingModifyOK ", 200)
+}
+
+func (o *CifsSymlinkMappingModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifsSymlinkMappingModifyOK ", 200)
 }
 
@@ -69,15 +99,16 @@ func NewCifsSymlinkMappingModifyDefault(code int) *CifsSymlinkMappingModifyDefau
 	}
 }
 
-/* CifsSymlinkMappingModifyDefault describes a response with status code -1, with default header values.
+/*
+	CifsSymlinkMappingModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 655573     | Failed to modify the symlink mapping to target path because it contains illegal characters or is too long |
 | 655575     | Failed to modify the symlink mapping to target server because it contains illegal characters or is too long |
 | 655547     | Failed to modify symlink mapping becasue administrative share cannot be used as target share |
-
 */
 type CifsSymlinkMappingModifyDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *CifsSymlinkMappingModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs symlink mapping modify default response has a 2xx status code
+func (o *CifsSymlinkMappingModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs symlink mapping modify default response has a 3xx status code
+func (o *CifsSymlinkMappingModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs symlink mapping modify default response has a 4xx status code
+func (o *CifsSymlinkMappingModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs symlink mapping modify default response has a 5xx status code
+func (o *CifsSymlinkMappingModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs symlink mapping modify default response a status code equal to that given
+func (o *CifsSymlinkMappingModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsSymlinkMappingModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsSymlinkMappingModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/cifs/unix-symlink-mapping/{svm.uuid}/{unix_path}][%d] cifs_symlink_mapping_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsSymlinkMappingModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

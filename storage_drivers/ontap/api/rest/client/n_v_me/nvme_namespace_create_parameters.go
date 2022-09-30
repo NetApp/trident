@@ -55,10 +55,12 @@ func NewNvmeNamespaceCreateParamsWithHTTPClient(client *http.Client) *NvmeNamesp
 	}
 }
 
-/* NvmeNamespaceCreateParams contains all the parameters to send to the API endpoint
-   for the nvme namespace create operation.
+/*
+NvmeNamespaceCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme namespace create operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeNamespaceCreateParams struct {
 

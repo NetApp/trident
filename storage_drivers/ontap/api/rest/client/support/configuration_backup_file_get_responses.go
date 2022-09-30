@@ -46,7 +46,8 @@ func NewConfigurationBackupFileGetOK() *ConfigurationBackupFileGetOK {
 	return &ConfigurationBackupFileGetOK{}
 }
 
-/* ConfigurationBackupFileGetOK describes a response with status code 200, with default header values.
+/*
+ConfigurationBackupFileGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ConfigurationBackupFileGetOK struct {
 	Payload *models.ConfigurationBackupFile
 }
 
+// IsSuccess returns true when this configuration backup file get o k response has a 2xx status code
+func (o *ConfigurationBackupFileGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this configuration backup file get o k response has a 3xx status code
+func (o *ConfigurationBackupFileGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this configuration backup file get o k response has a 4xx status code
+func (o *ConfigurationBackupFileGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this configuration backup file get o k response has a 5xx status code
+func (o *ConfigurationBackupFileGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this configuration backup file get o k response a status code equal to that given
+func (o *ConfigurationBackupFileGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ConfigurationBackupFileGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ConfigurationBackupFileGetOK) String() string {
+	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ConfigurationBackupFileGetOK) GetPayload() *models.ConfigurationBackupFile {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewConfigurationBackupFileGetDefault(code int) *ConfigurationBackupFileGetD
 	}
 }
 
-/* ConfigurationBackupFileGetDefault describes a response with status code -1, with default header values.
+/*
+	ConfigurationBackupFileGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5963777 | Configuration backup file does not exist. |
-
 */
 type ConfigurationBackupFileGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *ConfigurationBackupFileGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this configuration backup file get default response has a 2xx status code
+func (o *ConfigurationBackupFileGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this configuration backup file get default response has a 3xx status code
+func (o *ConfigurationBackupFileGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this configuration backup file get default response has a 4xx status code
+func (o *ConfigurationBackupFileGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this configuration backup file get default response has a 5xx status code
+func (o *ConfigurationBackupFileGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this configuration backup file get default response a status code equal to that given
+func (o *ConfigurationBackupFileGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ConfigurationBackupFileGetDefault) Error() string {
 	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ConfigurationBackupFileGetDefault) String() string {
+	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ConfigurationBackupFileGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

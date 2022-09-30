@@ -46,7 +46,8 @@ func NewEmsFiltersRulesCreateCreated() *EmsFiltersRulesCreateCreated {
 	return &EmsFiltersRulesCreateCreated{}
 }
 
-/* EmsFiltersRulesCreateCreated describes a response with status code 201, with default header values.
+/*
+EmsFiltersRulesCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type EmsFiltersRulesCreateCreated struct {
 	Payload *models.EmsFilterRuleResponse
 }
 
+// IsSuccess returns true when this ems filters rules create created response has a 2xx status code
+func (o *EmsFiltersRulesCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems filters rules create created response has a 3xx status code
+func (o *EmsFiltersRulesCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems filters rules create created response has a 4xx status code
+func (o *EmsFiltersRulesCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems filters rules create created response has a 5xx status code
+func (o *EmsFiltersRulesCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems filters rules create created response a status code equal to that given
+func (o *EmsFiltersRulesCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *EmsFiltersRulesCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] emsFiltersRulesCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *EmsFiltersRulesCreateCreated) String() string {
+	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] emsFiltersRulesCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *EmsFiltersRulesCreateCreated) GetPayload() *models.EmsFilterRuleResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewEmsFiltersRulesCreateDefault(code int) *EmsFiltersRulesCreateDefault {
 	}
 }
 
-/* EmsFiltersRulesCreateDefault describes a response with status code -1, with default header values.
+/*
+	EmsFiltersRulesCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 983092     | The index of the rule provided is outside the allowed range for the filter provided |
@@ -98,7 +131,6 @@ func NewEmsFiltersRulesCreateDefault(code int) *EmsFiltersRulesCreateDefault {
 | 983156     | The provided snmp_trap_types property does not match that of the name_pattern |
 | 983157     | The provided severities and snmp_trap_types do not match those of the name_pattern |
 | 983158     | The name_pattern provided does not exist |
-
 */
 type EmsFiltersRulesCreateDefault struct {
 	_statusCode int
@@ -111,9 +143,39 @@ func (o *EmsFiltersRulesCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems filters rules create default response has a 2xx status code
+func (o *EmsFiltersRulesCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems filters rules create default response has a 3xx status code
+func (o *EmsFiltersRulesCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems filters rules create default response has a 4xx status code
+func (o *EmsFiltersRulesCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems filters rules create default response has a 5xx status code
+func (o *EmsFiltersRulesCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems filters rules create default response a status code equal to that given
+func (o *EmsFiltersRulesCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsFiltersRulesCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] ems_filters_rules_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsFiltersRulesCreateDefault) String() string {
+	return fmt.Sprintf("[POST /support/ems/filters/{name}/rules][%d] ems_filters_rules_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsFiltersRulesCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

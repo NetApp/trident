@@ -46,7 +46,8 @@ func NewCifsSymlinkMappingCreateCreated() *CifsSymlinkMappingCreateCreated {
 	return &CifsSymlinkMappingCreateCreated{}
 }
 
-/* CifsSymlinkMappingCreateCreated describes a response with status code 201, with default header values.
+/*
+CifsSymlinkMappingCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type CifsSymlinkMappingCreateCreated struct {
 	Payload *models.CifsSymlinkMappingResponse
 }
 
+// IsSuccess returns true when this cifs symlink mapping create created response has a 2xx status code
+func (o *CifsSymlinkMappingCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cifs symlink mapping create created response has a 3xx status code
+func (o *CifsSymlinkMappingCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cifs symlink mapping create created response has a 4xx status code
+func (o *CifsSymlinkMappingCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cifs symlink mapping create created response has a 5xx status code
+func (o *CifsSymlinkMappingCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cifs symlink mapping create created response a status code equal to that given
+func (o *CifsSymlinkMappingCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *CifsSymlinkMappingCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifsSymlinkMappingCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *CifsSymlinkMappingCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifsSymlinkMappingCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *CifsSymlinkMappingCreateCreated) GetPayload() *models.CifsSymlinkMappingResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewCifsSymlinkMappingCreateDefault(code int) *CifsSymlinkMappingCreateDefau
 	}
 }
 
-/* CifsSymlinkMappingCreateDefault describes a response with status code -1, with default header values.
+/*
+	CifsSymlinkMappingCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 655654     | Must specify the target CIFS share while creating path mapping entries with localities "local" or "widelink" |
@@ -95,7 +128,6 @@ func NewCifsSymlinkMappingCreateDefault(code int) *CifsSymlinkMappingCreateDefau
 | 655429     | UNIX path must begin and end with a "/" |
 | 655430     | Target path must begin and end with a "/" |
 | 655399     | Failed to get the CIFS server for specified SVM |
-
 */
 type CifsSymlinkMappingCreateDefault struct {
 	_statusCode int
@@ -108,9 +140,39 @@ func (o *CifsSymlinkMappingCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cifs symlink mapping create default response has a 2xx status code
+func (o *CifsSymlinkMappingCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cifs symlink mapping create default response has a 3xx status code
+func (o *CifsSymlinkMappingCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cifs symlink mapping create default response has a 4xx status code
+func (o *CifsSymlinkMappingCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cifs symlink mapping create default response has a 5xx status code
+func (o *CifsSymlinkMappingCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cifs symlink mapping create default response a status code equal to that given
+func (o *CifsSymlinkMappingCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CifsSymlinkMappingCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifs_symlink_mapping_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CifsSymlinkMappingCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/unix-symlink-mapping][%d] cifs_symlink_mapping_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CifsSymlinkMappingCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewAutoUpdateConfigurationGetParamsWithHTTPClient(client *http.Client) *Aut
 	}
 }
 
-/* AutoUpdateConfigurationGetParams contains all the parameters to send to the API endpoint
-   for the auto update configuration get operation.
+/*
+AutoUpdateConfigurationGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the auto update configuration get operation.
+
+	Typically these are written to a http.Request.
 */
 type AutoUpdateConfigurationGetParams struct {
 

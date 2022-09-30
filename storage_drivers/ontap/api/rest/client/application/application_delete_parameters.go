@@ -53,10 +53,12 @@ func NewApplicationDeleteParamsWithHTTPClient(client *http.Client) *ApplicationD
 	}
 }
 
-/* ApplicationDeleteParams contains all the parameters to send to the API endpoint
-   for the application delete operation.
+/*
+ApplicationDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the application delete operation.
+
+	Typically these are written to a http.Request.
 */
 type ApplicationDeleteParams struct {
 

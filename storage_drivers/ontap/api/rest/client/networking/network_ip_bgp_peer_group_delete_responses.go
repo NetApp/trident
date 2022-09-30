@@ -46,14 +46,44 @@ func NewNetworkIPBgpPeerGroupDeleteOK() *NetworkIPBgpPeerGroupDeleteOK {
 	return &NetworkIPBgpPeerGroupDeleteOK{}
 }
 
-/* NetworkIPBgpPeerGroupDeleteOK describes a response with status code 200, with default header values.
+/*
+NetworkIPBgpPeerGroupDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NetworkIPBgpPeerGroupDeleteOK struct {
 }
 
+// IsSuccess returns true when this network Ip bgp peer group delete o k response has a 2xx status code
+func (o *NetworkIPBgpPeerGroupDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip bgp peer group delete o k response has a 3xx status code
+func (o *NetworkIPBgpPeerGroupDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip bgp peer group delete o k response has a 4xx status code
+func (o *NetworkIPBgpPeerGroupDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip bgp peer group delete o k response has a 5xx status code
+func (o *NetworkIPBgpPeerGroupDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip bgp peer group delete o k response a status code equal to that given
+func (o *NetworkIPBgpPeerGroupDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkIPBgpPeerGroupDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupDeleteOK ", 200)
+}
+
+func (o *NetworkIPBgpPeerGroupDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewNetworkIPBgpPeerGroupDeleteDefault(code int) *NetworkIPBgpPeerGroupDelet
 	}
 }
 
-/* NetworkIPBgpPeerGroupDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NetworkIPBgpPeerGroupDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 53282019 | Internal error. Failed to remove BGP peer group on node. Wait a few minutes and try the command again. |
-
 */
 type NetworkIPBgpPeerGroupDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *NetworkIPBgpPeerGroupDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ip bgp peer group delete default response has a 2xx status code
+func (o *NetworkIPBgpPeerGroupDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ip bgp peer group delete default response has a 3xx status code
+func (o *NetworkIPBgpPeerGroupDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ip bgp peer group delete default response has a 4xx status code
+func (o *NetworkIPBgpPeerGroupDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ip bgp peer group delete default response has a 5xx status code
+func (o *NetworkIPBgpPeerGroupDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ip bgp peer group delete default response a status code equal to that given
+func (o *NetworkIPBgpPeerGroupDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkIPBgpPeerGroupDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkIPBgpPeerGroupDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkIPBgpPeerGroupDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

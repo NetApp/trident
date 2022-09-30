@@ -52,7 +52,8 @@ func NewStoragePoolModifyOK() *StoragePoolModifyOK {
 	return &StoragePoolModifyOK{}
 }
 
-/* StoragePoolModifyOK describes a response with status code 200, with default header values.
+/*
+StoragePoolModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -60,9 +61,39 @@ type StoragePoolModifyOK struct {
 	Payload *models.StoragePoolPatch
 }
 
+// IsSuccess returns true when this storage pool modify o k response has a 2xx status code
+func (o *StoragePoolModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this storage pool modify o k response has a 3xx status code
+func (o *StoragePoolModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this storage pool modify o k response has a 4xx status code
+func (o *StoragePoolModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this storage pool modify o k response has a 5xx status code
+func (o *StoragePoolModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this storage pool modify o k response a status code equal to that given
+func (o *StoragePoolModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *StoragePoolModifyOK) Error() string {
 	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyOK  %+v", 200, o.Payload)
 }
+
+func (o *StoragePoolModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyOK  %+v", 200, o.Payload)
+}
+
 func (o *StoragePoolModifyOK) GetPayload() *models.StoragePoolPatch {
 	return o.Payload
 }
@@ -84,7 +115,8 @@ func NewStoragePoolModifyAccepted() *StoragePoolModifyAccepted {
 	return &StoragePoolModifyAccepted{}
 }
 
-/* StoragePoolModifyAccepted describes a response with status code 202, with default header values.
+/*
+StoragePoolModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -92,9 +124,39 @@ type StoragePoolModifyAccepted struct {
 	Payload *models.StoragePoolPatch
 }
 
+// IsSuccess returns true when this storage pool modify accepted response has a 2xx status code
+func (o *StoragePoolModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this storage pool modify accepted response has a 3xx status code
+func (o *StoragePoolModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this storage pool modify accepted response has a 4xx status code
+func (o *StoragePoolModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this storage pool modify accepted response has a 5xx status code
+func (o *StoragePoolModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this storage pool modify accepted response a status code equal to that given
+func (o *StoragePoolModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *StoragePoolModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *StoragePoolModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storagePoolModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *StoragePoolModifyAccepted) GetPayload() *models.StoragePoolPatch {
 	return o.Payload
 }
@@ -118,9 +180,11 @@ func NewStoragePoolModifyDefault(code int) *StoragePoolModifyDefault {
 	}
 }
 
-/* StoragePoolModifyDefault describes a response with status code -1, with default header values.
+/*
+	StoragePoolModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 11211658 | Node does not have enough spare capacity. |
@@ -140,7 +204,6 @@ func NewStoragePoolModifyDefault(code int) *StoragePoolModifyDefault {
 | 11215659 | Storage pool PATCH request for reassign have invalid allocation unit count. |
 | 11215660 | Storage pool PATCH request for reassign have invalid node name. |
 | 11215662 | Storage pool PATCH request have invalid disk count. |
-
 */
 type StoragePoolModifyDefault struct {
 	_statusCode int
@@ -153,9 +216,39 @@ func (o *StoragePoolModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this storage pool modify default response has a 2xx status code
+func (o *StoragePoolModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this storage pool modify default response has a 3xx status code
+func (o *StoragePoolModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this storage pool modify default response has a 4xx status code
+func (o *StoragePoolModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this storage pool modify default response has a 5xx status code
+func (o *StoragePoolModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this storage pool modify default response a status code equal to that given
+func (o *StoragePoolModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *StoragePoolModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storage_pool_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *StoragePoolModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/pools/{uuid}][%d] storage_pool_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *StoragePoolModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

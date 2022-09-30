@@ -46,14 +46,44 @@ func NewClientLockDeleteOK() *ClientLockDeleteOK {
 	return &ClientLockDeleteOK{}
 }
 
-/* ClientLockDeleteOK describes a response with status code 200, with default header values.
+/*
+ClientLockDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ClientLockDeleteOK struct {
 }
 
+// IsSuccess returns true when this client lock delete o k response has a 2xx status code
+func (o *ClientLockDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this client lock delete o k response has a 3xx status code
+func (o *ClientLockDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this client lock delete o k response has a 4xx status code
+func (o *ClientLockDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this client lock delete o k response has a 5xx status code
+func (o *ClientLockDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this client lock delete o k response a status code equal to that given
+func (o *ClientLockDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClientLockDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] clientLockDeleteOK ", 200)
+}
+
+func (o *ClientLockDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] clientLockDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewClientLockDeleteDefault(code int) *ClientLockDeleteDefault {
 	}
 }
 
-/* ClientLockDeleteDefault describes a response with status code -1, with default header values.
+/*
+ClientLockDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *ClientLockDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this client lock delete default response has a 2xx status code
+func (o *ClientLockDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this client lock delete default response has a 3xx status code
+func (o *ClientLockDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this client lock delete default response has a 4xx status code
+func (o *ClientLockDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this client lock delete default response has a 5xx status code
+func (o *ClientLockDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this client lock delete default response a status code equal to that given
+func (o *ClientLockDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClientLockDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] client_lock_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClientLockDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/locks/{uuid}][%d] client_lock_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClientLockDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

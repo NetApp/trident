@@ -19,7 +19,6 @@ import (
 // An ACL can have zero or more ACEs. Each ACE controls or monitors access to
 // an object by a specified trustee.
 //
-//
 // swagger:model acl
 type ACL struct {
 

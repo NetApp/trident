@@ -46,7 +46,8 @@ func NewStorageBridgeCollectionGetOK() *StorageBridgeCollectionGetOK {
 	return &StorageBridgeCollectionGetOK{}
 }
 
-/* StorageBridgeCollectionGetOK describes a response with status code 200, with default header values.
+/*
+StorageBridgeCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type StorageBridgeCollectionGetOK struct {
 	Payload *models.StorageBridgeResponse
 }
 
+// IsSuccess returns true when this storage bridge collection get o k response has a 2xx status code
+func (o *StorageBridgeCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this storage bridge collection get o k response has a 3xx status code
+func (o *StorageBridgeCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this storage bridge collection get o k response has a 4xx status code
+func (o *StorageBridgeCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this storage bridge collection get o k response has a 5xx status code
+func (o *StorageBridgeCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this storage bridge collection get o k response a status code equal to that given
+func (o *StorageBridgeCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *StorageBridgeCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/bridges][%d] storageBridgeCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *StorageBridgeCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/bridges][%d] storageBridgeCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *StorageBridgeCollectionGetOK) GetPayload() *models.StorageBridgeResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewStorageBridgeCollectionGetDefault(code int) *StorageBridgeCollectionGetD
 	}
 }
 
-/* StorageBridgeCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+StorageBridgeCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *StorageBridgeCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this storage bridge collection get default response has a 2xx status code
+func (o *StorageBridgeCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this storage bridge collection get default response has a 3xx status code
+func (o *StorageBridgeCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this storage bridge collection get default response has a 4xx status code
+func (o *StorageBridgeCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this storage bridge collection get default response has a 5xx status code
+func (o *StorageBridgeCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this storage bridge collection get default response a status code equal to that given
+func (o *StorageBridgeCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *StorageBridgeCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/bridges][%d] storage_bridge_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *StorageBridgeCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/bridges][%d] storage_bridge_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *StorageBridgeCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

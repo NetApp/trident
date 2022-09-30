@@ -53,10 +53,12 @@ func NewWebSvmGetParamsWithHTTPClient(client *http.Client) *WebSvmGetParams {
 	}
 }
 
-/* WebSvmGetParams contains all the parameters to send to the API endpoint
-   for the web svm get operation.
+/*
+WebSvmGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the web svm get operation.
+
+	Typically these are written to a http.Request.
 */
 type WebSvmGetParams struct {
 

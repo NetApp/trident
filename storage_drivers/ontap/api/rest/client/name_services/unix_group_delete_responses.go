@@ -46,14 +46,44 @@ func NewUnixGroupDeleteOK() *UnixGroupDeleteOK {
 	return &UnixGroupDeleteOK{}
 }
 
-/* UnixGroupDeleteOK describes a response with status code 200, with default header values.
+/*
+UnixGroupDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type UnixGroupDeleteOK struct {
 }
 
+// IsSuccess returns true when this unix group delete o k response has a 2xx status code
+func (o *UnixGroupDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix group delete o k response has a 3xx status code
+func (o *UnixGroupDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix group delete o k response has a 4xx status code
+func (o *UnixGroupDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix group delete o k response has a 5xx status code
+func (o *UnixGroupDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix group delete o k response a status code equal to that given
+func (o *UnixGroupDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixGroupDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unixGroupDeleteOK ", 200)
+}
+
+func (o *UnixGroupDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unixGroupDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewUnixGroupDeleteDefault(code int) *UnixGroupDeleteDefault {
 	}
 }
 
-/* UnixGroupDeleteDefault describes a response with status code -1, with default header values.
+/*
+UnixGroupDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *UnixGroupDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix group delete default response has a 2xx status code
+func (o *UnixGroupDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix group delete default response has a 3xx status code
+func (o *UnixGroupDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix group delete default response has a 4xx status code
+func (o *UnixGroupDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix group delete default response has a 5xx status code
+func (o *UnixGroupDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix group delete default response a status code equal to that given
+func (o *UnixGroupDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixGroupDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unix_group_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixGroupDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /name-services/unix-groups/{svm.uuid}/{name}][%d] unix_group_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixGroupDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

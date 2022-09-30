@@ -46,7 +46,8 @@ func NewHostsSettingsCollectionGetOK() *HostsSettingsCollectionGetOK {
 	return &HostsSettingsCollectionGetOK{}
 }
 
-/* HostsSettingsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+HostsSettingsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type HostsSettingsCollectionGetOK struct {
 	Payload *models.HostsSettingsResponse
 }
 
+// IsSuccess returns true when this hosts settings collection get o k response has a 2xx status code
+func (o *HostsSettingsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this hosts settings collection get o k response has a 3xx status code
+func (o *HostsSettingsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this hosts settings collection get o k response has a 4xx status code
+func (o *HostsSettingsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this hosts settings collection get o k response has a 5xx status code
+func (o *HostsSettingsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this hosts settings collection get o k response a status code equal to that given
+func (o *HostsSettingsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *HostsSettingsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hostsSettingsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *HostsSettingsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hostsSettingsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *HostsSettingsCollectionGetOK) GetPayload() *models.HostsSettingsResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewHostsSettingsCollectionGetDefault(code int) *HostsSettingsCollectionGetD
 	}
 }
 
-/* HostsSettingsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+HostsSettingsCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *HostsSettingsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this hosts settings collection get default response has a 2xx status code
+func (o *HostsSettingsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this hosts settings collection get default response has a 3xx status code
+func (o *HostsSettingsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this hosts settings collection get default response has a 4xx status code
+func (o *HostsSettingsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this hosts settings collection get default response has a 5xx status code
+func (o *HostsSettingsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this hosts settings collection get default response a status code equal to that given
+func (o *HostsSettingsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *HostsSettingsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hosts_settings_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *HostsSettingsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/host/settings][%d] hosts_settings_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *HostsSettingsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

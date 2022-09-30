@@ -53,10 +53,12 @@ func NewClusterCollectionPerformanceMetricsGetParamsWithHTTPClient(client *http.
 	}
 }
 
-/* ClusterCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
-   for the cluster collection performance metrics get operation.
+/*
+ClusterCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster collection performance metrics get operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterCollectionPerformanceMetricsGetParams struct {
 

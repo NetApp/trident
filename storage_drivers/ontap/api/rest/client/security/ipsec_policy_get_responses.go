@@ -46,7 +46,8 @@ func NewIpsecPolicyGetOK() *IpsecPolicyGetOK {
 	return &IpsecPolicyGetOK{}
 }
 
-/* IpsecPolicyGetOK describes a response with status code 200, with default header values.
+/*
+IpsecPolicyGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type IpsecPolicyGetOK struct {
 	Payload *models.IpsecPolicy
 }
 
+// IsSuccess returns true when this ipsec policy get o k response has a 2xx status code
+func (o *IpsecPolicyGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ipsec policy get o k response has a 3xx status code
+func (o *IpsecPolicyGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ipsec policy get o k response has a 4xx status code
+func (o *IpsecPolicyGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ipsec policy get o k response has a 5xx status code
+func (o *IpsecPolicyGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ipsec policy get o k response a status code equal to that given
+func (o *IpsecPolicyGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *IpsecPolicyGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsecPolicyGetOK  %+v", 200, o.Payload)
 }
+
+func (o *IpsecPolicyGetOK) String() string {
+	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsecPolicyGetOK  %+v", 200, o.Payload)
+}
+
 func (o *IpsecPolicyGetOK) GetPayload() *models.IpsecPolicy {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewIpsecPolicyGetDefault(code int) *IpsecPolicyGetDefault {
 	}
 }
 
-/* IpsecPolicyGetDefault describes a response with status code -1, with default header values.
+/*
+	IpsecPolicyGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 66257116 | IPsec policy with the specified UUID was not found. |
-
 */
 type IpsecPolicyGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *IpsecPolicyGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ipsec policy get default response has a 2xx status code
+func (o *IpsecPolicyGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ipsec policy get default response has a 3xx status code
+func (o *IpsecPolicyGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ipsec policy get default response has a 4xx status code
+func (o *IpsecPolicyGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ipsec policy get default response has a 5xx status code
+func (o *IpsecPolicyGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ipsec policy get default response a status code equal to that given
+func (o *IpsecPolicyGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IpsecPolicyGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsec_policy_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IpsecPolicyGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/ipsec/policies/{uuid}][%d] ipsec_policy_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IpsecPolicyGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -52,10 +52,12 @@ func NewNdmpNodeSessionDeleteParamsWithHTTPClient(client *http.Client) *NdmpNode
 	}
 }
 
-/* NdmpNodeSessionDeleteParams contains all the parameters to send to the API endpoint
-   for the ndmp node session delete operation.
+/*
+NdmpNodeSessionDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ndmp node session delete operation.
+
+	Typically these are written to a http.Request.
 */
 type NdmpNodeSessionDeleteParams struct {
 

@@ -55,10 +55,12 @@ func NewFpolicyPolicyCreateParamsWithHTTPClient(client *http.Client) *FpolicyPol
 	}
 }
 
-/* FpolicyPolicyCreateParams contains all the parameters to send to the API endpoint
-   for the fpolicy policy create operation.
+/*
+FpolicyPolicyCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fpolicy policy create operation.
+
+	Typically these are written to a http.Request.
 */
 type FpolicyPolicyCreateParams struct {
 

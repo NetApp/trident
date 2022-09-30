@@ -46,7 +46,8 @@ func NewLocalCifsUserGetOK() *LocalCifsUserGetOK {
 	return &LocalCifsUserGetOK{}
 }
 
-/* LocalCifsUserGetOK describes a response with status code 200, with default header values.
+/*
+LocalCifsUserGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LocalCifsUserGetOK struct {
 	Payload *models.LocalCifsUser
 }
 
+// IsSuccess returns true when this local cifs user get o k response has a 2xx status code
+func (o *LocalCifsUserGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local cifs user get o k response has a 3xx status code
+func (o *LocalCifsUserGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local cifs user get o k response has a 4xx status code
+func (o *LocalCifsUserGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local cifs user get o k response has a 5xx status code
+func (o *LocalCifsUserGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local cifs user get o k response a status code equal to that given
+func (o *LocalCifsUserGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LocalCifsUserGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LocalCifsUserGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] localCifsUserGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LocalCifsUserGetOK) GetPayload() *models.LocalCifsUser {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLocalCifsUserGetDefault(code int) *LocalCifsUserGetDefault {
 	}
 }
 
-/* LocalCifsUserGetDefault describes a response with status code -1, with default header values.
+/*
+LocalCifsUserGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LocalCifsUserGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this local cifs user get default response has a 2xx status code
+func (o *LocalCifsUserGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this local cifs user get default response has a 3xx status code
+func (o *LocalCifsUserGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this local cifs user get default response has a 4xx status code
+func (o *LocalCifsUserGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this local cifs user get default response has a 5xx status code
+func (o *LocalCifsUserGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this local cifs user get default response a status code equal to that given
+func (o *LocalCifsUserGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LocalCifsUserGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LocalCifsUserGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/cifs/local-users/{svm.uuid}/{sid}][%d] local_cifs_user_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LocalCifsUserGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

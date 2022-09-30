@@ -17,7 +17,6 @@ import (
 
 // ConsistencyGroupTieringObjectStores Object stores to use. Used for placement.
 //
-//
 // swagger:model consistency_group_tiering_object_stores
 type ConsistencyGroupTieringObjectStores []*ConsistencyGroupTieringObjectStoresItems0
 

@@ -46,7 +46,8 @@ func NewShelfGetOK() *ShelfGetOK {
 	return &ShelfGetOK{}
 }
 
-/* ShelfGetOK describes a response with status code 200, with default header values.
+/*
+ShelfGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ShelfGetOK struct {
 	Payload *models.Shelf
 }
 
+// IsSuccess returns true when this shelf get o k response has a 2xx status code
+func (o *ShelfGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this shelf get o k response has a 3xx status code
+func (o *ShelfGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this shelf get o k response has a 4xx status code
+func (o *ShelfGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this shelf get o k response has a 5xx status code
+func (o *ShelfGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this shelf get o k response a status code equal to that given
+func (o *ShelfGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ShelfGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/shelves/{uid}][%d] shelfGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ShelfGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/shelves/{uid}][%d] shelfGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ShelfGetOK) GetPayload() *models.Shelf {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewShelfGetDefault(code int) *ShelfGetDefault {
 	}
 }
 
-/* ShelfGetDefault describes a response with status code -1, with default header values.
+/*
+ShelfGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ShelfGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this shelf get default response has a 2xx status code
+func (o *ShelfGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this shelf get default response has a 3xx status code
+func (o *ShelfGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this shelf get default response has a 4xx status code
+func (o *ShelfGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this shelf get default response has a 5xx status code
+func (o *ShelfGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this shelf get default response a status code equal to that given
+func (o *ShelfGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ShelfGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/shelves/{uid}][%d] shelf_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ShelfGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/shelves/{uid}][%d] shelf_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ShelfGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewFileDirectorySecurityGetParamsWithHTTPClient(client *http.Client) *FileD
 	}
 }
 
-/* FileDirectorySecurityGetParams contains all the parameters to send to the API endpoint
-   for the file directory security get operation.
+/*
+FileDirectorySecurityGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file directory security get operation.
+
+	Typically these are written to a http.Request.
 */
 type FileDirectorySecurityGetParams struct {
 

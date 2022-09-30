@@ -53,10 +53,12 @@ func NewCifsDomainPreferredDcGetParamsWithHTTPClient(client *http.Client) *CifsD
 	}
 }
 
-/* CifsDomainPreferredDcGetParams contains all the parameters to send to the API endpoint
-   for the cifs domain preferred dc get operation.
+/*
+CifsDomainPreferredDcGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs domain preferred dc get operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsDomainPreferredDcGetParams struct {
 

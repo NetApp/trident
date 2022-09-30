@@ -53,10 +53,12 @@ func NewNvmeNamespaceCollectionGetParamsWithHTTPClient(client *http.Client) *Nvm
 	}
 }
 
-/* NvmeNamespaceCollectionGetParams contains all the parameters to send to the API endpoint
-   for the nvme namespace collection get operation.
+/*
+NvmeNamespaceCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme namespace collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeNamespaceCollectionGetParams struct {
 

@@ -46,14 +46,44 @@ func NewSecurityKeyManagerKeyServersDeleteOK() *SecurityKeyManagerKeyServersDele
 	return &SecurityKeyManagerKeyServersDeleteOK{}
 }
 
-/* SecurityKeyManagerKeyServersDeleteOK describes a response with status code 200, with default header values.
+/*
+SecurityKeyManagerKeyServersDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SecurityKeyManagerKeyServersDeleteOK struct {
 }
 
+// IsSuccess returns true when this security key manager key servers delete o k response has a 2xx status code
+func (o *SecurityKeyManagerKeyServersDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security key manager key servers delete o k response has a 3xx status code
+func (o *SecurityKeyManagerKeyServersDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security key manager key servers delete o k response has a 4xx status code
+func (o *SecurityKeyManagerKeyServersDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security key manager key servers delete o k response has a 5xx status code
+func (o *SecurityKeyManagerKeyServersDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security key manager key servers delete o k response a status code equal to that given
+func (o *SecurityKeyManagerKeyServersDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecurityKeyManagerKeyServersDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersDeleteOK ", 200)
+}
+
+func (o *SecurityKeyManagerKeyServersDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] securityKeyManagerKeyServersDeleteOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewSecurityKeyManagerKeyServersDeleteDefault(code int) *SecurityKeyManagerK
 	}
 }
 
-/* SecurityKeyManagerKeyServersDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SecurityKeyManagerKeyServersDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65536600 | Cannot remove a key server while a node is out quorum. |
@@ -80,7 +112,6 @@ func NewSecurityKeyManagerKeyServersDeleteDefault(code int) *SecurityKeyManagerK
 | 65536824 | Multitenant key management is not supported in MetroCluster configurations. |
 | 65536828 | External key management is not enabled for the SVM. |
 | 65536843 | The key management server is not configured for the SVM. |
-
 */
 type SecurityKeyManagerKeyServersDeleteDefault struct {
 	_statusCode int
@@ -93,9 +124,39 @@ func (o *SecurityKeyManagerKeyServersDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security key manager key servers delete default response has a 2xx status code
+func (o *SecurityKeyManagerKeyServersDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security key manager key servers delete default response has a 3xx status code
+func (o *SecurityKeyManagerKeyServersDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security key manager key servers delete default response has a 4xx status code
+func (o *SecurityKeyManagerKeyServersDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security key manager key servers delete default response has a 5xx status code
+func (o *SecurityKeyManagerKeyServersDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security key manager key servers delete default response a status code equal to that given
+func (o *SecurityKeyManagerKeyServersDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecurityKeyManagerKeyServersDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecurityKeyManagerKeyServersDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/key-managers/{uuid}/key-servers/{server}][%d] security_key_manager_key_servers_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecurityKeyManagerKeyServersDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

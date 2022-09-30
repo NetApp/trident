@@ -53,10 +53,12 @@ func NewAggregateGetParamsWithHTTPClient(client *http.Client) *AggregateGetParam
 	}
 }
 
-/* AggregateGetParams contains all the parameters to send to the API endpoint
-   for the aggregate get operation.
+/*
+AggregateGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the aggregate get operation.
+
+	Typically these are written to a http.Request.
 */
 type AggregateGetParams struct {
 

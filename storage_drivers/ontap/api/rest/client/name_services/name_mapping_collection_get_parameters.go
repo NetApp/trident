@@ -53,10 +53,12 @@ func NewNameMappingCollectionGetParamsWithHTTPClient(client *http.Client) *NameM
 	}
 }
 
-/* NameMappingCollectionGetParams contains all the parameters to send to the API endpoint
-   for the name mapping collection get operation.
+/*
+NameMappingCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the name mapping collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type NameMappingCollectionGetParams struct {
 

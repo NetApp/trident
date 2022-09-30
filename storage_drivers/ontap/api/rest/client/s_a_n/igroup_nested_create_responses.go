@@ -46,7 +46,8 @@ func NewIgroupNestedCreateCreated() *IgroupNestedCreateCreated {
 	return &IgroupNestedCreateCreated{}
 }
 
-/* IgroupNestedCreateCreated describes a response with status code 201, with default header values.
+/*
+IgroupNestedCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type IgroupNestedCreateCreated struct {
 	Payload *models.IgroupNestedResponse
 }
 
+// IsSuccess returns true when this igroup nested create created response has a 2xx status code
+func (o *IgroupNestedCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this igroup nested create created response has a 3xx status code
+func (o *IgroupNestedCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this igroup nested create created response has a 4xx status code
+func (o *IgroupNestedCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this igroup nested create created response has a 5xx status code
+func (o *IgroupNestedCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this igroup nested create created response a status code equal to that given
+func (o *IgroupNestedCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *IgroupNestedCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *IgroupNestedCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroupNestedCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *IgroupNestedCreateCreated) GetPayload() *models.IgroupNestedResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewIgroupNestedCreateDefault(code int) *IgroupNestedCreateDefault {
 	}
 }
 
-/* IgroupNestedCreateDefault describes a response with status code -1, with default header values.
+/*
+	IgroupNestedCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5374735 | An attempt was made to add a child igroup that would exceed the maximum allowable depth. |
@@ -93,7 +126,6 @@ func NewIgroupNestedCreateDefault(code int) *IgroupNestedCreateDefault {
 | 5374741 | A supplied child initiator group is already owned by a different child in the initiator group's hierarchy. |
 | 5374742 | A supplied child initiator group contains an initiator that is already owned by another initiator group in the hierarchy. |
 | 5374852 | The initiator group specified in the URI does not exist. |
-
 */
 type IgroupNestedCreateDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *IgroupNestedCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this igroup nested create default response has a 2xx status code
+func (o *IgroupNestedCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this igroup nested create default response has a 3xx status code
+func (o *IgroupNestedCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this igroup nested create default response has a 4xx status code
+func (o *IgroupNestedCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this igroup nested create default response has a 5xx status code
+func (o *IgroupNestedCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this igroup nested create default response a status code equal to that given
+func (o *IgroupNestedCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *IgroupNestedCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *IgroupNestedCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/san/igroups/{igroup.uuid}/igroups][%d] igroup_nested_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *IgroupNestedCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

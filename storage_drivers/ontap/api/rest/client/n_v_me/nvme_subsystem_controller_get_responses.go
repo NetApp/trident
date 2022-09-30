@@ -46,7 +46,8 @@ func NewNvmeSubsystemControllerGetOK() *NvmeSubsystemControllerGetOK {
 	return &NvmeSubsystemControllerGetOK{}
 }
 
-/* NvmeSubsystemControllerGetOK describes a response with status code 200, with default header values.
+/*
+NvmeSubsystemControllerGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NvmeSubsystemControllerGetOK struct {
 	Payload *models.NvmeSubsystemController
 }
 
+// IsSuccess returns true when this nvme subsystem controller get o k response has a 2xx status code
+func (o *NvmeSubsystemControllerGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme subsystem controller get o k response has a 3xx status code
+func (o *NvmeSubsystemControllerGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme subsystem controller get o k response has a 4xx status code
+func (o *NvmeSubsystemControllerGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme subsystem controller get o k response has a 5xx status code
+func (o *NvmeSubsystemControllerGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme subsystem controller get o k response a status code equal to that given
+func (o *NvmeSubsystemControllerGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeSubsystemControllerGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvmeSubsystemControllerGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NvmeSubsystemControllerGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvmeSubsystemControllerGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NvmeSubsystemControllerGetOK) GetPayload() *models.NvmeSubsystemController {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewNvmeSubsystemControllerGetDefault(code int) *NvmeSubsystemControllerGetD
 	}
 }
 
-/* NvmeSubsystemControllerGetDefault describes a response with status code -1, with default header values.
+/*
+	NvmeSubsystemControllerGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 72090001 | The supplied subsystem identifier does not exist. |
-
 */
 type NvmeSubsystemControllerGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *NvmeSubsystemControllerGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme subsystem controller get default response has a 2xx status code
+func (o *NvmeSubsystemControllerGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme subsystem controller get default response has a 3xx status code
+func (o *NvmeSubsystemControllerGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme subsystem controller get default response has a 4xx status code
+func (o *NvmeSubsystemControllerGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme subsystem controller get default response has a 5xx status code
+func (o *NvmeSubsystemControllerGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme subsystem controller get default response a status code equal to that given
+func (o *NvmeSubsystemControllerGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeSubsystemControllerGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvme_subsystem_controller_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeSubsystemControllerGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/subsystem-controllers/{subsystem.uuid}/{id}][%d] nvme_subsystem_controller_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeSubsystemControllerGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

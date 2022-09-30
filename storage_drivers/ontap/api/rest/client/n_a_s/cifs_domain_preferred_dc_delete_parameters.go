@@ -52,10 +52,12 @@ func NewCifsDomainPreferredDcDeleteParamsWithHTTPClient(client *http.Client) *Ci
 	}
 }
 
-/* CifsDomainPreferredDcDeleteParams contains all the parameters to send to the API endpoint
-   for the cifs domain preferred dc delete operation.
+/*
+CifsDomainPreferredDcDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs domain preferred dc delete operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsDomainPreferredDcDeleteParams struct {
 

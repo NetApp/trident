@@ -53,10 +53,12 @@ func NewConsistencyGroupSnapshotDeleteParamsWithHTTPClient(client *http.Client) 
 	}
 }
 
-/* ConsistencyGroupSnapshotDeleteParams contains all the parameters to send to the API endpoint
-   for the consistency group snapshot delete operation.
+/*
+ConsistencyGroupSnapshotDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the consistency group snapshot delete operation.
+
+	Typically these are written to a http.Request.
 */
 type ConsistencyGroupSnapshotDeleteParams struct {
 

@@ -46,7 +46,8 @@ func NewPlexGetOK() *PlexGetOK {
 	return &PlexGetOK{}
 }
 
-/* PlexGetOK describes a response with status code 200, with default header values.
+/*
+PlexGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type PlexGetOK struct {
 	Payload *models.Plex
 }
 
+// IsSuccess returns true when this plex get o k response has a 2xx status code
+func (o *PlexGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this plex get o k response has a 3xx status code
+func (o *PlexGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this plex get o k response has a 4xx status code
+func (o *PlexGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this plex get o k response has a 5xx status code
+func (o *PlexGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this plex get o k response a status code equal to that given
+func (o *PlexGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *PlexGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes/{name}][%d] plexGetOK  %+v", 200, o.Payload)
 }
+
+func (o *PlexGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes/{name}][%d] plexGetOK  %+v", 200, o.Payload)
+}
+
 func (o *PlexGetOK) GetPayload() *models.Plex {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewPlexGetDefault(code int) *PlexGetDefault {
 	}
 }
 
-/* PlexGetDefault describes a response with status code -1, with default header values.
+/*
+PlexGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *PlexGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this plex get default response has a 2xx status code
+func (o *PlexGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this plex get default response has a 3xx status code
+func (o *PlexGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this plex get default response has a 4xx status code
+func (o *PlexGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this plex get default response has a 5xx status code
+func (o *PlexGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this plex get default response a status code equal to that given
+func (o *PlexGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *PlexGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes/{name}][%d] plex_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *PlexGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/plexes/{name}][%d] plex_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *PlexGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

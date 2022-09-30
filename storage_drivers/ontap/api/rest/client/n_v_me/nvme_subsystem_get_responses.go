@@ -46,7 +46,8 @@ func NewNvmeSubsystemGetOK() *NvmeSubsystemGetOK {
 	return &NvmeSubsystemGetOK{}
 }
 
-/* NvmeSubsystemGetOK describes a response with status code 200, with default header values.
+/*
+NvmeSubsystemGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NvmeSubsystemGetOK struct {
 	Payload *models.NvmeSubsystem
 }
 
+// IsSuccess returns true when this nvme subsystem get o k response has a 2xx status code
+func (o *NvmeSubsystemGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this nvme subsystem get o k response has a 3xx status code
+func (o *NvmeSubsystemGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this nvme subsystem get o k response has a 4xx status code
+func (o *NvmeSubsystemGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this nvme subsystem get o k response has a 5xx status code
+func (o *NvmeSubsystemGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this nvme subsystem get o k response a status code equal to that given
+func (o *NvmeSubsystemGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NvmeSubsystemGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NvmeSubsystemGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvmeSubsystemGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NvmeSubsystemGetOK) GetPayload() *models.NvmeSubsystem {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNvmeSubsystemGetDefault(code int) *NvmeSubsystemGetDefault {
 	}
 }
 
-/* NvmeSubsystemGetDefault describes a response with status code -1, with default header values.
+/*
+NvmeSubsystemGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NvmeSubsystemGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this nvme subsystem get default response has a 2xx status code
+func (o *NvmeSubsystemGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this nvme subsystem get default response has a 3xx status code
+func (o *NvmeSubsystemGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this nvme subsystem get default response has a 4xx status code
+func (o *NvmeSubsystemGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this nvme subsystem get default response has a 5xx status code
+func (o *NvmeSubsystemGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this nvme subsystem get default response a status code equal to that given
+func (o *NvmeSubsystemGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NvmeSubsystemGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NvmeSubsystemGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/nvme/subsystems/{uuid}][%d] nvme_subsystem_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NvmeSubsystemGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

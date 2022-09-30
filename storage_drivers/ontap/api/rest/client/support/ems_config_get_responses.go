@@ -46,7 +46,8 @@ func NewEmsConfigGetOK() *EmsConfigGetOK {
 	return &EmsConfigGetOK{}
 }
 
-/* EmsConfigGetOK describes a response with status code 200, with default header values.
+/*
+EmsConfigGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type EmsConfigGetOK struct {
 	Payload *models.EmsConfig
 }
 
+// IsSuccess returns true when this ems config get o k response has a 2xx status code
+func (o *EmsConfigGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems config get o k response has a 3xx status code
+func (o *EmsConfigGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems config get o k response has a 4xx status code
+func (o *EmsConfigGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems config get o k response has a 5xx status code
+func (o *EmsConfigGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems config get o k response a status code equal to that given
+func (o *EmsConfigGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EmsConfigGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/ems][%d] emsConfigGetOK  %+v", 200, o.Payload)
 }
+
+func (o *EmsConfigGetOK) String() string {
+	return fmt.Sprintf("[GET /support/ems][%d] emsConfigGetOK  %+v", 200, o.Payload)
+}
+
 func (o *EmsConfigGetOK) GetPayload() *models.EmsConfig {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewEmsConfigGetDefault(code int) *EmsConfigGetDefault {
 	}
 }
 
-/* EmsConfigGetDefault describes a response with status code -1, with default header values.
+/*
+EmsConfigGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *EmsConfigGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems config get default response has a 2xx status code
+func (o *EmsConfigGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems config get default response has a 3xx status code
+func (o *EmsConfigGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems config get default response has a 4xx status code
+func (o *EmsConfigGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems config get default response has a 5xx status code
+func (o *EmsConfigGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems config get default response a status code equal to that given
+func (o *EmsConfigGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsConfigGetDefault) Error() string {
 	return fmt.Sprintf("[GET /support/ems][%d] ems_config_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsConfigGetDefault) String() string {
+	return fmt.Sprintf("[GET /support/ems][%d] ems_config_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsConfigGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

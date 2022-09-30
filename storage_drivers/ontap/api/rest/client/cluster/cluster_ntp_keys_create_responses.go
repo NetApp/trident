@@ -46,14 +46,44 @@ func NewClusterNtpKeysCreateCreated() *ClusterNtpKeysCreateCreated {
 	return &ClusterNtpKeysCreateCreated{}
 }
 
-/* ClusterNtpKeysCreateCreated describes a response with status code 201, with default header values.
+/*
+ClusterNtpKeysCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type ClusterNtpKeysCreateCreated struct {
 }
 
+// IsSuccess returns true when this cluster ntp keys create created response has a 2xx status code
+func (o *ClusterNtpKeysCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ntp keys create created response has a 3xx status code
+func (o *ClusterNtpKeysCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ntp keys create created response has a 4xx status code
+func (o *ClusterNtpKeysCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ntp keys create created response has a 5xx status code
+func (o *ClusterNtpKeysCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ntp keys create created response a status code equal to that given
+func (o *ClusterNtpKeysCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *ClusterNtpKeysCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] clusterNtpKeysCreateCreated ", 201)
+}
+
+func (o *ClusterNtpKeysCreateCreated) String() string {
 	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] clusterNtpKeysCreateCreated ", 201)
 }
 
@@ -69,14 +99,15 @@ func NewClusterNtpKeysCreateDefault(code int) *ClusterNtpKeysCreateDefault {
 	}
 }
 
-/* ClusterNtpKeysCreateDefault describes a response with status code -1, with default header values.
+/*
+	ClusterNtpKeysCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2097187 | Invalid value for an NTP symmetric authentication key. A SHA1 key must be exactly 40 hexadecimal digits. |
 | 2097189 | Too many NTP keys have been configured. |
-
 */
 type ClusterNtpKeysCreateDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *ClusterNtpKeysCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ntp keys create default response has a 2xx status code
+func (o *ClusterNtpKeysCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ntp keys create default response has a 3xx status code
+func (o *ClusterNtpKeysCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ntp keys create default response has a 4xx status code
+func (o *ClusterNtpKeysCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ntp keys create default response has a 5xx status code
+func (o *ClusterNtpKeysCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ntp keys create default response a status code equal to that given
+func (o *ClusterNtpKeysCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNtpKeysCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] cluster_ntp_keys_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNtpKeysCreateDefault) String() string {
+	return fmt.Sprintf("[POST /cluster/ntp/keys][%d] cluster_ntp_keys_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNtpKeysCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

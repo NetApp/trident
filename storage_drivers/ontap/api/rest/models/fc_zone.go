@@ -18,7 +18,6 @@ import (
 
 // FcZone A Fibre Channel zone.
 //
-//
 // swagger:model fc_zone
 type FcZone struct {
 
@@ -262,7 +261,6 @@ func (m *FcZone) UnmarshalBinary(b []byte) error {
 
 // FcZoneCache Properties of Fibre Chanel fabric cache.
 //
-//
 // swagger:model FcZoneCache
 type FcZoneCache struct {
 
@@ -378,7 +376,6 @@ func (m *FcZoneCache) UnmarshalBinary(b []byte) error {
 }
 
 // FcZoneFabric A reference to a Fibre Channel fabric.
-//
 //
 // swagger:model FcZoneFabric
 type FcZoneFabric struct {
@@ -642,7 +639,6 @@ func (m *FcZoneLinks) UnmarshalBinary(b []byte) error {
 }
 
 // FcZoneMembersItems0 A Fibre Channel zone member.
-//
 //
 // swagger:model FcZoneMembersItems0
 type FcZoneMembersItems0 struct {

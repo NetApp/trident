@@ -53,10 +53,12 @@ func NewNfsCollectionPerformanceMetricsGetParamsWithHTTPClient(client *http.Clie
 	}
 }
 
-/* NfsCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
-   for the nfs collection performance metrics get operation.
+/*
+NfsCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nfs collection performance metrics get operation.
+
+	Typically these are written to a http.Request.
 */
 type NfsCollectionPerformanceMetricsGetParams struct {
 

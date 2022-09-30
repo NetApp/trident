@@ -46,7 +46,8 @@ func NewFlexcacheOriginModifyOK() *FlexcacheOriginModifyOK {
 	return &FlexcacheOriginModifyOK{}
 }
 
-/* FlexcacheOriginModifyOK describes a response with status code 200, with default header values.
+/*
+FlexcacheOriginModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FlexcacheOriginModifyOK struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this flexcache origin modify o k response has a 2xx status code
+func (o *FlexcacheOriginModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this flexcache origin modify o k response has a 3xx status code
+func (o *FlexcacheOriginModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this flexcache origin modify o k response has a 4xx status code
+func (o *FlexcacheOriginModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this flexcache origin modify o k response has a 5xx status code
+func (o *FlexcacheOriginModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this flexcache origin modify o k response a status code equal to that given
+func (o *FlexcacheOriginModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FlexcacheOriginModifyOK) Error() string {
 	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcacheOriginModifyOK  %+v", 200, o.Payload)
 }
+
+func (o *FlexcacheOriginModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcacheOriginModifyOK  %+v", 200, o.Payload)
+}
+
 func (o *FlexcacheOriginModifyOK) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,15 +111,16 @@ func NewFlexcacheOriginModifyDefault(code int) *FlexcacheOriginModifyDefault {
 	}
 }
 
-/* FlexcacheOriginModifyDefault describes a response with status code -1, with default header values.
+/*
+	FlexcacheOriginModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 66846870   | Either origin volume uuid or BLI option value is missing |
 | 66847020   | Failed to get origin volume details using volume uuid |
 | 66847021   | Failed to modify origin volume options |
-
 */
 type FlexcacheOriginModifyDefault struct {
 	_statusCode int
@@ -101,9 +133,39 @@ func (o *FlexcacheOriginModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this flexcache origin modify default response has a 2xx status code
+func (o *FlexcacheOriginModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this flexcache origin modify default response has a 3xx status code
+func (o *FlexcacheOriginModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this flexcache origin modify default response has a 4xx status code
+func (o *FlexcacheOriginModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this flexcache origin modify default response has a 5xx status code
+func (o *FlexcacheOriginModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this flexcache origin modify default response a status code equal to that given
+func (o *FlexcacheOriginModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FlexcacheOriginModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcache_origin_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FlexcacheOriginModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/flexcache/origins/{uuid}][%d] flexcache_origin_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FlexcacheOriginModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewChassisGetOK() *ChassisGetOK {
 	return &ChassisGetOK{}
 }
 
-/* ChassisGetOK describes a response with status code 200, with default header values.
+/*
+ChassisGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ChassisGetOK struct {
 	Payload *models.Chassis
 }
 
+// IsSuccess returns true when this chassis get o k response has a 2xx status code
+func (o *ChassisGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this chassis get o k response has a 3xx status code
+func (o *ChassisGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this chassis get o k response has a 4xx status code
+func (o *ChassisGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this chassis get o k response has a 5xx status code
+func (o *ChassisGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this chassis get o k response a status code equal to that given
+func (o *ChassisGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ChassisGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassisGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ChassisGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassisGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ChassisGetOK) GetPayload() *models.Chassis {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewChassisGetDefault(code int) *ChassisGetDefault {
 	}
 }
 
-/* ChassisGetDefault describes a response with status code -1, with default header values.
+/*
+ChassisGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ChassisGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this chassis get default response has a 2xx status code
+func (o *ChassisGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this chassis get default response has a 3xx status code
+func (o *ChassisGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this chassis get default response has a 4xx status code
+func (o *ChassisGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this chassis get default response has a 5xx status code
+func (o *ChassisGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this chassis get default response a status code equal to that given
+func (o *ChassisGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ChassisGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassis_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ChassisGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/chassis/{id}][%d] chassis_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ChassisGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

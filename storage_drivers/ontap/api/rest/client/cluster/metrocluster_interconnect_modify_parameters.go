@@ -55,10 +55,12 @@ func NewMetroclusterInterconnectModifyParamsWithHTTPClient(client *http.Client) 
 	}
 }
 
-/* MetroclusterInterconnectModifyParams contains all the parameters to send to the API endpoint
-   for the metrocluster interconnect modify operation.
+/*
+MetroclusterInterconnectModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the metrocluster interconnect modify operation.
+
+	Typically these are written to a http.Request.
 */
 type MetroclusterInterconnectModifyParams struct {
 

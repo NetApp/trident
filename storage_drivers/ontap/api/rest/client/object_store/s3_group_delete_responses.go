@@ -46,14 +46,44 @@ func NewS3GroupDeleteOK() *S3GroupDeleteOK {
 	return &S3GroupDeleteOK{}
 }
 
-/* S3GroupDeleteOK describes a response with status code 200, with default header values.
+/*
+S3GroupDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type S3GroupDeleteOK struct {
 }
 
+// IsSuccess returns true when this s3 group delete o k response has a 2xx status code
+func (o *S3GroupDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 group delete o k response has a 3xx status code
+func (o *S3GroupDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 group delete o k response has a 4xx status code
+func (o *S3GroupDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 group delete o k response has a 5xx status code
+func (o *S3GroupDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 group delete o k response a status code equal to that given
+func (o *S3GroupDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *S3GroupDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupDeleteOK ", 200)
+}
+
+func (o *S3GroupDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3GroupDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewS3GroupDeleteDefault(code int) *S3GroupDeleteDefault {
 	}
 }
 
-/* S3GroupDeleteDefault describes a response with status code -1, with default header values.
+/*
+S3GroupDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *S3GroupDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this s3 group delete default response has a 2xx status code
+func (o *S3GroupDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this s3 group delete default response has a 3xx status code
+func (o *S3GroupDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this s3 group delete default response has a 4xx status code
+func (o *S3GroupDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this s3 group delete default response has a 5xx status code
+func (o *S3GroupDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this s3 group delete default response a status code equal to that given
+func (o *S3GroupDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *S3GroupDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *S3GroupDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}/groups/{id}][%d] s3_group_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *S3GroupDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

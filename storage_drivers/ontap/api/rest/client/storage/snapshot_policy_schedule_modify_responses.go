@@ -46,14 +46,44 @@ func NewSnapshotPolicyScheduleModifyOK() *SnapshotPolicyScheduleModifyOK {
 	return &SnapshotPolicyScheduleModifyOK{}
 }
 
-/* SnapshotPolicyScheduleModifyOK describes a response with status code 200, with default header values.
+/*
+SnapshotPolicyScheduleModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnapshotPolicyScheduleModifyOK struct {
 }
 
+// IsSuccess returns true when this snapshot policy schedule modify o k response has a 2xx status code
+func (o *SnapshotPolicyScheduleModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot policy schedule modify o k response has a 3xx status code
+func (o *SnapshotPolicyScheduleModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot policy schedule modify o k response has a 4xx status code
+func (o *SnapshotPolicyScheduleModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot policy schedule modify o k response has a 5xx status code
+func (o *SnapshotPolicyScheduleModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot policy schedule modify o k response a status code equal to that given
+func (o *SnapshotPolicyScheduleModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnapshotPolicyScheduleModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleModifyOK ", 200)
+}
+
+func (o *SnapshotPolicyScheduleModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleModifyOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewSnapshotPolicyScheduleModifyDefault(code int) *SnapshotPolicyScheduleMod
 	}
 }
 
-/* SnapshotPolicyScheduleModifyDefault describes a response with status code -1, with default header values.
+/*
+	SnapshotPolicyScheduleModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Code
+	ONTAP Error Response Code
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1638451    | This operation would result in total Snapshot copy count for the policy to exceed maximum supported count. |
-
 */
 type SnapshotPolicyScheduleModifyDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *SnapshotPolicyScheduleModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapshot policy schedule modify default response has a 2xx status code
+func (o *SnapshotPolicyScheduleModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapshot policy schedule modify default response has a 3xx status code
+func (o *SnapshotPolicyScheduleModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapshot policy schedule modify default response has a 4xx status code
+func (o *SnapshotPolicyScheduleModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapshot policy schedule modify default response has a 5xx status code
+func (o *SnapshotPolicyScheduleModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapshot policy schedule modify default response a status code equal to that given
+func (o *SnapshotPolicyScheduleModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapshotPolicyScheduleModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapshotPolicyScheduleModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapshotPolicyScheduleModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

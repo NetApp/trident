@@ -52,10 +52,12 @@ func NewLunMapReportingNodeDeleteParamsWithHTTPClient(client *http.Client) *LunM
 	}
 }
 
-/* LunMapReportingNodeDeleteParams contains all the parameters to send to the API endpoint
-   for the lun map reporting node delete operation.
+/*
+LunMapReportingNodeDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the lun map reporting node delete operation.
+
+	Typically these are written to a http.Request.
 */
 type LunMapReportingNodeDeleteParams struct {
 

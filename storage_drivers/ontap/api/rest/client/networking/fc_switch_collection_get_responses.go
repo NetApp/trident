@@ -46,7 +46,8 @@ func NewFcSwitchCollectionGetOK() *FcSwitchCollectionGetOK {
 	return &FcSwitchCollectionGetOK{}
 }
 
-/* FcSwitchCollectionGetOK describes a response with status code 200, with default header values.
+/*
+FcSwitchCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type FcSwitchCollectionGetOK struct {
 	Payload *models.FcSwitchResponse
 }
 
+// IsSuccess returns true when this fc switch collection get o k response has a 2xx status code
+func (o *FcSwitchCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this fc switch collection get o k response has a 3xx status code
+func (o *FcSwitchCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this fc switch collection get o k response has a 4xx status code
+func (o *FcSwitchCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this fc switch collection get o k response has a 5xx status code
+func (o *FcSwitchCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this fc switch collection get o k response a status code equal to that given
+func (o *FcSwitchCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FcSwitchCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/switches][%d] fcSwitchCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *FcSwitchCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/switches][%d] fcSwitchCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *FcSwitchCollectionGetOK) GetPayload() *models.FcSwitchResponse {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewFcSwitchCollectionGetDefault(code int) *FcSwitchCollectionGetDefault {
 	}
 }
 
-/* FcSwitchCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	FcSwitchCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5375053 | The Fibre Channel fabric specified by name in the request URI was not found in the FC fabric cache. |
-
 */
 type FcSwitchCollectionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *FcSwitchCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this fc switch collection get default response has a 2xx status code
+func (o *FcSwitchCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this fc switch collection get default response has a 3xx status code
+func (o *FcSwitchCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this fc switch collection get default response has a 4xx status code
+func (o *FcSwitchCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this fc switch collection get default response has a 5xx status code
+func (o *FcSwitchCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this fc switch collection get default response a status code equal to that given
+func (o *FcSwitchCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FcSwitchCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/switches][%d] fc_switch_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FcSwitchCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /network/fc/fabrics/{fabric.name}/switches][%d] fc_switch_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FcSwitchCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

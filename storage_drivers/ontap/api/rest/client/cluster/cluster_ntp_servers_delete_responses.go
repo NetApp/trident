@@ -46,7 +46,8 @@ func NewClusterNtpServersDeleteAccepted() *ClusterNtpServersDeleteAccepted {
 	return &ClusterNtpServersDeleteAccepted{}
 }
 
-/* ClusterNtpServersDeleteAccepted describes a response with status code 202, with default header values.
+/*
+ClusterNtpServersDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type ClusterNtpServersDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this cluster ntp servers delete accepted response has a 2xx status code
+func (o *ClusterNtpServersDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ntp servers delete accepted response has a 3xx status code
+func (o *ClusterNtpServersDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ntp servers delete accepted response has a 4xx status code
+func (o *ClusterNtpServersDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ntp servers delete accepted response has a 5xx status code
+func (o *ClusterNtpServersDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ntp servers delete accepted response a status code equal to that given
+func (o *ClusterNtpServersDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ClusterNtpServersDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] clusterNtpServersDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ClusterNtpServersDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] clusterNtpServersDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ClusterNtpServersDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewClusterNtpServersDeleteDefault(code int) *ClusterNtpServersDeleteDefault
 	}
 }
 
-/* ClusterNtpServersDeleteDefault describes a response with status code -1, with default header values.
+/*
+ClusterNtpServersDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ClusterNtpServersDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ntp servers delete default response has a 2xx status code
+func (o *ClusterNtpServersDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ntp servers delete default response has a 3xx status code
+func (o *ClusterNtpServersDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ntp servers delete default response has a 4xx status code
+func (o *ClusterNtpServersDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ntp servers delete default response has a 5xx status code
+func (o *ClusterNtpServersDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ntp servers delete default response a status code equal to that given
+func (o *ClusterNtpServersDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNtpServersDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNtpServersDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /cluster/ntp/servers/{server}][%d] cluster_ntp_servers_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNtpServersDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -55,10 +55,12 @@ func NewSwitchModifyParamsWithHTTPClient(client *http.Client) *SwitchModifyParam
 	}
 }
 
-/* SwitchModifyParams contains all the parameters to send to the API endpoint
-   for the switch modify operation.
+/*
+SwitchModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the switch modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SwitchModifyParams struct {
 

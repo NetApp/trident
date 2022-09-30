@@ -54,10 +54,12 @@ func NewNetworkEthernetBroadcastDomainModifyParamsWithHTTPClient(client *http.Cl
 	}
 }
 
-/* NetworkEthernetBroadcastDomainModifyParams contains all the parameters to send to the API endpoint
-   for the network ethernet broadcast domain modify operation.
+/*
+NetworkEthernetBroadcastDomainModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ethernet broadcast domain modify operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkEthernetBroadcastDomainModifyParams struct {
 

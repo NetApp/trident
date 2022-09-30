@@ -54,10 +54,12 @@ func NewIPServicePolicyModifyParamsWithHTTPClient(client *http.Client) *IPServic
 	}
 }
 
-/* IPServicePolicyModifyParams contains all the parameters to send to the API endpoint
-   for the ip service policy modify operation.
+/*
+IPServicePolicyModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ip service policy modify operation.
+
+	Typically these are written to a http.Request.
 */
 type IPServicePolicyModifyParams struct {
 

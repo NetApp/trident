@@ -16,7 +16,6 @@ import (
 
 // ConsistencyGroupLunSpace The storage space related properties of the LUN.
 //
-//
 // swagger:model consistency_group_lun_space
 type ConsistencyGroupLunSpace struct {
 
@@ -137,7 +136,6 @@ func (m *ConsistencyGroupLunSpace) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupLunSpaceGuaranteeType Properties that request and report the space guarantee for the LUN.
-//
 //
 // swagger:model ConsistencyGroupLunSpaceGuaranteeType
 type ConsistencyGroupLunSpaceGuaranteeType struct {

@@ -46,7 +46,8 @@ func NewUnixUserSettingsCollectionGetOK() *UnixUserSettingsCollectionGetOK {
 	return &UnixUserSettingsCollectionGetOK{}
 }
 
-/* UnixUserSettingsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+UnixUserSettingsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type UnixUserSettingsCollectionGetOK struct {
 	Payload *models.UnixUserSettingsResponse
 }
 
+// IsSuccess returns true when this unix user settings collection get o k response has a 2xx status code
+func (o *UnixUserSettingsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this unix user settings collection get o k response has a 3xx status code
+func (o *UnixUserSettingsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this unix user settings collection get o k response has a 4xx status code
+func (o *UnixUserSettingsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this unix user settings collection get o k response has a 5xx status code
+func (o *UnixUserSettingsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this unix user settings collection get o k response a status code equal to that given
+func (o *UnixUserSettingsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UnixUserSettingsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/unix-user/settings][%d] unixUserSettingsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *UnixUserSettingsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/unix-user/settings][%d] unixUserSettingsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *UnixUserSettingsCollectionGetOK) GetPayload() *models.UnixUserSettingsResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewUnixUserSettingsCollectionGetDefault(code int) *UnixUserSettingsCollecti
 	}
 }
 
-/* UnixUserSettingsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+UnixUserSettingsCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *UnixUserSettingsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this unix user settings collection get default response has a 2xx status code
+func (o *UnixUserSettingsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this unix user settings collection get default response has a 3xx status code
+func (o *UnixUserSettingsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this unix user settings collection get default response has a 4xx status code
+func (o *UnixUserSettingsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this unix user settings collection get default response has a 5xx status code
+func (o *UnixUserSettingsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this unix user settings collection get default response a status code equal to that given
+func (o *UnixUserSettingsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UnixUserSettingsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/cache/unix-user/settings][%d] unix_user_settings_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UnixUserSettingsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/cache/unix-user/settings][%d] unix_user_settings_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UnixUserSettingsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,14 +46,44 @@ func NewAccountPublickeyDeleteOK() *AccountPublickeyDeleteOK {
 	return &AccountPublickeyDeleteOK{}
 }
 
-/* AccountPublickeyDeleteOK describes a response with status code 200, with default header values.
+/*
+AccountPublickeyDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type AccountPublickeyDeleteOK struct {
 }
 
+// IsSuccess returns true when this account publickey delete o k response has a 2xx status code
+func (o *AccountPublickeyDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this account publickey delete o k response has a 3xx status code
+func (o *AccountPublickeyDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this account publickey delete o k response has a 4xx status code
+func (o *AccountPublickeyDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this account publickey delete o k response has a 5xx status code
+func (o *AccountPublickeyDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this account publickey delete o k response a status code equal to that given
+func (o *AccountPublickeyDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *AccountPublickeyDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] accountPublickeyDeleteOK ", 200)
+}
+
+func (o *AccountPublickeyDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] accountPublickeyDeleteOK ", 200)
 }
 
@@ -69,7 +99,8 @@ func NewAccountPublickeyDeleteDefault(code int) *AccountPublickeyDeleteDefault {
 	}
 }
 
-/* AccountPublickeyDeleteDefault describes a response with status code -1, with default header values.
+/*
+AccountPublickeyDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -84,9 +115,39 @@ func (o *AccountPublickeyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this account publickey delete default response has a 2xx status code
+func (o *AccountPublickeyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this account publickey delete default response has a 3xx status code
+func (o *AccountPublickeyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this account publickey delete default response has a 4xx status code
+func (o *AccountPublickeyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this account publickey delete default response has a 5xx status code
+func (o *AccountPublickeyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this account publickey delete default response a status code equal to that given
+func (o *AccountPublickeyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AccountPublickeyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] account_publickey_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AccountPublickeyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /security/authentication/publickeys/{owner.uuid}/{account.name}/{index}][%d] account_publickey_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AccountPublickeyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

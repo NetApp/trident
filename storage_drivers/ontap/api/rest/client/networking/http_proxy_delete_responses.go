@@ -46,14 +46,44 @@ func NewHTTPProxyDeleteOK() *HTTPProxyDeleteOK {
 	return &HTTPProxyDeleteOK{}
 }
 
-/* HTTPProxyDeleteOK describes a response with status code 200, with default header values.
+/*
+HTTPProxyDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type HTTPProxyDeleteOK struct {
 }
 
+// IsSuccess returns true when this http proxy delete o k response has a 2xx status code
+func (o *HTTPProxyDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this http proxy delete o k response has a 3xx status code
+func (o *HTTPProxyDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this http proxy delete o k response has a 4xx status code
+func (o *HTTPProxyDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this http proxy delete o k response has a 5xx status code
+func (o *HTTPProxyDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this http proxy delete o k response a status code equal to that given
+func (o *HTTPProxyDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *HTTPProxyDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] httpProxyDeleteOK ", 200)
+}
+
+func (o *HTTPProxyDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] httpProxyDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewHTTPProxyDeleteDefault(code int) *HTTPProxyDeleteDefault {
 	}
 }
 
-/* HTTPProxyDeleteDefault describes a response with status code -1, with default header values.
+/*
+	HTTPProxyDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 138281013 | The HTTP proxy cannot be deleted while in use by a cloud agent connection. |
-
 */
 type HTTPProxyDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *HTTPProxyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this http proxy delete default response has a 2xx status code
+func (o *HTTPProxyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this http proxy delete default response has a 3xx status code
+func (o *HTTPProxyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this http proxy delete default response has a 4xx status code
+func (o *HTTPProxyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this http proxy delete default response has a 5xx status code
+func (o *HTTPProxyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this http proxy delete default response a status code equal to that given
+func (o *HTTPProxyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *HTTPProxyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] http_proxy_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *HTTPProxyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /network/http-proxy/{uuid}][%d] http_proxy_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *HTTPProxyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

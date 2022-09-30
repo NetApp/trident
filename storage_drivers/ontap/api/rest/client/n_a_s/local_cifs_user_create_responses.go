@@ -46,7 +46,8 @@ func NewLocalCifsUserCreateCreated() *LocalCifsUserCreateCreated {
 	return &LocalCifsUserCreateCreated{}
 }
 
-/* LocalCifsUserCreateCreated describes a response with status code 201, with default header values.
+/*
+LocalCifsUserCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type LocalCifsUserCreateCreated struct {
 	Payload *models.LocalCifsUserResponse
 }
 
+// IsSuccess returns true when this local cifs user create created response has a 2xx status code
+func (o *LocalCifsUserCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this local cifs user create created response has a 3xx status code
+func (o *LocalCifsUserCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this local cifs user create created response has a 4xx status code
+func (o *LocalCifsUserCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this local cifs user create created response has a 5xx status code
+func (o *LocalCifsUserCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this local cifs user create created response a status code equal to that given
+func (o *LocalCifsUserCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *LocalCifsUserCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] localCifsUserCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *LocalCifsUserCreateCreated) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] localCifsUserCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *LocalCifsUserCreateCreated) GetPayload() *models.LocalCifsUserResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewLocalCifsUserCreateDefault(code int) *LocalCifsUserCreateDefault {
 	}
 }
 
-/* LocalCifsUserCreateDefault describes a response with status code -1, with default header values.
+/*
+	LocalCifsUserCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262278     | Name and password are required fields. |
@@ -96,7 +129,6 @@ func NewLocalCifsUserCreateDefault(code int) *LocalCifsUserCreateDefault {
 | 655733     | The password does not meet the password complexity requirements. |
 | 655736     | The specified user name already exists. |
 | 2621706    | The specified SVM UUID is incorrect for the specified SVM name. |
-
 */
 type LocalCifsUserCreateDefault struct {
 	_statusCode int
@@ -109,9 +141,39 @@ func (o *LocalCifsUserCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this local cifs user create default response has a 2xx status code
+func (o *LocalCifsUserCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this local cifs user create default response has a 3xx status code
+func (o *LocalCifsUserCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this local cifs user create default response has a 4xx status code
+func (o *LocalCifsUserCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this local cifs user create default response has a 5xx status code
+func (o *LocalCifsUserCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this local cifs user create default response a status code equal to that given
+func (o *LocalCifsUserCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LocalCifsUserCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] local_cifs_user_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LocalCifsUserCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/local-users][%d] local_cifs_user_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LocalCifsUserCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

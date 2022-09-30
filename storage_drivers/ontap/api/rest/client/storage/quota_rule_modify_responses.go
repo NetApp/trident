@@ -46,7 +46,8 @@ func NewQuotaRuleModifyAccepted() *QuotaRuleModifyAccepted {
 	return &QuotaRuleModifyAccepted{}
 }
 
-/* QuotaRuleModifyAccepted describes a response with status code 202, with default header values.
+/*
+QuotaRuleModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type QuotaRuleModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this quota rule modify accepted response has a 2xx status code
+func (o *QuotaRuleModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this quota rule modify accepted response has a 3xx status code
+func (o *QuotaRuleModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this quota rule modify accepted response has a 4xx status code
+func (o *QuotaRuleModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this quota rule modify accepted response has a 5xx status code
+func (o *QuotaRuleModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this quota rule modify accepted response a status code equal to that given
+func (o *QuotaRuleModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *QuotaRuleModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/quota/rules/{uuid}][%d] quotaRuleModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *QuotaRuleModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/quota/rules/{uuid}][%d] quotaRuleModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *QuotaRuleModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewQuotaRuleModifyDefault(code int) *QuotaRuleModifyDefault {
 	}
 }
 
-/* QuotaRuleModifyDefault describes a response with status code -1, with default header values.
+/*
+	QuotaRuleModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5308501 | Mapping from Windows user to UNIX user for user rule was unsuccessful. |
@@ -93,7 +126,6 @@ func NewQuotaRuleModifyDefault(code int) *QuotaRuleModifyDefault {
 | 5308573 | Input value is greater than limit for field. |
 | 5308574 | Input value is out of range for field. |
 | 5308575 | Input value is incorrectly larger than listed field. |
-
 */
 type QuotaRuleModifyDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *QuotaRuleModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this quota rule modify default response has a 2xx status code
+func (o *QuotaRuleModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this quota rule modify default response has a 3xx status code
+func (o *QuotaRuleModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this quota rule modify default response has a 4xx status code
+func (o *QuotaRuleModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this quota rule modify default response has a 5xx status code
+func (o *QuotaRuleModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this quota rule modify default response a status code equal to that given
+func (o *QuotaRuleModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QuotaRuleModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/quota/rules/{uuid}][%d] quota_rule_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QuotaRuleModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/quota/rules/{uuid}][%d] quota_rule_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QuotaRuleModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

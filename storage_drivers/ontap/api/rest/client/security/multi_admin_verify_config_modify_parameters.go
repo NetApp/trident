@@ -54,10 +54,12 @@ func NewMultiAdminVerifyConfigModifyParamsWithHTTPClient(client *http.Client) *M
 	}
 }
 
-/* MultiAdminVerifyConfigModifyParams contains all the parameters to send to the API endpoint
-   for the multi admin verify config modify operation.
+/*
+MultiAdminVerifyConfigModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the multi admin verify config modify operation.
+
+	Typically these are written to a http.Request.
 */
 type MultiAdminVerifyConfigModifyParams struct {
 

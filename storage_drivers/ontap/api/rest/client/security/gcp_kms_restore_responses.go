@@ -46,14 +46,44 @@ func NewGcpKmsRestoreAccepted() *GcpKmsRestoreAccepted {
 	return &GcpKmsRestoreAccepted{}
 }
 
-/* GcpKmsRestoreAccepted describes a response with status code 202, with default header values.
+/*
+GcpKmsRestoreAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type GcpKmsRestoreAccepted struct {
 }
 
+// IsSuccess returns true when this gcp kms restore accepted response has a 2xx status code
+func (o *GcpKmsRestoreAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this gcp kms restore accepted response has a 3xx status code
+func (o *GcpKmsRestoreAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this gcp kms restore accepted response has a 4xx status code
+func (o *GcpKmsRestoreAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this gcp kms restore accepted response has a 5xx status code
+func (o *GcpKmsRestoreAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this gcp kms restore accepted response a status code equal to that given
+func (o *GcpKmsRestoreAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *GcpKmsRestoreAccepted) Error() string {
+	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/restore][%d] gcpKmsRestoreAccepted ", 202)
+}
+
+func (o *GcpKmsRestoreAccepted) String() string {
 	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/restore][%d] gcpKmsRestoreAccepted ", 202)
 }
 
@@ -69,14 +99,15 @@ func NewGcpKmsRestoreDefault(code int) *GcpKmsRestoreDefault {
 	}
 }
 
-/* GcpKmsRestoreDefault describes a response with status code -1, with default header values.
+/*
+	GcpKmsRestoreDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65537721 | The Google Cloud Key Management Service is not configured for the given SVM. |
 | 65537722 | Failed to restore keys on the following SVMs. |
-
 */
 type GcpKmsRestoreDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *GcpKmsRestoreDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this gcp kms restore default response has a 2xx status code
+func (o *GcpKmsRestoreDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this gcp kms restore default response has a 3xx status code
+func (o *GcpKmsRestoreDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this gcp kms restore default response has a 4xx status code
+func (o *GcpKmsRestoreDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this gcp kms restore default response has a 5xx status code
+func (o *GcpKmsRestoreDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this gcp kms restore default response a status code equal to that given
+func (o *GcpKmsRestoreDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GcpKmsRestoreDefault) Error() string {
 	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/restore][%d] gcp_kms_restore default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GcpKmsRestoreDefault) String() string {
+	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/restore][%d] gcp_kms_restore default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GcpKmsRestoreDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

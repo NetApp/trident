@@ -46,14 +46,44 @@ func NewKerberosRealmCreateCreated() *KerberosRealmCreateCreated {
 	return &KerberosRealmCreateCreated{}
 }
 
-/* KerberosRealmCreateCreated describes a response with status code 201, with default header values.
+/*
+KerberosRealmCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type KerberosRealmCreateCreated struct {
 }
 
+// IsSuccess returns true when this kerberos realm create created response has a 2xx status code
+func (o *KerberosRealmCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this kerberos realm create created response has a 3xx status code
+func (o *KerberosRealmCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this kerberos realm create created response has a 4xx status code
+func (o *KerberosRealmCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this kerberos realm create created response has a 5xx status code
+func (o *KerberosRealmCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this kerberos realm create created response a status code equal to that given
+func (o *KerberosRealmCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *KerberosRealmCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberosRealmCreateCreated ", 201)
+}
+
+func (o *KerberosRealmCreateCreated) String() string {
 	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberosRealmCreateCreated ", 201)
 }
 
@@ -69,9 +99,11 @@ func NewKerberosRealmCreateDefault(code int) *KerberosRealmCreateDefault {
 	}
 }
 
-/* KerberosRealmCreateDefault describes a response with status code -1, with default header values.
+/*
+	KerberosRealmCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error codes | Description |
 | ----------- | ----------- |
 | 2949121     | Active Directory server name required.|
@@ -81,7 +113,6 @@ func NewKerberosRealmCreateDefault(code int) *KerberosRealmCreateDefault {
 | 3276949     | Kerberos realm creation failed. Reason: The parameters "ad_server.name" and "ad_server.address" are only valid when "kdc.vendor" is Microsoft|
 | 3276976     | "realm" is a required input|
 | 3276998     | Only the data Vservers can own NFS Kerberos realms.|
-
 */
 type KerberosRealmCreateDefault struct {
 	_statusCode int
@@ -94,9 +125,39 @@ func (o *KerberosRealmCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this kerberos realm create default response has a 2xx status code
+func (o *KerberosRealmCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this kerberos realm create default response has a 3xx status code
+func (o *KerberosRealmCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this kerberos realm create default response has a 4xx status code
+func (o *KerberosRealmCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this kerberos realm create default response has a 5xx status code
+func (o *KerberosRealmCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this kerberos realm create default response a status code equal to that given
+func (o *KerberosRealmCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *KerberosRealmCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberos_realm_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *KerberosRealmCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/nfs/kerberos/realms][%d] kerberos_realm_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *KerberosRealmCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

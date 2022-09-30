@@ -55,10 +55,12 @@ func NewAuditCreateParamsWithHTTPClient(client *http.Client) *AuditCreateParams 
 	}
 }
 
-/* AuditCreateParams contains all the parameters to send to the API endpoint
-   for the audit create operation.
+/*
+AuditCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the audit create operation.
+
+	Typically these are written to a http.Request.
 */
 type AuditCreateParams struct {
 

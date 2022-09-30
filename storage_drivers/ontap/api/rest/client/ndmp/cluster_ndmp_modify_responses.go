@@ -46,7 +46,8 @@ func NewClusterNdmpModifyOK() *ClusterNdmpModifyOK {
 	return &ClusterNdmpModifyOK{}
 }
 
-/* ClusterNdmpModifyOK describes a response with status code 200, with default header values.
+/*
+ClusterNdmpModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ClusterNdmpModifyOK struct {
 	Payload *models.ClusterNdmpProperties
 }
 
+// IsSuccess returns true when this cluster ndmp modify o k response has a 2xx status code
+func (o *ClusterNdmpModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ndmp modify o k response has a 3xx status code
+func (o *ClusterNdmpModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ndmp modify o k response has a 4xx status code
+func (o *ClusterNdmpModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ndmp modify o k response has a 5xx status code
+func (o *ClusterNdmpModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ndmp modify o k response a status code equal to that given
+func (o *ClusterNdmpModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterNdmpModifyOK) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] clusterNdmpModifyOK  %+v", 200, o.Payload)
 }
+
+func (o *ClusterNdmpModifyOK) String() string {
+	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] clusterNdmpModifyOK  %+v", 200, o.Payload)
+}
+
 func (o *ClusterNdmpModifyOK) GetPayload() *models.ClusterNdmpProperties {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewClusterNdmpModifyDefault(code int) *ClusterNdmpModifyDefault {
 	}
 }
 
-/* ClusterNdmpModifyDefault describes a response with status code -1, with default header values.
+/*
+ClusterNdmpModifyDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ClusterNdmpModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ndmp modify default response has a 2xx status code
+func (o *ClusterNdmpModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ndmp modify default response has a 3xx status code
+func (o *ClusterNdmpModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ndmp modify default response has a 4xx status code
+func (o *ClusterNdmpModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ndmp modify default response has a 5xx status code
+func (o *ClusterNdmpModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ndmp modify default response a status code equal to that given
+func (o *ClusterNdmpModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNdmpModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] cluster_ndmp_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNdmpModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/ndmp][%d] cluster_ndmp_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNdmpModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

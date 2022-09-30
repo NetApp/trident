@@ -46,14 +46,44 @@ func NewClusterLdapModifyOK() *ClusterLdapModifyOK {
 	return &ClusterLdapModifyOK{}
 }
 
-/* ClusterLdapModifyOK describes a response with status code 200, with default header values.
+/*
+ClusterLdapModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ClusterLdapModifyOK struct {
 }
 
+// IsSuccess returns true when this cluster ldap modify o k response has a 2xx status code
+func (o *ClusterLdapModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster ldap modify o k response has a 3xx status code
+func (o *ClusterLdapModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster ldap modify o k response has a 4xx status code
+func (o *ClusterLdapModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster ldap modify o k response has a 5xx status code
+func (o *ClusterLdapModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster ldap modify o k response a status code equal to that given
+func (o *ClusterLdapModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterLdapModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] clusterLdapModifyOK ", 200)
+}
+
+func (o *ClusterLdapModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] clusterLdapModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewClusterLdapModifyDefault(code int) *ClusterLdapModifyDefault {
 	}
 }
 
-/* ClusterLdapModifyDefault describes a response with status code -1, with default header values.
+/*
+	ClusterLdapModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4915203    | The specified LDAP schema does not exist. |
@@ -86,7 +118,6 @@ func NewClusterLdapModifyDefault(code int) *ClusterLdapModifyDefault {
 | 4915258    | The LDAP configuration is not valid. Verify that the servers are reachable and that the network configuration is correct. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
 | 4915252    | LDAP referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
-
 */
 type ClusterLdapModifyDefault struct {
 	_statusCode int
@@ -99,9 +130,39 @@ func (o *ClusterLdapModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster ldap modify default response has a 2xx status code
+func (o *ClusterLdapModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster ldap modify default response has a 3xx status code
+func (o *ClusterLdapModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster ldap modify default response has a 4xx status code
+func (o *ClusterLdapModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster ldap modify default response has a 5xx status code
+func (o *ClusterLdapModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster ldap modify default response a status code equal to that given
+func (o *ClusterLdapModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterLdapModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] cluster_ldap_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterLdapModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/authentication/cluster/ldap][%d] cluster_ldap_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterLdapModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

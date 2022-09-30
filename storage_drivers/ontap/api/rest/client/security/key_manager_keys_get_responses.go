@@ -46,7 +46,8 @@ func NewKeyManagerKeysGetOK() *KeyManagerKeysGetOK {
 	return &KeyManagerKeysGetOK{}
 }
 
-/* KeyManagerKeysGetOK describes a response with status code 200, with default header values.
+/*
+KeyManagerKeysGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type KeyManagerKeysGetOK struct {
 	Payload *models.KeyManagerKeys
 }
 
+// IsSuccess returns true when this key manager keys get o k response has a 2xx status code
+func (o *KeyManagerKeysGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this key manager keys get o k response has a 3xx status code
+func (o *KeyManagerKeysGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this key manager keys get o k response has a 4xx status code
+func (o *KeyManagerKeysGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this key manager keys get o k response has a 5xx status code
+func (o *KeyManagerKeysGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this key manager keys get o k response a status code equal to that given
+func (o *KeyManagerKeysGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *KeyManagerKeysGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] keyManagerKeysGetOK  %+v", 200, o.Payload)
 }
+
+func (o *KeyManagerKeysGetOK) String() string {
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] keyManagerKeysGetOK  %+v", 200, o.Payload)
+}
+
 func (o *KeyManagerKeysGetOK) GetPayload() *models.KeyManagerKeys {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewKeyManagerKeysGetDefault(code int) *KeyManagerKeysGetDefault {
 	}
 }
 
-/* KeyManagerKeysGetDefault describes a response with status code -1, with default header values.
+/*
+KeyManagerKeysGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *KeyManagerKeysGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this key manager keys get default response has a 2xx status code
+func (o *KeyManagerKeysGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this key manager keys get default response has a 3xx status code
+func (o *KeyManagerKeysGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this key manager keys get default response has a 4xx status code
+func (o *KeyManagerKeysGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this key manager keys get default response has a 5xx status code
+func (o *KeyManagerKeysGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this key manager keys get default response a status code equal to that given
+func (o *KeyManagerKeysGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *KeyManagerKeysGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] key_manager_keys_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *KeyManagerKeysGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids/{key_id}][%d] key_manager_keys_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *KeyManagerKeysGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

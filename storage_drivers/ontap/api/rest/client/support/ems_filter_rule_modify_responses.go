@@ -46,14 +46,44 @@ func NewEmsFilterRuleModifyOK() *EmsFilterRuleModifyOK {
 	return &EmsFilterRuleModifyOK{}
 }
 
-/* EmsFilterRuleModifyOK describes a response with status code 200, with default header values.
+/*
+EmsFilterRuleModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type EmsFilterRuleModifyOK struct {
 }
 
+// IsSuccess returns true when this ems filter rule modify o k response has a 2xx status code
+func (o *EmsFilterRuleModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems filter rule modify o k response has a 3xx status code
+func (o *EmsFilterRuleModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems filter rule modify o k response has a 4xx status code
+func (o *EmsFilterRuleModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems filter rule modify o k response has a 5xx status code
+func (o *EmsFilterRuleModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems filter rule modify o k response a status code equal to that given
+func (o *EmsFilterRuleModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EmsFilterRuleModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /support/ems/filters/{name}/rules/{index}][%d] emsFilterRuleModifyOK ", 200)
+}
+
+func (o *EmsFilterRuleModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /support/ems/filters/{name}/rules/{index}][%d] emsFilterRuleModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewEmsFilterRuleModifyDefault(code int) *EmsFilterRuleModifyDefault {
 	}
 }
 
-/* EmsFilterRuleModifyDefault describes a response with status code -1, with default header values.
+/*
+	EmsFilterRuleModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 983092     | The index of the rule provided is outside the allowed range for the filter provided |
@@ -86,7 +118,6 @@ func NewEmsFilterRuleModifyDefault(code int) *EmsFilterRuleModifyDefault {
 | 983156     | The provided snmp_trap_types property does not match that of the name_pattern |
 | 983157     | The provided severities and snmp_trap_types do not match those of the name_pattern |
 | 983158     | The name_pattern provided does not exist |
-
 */
 type EmsFilterRuleModifyDefault struct {
 	_statusCode int
@@ -99,9 +130,39 @@ func (o *EmsFilterRuleModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems filter rule modify default response has a 2xx status code
+func (o *EmsFilterRuleModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems filter rule modify default response has a 3xx status code
+func (o *EmsFilterRuleModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems filter rule modify default response has a 4xx status code
+func (o *EmsFilterRuleModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems filter rule modify default response has a 5xx status code
+func (o *EmsFilterRuleModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems filter rule modify default response a status code equal to that given
+func (o *EmsFilterRuleModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsFilterRuleModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /support/ems/filters/{name}/rules/{index}][%d] ems_filter_rule_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsFilterRuleModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /support/ems/filters/{name}/rules/{index}][%d] ems_filter_rule_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsFilterRuleModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

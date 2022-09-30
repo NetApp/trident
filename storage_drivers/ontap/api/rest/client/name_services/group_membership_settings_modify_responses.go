@@ -46,14 +46,44 @@ func NewGroupMembershipSettingsModifyOK() *GroupMembershipSettingsModifyOK {
 	return &GroupMembershipSettingsModifyOK{}
 }
 
-/* GroupMembershipSettingsModifyOK describes a response with status code 200, with default header values.
+/*
+GroupMembershipSettingsModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type GroupMembershipSettingsModifyOK struct {
 }
 
+// IsSuccess returns true when this group membership settings modify o k response has a 2xx status code
+func (o *GroupMembershipSettingsModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this group membership settings modify o k response has a 3xx status code
+func (o *GroupMembershipSettingsModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this group membership settings modify o k response has a 4xx status code
+func (o *GroupMembershipSettingsModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this group membership settings modify o k response has a 5xx status code
+func (o *GroupMembershipSettingsModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this group membership settings modify o k response a status code equal to that given
+func (o *GroupMembershipSettingsModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GroupMembershipSettingsModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] groupMembershipSettingsModifyOK ", 200)
+}
+
+func (o *GroupMembershipSettingsModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] groupMembershipSettingsModifyOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewGroupMembershipSettingsModifyDefault(code int) *GroupMembershipSettingsM
 	}
 }
 
-/* GroupMembershipSettingsModifyDefault describes a response with status code -1, with default header values.
+/*
+	GroupMembershipSettingsModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 23724055 | Internal error. Configuration for Vserver failed. Verify that the cluster is healthy, then try the command again. For further assistance, contact technical support. |
-
 */
 type GroupMembershipSettingsModifyDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *GroupMembershipSettingsModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this group membership settings modify default response has a 2xx status code
+func (o *GroupMembershipSettingsModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this group membership settings modify default response has a 3xx status code
+func (o *GroupMembershipSettingsModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this group membership settings modify default response has a 4xx status code
+func (o *GroupMembershipSettingsModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this group membership settings modify default response has a 5xx status code
+func (o *GroupMembershipSettingsModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this group membership settings modify default response a status code equal to that given
+func (o *GroupMembershipSettingsModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GroupMembershipSettingsModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] group_membership_settings_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GroupMembershipSettingsModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /name-services/cache/group-membership/settings/{svm.uuid}][%d] group_membership_settings_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GroupMembershipSettingsModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

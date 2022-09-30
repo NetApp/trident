@@ -53,10 +53,12 @@ func NewSnmpUsersGetParamsWithHTTPClient(client *http.Client) *SnmpUsersGetParam
 	}
 }
 
-/* SnmpUsersGetParams contains all the parameters to send to the API endpoint
-   for the snmp users get operation.
+/*
+SnmpUsersGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snmp users get operation.
+
+	Typically these are written to a http.Request.
 */
 type SnmpUsersGetParams struct {
 

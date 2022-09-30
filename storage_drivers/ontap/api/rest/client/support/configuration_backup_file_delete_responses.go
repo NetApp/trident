@@ -46,14 +46,44 @@ func NewConfigurationBackupFileDeleteOK() *ConfigurationBackupFileDeleteOK {
 	return &ConfigurationBackupFileDeleteOK{}
 }
 
-/* ConfigurationBackupFileDeleteOK describes a response with status code 200, with default header values.
+/*
+ConfigurationBackupFileDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ConfigurationBackupFileDeleteOK struct {
 }
 
+// IsSuccess returns true when this configuration backup file delete o k response has a 2xx status code
+func (o *ConfigurationBackupFileDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this configuration backup file delete o k response has a 3xx status code
+func (o *ConfigurationBackupFileDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this configuration backup file delete o k response has a 4xx status code
+func (o *ConfigurationBackupFileDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this configuration backup file delete o k response has a 5xx status code
+func (o *ConfigurationBackupFileDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this configuration backup file delete o k response a status code equal to that given
+func (o *ConfigurationBackupFileDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ConfigurationBackupFileDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileDeleteOK ", 200)
+}
+
+func (o *ConfigurationBackupFileDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewConfigurationBackupFileDeleteDefault(code int) *ConfigurationBackupFileD
 	}
 }
 
-/* ConfigurationBackupFileDeleteDefault describes a response with status code -1, with default header values.
+/*
+	ConfigurationBackupFileDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 5963826 | Failed to delete backup file. |
-
 */
 type ConfigurationBackupFileDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *ConfigurationBackupFileDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this configuration backup file delete default response has a 2xx status code
+func (o *ConfigurationBackupFileDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this configuration backup file delete default response has a 3xx status code
+func (o *ConfigurationBackupFileDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this configuration backup file delete default response has a 4xx status code
+func (o *ConfigurationBackupFileDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this configuration backup file delete default response has a 5xx status code
+func (o *ConfigurationBackupFileDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this configuration backup file delete default response a status code equal to that given
+func (o *ConfigurationBackupFileDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ConfigurationBackupFileDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ConfigurationBackupFileDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /support/configuration-backup/backups/{node.uuid}/{name}][%d] configuration_backup_file_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ConfigurationBackupFileDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

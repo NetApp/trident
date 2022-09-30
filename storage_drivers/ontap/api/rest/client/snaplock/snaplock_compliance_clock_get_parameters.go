@@ -53,10 +53,12 @@ func NewSnaplockComplianceClockGetParamsWithHTTPClient(client *http.Client) *Sna
 	}
 }
 
-/* SnaplockComplianceClockGetParams contains all the parameters to send to the API endpoint
-   for the snaplock compliance clock get operation.
+/*
+SnaplockComplianceClockGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the snaplock compliance clock get operation.
+
+	Typically these are written to a http.Request.
 */
 type SnaplockComplianceClockGetParams struct {
 

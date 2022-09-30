@@ -53,10 +53,12 @@ func NewStorageBridgeCollectionGetParamsWithHTTPClient(client *http.Client) *Sto
 	}
 }
 
-/* StorageBridgeCollectionGetParams contains all the parameters to send to the API endpoint
-   for the storage bridge collection get operation.
+/*
+StorageBridgeCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the storage bridge collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type StorageBridgeCollectionGetParams struct {
 

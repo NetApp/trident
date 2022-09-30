@@ -46,14 +46,44 @@ func NewUserGroupPrivilegesCreateCreated() *UserGroupPrivilegesCreateCreated {
 	return &UserGroupPrivilegesCreateCreated{}
 }
 
-/* UserGroupPrivilegesCreateCreated describes a response with status code 201, with default header values.
+/*
+UserGroupPrivilegesCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
 type UserGroupPrivilegesCreateCreated struct {
 }
 
+// IsSuccess returns true when this user group privileges create created response has a 2xx status code
+func (o *UserGroupPrivilegesCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this user group privileges create created response has a 3xx status code
+func (o *UserGroupPrivilegesCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this user group privileges create created response has a 4xx status code
+func (o *UserGroupPrivilegesCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this user group privileges create created response has a 5xx status code
+func (o *UserGroupPrivilegesCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this user group privileges create created response a status code equal to that given
+func (o *UserGroupPrivilegesCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *UserGroupPrivilegesCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] userGroupPrivilegesCreateCreated ", 201)
+}
+
+func (o *UserGroupPrivilegesCreateCreated) String() string {
 	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] userGroupPrivilegesCreateCreated ", 201)
 }
 
@@ -69,15 +99,16 @@ func NewUserGroupPrivilegesCreateDefault(code int) *UserGroupPrivilegesCreateDef
 	}
 }
 
-/* UserGroupPrivilegesCreateDefault describes a response with status code -1, with default header values.
+/*
+	UserGroupPrivilegesCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 655660     | The operation is allowed only on data SVMs. |
 | 655673     | Failed to resolve the user or group. |
 | 655730     | The specified local user to which privileges are to be associated to does not exist. |
-
 */
 type UserGroupPrivilegesCreateDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *UserGroupPrivilegesCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this user group privileges create default response has a 2xx status code
+func (o *UserGroupPrivilegesCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this user group privileges create default response has a 3xx status code
+func (o *UserGroupPrivilegesCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this user group privileges create default response has a 4xx status code
+func (o *UserGroupPrivilegesCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this user group privileges create default response has a 5xx status code
+func (o *UserGroupPrivilegesCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this user group privileges create default response a status code equal to that given
+func (o *UserGroupPrivilegesCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UserGroupPrivilegesCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] user_group_privileges_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UserGroupPrivilegesCreateDefault) String() string {
+	return fmt.Sprintf("[POST /protocols/cifs/users-and-groups/privileges][%d] user_group_privileges_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UserGroupPrivilegesCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

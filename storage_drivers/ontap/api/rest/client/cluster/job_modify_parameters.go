@@ -52,10 +52,12 @@ func NewJobModifyParamsWithHTTPClient(client *http.Client) *JobModifyParams {
 	}
 }
 
-/* JobModifyParams contains all the parameters to send to the API endpoint
-   for the job modify operation.
+/*
+JobModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the job modify operation.
+
+	Typically these are written to a http.Request.
 */
 type JobModifyParams struct {
 

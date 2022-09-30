@@ -46,7 +46,8 @@ func NewSvmCreateAccepted() *SvmCreateAccepted {
 	return &SvmCreateAccepted{}
 }
 
-/* SvmCreateAccepted describes a response with status code 202, with default header values.
+/*
+SvmCreateAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SvmCreateAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this svm create accepted response has a 2xx status code
+func (o *SvmCreateAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm create accepted response has a 3xx status code
+func (o *SvmCreateAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm create accepted response has a 4xx status code
+func (o *SvmCreateAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm create accepted response has a 5xx status code
+func (o *SvmCreateAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm create accepted response a status code equal to that given
+func (o *SvmCreateAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SvmCreateAccepted) Error() string {
 	return fmt.Sprintf("[POST /svm/svms][%d] svmCreateAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SvmCreateAccepted) String() string {
+	return fmt.Sprintf("[POST /svm/svms][%d] svmCreateAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SvmCreateAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSvmCreateDefault(code int) *SvmCreateDefault {
 	}
 }
 
-/* SvmCreateDefault describes a response with status code -1, with default header values.
+/*
+	SvmCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 <br/>
 ```
 | Error codes | Description |
@@ -108,7 +141,6 @@ func NewSvmCreateDefault(code int) *SvmCreateDefault {
 | 13434918    | IPspace name not provided for creating an SVM. |
 ```
 <br/>
-
 */
 type SvmCreateDefault struct {
 	_statusCode int
@@ -121,9 +153,39 @@ func (o *SvmCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm create default response has a 2xx status code
+func (o *SvmCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm create default response has a 3xx status code
+func (o *SvmCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm create default response has a 4xx status code
+func (o *SvmCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm create default response has a 5xx status code
+func (o *SvmCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm create default response a status code equal to that given
+func (o *SvmCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /svm/svms][%d] svm_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmCreateDefault) String() string {
+	return fmt.Sprintf("[POST /svm/svms][%d] svm_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

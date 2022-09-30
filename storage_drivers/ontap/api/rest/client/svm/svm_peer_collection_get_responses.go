@@ -46,7 +46,8 @@ func NewSvmPeerCollectionGetOK() *SvmPeerCollectionGetOK {
 	return &SvmPeerCollectionGetOK{}
 }
 
-/* SvmPeerCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SvmPeerCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SvmPeerCollectionGetOK struct {
 	Payload *models.SvmPeerResponse
 }
 
+// IsSuccess returns true when this svm peer collection get o k response has a 2xx status code
+func (o *SvmPeerCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm peer collection get o k response has a 3xx status code
+func (o *SvmPeerCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm peer collection get o k response has a 4xx status code
+func (o *SvmPeerCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm peer collection get o k response has a 5xx status code
+func (o *SvmPeerCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm peer collection get o k response a status code equal to that given
+func (o *SvmPeerCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SvmPeerCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /svm/peers][%d] svmPeerCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SvmPeerCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /svm/peers][%d] svmPeerCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SvmPeerCollectionGetOK) GetPayload() *models.SvmPeerResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSvmPeerCollectionGetDefault(code int) *SvmPeerCollectionGetDefault {
 	}
 }
 
-/* SvmPeerCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+	SvmPeerCollectionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 <br/>
 ```
 | Error codes | Description |
@@ -90,7 +123,6 @@ func NewSvmPeerCollectionGetDefault(code int) *SvmPeerCollectionGetDefault {
 | 26345578    | Internal error. Unable to retrieve local or peer SVM name. |
 ```
 <br/>
-
 */
 type SvmPeerCollectionGetDefault struct {
 	_statusCode int
@@ -103,9 +135,39 @@ func (o *SvmPeerCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm peer collection get default response has a 2xx status code
+func (o *SvmPeerCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm peer collection get default response has a 3xx status code
+func (o *SvmPeerCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm peer collection get default response has a 4xx status code
+func (o *SvmPeerCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm peer collection get default response has a 5xx status code
+func (o *SvmPeerCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm peer collection get default response a status code equal to that given
+func (o *SvmPeerCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmPeerCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /svm/peers][%d] svm_peer_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmPeerCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /svm/peers][%d] svm_peer_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmPeerCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

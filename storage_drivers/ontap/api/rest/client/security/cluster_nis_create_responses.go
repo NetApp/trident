@@ -46,7 +46,8 @@ func NewClusterNisCreateCreated() *ClusterNisCreateCreated {
 	return &ClusterNisCreateCreated{}
 }
 
-/* ClusterNisCreateCreated describes a response with status code 201, with default header values.
+/*
+ClusterNisCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,9 +55,39 @@ type ClusterNisCreateCreated struct {
 	Payload *models.ClusterNisServiceResponse
 }
 
+// IsSuccess returns true when this cluster nis create created response has a 2xx status code
+func (o *ClusterNisCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster nis create created response has a 3xx status code
+func (o *ClusterNisCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster nis create created response has a 4xx status code
+func (o *ClusterNisCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster nis create created response has a 5xx status code
+func (o *ClusterNisCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster nis create created response a status code equal to that given
+func (o *ClusterNisCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *ClusterNisCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] clusterNisCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *ClusterNisCreateCreated) String() string {
+	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] clusterNisCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *ClusterNisCreateCreated) GetPayload() *models.ClusterNisServiceResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewClusterNisCreateDefault(code int) *ClusterNisCreateDefault {
 	}
 }
 
-/* ClusterNisCreateDefault describes a response with status code -1, with default header values.
+/*
+	ClusterNisCreateDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1966253    | IPv6 is not enabled in the cluster. |
@@ -93,7 +126,6 @@ func NewClusterNisCreateDefault(code int) *ClusterNisCreateDefault {
 | 23724112   | DNS resolution failed due to an internal error. Contact technical support if this issue persists.  |
 | 23724132   | DNS resolution failed for all the specified servers.  |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
-
 */
 type ClusterNisCreateDefault struct {
 	_statusCode int
@@ -106,9 +138,39 @@ func (o *ClusterNisCreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster nis create default response has a 2xx status code
+func (o *ClusterNisCreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster nis create default response has a 3xx status code
+func (o *ClusterNisCreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster nis create default response has a 4xx status code
+func (o *ClusterNisCreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster nis create default response has a 5xx status code
+func (o *ClusterNisCreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster nis create default response a status code equal to that given
+func (o *ClusterNisCreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterNisCreateDefault) Error() string {
 	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] cluster_nis_create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterNisCreateDefault) String() string {
+	return fmt.Sprintf("[POST /security/authentication/cluster/nis][%d] cluster_nis_create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterNisCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

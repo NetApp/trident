@@ -53,10 +53,12 @@ func NewGcpKmsGetParamsWithHTTPClient(client *http.Client) *GcpKmsGetParams {
 	}
 }
 
-/* GcpKmsGetParams contains all the parameters to send to the API endpoint
-   for the gcp kms get operation.
+/*
+GcpKmsGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the gcp kms get operation.
+
+	Typically these are written to a http.Request.
 */
 type GcpKmsGetParams struct {
 

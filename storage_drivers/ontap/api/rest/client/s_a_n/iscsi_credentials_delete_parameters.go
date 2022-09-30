@@ -52,10 +52,12 @@ func NewIscsiCredentialsDeleteParamsWithHTTPClient(client *http.Client) *IscsiCr
 	}
 }
 
-/* IscsiCredentialsDeleteParams contains all the parameters to send to the API endpoint
-   for the iscsi credentials delete operation.
+/*
+IscsiCredentialsDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the iscsi credentials delete operation.
+
+	Typically these are written to a http.Request.
 */
 type IscsiCredentialsDeleteParams struct {
 

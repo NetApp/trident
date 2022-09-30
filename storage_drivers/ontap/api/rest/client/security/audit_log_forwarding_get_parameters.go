@@ -53,10 +53,12 @@ func NewAuditLogForwardingGetParamsWithHTTPClient(client *http.Client) *AuditLog
 	}
 }
 
-/* AuditLogForwardingGetParams contains all the parameters to send to the API endpoint
-   for the audit log forwarding get operation.
+/*
+AuditLogForwardingGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the audit log forwarding get operation.
+
+	Typically these are written to a http.Request.
 */
 type AuditLogForwardingGetParams struct {
 

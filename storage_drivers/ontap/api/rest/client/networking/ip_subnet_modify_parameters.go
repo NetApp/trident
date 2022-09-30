@@ -54,10 +54,12 @@ func NewIPSubnetModifyParamsWithHTTPClient(client *http.Client) *IPSubnetModifyP
 	}
 }
 
-/* IPSubnetModifyParams contains all the parameters to send to the API endpoint
-   for the ip subnet modify operation.
+/*
+IPSubnetModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ip subnet modify operation.
+
+	Typically these are written to a http.Request.
 */
 type IPSubnetModifyParams struct {
 

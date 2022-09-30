@@ -55,10 +55,12 @@ func NewS3AuditCreateParamsWithHTTPClient(client *http.Client) *S3AuditCreatePar
 	}
 }
 
-/* S3AuditCreateParams contains all the parameters to send to the API endpoint
-   for the s3 audit create operation.
+/*
+S3AuditCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the s3 audit create operation.
+
+	Typically these are written to a http.Request.
 */
 type S3AuditCreateParams struct {
 

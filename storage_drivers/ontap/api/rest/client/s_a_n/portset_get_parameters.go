@@ -53,10 +53,12 @@ func NewPortsetGetParamsWithHTTPClient(client *http.Client) *PortsetGetParams {
 	}
 }
 
-/* PortsetGetParams contains all the parameters to send to the API endpoint
-   for the portset get operation.
+/*
+PortsetGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the portset get operation.
+
+	Typically these are written to a http.Request.
 */
 type PortsetGetParams struct {
 

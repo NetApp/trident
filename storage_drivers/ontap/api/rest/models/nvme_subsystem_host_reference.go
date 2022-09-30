@@ -16,7 +16,6 @@ import (
 
 // NvmeSubsystemHostReference An NVMe host of an NVMe subsystem.
 //
-//
 // swagger:model nvme_subsystem_host_reference
 type NvmeSubsystemHostReference struct {
 

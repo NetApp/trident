@@ -53,10 +53,12 @@ func NewEmsEventCollectionGetParamsWithHTTPClient(client *http.Client) *EmsEvent
 	}
 }
 
-/* EmsEventCollectionGetParams contains all the parameters to send to the API endpoint
-   for the ems event collection get operation.
+/*
+EmsEventCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ems event collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type EmsEventCollectionGetParams struct {
 

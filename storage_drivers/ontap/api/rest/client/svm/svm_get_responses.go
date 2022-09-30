@@ -46,7 +46,8 @@ func NewSvmGetOK() *SvmGetOK {
 	return &SvmGetOK{}
 }
 
-/* SvmGetOK describes a response with status code 200, with default header values.
+/*
+SvmGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SvmGetOK struct {
 	Payload *models.Svm
 }
 
+// IsSuccess returns true when this svm get o k response has a 2xx status code
+func (o *SvmGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm get o k response has a 3xx status code
+func (o *SvmGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm get o k response has a 4xx status code
+func (o *SvmGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm get o k response has a 5xx status code
+func (o *SvmGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm get o k response a status code equal to that given
+func (o *SvmGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SvmGetOK) Error() string {
 	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svmGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SvmGetOK) String() string {
+	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svmGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SvmGetOK) GetPayload() *models.Svm {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSvmGetDefault(code int) *SvmGetDefault {
 	}
 }
 
-/* SvmGetDefault describes a response with status code -1, with default header values.
+/*
+SvmGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SvmGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm get default response has a 2xx status code
+func (o *SvmGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm get default response has a 3xx status code
+func (o *SvmGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm get default response has a 4xx status code
+func (o *SvmGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm get default response has a 5xx status code
+func (o *SvmGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm get default response a status code equal to that given
+func (o *SvmGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmGetDefault) Error() string {
 	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svm_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmGetDefault) String() string {
+	return fmt.Sprintf("[GET /svm/svms/{uuid}][%d] svm_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewFcpCollectionPerformanceMetricsGetParamsWithHTTPClient(client *http.Clie
 	}
 }
 
-/* FcpCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
-   for the fcp collection performance metrics get operation.
+/*
+FcpCollectionPerformanceMetricsGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fcp collection performance metrics get operation.
+
+	Typically these are written to a http.Request.
 */
 type FcpCollectionPerformanceMetricsGetParams struct {
 

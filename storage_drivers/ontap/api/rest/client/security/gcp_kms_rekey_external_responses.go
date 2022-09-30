@@ -46,14 +46,44 @@ func NewGcpKmsRekeyExternalAccepted() *GcpKmsRekeyExternalAccepted {
 	return &GcpKmsRekeyExternalAccepted{}
 }
 
-/* GcpKmsRekeyExternalAccepted describes a response with status code 202, with default header values.
+/*
+GcpKmsRekeyExternalAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type GcpKmsRekeyExternalAccepted struct {
 }
 
+// IsSuccess returns true when this gcp kms rekey external accepted response has a 2xx status code
+func (o *GcpKmsRekeyExternalAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this gcp kms rekey external accepted response has a 3xx status code
+func (o *GcpKmsRekeyExternalAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this gcp kms rekey external accepted response has a 4xx status code
+func (o *GcpKmsRekeyExternalAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this gcp kms rekey external accepted response has a 5xx status code
+func (o *GcpKmsRekeyExternalAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this gcp kms rekey external accepted response a status code equal to that given
+func (o *GcpKmsRekeyExternalAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *GcpKmsRekeyExternalAccepted) Error() string {
+	return fmt.Sprintf("[POST /security/gcp-kms/{gcp_kms.uuid}/rekey-external][%d] gcpKmsRekeyExternalAccepted ", 202)
+}
+
+func (o *GcpKmsRekeyExternalAccepted) String() string {
 	return fmt.Sprintf("[POST /security/gcp-kms/{gcp_kms.uuid}/rekey-external][%d] gcpKmsRekeyExternalAccepted ", 202)
 }
 
@@ -69,14 +99,15 @@ func NewGcpKmsRekeyExternalDefault(code int) *GcpKmsRekeyExternalDefault {
 	}
 }
 
-/* GcpKmsRekeyExternalDefault describes a response with status code -1, with default header values.
+/*
+	GcpKmsRekeyExternalDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 65537547 | One or more volume encryption keys for encrypted volumes of this data SVM are stored in the key manager configured for the admin SVM. Use the REST API POST method to migrate this data SVM's keys from the admin SVM's key manager to this data SVM's key manager before running the rekey operation. |
 | 65537721 | Google Cloud KMS is not configured for the given SVM. |
-
 */
 type GcpKmsRekeyExternalDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *GcpKmsRekeyExternalDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this gcp kms rekey external default response has a 2xx status code
+func (o *GcpKmsRekeyExternalDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this gcp kms rekey external default response has a 3xx status code
+func (o *GcpKmsRekeyExternalDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this gcp kms rekey external default response has a 4xx status code
+func (o *GcpKmsRekeyExternalDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this gcp kms rekey external default response has a 5xx status code
+func (o *GcpKmsRekeyExternalDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this gcp kms rekey external default response a status code equal to that given
+func (o *GcpKmsRekeyExternalDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GcpKmsRekeyExternalDefault) Error() string {
 	return fmt.Sprintf("[POST /security/gcp-kms/{gcp_kms.uuid}/rekey-external][%d] gcp_kms_rekey_external default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GcpKmsRekeyExternalDefault) String() string {
+	return fmt.Sprintf("[POST /security/gcp-kms/{gcp_kms.uuid}/rekey-external][%d] gcp_kms_rekey_external default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GcpKmsRekeyExternalDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewLdapCollectionGetParamsWithHTTPClient(client *http.Client) *LdapCollecti
 	}
 }
 
-/* LdapCollectionGetParams contains all the parameters to send to the API endpoint
-   for the ldap collection get operation.
+/*
+LdapCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ldap collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type LdapCollectionGetParams struct {
 

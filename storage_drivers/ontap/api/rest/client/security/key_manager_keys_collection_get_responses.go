@@ -46,7 +46,8 @@ func NewKeyManagerKeysCollectionGetOK() *KeyManagerKeysCollectionGetOK {
 	return &KeyManagerKeysCollectionGetOK{}
 }
 
-/* KeyManagerKeysCollectionGetOK describes a response with status code 200, with default header values.
+/*
+KeyManagerKeysCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type KeyManagerKeysCollectionGetOK struct {
 	Payload *models.KeyManagerKeysResponse
 }
 
+// IsSuccess returns true when this key manager keys collection get o k response has a 2xx status code
+func (o *KeyManagerKeysCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this key manager keys collection get o k response has a 3xx status code
+func (o *KeyManagerKeysCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this key manager keys collection get o k response has a 4xx status code
+func (o *KeyManagerKeysCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this key manager keys collection get o k response has a 5xx status code
+func (o *KeyManagerKeysCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this key manager keys collection get o k response a status code equal to that given
+func (o *KeyManagerKeysCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *KeyManagerKeysCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] keyManagerKeysCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *KeyManagerKeysCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] keyManagerKeysCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *KeyManagerKeysCollectionGetOK) GetPayload() *models.KeyManagerKeysResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewKeyManagerKeysCollectionGetDefault(code int) *KeyManagerKeysCollectionGe
 	}
 }
 
-/* KeyManagerKeysCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+KeyManagerKeysCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *KeyManagerKeysCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this key manager keys collection get default response has a 2xx status code
+func (o *KeyManagerKeysCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this key manager keys collection get default response has a 3xx status code
+func (o *KeyManagerKeysCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this key manager keys collection get default response has a 4xx status code
+func (o *KeyManagerKeysCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this key manager keys collection get default response has a 5xx status code
+func (o *KeyManagerKeysCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this key manager keys collection get default response a status code equal to that given
+func (o *KeyManagerKeysCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *KeyManagerKeysCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] key_manager_keys_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *KeyManagerKeysCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/key-managers/{security_key_manager.uuid}/keys/{node.uuid}/key-ids][%d] key_manager_keys_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *KeyManagerKeysCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -46,7 +46,8 @@ func NewQtreeModifyAccepted() *QtreeModifyAccepted {
 	return &QtreeModifyAccepted{}
 }
 
-/* QtreeModifyAccepted describes a response with status code 202, with default header values.
+/*
+QtreeModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type QtreeModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this qtree modify accepted response has a 2xx status code
+func (o *QtreeModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this qtree modify accepted response has a 3xx status code
+func (o *QtreeModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this qtree modify accepted response has a 4xx status code
+func (o *QtreeModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this qtree modify accepted response has a 5xx status code
+func (o *QtreeModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this qtree modify accepted response a status code equal to that given
+func (o *QtreeModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *QtreeModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/qtrees/{volume.uuid}/{id}][%d] qtreeModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *QtreeModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /storage/qtrees/{volume.uuid}/{id}][%d] qtreeModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *QtreeModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewQtreeModifyDefault(code int) *QtreeModifyDefault {
 	}
 }
 
-/* QtreeModifyDefault describes a response with status code -1, with default header values.
+/*
+	QtreeModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 918235 | A volume with UUID was not found. |
@@ -92,7 +125,6 @@ func NewQtreeModifyDefault(code int) *QtreeModifyDefault {
 | 5242958 | Failed to rename the qtree with ID in the volume and SVM. |
 | 5242959 | Successfully renamed qtree but the modify operation failed. |
 | 5242967 | UNIX user or group ID must be 32-bit unsigned integer. |
-
 */
 type QtreeModifyDefault struct {
 	_statusCode int
@@ -105,9 +137,39 @@ func (o *QtreeModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this qtree modify default response has a 2xx status code
+func (o *QtreeModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this qtree modify default response has a 3xx status code
+func (o *QtreeModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this qtree modify default response has a 4xx status code
+func (o *QtreeModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this qtree modify default response has a 5xx status code
+func (o *QtreeModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this qtree modify default response a status code equal to that given
+func (o *QtreeModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QtreeModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /storage/qtrees/{volume.uuid}/{id}][%d] qtree_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QtreeModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /storage/qtrees/{volume.uuid}/{id}][%d] qtree_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QtreeModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

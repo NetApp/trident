@@ -52,10 +52,12 @@ func NewCifsShareACLDeleteParamsWithHTTPClient(client *http.Client) *CifsShareAC
 	}
 }
 
-/* CifsShareACLDeleteParams contains all the parameters to send to the API endpoint
-   for the cifs share acl delete operation.
+/*
+CifsShareACLDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cifs share acl delete operation.
+
+	Typically these are written to a http.Request.
 */
 type CifsShareACLDeleteParams struct {
 

@@ -53,10 +53,12 @@ func NewLunGetParamsWithHTTPClient(client *http.Client) *LunGetParams {
 	}
 }
 
-/* LunGetParams contains all the parameters to send to the API endpoint
-   for the lun get operation.
+/*
+LunGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the lun get operation.
+
+	Typically these are written to a http.Request.
 */
 type LunGetParams struct {
 

@@ -54,10 +54,12 @@ func NewFcPortModifyParamsWithHTTPClient(client *http.Client) *FcPortModifyParam
 	}
 }
 
-/* FcPortModifyParams contains all the parameters to send to the API endpoint
-   for the fc port modify operation.
+/*
+FcPortModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fc port modify operation.
+
+	Typically these are written to a http.Request.
 */
 type FcPortModifyParams struct {
 

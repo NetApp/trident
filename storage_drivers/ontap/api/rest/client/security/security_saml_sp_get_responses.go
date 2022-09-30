@@ -46,7 +46,8 @@ func NewSecuritySamlSpGetOK() *SecuritySamlSpGetOK {
 	return &SecuritySamlSpGetOK{}
 }
 
-/* SecuritySamlSpGetOK describes a response with status code 200, with default header values.
+/*
+SecuritySamlSpGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SecuritySamlSpGetOK struct {
 	Payload *models.SecuritySamlSp
 }
 
+// IsSuccess returns true when this security saml sp get o k response has a 2xx status code
+func (o *SecuritySamlSpGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this security saml sp get o k response has a 3xx status code
+func (o *SecuritySamlSpGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this security saml sp get o k response has a 4xx status code
+func (o *SecuritySamlSpGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this security saml sp get o k response has a 5xx status code
+func (o *SecuritySamlSpGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this security saml sp get o k response a status code equal to that given
+func (o *SecuritySamlSpGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SecuritySamlSpGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] securitySamlSpGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SecuritySamlSpGetOK) String() string {
+	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] securitySamlSpGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SecuritySamlSpGetOK) GetPayload() *models.SecuritySamlSp {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSecuritySamlSpGetDefault(code int) *SecuritySamlSpGetDefault {
 	}
 }
 
-/* SecuritySamlSpGetDefault describes a response with status code -1, with default header values.
+/*
+SecuritySamlSpGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SecuritySamlSpGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this security saml sp get default response has a 2xx status code
+func (o *SecuritySamlSpGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this security saml sp get default response has a 3xx status code
+func (o *SecuritySamlSpGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this security saml sp get default response has a 4xx status code
+func (o *SecuritySamlSpGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this security saml sp get default response has a 5xx status code
+func (o *SecuritySamlSpGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this security saml sp get default response a status code equal to that given
+func (o *SecuritySamlSpGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SecuritySamlSpGetDefault) Error() string {
 	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] security_saml_sp_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SecuritySamlSpGetDefault) String() string {
+	return fmt.Sprintf("[GET /security/authentication/cluster/saml-sp][%d] security_saml_sp_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SecuritySamlSpGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

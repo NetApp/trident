@@ -46,7 +46,8 @@ func NewNameMappingPositionGetOK() *NameMappingPositionGetOK {
 	return &NameMappingPositionGetOK{}
 }
 
-/* NameMappingPositionGetOK describes a response with status code 200, with default header values.
+/*
+NameMappingPositionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NameMappingPositionGetOK struct {
 	Payload *models.NameMapping
 }
 
+// IsSuccess returns true when this name mapping position get o k response has a 2xx status code
+func (o *NameMappingPositionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this name mapping position get o k response has a 3xx status code
+func (o *NameMappingPositionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this name mapping position get o k response has a 4xx status code
+func (o *NameMappingPositionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this name mapping position get o k response has a 5xx status code
+func (o *NameMappingPositionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this name mapping position get o k response a status code equal to that given
+func (o *NameMappingPositionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NameMappingPositionGetOK) Error() string {
 	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingPositionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NameMappingPositionGetOK) String() string {
+	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] nameMappingPositionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NameMappingPositionGetOK) GetPayload() *models.NameMapping {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewNameMappingPositionGetDefault(code int) *NameMappingPositionGetDefault {
 	}
 }
 
-/* NameMappingPositionGetDefault describes a response with status code -1, with default header values.
+/*
+NameMappingPositionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *NameMappingPositionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this name mapping position get default response has a 2xx status code
+func (o *NameMappingPositionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this name mapping position get default response has a 3xx status code
+func (o *NameMappingPositionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this name mapping position get default response has a 4xx status code
+func (o *NameMappingPositionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this name mapping position get default response has a 5xx status code
+func (o *NameMappingPositionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this name mapping position get default response a status code equal to that given
+func (o *NameMappingPositionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NameMappingPositionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_position_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NameMappingPositionGetDefault) String() string {
+	return fmt.Sprintf("[GET /name-services/name-mappings/{svm.uuid}/{direction}/{index}][%d] name_mapping_position_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NameMappingPositionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

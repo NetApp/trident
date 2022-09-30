@@ -52,10 +52,12 @@ func NewSecurityKeyManagerDeleteParamsWithHTTPClient(client *http.Client) *Secur
 	}
 }
 
-/* SecurityKeyManagerDeleteParams contains all the parameters to send to the API endpoint
-   for the security key manager delete operation.
+/*
+SecurityKeyManagerDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the security key manager delete operation.
+
+	Typically these are written to a http.Request.
 */
 type SecurityKeyManagerDeleteParams struct {
 

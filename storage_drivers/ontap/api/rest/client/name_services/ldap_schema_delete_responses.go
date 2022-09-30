@@ -46,14 +46,44 @@ func NewLdapSchemaDeleteOK() *LdapSchemaDeleteOK {
 	return &LdapSchemaDeleteOK{}
 }
 
-/* LdapSchemaDeleteOK describes a response with status code 200, with default header values.
+/*
+LdapSchemaDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type LdapSchemaDeleteOK struct {
 }
 
+// IsSuccess returns true when this ldap schema delete o k response has a 2xx status code
+func (o *LdapSchemaDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ldap schema delete o k response has a 3xx status code
+func (o *LdapSchemaDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ldap schema delete o k response has a 4xx status code
+func (o *LdapSchemaDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ldap schema delete o k response has a 5xx status code
+func (o *LdapSchemaDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ldap schema delete o k response a status code equal to that given
+func (o *LdapSchemaDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LdapSchemaDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaDeleteOK ", 200)
+}
+
+func (o *LdapSchemaDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldapSchemaDeleteOK ", 200)
 }
 
@@ -69,15 +99,16 @@ func NewLdapSchemaDeleteDefault(code int) *LdapSchemaDeleteDefault {
 	}
 }
 
-/* LdapSchemaDeleteDefault describes a response with status code -1, with default header values.
+/*
+	LdapSchemaDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4915204    | Failed to delete. The LDAP schema is being used by at least one LDAP client configuration. |
 | 4915205    | The LDAP schema is a default schema and cannot be modified or deleted. |
 | 4915217    | LDAP schema is owned by the admin SVM. |
-
 */
 type LdapSchemaDeleteDefault struct {
 	_statusCode int
@@ -90,9 +121,39 @@ func (o *LdapSchemaDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ldap schema delete default response has a 2xx status code
+func (o *LdapSchemaDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ldap schema delete default response has a 3xx status code
+func (o *LdapSchemaDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ldap schema delete default response has a 4xx status code
+func (o *LdapSchemaDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ldap schema delete default response has a 5xx status code
+func (o *LdapSchemaDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ldap schema delete default response a status code equal to that given
+func (o *LdapSchemaDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LdapSchemaDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LdapSchemaDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /name-services/ldap-schemas/{owner.uuid}/{name}][%d] ldap_schema_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LdapSchemaDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

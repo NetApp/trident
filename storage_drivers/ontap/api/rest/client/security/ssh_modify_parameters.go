@@ -54,10 +54,12 @@ func NewSSHModifyParamsWithHTTPClient(client *http.Client) *SSHModifyParams {
 	}
 }
 
-/* SSHModifyParams contains all the parameters to send to the API endpoint
-   for the ssh modify operation.
+/*
+SSHModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ssh modify operation.
+
+	Typically these are written to a http.Request.
 */
 type SSHModifyParams struct {
 

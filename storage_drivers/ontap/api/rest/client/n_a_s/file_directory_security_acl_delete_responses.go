@@ -46,7 +46,8 @@ func NewFileDirectorySecurityACLDeleteAccepted() *FileDirectorySecurityACLDelete
 	return &FileDirectorySecurityACLDeleteAccepted{}
 }
 
-/* FileDirectorySecurityACLDeleteAccepted describes a response with status code 202, with default header values.
+/*
+FileDirectorySecurityACLDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type FileDirectorySecurityACLDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this file directory security Acl delete accepted response has a 2xx status code
+func (o *FileDirectorySecurityACLDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this file directory security Acl delete accepted response has a 3xx status code
+func (o *FileDirectorySecurityACLDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this file directory security Acl delete accepted response has a 4xx status code
+func (o *FileDirectorySecurityACLDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this file directory security Acl delete accepted response has a 5xx status code
+func (o *FileDirectorySecurityACLDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this file directory security Acl delete accepted response a status code equal to that given
+func (o *FileDirectorySecurityACLDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *FileDirectorySecurityACLDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}/acl/{user}][%d] fileDirectorySecurityAclDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *FileDirectorySecurityACLDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}/acl/{user}][%d] fileDirectorySecurityAclDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *FileDirectorySecurityACLDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewFileDirectorySecurityACLDeleteDefault(code int) *FileDirectorySecurityAC
 	}
 }
 
-/* FileDirectorySecurityACLDeleteDefault describes a response with status code -1, with default header values.
+/*
+FileDirectorySecurityACLDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *FileDirectorySecurityACLDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this file directory security acl delete default response has a 2xx status code
+func (o *FileDirectorySecurityACLDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this file directory security acl delete default response has a 3xx status code
+func (o *FileDirectorySecurityACLDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this file directory security acl delete default response has a 4xx status code
+func (o *FileDirectorySecurityACLDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this file directory security acl delete default response has a 5xx status code
+func (o *FileDirectorySecurityACLDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this file directory security acl delete default response a status code equal to that given
+func (o *FileDirectorySecurityACLDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FileDirectorySecurityACLDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}/acl/{user}][%d] file_directory_security_acl_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FileDirectorySecurityACLDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /protocols/file-security/permissions/{svm.uuid}/{path}/acl/{user}][%d] file_directory_security_acl_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FileDirectorySecurityACLDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

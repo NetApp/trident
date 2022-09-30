@@ -55,10 +55,12 @@ func NewNetworkEthernetBroadcastDomainsCreateParamsWithHTTPClient(client *http.C
 	}
 }
 
-/* NetworkEthernetBroadcastDomainsCreateParams contains all the parameters to send to the API endpoint
-   for the network ethernet broadcast domains create operation.
+/*
+NetworkEthernetBroadcastDomainsCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ethernet broadcast domains create operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkEthernetBroadcastDomainsCreateParams struct {
 

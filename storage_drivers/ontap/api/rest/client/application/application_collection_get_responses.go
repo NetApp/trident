@@ -46,7 +46,8 @@ func NewApplicationCollectionGetOK() *ApplicationCollectionGetOK {
 	return &ApplicationCollectionGetOK{}
 }
 
-/* ApplicationCollectionGetOK describes a response with status code 200, with default header values.
+/*
+ApplicationCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type ApplicationCollectionGetOK struct {
 	Payload *models.ApplicationResponse
 }
 
+// IsSuccess returns true when this application collection get o k response has a 2xx status code
+func (o *ApplicationCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application collection get o k response has a 3xx status code
+func (o *ApplicationCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application collection get o k response has a 4xx status code
+func (o *ApplicationCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application collection get o k response has a 5xx status code
+func (o *ApplicationCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application collection get o k response a status code equal to that given
+func (o *ApplicationCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ApplicationCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /application/applications][%d] applicationCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *ApplicationCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /application/applications][%d] applicationCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *ApplicationCollectionGetOK) GetPayload() *models.ApplicationResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewApplicationCollectionGetDefault(code int) *ApplicationCollectionGetDefau
 	}
 }
 
-/* ApplicationCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+ApplicationCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ApplicationCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this application collection get default response has a 2xx status code
+func (o *ApplicationCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this application collection get default response has a 3xx status code
+func (o *ApplicationCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this application collection get default response has a 4xx status code
+func (o *ApplicationCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this application collection get default response has a 5xx status code
+func (o *ApplicationCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this application collection get default response a status code equal to that given
+func (o *ApplicationCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ApplicationCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /application/applications][%d] application_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ApplicationCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /application/applications][%d] application_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ApplicationCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewGlobalCacheSettingGetParamsWithHTTPClient(client *http.Client) *GlobalCa
 	}
 }
 
-/* GlobalCacheSettingGetParams contains all the parameters to send to the API endpoint
-   for the global cache setting get operation.
+/*
+GlobalCacheSettingGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the global cache setting get operation.
+
+	Typically these are written to a http.Request.
 */
 type GlobalCacheSettingGetParams struct {
 

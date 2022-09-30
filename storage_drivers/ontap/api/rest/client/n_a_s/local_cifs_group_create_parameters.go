@@ -55,10 +55,12 @@ func NewLocalCifsGroupCreateParamsWithHTTPClient(client *http.Client) *LocalCifs
 	}
 }
 
-/* LocalCifsGroupCreateParams contains all the parameters to send to the API endpoint
-   for the local cifs group create operation.
+/*
+LocalCifsGroupCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the local cifs group create operation.
+
+	Typically these are written to a http.Request.
 */
 type LocalCifsGroupCreateParams struct {
 

@@ -1228,7 +1228,6 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsType) UnmarshalBinary(b []byte
 
 // ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType Determines the placement of any storage object created during this operation.
 //
-//
 // swagger:model ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType
 type ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType struct {
 
@@ -1343,7 +1342,6 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType) Unmars
 
 // ConsistencyGroupVolumeQos The QoS policy for this volume.
 //
-//
 // swagger:model ConsistencyGroupVolumeQos
 type ConsistencyGroupVolumeQos struct {
 
@@ -1429,7 +1427,6 @@ func (m *ConsistencyGroupVolumeQos) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupVolumeQosPolicy The QoS policy
-//
 //
 // swagger:model ConsistencyGroupVolumeQosPolicy
 type ConsistencyGroupVolumeQosPolicy struct {
@@ -1583,7 +1580,6 @@ func (m *ConsistencyGroupVolumeSpaceType) UnmarshalBinary(b []byte) error {
 }
 
 // ConsistencyGroupVolumeTiering The tiering placement and policy definitions for this volume.
-//
 //
 // swagger:model ConsistencyGroupVolumeTiering
 type ConsistencyGroupVolumeTiering struct {

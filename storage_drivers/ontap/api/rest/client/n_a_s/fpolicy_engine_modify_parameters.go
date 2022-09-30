@@ -54,10 +54,12 @@ func NewFpolicyEngineModifyParamsWithHTTPClient(client *http.Client) *FpolicyEng
 	}
 }
 
-/* FpolicyEngineModifyParams contains all the parameters to send to the API endpoint
-   for the fpolicy engine modify operation.
+/*
+FpolicyEngineModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fpolicy engine modify operation.
+
+	Typically these are written to a http.Request.
 */
 type FpolicyEngineModifyParams struct {
 

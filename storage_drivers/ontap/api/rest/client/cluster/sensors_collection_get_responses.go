@@ -46,7 +46,8 @@ func NewSensorsCollectionGetOK() *SensorsCollectionGetOK {
 	return &SensorsCollectionGetOK{}
 }
 
-/* SensorsCollectionGetOK describes a response with status code 200, with default header values.
+/*
+SensorsCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type SensorsCollectionGetOK struct {
 	Payload *models.SensorsResponse
 }
 
+// IsSuccess returns true when this sensors collection get o k response has a 2xx status code
+func (o *SensorsCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this sensors collection get o k response has a 3xx status code
+func (o *SensorsCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this sensors collection get o k response has a 4xx status code
+func (o *SensorsCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this sensors collection get o k response has a 5xx status code
+func (o *SensorsCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this sensors collection get o k response a status code equal to that given
+func (o *SensorsCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SensorsCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/sensors][%d] sensorsCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *SensorsCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/sensors][%d] sensorsCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *SensorsCollectionGetOK) GetPayload() *models.SensorsResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSensorsCollectionGetDefault(code int) *SensorsCollectionGetDefault {
 	}
 }
 
-/* SensorsCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+SensorsCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SensorsCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this sensors collection get default response has a 2xx status code
+func (o *SensorsCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this sensors collection get default response has a 3xx status code
+func (o *SensorsCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this sensors collection get default response has a 4xx status code
+func (o *SensorsCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this sensors collection get default response has a 5xx status code
+func (o *SensorsCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this sensors collection get default response a status code equal to that given
+func (o *SensorsCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SensorsCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/sensors][%d] sensors_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SensorsCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/sensors][%d] sensors_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SensorsCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

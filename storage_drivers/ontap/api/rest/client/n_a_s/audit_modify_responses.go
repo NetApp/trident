@@ -46,14 +46,44 @@ func NewAuditModifyAccepted() *AuditModifyAccepted {
 	return &AuditModifyAccepted{}
 }
 
-/* AuditModifyAccepted describes a response with status code 202, with default header values.
+/*
+AuditModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
 type AuditModifyAccepted struct {
 }
 
+// IsSuccess returns true when this audit modify accepted response has a 2xx status code
+func (o *AuditModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this audit modify accepted response has a 3xx status code
+func (o *AuditModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this audit modify accepted response has a 4xx status code
+func (o *AuditModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this audit modify accepted response has a 5xx status code
+func (o *AuditModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this audit modify accepted response a status code equal to that given
+func (o *AuditModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *AuditModifyAccepted) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] auditModifyAccepted ", 202)
+}
+
+func (o *AuditModifyAccepted) String() string {
 	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] auditModifyAccepted ", 202)
 }
 
@@ -69,9 +99,11 @@ func NewAuditModifyDefault(code int) *AuditModifyDefault {
 	}
 }
 
-/* AuditModifyDefault describes a response with status code -1, with default header values.
+/*
+	AuditModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 9699340    | SVM UUID lookup failed                                                        |
@@ -107,7 +139,6 @@ func NewAuditModifyDefault(code int) *AuditModifyDefault {
 | 9699431    | All nodes need to run ONTAP 8.3.0 release to audit CAP staging events         |
 | 9699432    | Failed to enable multiproto.audit.capstaging.support support capability       |
 | 9699433    | Failed to disable multiproto.audit.capstaging.support support capability      |
-
 */
 type AuditModifyDefault struct {
 	_statusCode int
@@ -120,9 +151,39 @@ func (o *AuditModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this audit modify default response has a 2xx status code
+func (o *AuditModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this audit modify default response has a 3xx status code
+func (o *AuditModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this audit modify default response has a 4xx status code
+func (o *AuditModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this audit modify default response has a 5xx status code
+func (o *AuditModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this audit modify default response a status code equal to that given
+func (o *AuditModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AuditModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] audit_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AuditModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/audit/{svm.uuid}][%d] audit_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AuditModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

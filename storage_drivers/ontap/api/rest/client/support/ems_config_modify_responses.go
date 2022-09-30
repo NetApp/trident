@@ -46,14 +46,44 @@ func NewEmsConfigModifyOK() *EmsConfigModifyOK {
 	return &EmsConfigModifyOK{}
 }
 
-/* EmsConfigModifyOK describes a response with status code 200, with default header values.
+/*
+EmsConfigModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type EmsConfigModifyOK struct {
 }
 
+// IsSuccess returns true when this ems config modify o k response has a 2xx status code
+func (o *EmsConfigModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ems config modify o k response has a 3xx status code
+func (o *EmsConfigModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ems config modify o k response has a 4xx status code
+func (o *EmsConfigModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ems config modify o k response has a 5xx status code
+func (o *EmsConfigModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ems config modify o k response a status code equal to that given
+func (o *EmsConfigModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *EmsConfigModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /support/ems][%d] emsConfigModifyOK ", 200)
+}
+
+func (o *EmsConfigModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /support/ems][%d] emsConfigModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewEmsConfigModifyDefault(code int) *EmsConfigModifyDefault {
 	}
 }
 
-/* EmsConfigModifyDefault describes a response with status code -1, with default header values.
+/*
+	EmsConfigModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 983123     | The validation of the mail server provided failed |
@@ -80,7 +112,6 @@ func NewEmsConfigModifyDefault(code int) *EmsConfigModifyDefault {
 | 983139     | The IPv6 proxy URL provided is invalid |
 | 983140     | The proxy URL provided contains an invalid scheme. Supported scheme is 'http' |
 | 983160     | The provided parameter requires an effective cluster version of ONTAP 9.9.1 or later |
-
 */
 type EmsConfigModifyDefault struct {
 	_statusCode int
@@ -93,9 +124,39 @@ func (o *EmsConfigModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ems config modify default response has a 2xx status code
+func (o *EmsConfigModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ems config modify default response has a 3xx status code
+func (o *EmsConfigModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ems config modify default response has a 4xx status code
+func (o *EmsConfigModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ems config modify default response has a 5xx status code
+func (o *EmsConfigModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ems config modify default response a status code equal to that given
+func (o *EmsConfigModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *EmsConfigModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /support/ems][%d] ems_config_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *EmsConfigModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /support/ems][%d] ems_config_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *EmsConfigModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

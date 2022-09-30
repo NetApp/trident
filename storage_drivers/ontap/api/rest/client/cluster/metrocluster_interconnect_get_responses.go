@@ -46,7 +46,8 @@ func NewMetroclusterInterconnectGetOK() *MetroclusterInterconnectGetOK {
 	return &MetroclusterInterconnectGetOK{}
 }
 
-/* MetroclusterInterconnectGetOK describes a response with status code 200, with default header values.
+/*
+MetroclusterInterconnectGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type MetroclusterInterconnectGetOK struct {
 	Payload *models.MetroclusterInterconnect
 }
 
+// IsSuccess returns true when this metrocluster interconnect get o k response has a 2xx status code
+func (o *MetroclusterInterconnectGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster interconnect get o k response has a 3xx status code
+func (o *MetroclusterInterconnectGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster interconnect get o k response has a 4xx status code
+func (o *MetroclusterInterconnectGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster interconnect get o k response has a 5xx status code
+func (o *MetroclusterInterconnectGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster interconnect get o k response a status code equal to that given
+func (o *MetroclusterInterconnectGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MetroclusterInterconnectGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectGetOK  %+v", 200, o.Payload)
 }
+
+func (o *MetroclusterInterconnectGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metroclusterInterconnectGetOK  %+v", 200, o.Payload)
+}
+
 func (o *MetroclusterInterconnectGetOK) GetPayload() *models.MetroclusterInterconnect {
 	return o.Payload
 }
@@ -80,14 +111,15 @@ func NewMetroclusterInterconnectGetDefault(code int) *MetroclusterInterconnectGe
 	}
 }
 
-/* MetroclusterInterconnectGetDefault describes a response with status code -1, with default header values.
+/*
+	MetroclusterInterconnectGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
 | 2427132 | MetroCluster is not configured on this cluster. |
-
 */
 type MetroclusterInterconnectGetDefault struct {
 	_statusCode int
@@ -100,9 +132,39 @@ func (o *MetroclusterInterconnectGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster interconnect get default response has a 2xx status code
+func (o *MetroclusterInterconnectGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster interconnect get default response has a 3xx status code
+func (o *MetroclusterInterconnectGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster interconnect get default response has a 4xx status code
+func (o *MetroclusterInterconnectGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster interconnect get default response has a 5xx status code
+func (o *MetroclusterInterconnectGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster interconnect get default response a status code equal to that given
+func (o *MetroclusterInterconnectGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterInterconnectGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metrocluster_interconnect_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MetroclusterInterconnectGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}][%d] metrocluster_interconnect_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MetroclusterInterconnectGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

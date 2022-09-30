@@ -25,7 +25,6 @@ import (
 // When an initiator group is created, the `protocol` property is used to restrict member initiators to Fibre Channel (_fcp_), iSCSI (_iscsi_), or both (_mixed_). Initiator groups within a nested hierarchy may not have conflicting protocols.<br/>
 // Zero or more initiators or nested initiator groups can be supplied when the initiator group is created. After creation, initiators can be added or removed from the initiator group using the `/protocols/san/igroups/{igroup.uuid}/initiators` endpoint. Initiator groups containing other initiator groups report the aggregated list of initiators from all nested initiator groups, but modifications of the initiator list must be performed on the initiator group that directly contains the initiators. See [`POST /protocols/san/igroups/{igroup.uuid}/initiators`](#/SAN/igroup_initiator_create) and [`DELETE /protocols/san/igroups/{igroup.uuid}/initiators/{name}`](#/SAN/igroup_initiator_delete) for more details.<br/>
 //
-//
 // swagger:model igroup
 type Igroup struct {
 
@@ -1886,7 +1885,6 @@ func (m *IgroupInitiatorsItems0ConnectivityTracking) UnmarshalBinary(b []byte) e
 
 // IgroupInitiatorsItems0Igroup The initiator group that directly owns the initiator, which is where modification of the initiator is supported. This property will only be populated when the initiator is a member of a nested initiator group.
 //
-//
 // swagger:model IgroupInitiatorsItems0Igroup
 type IgroupInitiatorsItems0Igroup struct {
 
@@ -2419,7 +2417,6 @@ func (m *IgroupLinks) UnmarshalBinary(b []byte) error {
 
 // IgroupLunMapsItems0 A LUN map with which the initiator group is associated.
 //
-//
 // swagger:model IgroupLunMapsItems0
 type IgroupLunMapsItems0 struct {
 
@@ -2651,7 +2648,6 @@ func (m *IgroupLunMapsItems0Links) UnmarshalBinary(b []byte) error {
 }
 
 // IgroupLunMapsItems0Lun The LUN to which the initiator group is mapped.
-//
 //
 // swagger:model IgroupLunMapsItems0Lun
 type IgroupLunMapsItems0Lun struct {
@@ -3086,7 +3082,6 @@ func (m *IgroupLunMapsItems0LunNodeLinks) UnmarshalBinary(b []byte) error {
 // IgroupPortset The portset to which the initiator group is bound. Binding the initiator group to a portset restricts the initiators of the group to accessing mapped LUNs only through network interfaces in the portset.<br/>
 // Optional in POST and PATCH. PATCH `portset.name` to an empty string ("") to unbind a portset from the initiator group.
 //
-//
 // swagger:model IgroupPortset
 type IgroupPortset struct {
 
@@ -3472,7 +3467,6 @@ func (m *IgroupSvmLinks) UnmarshalBinary(b []byte) error {
 }
 
 // IgroupTarget Properties of the SCSI target to which the initiator group provides access.
-//
 //
 // swagger:model IgroupTarget
 type IgroupTarget struct {

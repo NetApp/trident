@@ -46,14 +46,44 @@ func NewClusterPeerDeleteOK() *ClusterPeerDeleteOK {
 	return &ClusterPeerDeleteOK{}
 }
 
-/* ClusterPeerDeleteOK describes a response with status code 200, with default header values.
+/*
+ClusterPeerDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type ClusterPeerDeleteOK struct {
 }
 
+// IsSuccess returns true when this cluster peer delete o k response has a 2xx status code
+func (o *ClusterPeerDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this cluster peer delete o k response has a 3xx status code
+func (o *ClusterPeerDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this cluster peer delete o k response has a 4xx status code
+func (o *ClusterPeerDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this cluster peer delete o k response has a 5xx status code
+func (o *ClusterPeerDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this cluster peer delete o k response a status code equal to that given
+func (o *ClusterPeerDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ClusterPeerDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] clusterPeerDeleteOK ", 200)
+}
+
+func (o *ClusterPeerDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] clusterPeerDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewClusterPeerDeleteDefault(code int) *ClusterPeerDeleteDefault {
 	}
 }
 
-/* ClusterPeerDeleteDefault describes a response with status code -1, with default header values.
+/*
+	ClusterPeerDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 4663070 | Unable to delete cluster peer relationship due to an ongoing Vserver migration. |
-
 */
 type ClusterPeerDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *ClusterPeerDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this cluster peer delete default response has a 2xx status code
+func (o *ClusterPeerDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this cluster peer delete default response has a 3xx status code
+func (o *ClusterPeerDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this cluster peer delete default response has a 4xx status code
+func (o *ClusterPeerDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this cluster peer delete default response has a 5xx status code
+func (o *ClusterPeerDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this cluster peer delete default response a status code equal to that given
+func (o *ClusterPeerDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ClusterPeerDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] cluster_peer_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ClusterPeerDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /cluster/peers/{uuid}][%d] cluster_peer_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ClusterPeerDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

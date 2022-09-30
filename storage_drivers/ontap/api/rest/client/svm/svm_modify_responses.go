@@ -46,7 +46,8 @@ func NewSvmModifyAccepted() *SvmModifyAccepted {
 	return &SvmModifyAccepted{}
 }
 
-/* SvmModifyAccepted describes a response with status code 202, with default header values.
+/*
+SvmModifyAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SvmModifyAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this svm modify accepted response has a 2xx status code
+func (o *SvmModifyAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this svm modify accepted response has a 3xx status code
+func (o *SvmModifyAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this svm modify accepted response has a 4xx status code
+func (o *SvmModifyAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this svm modify accepted response has a 5xx status code
+func (o *SvmModifyAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this svm modify accepted response a status code equal to that given
+func (o *SvmModifyAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SvmModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svmModifyAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SvmModifyAccepted) String() string {
+	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svmModifyAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SvmModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewSvmModifyDefault(code int) *SvmModifyDefault {
 	}
 }
 
-/* SvmModifyDefault describes a response with status code -1, with default header values.
+/*
+	SvmModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 <br/>
 ```
 | Error codes | Description |
@@ -101,7 +134,6 @@ func NewSvmModifyDefault(code int) *SvmModifyDefault {
 | 13434911    | Invalid SVM name. Maximum supported length is 41 if SVM is of type \\\"sync-source\\\", otherwise 47. |
 ```
 <br/>
-
 */
 type SvmModifyDefault struct {
 	_statusCode int
@@ -114,9 +146,39 @@ func (o *SvmModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this svm modify default response has a 2xx status code
+func (o *SvmModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this svm modify default response has a 3xx status code
+func (o *SvmModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this svm modify default response has a 4xx status code
+func (o *SvmModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this svm modify default response has a 5xx status code
+func (o *SvmModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this svm modify default response a status code equal to that given
+func (o *SvmModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SvmModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svm_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SvmModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /svm/svms/{uuid}][%d] svm_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SvmModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewExportRuleClientsDeleteParamsWithHTTPClient(client *http.Client) *Export
 	}
 }
 
-/* ExportRuleClientsDeleteParams contains all the parameters to send to the API endpoint
-   for the export rule clients delete operation.
+/*
+ExportRuleClientsDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the export rule clients delete operation.
+
+	Typically these are written to a http.Request.
 */
 type ExportRuleClientsDeleteParams struct {
 

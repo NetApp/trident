@@ -157,7 +157,6 @@ func (m *ConsistencyGroupProvisioningOptions) UnmarshalBinary(b []byte) error {
 
 // ConsistencyGroupProvisioningOptionsStorageService Determines the placement of any storage object created during this operation.
 //
-//
 // swagger:model ConsistencyGroupProvisioningOptionsStorageService
 type ConsistencyGroupProvisioningOptionsStorageService struct {
 

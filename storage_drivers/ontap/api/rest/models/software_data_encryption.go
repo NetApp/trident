@@ -14,7 +14,6 @@ import (
 
 // SoftwareDataEncryption Cluster-wide software data encryption related information.
 //
-//
 // swagger:model software_data_encryption
 type SoftwareDataEncryption struct {
 

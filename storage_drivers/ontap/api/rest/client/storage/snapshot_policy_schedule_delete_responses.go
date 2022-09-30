@@ -46,14 +46,44 @@ func NewSnapshotPolicyScheduleDeleteOK() *SnapshotPolicyScheduleDeleteOK {
 	return &SnapshotPolicyScheduleDeleteOK{}
 }
 
-/* SnapshotPolicyScheduleDeleteOK describes a response with status code 200, with default header values.
+/*
+SnapshotPolicyScheduleDeleteOK describes a response with status code 200, with default header values.
 
 OK
 */
 type SnapshotPolicyScheduleDeleteOK struct {
 }
 
+// IsSuccess returns true when this snapshot policy schedule delete o k response has a 2xx status code
+func (o *SnapshotPolicyScheduleDeleteOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapshot policy schedule delete o k response has a 3xx status code
+func (o *SnapshotPolicyScheduleDeleteOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapshot policy schedule delete o k response has a 4xx status code
+func (o *SnapshotPolicyScheduleDeleteOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapshot policy schedule delete o k response has a 5xx status code
+func (o *SnapshotPolicyScheduleDeleteOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapshot policy schedule delete o k response a status code equal to that given
+func (o *SnapshotPolicyScheduleDeleteOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *SnapshotPolicyScheduleDeleteOK) Error() string {
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleDeleteOK ", 200)
+}
+
+func (o *SnapshotPolicyScheduleDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleDeleteOK ", 200)
 }
 
@@ -69,13 +99,14 @@ func NewSnapshotPolicyScheduleDeleteDefault(code int) *SnapshotPolicyScheduleDel
 	}
 }
 
-/* SnapshotPolicyScheduleDeleteDefault describes a response with status code -1, with default header values.
+/*
+	SnapshotPolicyScheduleDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Code
+	ONTAP Error Response Code
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1638412    | Schedule does not exist in Snapshot policy. |
-
 */
 type SnapshotPolicyScheduleDeleteDefault struct {
 	_statusCode int
@@ -88,9 +119,39 @@ func (o *SnapshotPolicyScheduleDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapshot policy schedule delete default response has a 2xx status code
+func (o *SnapshotPolicyScheduleDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapshot policy schedule delete default response has a 3xx status code
+func (o *SnapshotPolicyScheduleDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapshot policy schedule delete default response has a 4xx status code
+func (o *SnapshotPolicyScheduleDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapshot policy schedule delete default response has a 5xx status code
+func (o *SnapshotPolicyScheduleDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapshot policy schedule delete default response a status code equal to that given
+func (o *SnapshotPolicyScheduleDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapshotPolicyScheduleDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapshotPolicyScheduleDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapshotPolicyScheduleDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

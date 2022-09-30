@@ -46,7 +46,8 @@ func NewMetroclusterGetOK() *MetroclusterGetOK {
 	return &MetroclusterGetOK{}
 }
 
-/* MetroclusterGetOK describes a response with status code 200, with default header values.
+/*
+MetroclusterGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type MetroclusterGetOK struct {
 	Payload *models.Metrocluster
 }
 
+// IsSuccess returns true when this metrocluster get o k response has a 2xx status code
+func (o *MetroclusterGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster get o k response has a 3xx status code
+func (o *MetroclusterGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster get o k response has a 4xx status code
+func (o *MetroclusterGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster get o k response has a 5xx status code
+func (o *MetroclusterGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster get o k response a status code equal to that given
+func (o *MetroclusterGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MetroclusterGetOK) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster][%d] metroclusterGetOK  %+v", 200, o.Payload)
 }
+
+func (o *MetroclusterGetOK) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster][%d] metroclusterGetOK  %+v", 200, o.Payload)
+}
+
 func (o *MetroclusterGetOK) GetPayload() *models.Metrocluster {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewMetroclusterGetDefault(code int) *MetroclusterGetDefault {
 	}
 }
 
-/* MetroclusterGetDefault describes a response with status code -1, with default header values.
+/*
+	MetroclusterGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
-
 */
 type MetroclusterGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *MetroclusterGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster get default response has a 2xx status code
+func (o *MetroclusterGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster get default response has a 3xx status code
+func (o *MetroclusterGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster get default response has a 4xx status code
+func (o *MetroclusterGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster get default response has a 5xx status code
+func (o *MetroclusterGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster get default response a status code equal to that given
+func (o *MetroclusterGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterGetDefault) Error() string {
 	return fmt.Sprintf("[GET /cluster/metrocluster][%d] metrocluster_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MetroclusterGetDefault) String() string {
+	return fmt.Sprintf("[GET /cluster/metrocluster][%d] metrocluster_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MetroclusterGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

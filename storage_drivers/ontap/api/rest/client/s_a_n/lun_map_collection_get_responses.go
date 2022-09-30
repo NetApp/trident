@@ -46,7 +46,8 @@ func NewLunMapCollectionGetOK() *LunMapCollectionGetOK {
 	return &LunMapCollectionGetOK{}
 }
 
-/* LunMapCollectionGetOK describes a response with status code 200, with default header values.
+/*
+LunMapCollectionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type LunMapCollectionGetOK struct {
 	Payload *models.LunMapResponse
 }
 
+// IsSuccess returns true when this lun map collection get o k response has a 2xx status code
+func (o *LunMapCollectionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this lun map collection get o k response has a 3xx status code
+func (o *LunMapCollectionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this lun map collection get o k response has a 4xx status code
+func (o *LunMapCollectionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this lun map collection get o k response has a 5xx status code
+func (o *LunMapCollectionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this lun map collection get o k response a status code equal to that given
+func (o *LunMapCollectionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *LunMapCollectionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lunMapCollectionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *LunMapCollectionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lunMapCollectionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *LunMapCollectionGetOK) GetPayload() *models.LunMapResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewLunMapCollectionGetDefault(code int) *LunMapCollectionGetDefault {
 	}
 }
 
-/* LunMapCollectionGetDefault describes a response with status code -1, with default header values.
+/*
+LunMapCollectionGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *LunMapCollectionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this lun map collection get default response has a 2xx status code
+func (o *LunMapCollectionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this lun map collection get default response has a 3xx status code
+func (o *LunMapCollectionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this lun map collection get default response has a 4xx status code
+func (o *LunMapCollectionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this lun map collection get default response has a 5xx status code
+func (o *LunMapCollectionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this lun map collection get default response a status code equal to that given
+func (o *LunMapCollectionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *LunMapCollectionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lun_map_collection_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *LunMapCollectionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/san/lun-maps][%d] lun_map_collection_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *LunMapCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

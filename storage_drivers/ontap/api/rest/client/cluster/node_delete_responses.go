@@ -46,7 +46,8 @@ func NewNodeDeleteAccepted() *NodeDeleteAccepted {
 	return &NodeDeleteAccepted{}
 }
 
-/* NodeDeleteAccepted describes a response with status code 202, with default header values.
+/*
+NodeDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type NodeDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this node delete accepted response has a 2xx status code
+func (o *NodeDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this node delete accepted response has a 3xx status code
+func (o *NodeDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this node delete accepted response has a 4xx status code
+func (o *NodeDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this node delete accepted response has a 5xx status code
+func (o *NodeDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this node delete accepted response a status code equal to that given
+func (o *NodeDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *NodeDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/nodes/{uuid}][%d] nodeDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *NodeDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /cluster/nodes/{uuid}][%d] nodeDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *NodeDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewNodeDeleteDefault(code int) *NodeDeleteDefault {
 	}
 }
 
-/* NodeDeleteDefault describes a response with status code -1, with default header values.
+/*
+	NodeDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 458755 | Replication service is offline. |
@@ -104,7 +137,6 @@ func NewNodeDeleteDefault(code int) *NodeDeleteDefault {
 | 2293813 | Cannot remove a node from the cluster because a controller replacement is in progress. |
 | 2293814 | The DELETE operation is not supported until the cluster is upgraded. |
 | 2293816 | Cannot remove node because its Storage Encryption devices use authentication keys (AKs) that will not be available to the node after it leaves the cluster. |
-
 */
 type NodeDeleteDefault struct {
 	_statusCode int
@@ -117,9 +149,39 @@ func (o *NodeDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this node delete default response has a 2xx status code
+func (o *NodeDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this node delete default response has a 3xx status code
+func (o *NodeDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this node delete default response has a 4xx status code
+func (o *NodeDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this node delete default response has a 5xx status code
+func (o *NodeDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this node delete default response a status code equal to that given
+func (o *NodeDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NodeDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/nodes/{uuid}][%d] node_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NodeDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /cluster/nodes/{uuid}][%d] node_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NodeDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -53,10 +53,12 @@ func NewFileInfoModifyParamsWithHTTPClient(client *http.Client) *FileInfoModifyP
 	}
 }
 
-/* FileInfoModifyParams contains all the parameters to send to the API endpoint
-   for the file info modify operation.
+/*
+FileInfoModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the file info modify operation.
+
+	Typically these are written to a http.Request.
 */
 type FileInfoModifyParams struct {
 

@@ -46,7 +46,8 @@ func NewVscanOnDemandGetOK() *VscanOnDemandGetOK {
 	return &VscanOnDemandGetOK{}
 }
 
-/* VscanOnDemandGetOK describes a response with status code 200, with default header values.
+/*
+VscanOnDemandGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type VscanOnDemandGetOK struct {
 	Payload *models.VscanOnDemand
 }
 
+// IsSuccess returns true when this vscan on demand get o k response has a 2xx status code
+func (o *VscanOnDemandGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan on demand get o k response has a 3xx status code
+func (o *VscanOnDemandGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan on demand get o k response has a 4xx status code
+func (o *VscanOnDemandGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan on demand get o k response has a 5xx status code
+func (o *VscanOnDemandGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan on demand get o k response a status code equal to that given
+func (o *VscanOnDemandGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanOnDemandGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscanOnDemandGetOK  %+v", 200, o.Payload)
 }
+
+func (o *VscanOnDemandGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscanOnDemandGetOK  %+v", 200, o.Payload)
+}
+
 func (o *VscanOnDemandGetOK) GetPayload() *models.VscanOnDemand {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewVscanOnDemandGetDefault(code int) *VscanOnDemandGetDefault {
 	}
 }
 
-/* VscanOnDemandGetDefault describes a response with status code -1, with default header values.
+/*
+VscanOnDemandGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *VscanOnDemandGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan on demand get default response has a 2xx status code
+func (o *VscanOnDemandGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan on demand get default response has a 3xx status code
+func (o *VscanOnDemandGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan on demand get default response has a 4xx status code
+func (o *VscanOnDemandGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan on demand get default response has a 5xx status code
+func (o *VscanOnDemandGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan on demand get default response a status code equal to that given
+func (o *VscanOnDemandGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanOnDemandGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscan_on_demand_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanOnDemandGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscan_on_demand_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanOnDemandGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -16,7 +16,6 @@ import (
 
 // NvmeSubsystemHostNoRecords The NVMe host provisioned to access NVMe namespaces mapped to a subsystem.
 //
-//
 // swagger:model nvme_subsystem_host_no_records
 type NvmeSubsystemHostNoRecords struct {
 
@@ -191,7 +190,6 @@ func (m *NvmeSubsystemHostNoRecords) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeSubsystemHostNoRecordsIoQueue The properties of the submission queue used to submit I/O commands for execution by the NVMe controller.
-//
 //
 // swagger:model NvmeSubsystemHostNoRecordsIoQueue
 type NvmeSubsystemHostNoRecordsIoQueue struct {
@@ -404,7 +402,6 @@ func (m *NvmeSubsystemHostNoRecordsLinks) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeSubsystemHostNoRecordsSubsystem The NVMe subsystem to which the NVMe host has been provisioned.
-//
 //
 // swagger:model NvmeSubsystemHostNoRecordsSubsystem
 type NvmeSubsystemHostNoRecordsSubsystem struct {

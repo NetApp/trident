@@ -15,8 +15,8 @@ import (
 )
 
 // AdvancedRights Specifies the advanced access right controlled by the ACE for the account specified.
-//  You can specify more than one "advanced-rights" value by using a comma-delimited list.
 //
+//	You can specify more than one "advanced-rights" value by using a comma-delimited list.
 //
 // swagger:model advanced_rights
 type AdvancedRights struct {

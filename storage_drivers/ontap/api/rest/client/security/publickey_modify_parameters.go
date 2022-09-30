@@ -55,10 +55,12 @@ func NewPublickeyModifyParamsWithHTTPClient(client *http.Client) *PublickeyModif
 	}
 }
 
-/* PublickeyModifyParams contains all the parameters to send to the API endpoint
-   for the publickey modify operation.
+/*
+PublickeyModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the publickey modify operation.
+
+	Typically these are written to a http.Request.
 */
 type PublickeyModifyParams struct {
 

@@ -46,14 +46,44 @@ func NewVscanOnDemandModifyOK() *VscanOnDemandModifyOK {
 	return &VscanOnDemandModifyOK{}
 }
 
-/* VscanOnDemandModifyOK describes a response with status code 200, with default header values.
+/*
+VscanOnDemandModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type VscanOnDemandModifyOK struct {
 }
 
+// IsSuccess returns true when this vscan on demand modify o k response has a 2xx status code
+func (o *VscanOnDemandModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this vscan on demand modify o k response has a 3xx status code
+func (o *VscanOnDemandModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this vscan on demand modify o k response has a 4xx status code
+func (o *VscanOnDemandModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this vscan on demand modify o k response has a 5xx status code
+func (o *VscanOnDemandModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this vscan on demand modify o k response a status code equal to that given
+func (o *VscanOnDemandModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *VscanOnDemandModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscanOnDemandModifyOK ", 200)
+}
+
+func (o *VscanOnDemandModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscanOnDemandModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewVscanOnDemandModifyDefault(code int) *VscanOnDemandModifyDefault {
 	}
 }
 
-/* VscanOnDemandModifyDefault describes a response with status code -1, with default header values.
+/*
+	VscanOnDemandModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 10027101   | The file size must be in the range 1KB to 1TB |
@@ -87,7 +119,6 @@ func NewVscanOnDemandModifyDefault(code int) *VscanOnDemandModifyDefault {
 | 10027253   | The number of paths specified exceeds the configured maximum number of paths. You cannot specify more than the maximum number of configured paths. |
 | 10027254   | The number of extensions specified exceeds the configured maximum number of extensions. You cannot specify more than the maximum number of configured extensions. |
 | 10027255   | Another policy is already scheduled. Only one policy per SVM is allowed to be scheduled at any one time. Update a policy without specifying a schedule. |
-
 */
 type VscanOnDemandModifyDefault struct {
 	_statusCode int
@@ -100,9 +131,39 @@ func (o *VscanOnDemandModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this vscan on demand modify default response has a 2xx status code
+func (o *VscanOnDemandModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this vscan on demand modify default response has a 3xx status code
+func (o *VscanOnDemandModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this vscan on demand modify default response has a 4xx status code
+func (o *VscanOnDemandModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this vscan on demand modify default response has a 5xx status code
+func (o *VscanOnDemandModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this vscan on demand modify default response a status code equal to that given
+func (o *VscanOnDemandModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *VscanOnDemandModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscan_on_demand_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *VscanOnDemandModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /protocols/vscan/{svm.uuid}/on-demand-policies/{name}][%d] vscan_on_demand_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *VscanOnDemandModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

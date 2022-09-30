@@ -55,10 +55,12 @@ func NewNvmeServiceCreateParamsWithHTTPClient(client *http.Client) *NvmeServiceC
 	}
 }
 
-/* NvmeServiceCreateParams contains all the parameters to send to the API endpoint
-   for the nvme service create operation.
+/*
+NvmeServiceCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the nvme service create operation.
+
+	Typically these are written to a http.Request.
 */
 type NvmeServiceCreateParams struct {
 

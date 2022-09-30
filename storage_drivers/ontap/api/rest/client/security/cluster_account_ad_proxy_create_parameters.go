@@ -54,10 +54,12 @@ func NewClusterAccountAdProxyCreateParamsWithHTTPClient(client *http.Client) *Cl
 	}
 }
 
-/* ClusterAccountAdProxyCreateParams contains all the parameters to send to the API endpoint
-   for the cluster account ad proxy create operation.
+/*
+ClusterAccountAdProxyCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the cluster account ad proxy create operation.
+
+	Typically these are written to a http.Request.
 */
 type ClusterAccountAdProxyCreateParams struct {
 

@@ -46,14 +46,44 @@ func NewMultiAdminVerifyRequestModifyOK() *MultiAdminVerifyRequestModifyOK {
 	return &MultiAdminVerifyRequestModifyOK{}
 }
 
-/* MultiAdminVerifyRequestModifyOK describes a response with status code 200, with default header values.
+/*
+MultiAdminVerifyRequestModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type MultiAdminVerifyRequestModifyOK struct {
 }
 
+// IsSuccess returns true when this multi admin verify request modify o k response has a 2xx status code
+func (o *MultiAdminVerifyRequestModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this multi admin verify request modify o k response has a 3xx status code
+func (o *MultiAdminVerifyRequestModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this multi admin verify request modify o k response has a 4xx status code
+func (o *MultiAdminVerifyRequestModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this multi admin verify request modify o k response has a 5xx status code
+func (o *MultiAdminVerifyRequestModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this multi admin verify request modify o k response a status code equal to that given
+func (o *MultiAdminVerifyRequestModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *MultiAdminVerifyRequestModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multiAdminVerifyRequestModifyOK ", 200)
+}
+
+func (o *MultiAdminVerifyRequestModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multiAdminVerifyRequestModifyOK ", 200)
 }
 
@@ -69,14 +99,15 @@ func NewMultiAdminVerifyRequestModifyDefault(code int) *MultiAdminVerifyRequestM
 	}
 }
 
-/* MultiAdminVerifyRequestModifyDefault describes a response with status code -1, with default header values.
+/*
+	MultiAdminVerifyRequestModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 262309 | The feature must be enabled first. |
 | 262329 | Invalid state for PATCH. |
-
 */
 type MultiAdminVerifyRequestModifyDefault struct {
 	_statusCode int
@@ -89,9 +120,39 @@ func (o *MultiAdminVerifyRequestModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this multi admin verify request modify default response has a 2xx status code
+func (o *MultiAdminVerifyRequestModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this multi admin verify request modify default response has a 3xx status code
+func (o *MultiAdminVerifyRequestModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this multi admin verify request modify default response has a 4xx status code
+func (o *MultiAdminVerifyRequestModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this multi admin verify request modify default response has a 5xx status code
+func (o *MultiAdminVerifyRequestModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this multi admin verify request modify default response a status code equal to that given
+func (o *MultiAdminVerifyRequestModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MultiAdminVerifyRequestModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multi_admin_verify_request_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MultiAdminVerifyRequestModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /security/multi-admin-verify/requests/{index}][%d] multi_admin_verify_request_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MultiAdminVerifyRequestModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

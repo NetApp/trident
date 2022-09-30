@@ -46,7 +46,8 @@ func NewSnapmirrorPolicyDeleteAccepted() *SnapmirrorPolicyDeleteAccepted {
 	return &SnapmirrorPolicyDeleteAccepted{}
 }
 
-/* SnapmirrorPolicyDeleteAccepted describes a response with status code 202, with default header values.
+/*
+SnapmirrorPolicyDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type SnapmirrorPolicyDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this snapmirror policy delete accepted response has a 2xx status code
+func (o *SnapmirrorPolicyDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this snapmirror policy delete accepted response has a 3xx status code
+func (o *SnapmirrorPolicyDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this snapmirror policy delete accepted response has a 4xx status code
+func (o *SnapmirrorPolicyDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this snapmirror policy delete accepted response has a 5xx status code
+func (o *SnapmirrorPolicyDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this snapmirror policy delete accepted response a status code equal to that given
+func (o *SnapmirrorPolicyDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *SnapmirrorPolicyDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /snapmirror/policies/{uuid}][%d] snapmirrorPolicyDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *SnapmirrorPolicyDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /snapmirror/policies/{uuid}][%d] snapmirrorPolicyDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *SnapmirrorPolicyDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewSnapmirrorPolicyDeleteDefault(code int) *SnapmirrorPolicyDeleteDefault {
 	}
 }
 
-/* SnapmirrorPolicyDeleteDefault describes a response with status code -1, with default header values.
+/*
+SnapmirrorPolicyDeleteDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *SnapmirrorPolicyDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this snapmirror policy delete default response has a 2xx status code
+func (o *SnapmirrorPolicyDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this snapmirror policy delete default response has a 3xx status code
+func (o *SnapmirrorPolicyDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this snapmirror policy delete default response has a 4xx status code
+func (o *SnapmirrorPolicyDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this snapmirror policy delete default response has a 5xx status code
+func (o *SnapmirrorPolicyDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this snapmirror policy delete default response a status code equal to that given
+func (o *SnapmirrorPolicyDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *SnapmirrorPolicyDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /snapmirror/policies/{uuid}][%d] snapmirror_policy_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *SnapmirrorPolicyDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /snapmirror/policies/{uuid}][%d] snapmirror_policy_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *SnapmirrorPolicyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

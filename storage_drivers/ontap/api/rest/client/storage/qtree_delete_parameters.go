@@ -53,10 +53,12 @@ func NewQtreeDeleteParamsWithHTTPClient(client *http.Client) *QtreeDeleteParams 
 	}
 }
 
-/* QtreeDeleteParams contains all the parameters to send to the API endpoint
-   for the qtree delete operation.
+/*
+QtreeDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the qtree delete operation.
+
+	Typically these are written to a http.Request.
 */
 type QtreeDeleteParams struct {
 

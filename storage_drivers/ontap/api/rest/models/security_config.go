@@ -314,7 +314,6 @@ func (m *SecurityConfig) UnmarshalBinary(b []byte) error {
 
 // SecurityConfigFips Cluster-wide Federal Information Processing Standards (FIPS) mode information.
 //
-//
 // swagger:model SecurityConfigFips
 type SecurityConfigFips struct {
 
@@ -438,7 +437,6 @@ func (m *SecurityConfigLinks) UnmarshalBinary(b []byte) error {
 
 // SecurityConfigManagementProtocols Cluster-wide security protocols related information.
 //
-//
 // swagger:model SecurityConfigManagementProtocols
 type SecurityConfigManagementProtocols struct {
 
@@ -478,7 +476,6 @@ func (m *SecurityConfigManagementProtocols) UnmarshalBinary(b []byte) error {
 }
 
 // SecurityConfigOnboardKeyManagerConfigurableStatus Indicates whether the Onboard Key Manager can be configured in the cluster.
-//
 //
 // swagger:model SecurityConfigOnboardKeyManagerConfigurableStatus
 type SecurityConfigOnboardKeyManagerConfigurableStatus struct {
@@ -525,7 +522,6 @@ func (m *SecurityConfigOnboardKeyManagerConfigurableStatus) UnmarshalBinary(b []
 
 // SecurityConfigSoftwareDataEncryption Cluster-wide software data encryption related information.
 //
-//
 // swagger:model SecurityConfigSoftwareDataEncryption
 type SecurityConfigSoftwareDataEncryption struct {
 
@@ -565,7 +561,6 @@ func (m *SecurityConfigSoftwareDataEncryption) UnmarshalBinary(b []byte) error {
 }
 
 // SecurityConfigTLS Cluster-wide Transport Layer Security (TLS) configuration information
-//
 //
 // swagger:model SecurityConfigTLS
 type SecurityConfigTLS struct {

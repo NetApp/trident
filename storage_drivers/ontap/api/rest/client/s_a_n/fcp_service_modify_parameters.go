@@ -54,10 +54,12 @@ func NewFcpServiceModifyParamsWithHTTPClient(client *http.Client) *FcpServiceMod
 	}
 }
 
-/* FcpServiceModifyParams contains all the parameters to send to the API endpoint
-   for the fcp service modify operation.
+/*
+FcpServiceModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fcp service modify operation.
+
+	Typically these are written to a http.Request.
 */
 type FcpServiceModifyParams struct {
 

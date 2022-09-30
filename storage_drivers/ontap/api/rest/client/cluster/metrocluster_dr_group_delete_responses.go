@@ -46,7 +46,8 @@ func NewMetroclusterDrGroupDeleteAccepted() *MetroclusterDrGroupDeleteAccepted {
 	return &MetroclusterDrGroupDeleteAccepted{}
 }
 
-/* MetroclusterDrGroupDeleteAccepted describes a response with status code 202, with default header values.
+/*
+MetroclusterDrGroupDeleteAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type MetroclusterDrGroupDeleteAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this metrocluster dr group delete accepted response has a 2xx status code
+func (o *MetroclusterDrGroupDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this metrocluster dr group delete accepted response has a 3xx status code
+func (o *MetroclusterDrGroupDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this metrocluster dr group delete accepted response has a 4xx status code
+func (o *MetroclusterDrGroupDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this metrocluster dr group delete accepted response has a 5xx status code
+func (o *MetroclusterDrGroupDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this metrocluster dr group delete accepted response a status code equal to that given
+func (o *MetroclusterDrGroupDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *MetroclusterDrGroupDeleteAccepted) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/metrocluster/dr-groups/{id}][%d] metroclusterDrGroupDeleteAccepted  %+v", 202, o.Payload)
 }
+
+func (o *MetroclusterDrGroupDeleteAccepted) String() string {
+	return fmt.Sprintf("[DELETE /cluster/metrocluster/dr-groups/{id}][%d] metroclusterDrGroupDeleteAccepted  %+v", 202, o.Payload)
+}
+
 func (o *MetroclusterDrGroupDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,9 +111,11 @@ func NewMetroclusterDrGroupDeleteDefault(code int) *MetroclusterDrGroupDeleteDef
 	}
 }
 
-/* MetroclusterDrGroupDeleteDefault describes a response with status code -1, with default header values.
+/*
+	MetroclusterDrGroupDeleteDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 2425734 | An internal error occurred. Wait a few minutes, and try the operation again. For further assistance, contact technical support. |
@@ -95,7 +128,6 @@ func NewMetroclusterDrGroupDeleteDefault(code int) *MetroclusterDrGroupDeleteDef
 | 2432864 | Unconfiguring and deleting the DR Group |
 | 2432865 | Deleting MetroCluster DR Group |
 | 2432866 | MetroCluster DR Group delete done |
-
 */
 type MetroclusterDrGroupDeleteDefault struct {
 	_statusCode int
@@ -108,9 +140,39 @@ func (o *MetroclusterDrGroupDeleteDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this metrocluster dr group delete default response has a 2xx status code
+func (o *MetroclusterDrGroupDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this metrocluster dr group delete default response has a 3xx status code
+func (o *MetroclusterDrGroupDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this metrocluster dr group delete default response has a 4xx status code
+func (o *MetroclusterDrGroupDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this metrocluster dr group delete default response has a 5xx status code
+func (o *MetroclusterDrGroupDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this metrocluster dr group delete default response a status code equal to that given
+func (o *MetroclusterDrGroupDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *MetroclusterDrGroupDeleteDefault) Error() string {
 	return fmt.Sprintf("[DELETE /cluster/metrocluster/dr-groups/{id}][%d] metrocluster_dr_group_delete default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *MetroclusterDrGroupDeleteDefault) String() string {
+	return fmt.Sprintf("[DELETE /cluster/metrocluster/dr-groups/{id}][%d] metrocluster_dr_group_delete default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *MetroclusterDrGroupDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

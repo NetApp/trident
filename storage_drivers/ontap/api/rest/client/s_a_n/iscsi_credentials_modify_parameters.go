@@ -55,10 +55,12 @@ func NewIscsiCredentialsModifyParamsWithHTTPClient(client *http.Client) *IscsiCr
 	}
 }
 
-/* IscsiCredentialsModifyParams contains all the parameters to send to the API endpoint
-   for the iscsi credentials modify operation.
+/*
+IscsiCredentialsModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the iscsi credentials modify operation.
+
+	Typically these are written to a http.Request.
 */
 type IscsiCredentialsModifyParams struct {
 

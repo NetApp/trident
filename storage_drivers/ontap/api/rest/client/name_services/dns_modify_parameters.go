@@ -54,10 +54,12 @@ func NewDNSModifyParamsWithHTTPClient(client *http.Client) *DNSModifyParams {
 	}
 }
 
-/* DNSModifyParams contains all the parameters to send to the API endpoint
-   for the dns modify operation.
+/*
+DNSModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the dns modify operation.
+
+	Typically these are written to a http.Request.
 */
 type DNSModifyParams struct {
 

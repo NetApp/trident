@@ -46,7 +46,8 @@ func NewApplicationComponentSnapshotRestoreAccepted() *ApplicationComponentSnaps
 	return &ApplicationComponentSnapshotRestoreAccepted{}
 }
 
-/* ApplicationComponentSnapshotRestoreAccepted describes a response with status code 202, with default header values.
+/*
+ApplicationComponentSnapshotRestoreAccepted describes a response with status code 202, with default header values.
 
 Accepted
 */
@@ -54,9 +55,39 @@ type ApplicationComponentSnapshotRestoreAccepted struct {
 	Payload *models.JobLinkResponse
 }
 
+// IsSuccess returns true when this application component snapshot restore accepted response has a 2xx status code
+func (o *ApplicationComponentSnapshotRestoreAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this application component snapshot restore accepted response has a 3xx status code
+func (o *ApplicationComponentSnapshotRestoreAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this application component snapshot restore accepted response has a 4xx status code
+func (o *ApplicationComponentSnapshotRestoreAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this application component snapshot restore accepted response has a 5xx status code
+func (o *ApplicationComponentSnapshotRestoreAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this application component snapshot restore accepted response a status code equal to that given
+func (o *ApplicationComponentSnapshotRestoreAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *ApplicationComponentSnapshotRestoreAccepted) Error() string {
 	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots/{uuid}/restore][%d] applicationComponentSnapshotRestoreAccepted  %+v", 202, o.Payload)
 }
+
+func (o *ApplicationComponentSnapshotRestoreAccepted) String() string {
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots/{uuid}/restore][%d] applicationComponentSnapshotRestoreAccepted  %+v", 202, o.Payload)
+}
+
 func (o *ApplicationComponentSnapshotRestoreAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewApplicationComponentSnapshotRestoreDefault(code int) *ApplicationCompone
 	}
 }
 
-/* ApplicationComponentSnapshotRestoreDefault describes a response with status code -1, with default header values.
+/*
+ApplicationComponentSnapshotRestoreDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *ApplicationComponentSnapshotRestoreDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this application component snapshot restore default response has a 2xx status code
+func (o *ApplicationComponentSnapshotRestoreDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this application component snapshot restore default response has a 3xx status code
+func (o *ApplicationComponentSnapshotRestoreDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this application component snapshot restore default response has a 4xx status code
+func (o *ApplicationComponentSnapshotRestoreDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this application component snapshot restore default response has a 5xx status code
+func (o *ApplicationComponentSnapshotRestoreDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this application component snapshot restore default response a status code equal to that given
+func (o *ApplicationComponentSnapshotRestoreDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ApplicationComponentSnapshotRestoreDefault) Error() string {
 	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots/{uuid}/restore][%d] application_component_snapshot_restore default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *ApplicationComponentSnapshotRestoreDefault) String() string {
+	return fmt.Sprintf("[POST /application/applications/{application.uuid}/components/{component.uuid}/snapshots/{uuid}/restore][%d] application_component_snapshot_restore default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *ApplicationComponentSnapshotRestoreDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

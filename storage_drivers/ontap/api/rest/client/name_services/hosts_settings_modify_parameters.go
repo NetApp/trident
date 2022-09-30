@@ -54,10 +54,12 @@ func NewHostsSettingsModifyParamsWithHTTPClient(client *http.Client) *HostsSetti
 	}
 }
 
-/* HostsSettingsModifyParams contains all the parameters to send to the API endpoint
-   for the hosts settings modify operation.
+/*
+HostsSettingsModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the hosts settings modify operation.
+
+	Typically these are written to a http.Request.
 */
 type HostsSettingsModifyParams struct {
 

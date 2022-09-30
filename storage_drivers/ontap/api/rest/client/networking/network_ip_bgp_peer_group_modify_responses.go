@@ -46,14 +46,44 @@ func NewNetworkIPBgpPeerGroupModifyOK() *NetworkIPBgpPeerGroupModifyOK {
 	return &NetworkIPBgpPeerGroupModifyOK{}
 }
 
-/* NetworkIPBgpPeerGroupModifyOK describes a response with status code 200, with default header values.
+/*
+NetworkIPBgpPeerGroupModifyOK describes a response with status code 200, with default header values.
 
 OK
 */
 type NetworkIPBgpPeerGroupModifyOK struct {
 }
 
+// IsSuccess returns true when this network Ip bgp peer group modify o k response has a 2xx status code
+func (o *NetworkIPBgpPeerGroupModifyOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this network Ip bgp peer group modify o k response has a 3xx status code
+func (o *NetworkIPBgpPeerGroupModifyOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this network Ip bgp peer group modify o k response has a 4xx status code
+func (o *NetworkIPBgpPeerGroupModifyOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this network Ip bgp peer group modify o k response has a 5xx status code
+func (o *NetworkIPBgpPeerGroupModifyOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this network Ip bgp peer group modify o k response a status code equal to that given
+func (o *NetworkIPBgpPeerGroupModifyOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NetworkIPBgpPeerGroupModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupModifyOK ", 200)
+}
+
+func (o *NetworkIPBgpPeerGroupModifyOK) String() string {
 	return fmt.Sprintf("[PATCH /network/ip/bgp/peer-groups/{uuid}][%d] networkIpBgpPeerGroupModifyOK ", 200)
 }
 
@@ -69,9 +99,11 @@ func NewNetworkIPBgpPeerGroupModifyDefault(code int) *NetworkIPBgpPeerGroupModif
 	}
 }
 
-/* NetworkIPBgpPeerGroupModifyDefault describes a response with status code -1, with default header values.
+/*
+	NetworkIPBgpPeerGroupModifyDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response Codes
+	ONTAP Error Response Codes
+
 | Error Code | Description |
 | ---------- | ----------- |
 | 1967171 | Internal error. Fail to access or update BGP peer group. Retry the command, if necessary. |
@@ -80,7 +112,6 @@ func NewNetworkIPBgpPeerGroupModifyDefault(code int) *NetworkIPBgpPeerGroupModif
 | 53282006 | BGP peer group could not be updated to use a peer address because the value provided is not a valid peer address. If necessary, try the command again with a routable host address. |
 | 53282007 | BGP peer group could not be updated to use a peer address because the address represents a different address family to the address of the associated BGP LIF. If necessary, try the command again with a matching address family. |
 | 53282018 | Failed to create BGP peer group because an existing peer group has already established a BGP session between LIF and peer address. If necessary, try the command again with a different BGP LIF or a different peer address. |
-
 */
 type NetworkIPBgpPeerGroupModifyDefault struct {
 	_statusCode int
@@ -93,9 +124,39 @@ func (o *NetworkIPBgpPeerGroupModifyDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this network ip bgp peer group modify default response has a 2xx status code
+func (o *NetworkIPBgpPeerGroupModifyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this network ip bgp peer group modify default response has a 3xx status code
+func (o *NetworkIPBgpPeerGroupModifyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this network ip bgp peer group modify default response has a 4xx status code
+func (o *NetworkIPBgpPeerGroupModifyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this network ip bgp peer group modify default response has a 5xx status code
+func (o *NetworkIPBgpPeerGroupModifyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this network ip bgp peer group modify default response a status code equal to that given
+func (o *NetworkIPBgpPeerGroupModifyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NetworkIPBgpPeerGroupModifyDefault) Error() string {
 	return fmt.Sprintf("[PATCH /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_modify default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NetworkIPBgpPeerGroupModifyDefault) String() string {
+	return fmt.Sprintf("[PATCH /network/ip/bgp/peer-groups/{uuid}][%d] network_ip_bgp_peer_group_modify default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NetworkIPBgpPeerGroupModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

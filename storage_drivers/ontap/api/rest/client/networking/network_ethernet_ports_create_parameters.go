@@ -55,10 +55,12 @@ func NewNetworkEthernetPortsCreateParamsWithHTTPClient(client *http.Client) *Net
 	}
 }
 
-/* NetworkEthernetPortsCreateParams contains all the parameters to send to the API endpoint
-   for the network ethernet ports create operation.
+/*
+NetworkEthernetPortsCreateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the network ethernet ports create operation.
+
+	Typically these are written to a http.Request.
 */
 type NetworkEthernetPortsCreateParams struct {
 

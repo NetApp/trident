@@ -46,7 +46,8 @@ func NewNdmpNodeSessionGetOK() *NdmpNodeSessionGetOK {
 	return &NdmpNodeSessionGetOK{}
 }
 
-/* NdmpNodeSessionGetOK describes a response with status code 200, with default header values.
+/*
+NdmpNodeSessionGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type NdmpNodeSessionGetOK struct {
 	Payload *models.NdmpSession
 }
 
+// IsSuccess returns true when this ndmp node session get o k response has a 2xx status code
+func (o *NdmpNodeSessionGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this ndmp node session get o k response has a 3xx status code
+func (o *NdmpNodeSessionGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this ndmp node session get o k response has a 4xx status code
+func (o *NdmpNodeSessionGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this ndmp node session get o k response has a 5xx status code
+func (o *NdmpNodeSessionGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this ndmp node session get o k response a status code equal to that given
+func (o *NdmpNodeSessionGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *NdmpNodeSessionGetOK) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/sessions/{owner.uuid}/{session.id}][%d] ndmpNodeSessionGetOK  %+v", 200, o.Payload)
 }
+
+func (o *NdmpNodeSessionGetOK) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/sessions/{owner.uuid}/{session.id}][%d] ndmpNodeSessionGetOK  %+v", 200, o.Payload)
+}
+
 func (o *NdmpNodeSessionGetOK) GetPayload() *models.NdmpSession {
 	return o.Payload
 }
@@ -80,13 +111,14 @@ func NewNdmpNodeSessionGetDefault(code int) *NdmpNodeSessionGetDefault {
 	}
 }
 
-/* NdmpNodeSessionGetDefault describes a response with status code -1, with default header values.
+/*
+	NdmpNodeSessionGetDefault describes a response with status code -1, with default header values.
 
- ONTAP Error Response codes
+	ONTAP Error Response codes
+
 | Error code  |  Description |
 |-------------|--------------|
 | 68812802    | The UUID is not valid.|
-
 */
 type NdmpNodeSessionGetDefault struct {
 	_statusCode int
@@ -99,9 +131,39 @@ func (o *NdmpNodeSessionGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this ndmp node session get default response has a 2xx status code
+func (o *NdmpNodeSessionGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this ndmp node session get default response has a 3xx status code
+func (o *NdmpNodeSessionGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this ndmp node session get default response has a 4xx status code
+func (o *NdmpNodeSessionGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this ndmp node session get default response has a 5xx status code
+func (o *NdmpNodeSessionGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this ndmp node session get default response a status code equal to that given
+func (o *NdmpNodeSessionGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *NdmpNodeSessionGetDefault) Error() string {
 	return fmt.Sprintf("[GET /protocols/ndmp/sessions/{owner.uuid}/{session.id}][%d] ndmp_node_session_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *NdmpNodeSessionGetDefault) String() string {
+	return fmt.Sprintf("[GET /protocols/ndmp/sessions/{owner.uuid}/{session.id}][%d] ndmp_node_session_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *NdmpNodeSessionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

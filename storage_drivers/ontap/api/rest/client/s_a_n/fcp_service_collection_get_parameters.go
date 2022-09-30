@@ -53,10 +53,12 @@ func NewFcpServiceCollectionGetParamsWithHTTPClient(client *http.Client) *FcpSer
 	}
 }
 
-/* FcpServiceCollectionGetParams contains all the parameters to send to the API endpoint
-   for the fcp service collection get operation.
+/*
+FcpServiceCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the fcp service collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type FcpServiceCollectionGetParams struct {
 

@@ -46,7 +46,8 @@ func NewQosWorkloadGetOK() *QosWorkloadGetOK {
 	return &QosWorkloadGetOK{}
 }
 
-/* QosWorkloadGetOK describes a response with status code 200, with default header values.
+/*
+QosWorkloadGetOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -54,9 +55,39 @@ type QosWorkloadGetOK struct {
 	Payload *models.QosWorkload
 }
 
+// IsSuccess returns true when this qos workload get o k response has a 2xx status code
+func (o *QosWorkloadGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this qos workload get o k response has a 3xx status code
+func (o *QosWorkloadGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this qos workload get o k response has a 4xx status code
+func (o *QosWorkloadGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this qos workload get o k response has a 5xx status code
+func (o *QosWorkloadGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this qos workload get o k response a status code equal to that given
+func (o *QosWorkloadGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *QosWorkloadGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qosWorkloadGetOK  %+v", 200, o.Payload)
 }
+
+func (o *QosWorkloadGetOK) String() string {
+	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qosWorkloadGetOK  %+v", 200, o.Payload)
+}
+
 func (o *QosWorkloadGetOK) GetPayload() *models.QosWorkload {
 	return o.Payload
 }
@@ -80,7 +111,8 @@ func NewQosWorkloadGetDefault(code int) *QosWorkloadGetDefault {
 	}
 }
 
-/* QosWorkloadGetDefault describes a response with status code -1, with default header values.
+/*
+QosWorkloadGetDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,9 +127,39 @@ func (o *QosWorkloadGetDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this qos workload get default response has a 2xx status code
+func (o *QosWorkloadGetDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this qos workload get default response has a 3xx status code
+func (o *QosWorkloadGetDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this qos workload get default response has a 4xx status code
+func (o *QosWorkloadGetDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this qos workload get default response has a 5xx status code
+func (o *QosWorkloadGetDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this qos workload get default response a status code equal to that given
+func (o *QosWorkloadGetDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *QosWorkloadGetDefault) Error() string {
 	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qos_workload_get default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *QosWorkloadGetDefault) String() string {
+	return fmt.Sprintf("[GET /storage/qos/workloads/{uuid}][%d] qos_workload_get default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *QosWorkloadGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload
 }

@@ -17,7 +17,7 @@ import (
 )
 
 // QuotaRule quota rule
-// Example: {"files":{"hard_limit":"100","soft_limit":"80"},"qtree":{"id":"1","name":"qt1"},"space":{"hard_limit":"1222800","soft_limit":"51200"},"svm":{"name":"svm1"},"type":"user","user_mapping":true,"users":[{"name":"fred"}],"uuid":"264a9e0b-2e03-11e9-a610-005056a7b72d","volume":{"name":"fv"}}
+// Example: {"files":{"hard_limit":"100","soft_limit":"80"},"qtree":{"id":"1","name":"qt1"},"space":{"hard_limit":"1222800","soft_limit":"51200"},"svm":{"name":"svm1"},"type":"user","user_mapping":"on","users":[{"name":"fred"}],"uuid":"264a9e0b-2e03-11e9-a610-005056a7b72d","volume":{"name":"fv"}}
 //
 // swagger:model quota_rule
 type QuotaRule struct {

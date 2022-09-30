@@ -52,10 +52,12 @@ func NewEmsDestinationDeleteParamsWithHTTPClient(client *http.Client) *EmsDestin
 	}
 }
 
-/* EmsDestinationDeleteParams contains all the parameters to send to the API endpoint
-   for the ems destination delete operation.
+/*
+EmsDestinationDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the ems destination delete operation.
+
+	Typically these are written to a http.Request.
 */
 type EmsDestinationDeleteParams struct {
 

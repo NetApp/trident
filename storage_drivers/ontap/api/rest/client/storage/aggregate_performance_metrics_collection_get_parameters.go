@@ -53,10 +53,12 @@ func NewAggregatePerformanceMetricsCollectionGetParamsWithHTTPClient(client *htt
 	}
 }
 
-/* AggregatePerformanceMetricsCollectionGetParams contains all the parameters to send to the API endpoint
-   for the aggregate performance metrics collection get operation.
+/*
+AggregatePerformanceMetricsCollectionGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the aggregate performance metrics collection get operation.
+
+	Typically these are written to a http.Request.
 */
 type AggregatePerformanceMetricsCollectionGetParams struct {
 

@@ -55,10 +55,12 @@ func NewConsistencyGroupModifyParamsWithHTTPClient(client *http.Client) *Consist
 	}
 }
 
-/* ConsistencyGroupModifyParams contains all the parameters to send to the API endpoint
-   for the consistency group modify operation.
+/*
+ConsistencyGroupModifyParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the consistency group modify operation.
+
+	Typically these are written to a http.Request.
 */
 type ConsistencyGroupModifyParams struct {
 
