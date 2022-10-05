@@ -29,7 +29,7 @@ import (
 
 const (
 	MinimumVolumeSizeBytes      = uint64(1000000000)   // 1 GB
-	MinimumCVSVolumeSizeBytesSW = uint64(322122547200) // 300 GiB
+	MinimumCVSVolumeSizeBytesSW = uint64(107374182400) // 100 GiB
 	MinimumCVSVolumeSizeBytesHW = uint64(107374182400) // 100 GiB
 	MinimumAPIVersion           = "1.1.6"
 	MinimumSDEVersion           = "2020.10.0"
