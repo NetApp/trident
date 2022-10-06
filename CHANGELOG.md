@@ -8,6 +8,7 @@
 
 - Fixed issue specific to ONTAP backend created using `credentials` field failing to come online during 22.07.0
   upgrade (Issue [#759](https://github.com/NetApp/trident/issues/759))
+- Fixed SLM issue specific to ONTAP SAN backends to ensure only subset of data LIFs belonging to reporting nodes are published.
 
 **Enhancements**
 

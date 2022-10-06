@@ -489,8 +489,7 @@ func GetOntapDriverRedactList() []string {
 // PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
 // This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
 func PopulateOntapLunMapping(
-	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
-	ips []string, volConfig *storage.VolumeConfig, lunID int, lunPath, igroupName string,
+	ctx context.Context, clientAPI api.OntapAPI, ips []string, volConfig *storage.VolumeConfig, lunID int, lunPath, igroupName string,
 ) error {
 	var targetIQN string
 	targetIQN, err := clientAPI.IscsiNodeGetNameRequest(ctx)
@@ -504,7 +503,8 @@ func PopulateOntapLunMapping(
 	}
 	serial := lunResponse.SerialNumber
 
-	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName)
+	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName,
+		volConfig.ImportNotManaged)
 	if err != nil {
 		return err
 	}
@@ -632,7 +632,8 @@ func PublishLUN(
 		return err
 	}
 
-	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName)
+	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName,
+		publishInfo.Unmanaged)
 	if err != nil {
 		return err
 	}
@@ -670,37 +671,41 @@ func PublishLUN(
 
 // getISCSIDataLIFsForReportingNodes finds the data LIFs for the reporting nodes for the LUN.
 func getISCSIDataLIFsForReportingNodes(
-	ctx context.Context, clientAPI api.OntapAPI, ips []string, lunPath, igroupName string,
+	ctx context.Context, clientAPI api.OntapAPI, ips []string, lunPath, igroupName string, unmanagedImport bool,
 ) ([]string, error) {
+	fields := log.Fields{
+		"ips":     ips,
+		"lunPath": lunPath,
+		"igroup":  igroupName,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> getISCSIDataLIFsForReportingNodes")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getISCSIDataLIFsForReportingNodes")
+
+	if len(ips) < 1 {
+		return nil, fmt.Errorf("missing data LIF information")
+	}
+
 	reportingNodes, err := clientAPI.LunMapGetReportingNodes(ctx, igroupName, lunPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not get iSCSI reported nodes: %v", err)
 	}
 
-	reportingNodeNames := make(map[string]struct{})
-	if reportingNodes != nil {
-		for _, reportingNode := range reportingNodes {
-			Logc(ctx).WithField("reportingNode", reportingNode).Debug("Reporting node found.")
-			reportingNodeNames[reportingNode] = struct{}{}
-		}
+	// TODO(arorar): Since, unmanaged imports do not adhere to Publish Enforcement yet they are not re-assigned to
+	//               a Trident managed iGroup, thus it is very much possible to get zero reporting nodes and/or
+	//               zero SLM dataLIFs. Thus adding this ugly temporary ugly condition to handle that scenario.
+	if !unmanagedImport && len(reportingNodes) < 1 {
+		return nil, fmt.Errorf("no reporting nodes found")
 	}
 
-	currentNode, reportedDataLIFs, err := clientAPI.GetReportedDataLifs(ctx)
+	reportedDataLIFs, err := clientAPI.GetSLMDataLifs(ctx, ips, reportingNodes)
 	if err != nil {
 		return nil, err
-	}
-	var dataLIFs []string
-	for _, ip := range ips {
-		if _, ok := reportingNodeNames[currentNode]; ok {
-			for _, lif := range reportedDataLIFs {
-				if lif == ip {
-					dataLIFs = append(dataLIFs, ip)
-				}
-			}
-		}
+	} else if !unmanagedImport && len(reportedDataLIFs) < 1 {
+		return nil, fmt.Errorf("no reporting data LIFs found")
 	}
 
-	return dataLIFs, nil
+	Logc(ctx).WithField("reportedDataLIFs", reportedDataLIFs).Debug("Data LIFs with reporting nodes.")
+	return reportedDataLIFs, nil
 }
 
 // ValidateBidrectionalChapCredentials validates the bidirectional CHAP settings

@@ -557,7 +557,8 @@ func TestOntapSanUnpublish(t *testing.T) {
 				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(1, nil)
 				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
 				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return([]string{}, nil) // Return 0 LUNs
-				mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(nil)                    // iGroup should be deleted
+				mockAPI.EXPECT().IgroupDestroy(ctx,
+					igroupName).Return(nil) // iGroup should be deleted
 			},
 			wantErr: assert.NoError,
 		},
@@ -578,7 +579,8 @@ func TestOntapSanUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string) {
 				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(-1, nil)          // -1 indicates not mapped
 				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return([]string{}, nil) // Return 0 LUNs
-				mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(nil)                    // iGroup should be deleted
+				mockAPI.EXPECT().IgroupDestroy(ctx,
+					igroupName).Return(nil) // iGroup should be deleted
 			},
 			wantErr: assert.NoError,
 		},
@@ -653,4 +655,128 @@ func TestOntapSanUnpublish(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestOntapSanVolumePublishManaged(t *testing.T) {
+	ctx := context.Background()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d.API = mockAPI
+	d.ips = []string{"127.0.0.1"}
+
+	volConfig := &storage.VolumeConfig{
+		InternalName: "lunName",
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "xfs",
+	}
+
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:         "bar",
+		HostIQN:          []string{"host_iqn"},
+		TridentUUID:      "1234",
+		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		Unmanaged:        false,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{AccessType: VolTypeRW}, nil)
+	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
+	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
+	mockAPI.EXPECT().LunGetComment(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
+	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"1.1.1.1"}, nil)
+
+	err := d.Publish(ctx, volConfig, publishInfo)
+	assert.Nil(t, err, "Error is not nil")
+}
+
+func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
+	ctx := context.Background()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d.API = mockAPI
+	d.ips = []string{"127.0.0.1"}
+
+	volConfig := &storage.VolumeConfig{
+		InternalName: "lunName",
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "xfs",
+	}
+
+	// TODO(arorar): Since, unmanaged imports do not adhere to Publish Enforcement yet they are not re-assigned to
+	//               a Trident managed iGroup, thus it is very much possible to get zero reporting nodes and/or
+	//               zero SLM dataLIFs. Once that is changed,
+	//               this test case should be same as the TestOntapSanVolumePublishManaged.
+
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:    "bar",
+		HostIQN:     []string{"host_iqn"},
+		TridentUUID: "1234",
+		// VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		Unmanaged: true,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{AccessType: VolTypeRW}, nil)
+	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
+	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
+	mockAPI.EXPECT().LunGetComment(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{}, nil)
+
+	err := d.Publish(ctx, volConfig, publishInfo)
+	assert.Nil(t, err, "Error is not nil")
+}
+
+func TestOntapSanVolumePublishSLMError(t *testing.T) {
+	ctx := context.Background()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d.API = mockAPI
+	d.ips = []string{"127.0.0.1"}
+
+	volConfig := &storage.VolumeConfig{
+		InternalName: "lunName",
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "xfs",
+	}
+
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:         "bar",
+		HostIQN:          []string{"host_iqn"},
+		TridentUUID:      "1234",
+		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		Unmanaged:        false,
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{AccessType: VolTypeRW}, nil)
+	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
+	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
+	mockAPI.EXPECT().LunGetComment(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
+	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{}, nil)
+
+	err := d.Publish(ctx, volConfig, publishInfo)
+	assert.Errorf(t, err, "no reporting nodes found")
 }

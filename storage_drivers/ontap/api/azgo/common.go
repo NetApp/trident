@@ -23,7 +23,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logger"
-	utils "github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils"
 )
 
 type ZAPIRequest interface {

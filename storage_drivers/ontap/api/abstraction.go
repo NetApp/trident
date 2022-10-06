@@ -140,7 +140,7 @@ type OntapAPI interface {
 	QuotaSetEntry(ctx context.Context, qtreeName, volumeName, quotaType, diskLimit string) error
 	QuotaGetEntry(ctx context.Context, volumeName, qtreeName, quotaType string) (*QuotaEntry, error)
 
-	GetReportedDataLifs(ctx context.Context) (string, []string, error)
+	GetSLMDataLifs(ctx context.Context, ips, reportingNodeNames []string) ([]string, error)
 	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 

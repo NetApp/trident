@@ -2039,22 +2039,41 @@ func (d OntapAPIREST) IgroupGetByName(ctx context.Context, initiatorGroupName st
 	return mappedIQNs, nil
 }
 
-func (d OntapAPIREST) GetReportedDataLifs(ctx context.Context) (string, []string, error) {
+// GetSLMDataLifs returns IP addresses whose node name matches reporting node names
+func (d OntapAPIREST) GetSLMDataLifs(ctx context.Context, ips, reportingNodeNames []string) ([]string, error) {
 	var reportedDataLIFs []string
-	var currentNode string
+
+	if len(ips) == 0 || len(reportingNodeNames) == 0 {
+		return nil, nil
+	}
+
 	netInterfaces, err := d.api.NetworkIPInterfacesList(ctx)
 	if err != nil {
-		return currentNode, nil, err
+		return nil, fmt.Errorf("error checking network interfaces: %v", err)
 	}
+
+	if netInterfaces == nil || netInterfaces.Payload == nil {
+		Logc(ctx).Debug("Net interface REST API returned a empty response.")
+		return nil, nil
+	}
+
 	if netInterfaces.Payload.Records != nil {
 		for _, netInterface := range netInterfaces.Payload.Records {
-			if netInterface.State == "up" {
-				reportedDataLIFs = append(reportedDataLIFs, string(netInterface.IP.Address))
+			if netInterface.Location != nil && netInterface.Location.Node != nil && netInterface.IP != nil {
+				nodeName := netInterface.Location.Node.Name
+				ipAddress := string(netInterface.IP.Address)
+
+				if nodeName != "" && ipAddress != "" {
+					if utils.SliceContainsString(ips, ipAddress) &&
+						utils.SliceContainsString(reportingNodeNames, nodeName) {
+						reportedDataLIFs = append(reportedDataLIFs, ipAddress)
+					}
+				}
 			}
-			currentNode = netInterface.Location.Node.Name
 		}
 	}
-	return currentNode, reportedDataLIFs, nil
+
+	return reportedDataLIFs, nil
 }
 
 func (d OntapAPIREST) GetSVMUUID() string {

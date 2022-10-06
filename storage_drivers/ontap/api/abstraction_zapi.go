@@ -363,7 +363,8 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 					// This limit is model dependent therefore we must handle the error after-the-fact.
 					// Add the full flexvol to the ignored list and find/create a new one
 					Logc(ctx).WithError(err).Warn("ONTAP limit for LUNs/Flexvol reached; finding a new Flexvol")
-					err = TooManyLunsError(fmt.Sprintf("ONTAP limit for LUNs/Flexvol reached; finding a new Flexvol, %s", lun.Name))
+					err = TooManyLunsError(fmt.Sprintf("ONTAP limit for LUNs/Flexvol reached; finding a new Flexvol, %s",
+						lun.Name))
 				}
 			}
 		}
@@ -804,23 +805,42 @@ func (d OntapAPIZAPI) IgroupGetByName(ctx context.Context, initiatorGroupName st
 	return mappedIQNs, nil
 }
 
-func (d OntapAPIZAPI) GetReportedDataLifs(ctx context.Context) (string, []string, error) {
+// GetSLMDataLifs returns IP addresses whose node name matches reporting node names
+func (d OntapAPIZAPI) GetSLMDataLifs(ctx context.Context, ips, reportingNodeNames []string) ([]string, error) {
 	var reportedDataLIFs []string
-	var currentNode string
+
+	if len(ips) == 0 || len(reportingNodeNames) == 0 {
+		return nil, nil
+	}
+
 	response, err := d.api.NetInterfaceGet()
 	if err != nil {
-		return currentNode, nil, nil
+		return nil, fmt.Errorf("error checking network interfaces: %v", err)
 	}
-	if response.Result.AttributesListPtr != nil && response.Result.AttributesListPtr.NetInterfaceInfoPtr != nil {
+
+	if response == nil {
+		Logc(ctx).Debug("Net interface returned a empty response.")
+		return nil, nil
+	}
+
+	if response.Result.AttributesListPtr != nil && response.Result.AttributesListPtr.
+		NetInterfaceInfoPtr != nil {
 		for _, netInterface := range response.Result.AttributesListPtr.NetInterfaceInfo() {
-			if netInterface.CurrentNodePtr != nil {
-				currentNode = netInterface.CurrentNode()
+			if netInterface.CurrentNodePtr != nil && netInterface.AddressPtr != nil {
+				nodeName := netInterface.CurrentNode()
+				ipAddress := netInterface.Address()
+
+				if nodeName != "" && ipAddress != "" {
+					if utils.SliceContainsString(ips, ipAddress) &&
+						utils.SliceContainsString(reportingNodeNames, nodeName) {
+						reportedDataLIFs = append(reportedDataLIFs, ipAddress)
+					}
+				}
 			}
-			reportedDataLIFs = append(reportedDataLIFs, netInterface.Address())
 		}
 	}
 
-	return currentNode, reportedDataLIFs, nil
+	return reportedDataLIFs, nil
 }
 
 func NewOntapAPIZAPI(zapiClient *Client) (OntapAPIZAPI, error) {

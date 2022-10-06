@@ -635,7 +635,8 @@ func (d *SANEconomyStorageDriver) Create(
 		volConfig.Size = strconv.FormatUint(actualSize, 10)
 
 		// Save the fstype in a LUN attribute so we know what to do in Attach
-		err = d.API.LunSetAttribute(ctx, lunPathEco, LUNAttributeFSType, fstype, string(d.Config.DriverContext), luksEncryption)
+		err = d.API.LunSetAttribute(ctx, lunPathEco, LUNAttributeFSType, fstype, string(d.Config.DriverContext),
+			luksEncryption)
 		if err != nil {
 
 			errMessage := fmt.Sprintf(
@@ -1362,7 +1363,8 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 		encryption      = volumeAttributes.Encrypt
 	)
 
-	snapshotReserveInt, err := GetSnapshotReserve(volumeAttributes.SnapshotPolicy, storagePool.InternalAttributes()[SnapshotReserve])
+	snapshotReserveInt, err := GetSnapshotReserve(volumeAttributes.SnapshotPolicy,
+		storagePool.InternalAttributes()[SnapshotReserve])
 	if err != nil {
 		return "", fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
@@ -1622,7 +1624,7 @@ func (d *SANEconomyStorageDriver) mapOntapSANLUN(ctx context.Context, volConfig 
 		return err
 	}
 
-	err = PopulateOntapLunMapping(ctx, d.API, &d.Config, d.ips, volConfig, lunID, lunPath, d.Config.IgroupName)
+	err = PopulateOntapLunMapping(ctx, d.API, d.ips, volConfig, lunID, lunPath, d.Config.IgroupName)
 	if err != nil {
 		return fmt.Errorf("error mapping LUN for %s driver: %v", d.Name(), err)
 	}

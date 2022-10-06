@@ -14,6 +14,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
@@ -180,7 +181,8 @@ func TestZapiGetSVMAggregateSpace(t *testing.T) {
 	).AnyTimes()
 
 	result, err := d.GetSVMAggregateSpace(ctx, aggr)
-	assert.Equal(t, "could not determine aggregate space, cannot check aggregate provisioning limits for aggr1", err.Error())
+	assert.Equal(t, "could not determine aggregate space, cannot check aggregate provisioning limits for aggr1",
+		err.Error())
 	assert.Equal(t, 0, len(result))
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -694,4 +696,949 @@ func TestGetEncryptionValue(t *testing.T) {
 	val, err = GetEncryptionValue(encryption)
 	assert.NoError(t, err)
 	assert.Equal(t, false, *val)
+}
+
+func TestZapiGetSLMLifs(t *testing.T) {
+	ctx := context.Background()
+
+	ips := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "7.7.7.7", "8.8.8.8"}
+	nodes := []string{"node1", "node2", "node3", "node4", "node5"}
+	reportingNodes := []string{"node1", "node2"}
+	ipToNodeMapping := map[string]string{
+		ips[0]: nodes[0],
+		ips[1]: nodes[0],
+		ips[2]: nodes[1],
+		ips[3]: nodes[1],
+		ips[4]: nodes[2],
+		ips[5]: nodes[2],
+		ips[6]: nodes[3],
+		ips[7]: nodes[3],
+	}
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  nil result, ensure we do not panic
+	mockZapiClient := newMockZapiClient(t)
+	d, err := api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+	assert.Nil(t, err)
+	assert.NotNil(t, d)
+
+	returnErr := fmt.Errorf("some error")
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			return nil, returnErr
+		},
+	).AnyTimes()
+
+	result, err := d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Contains(t, err.Error(), returnErr.Error())
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			return nil, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: []azgo.NetInterfaceInfoType{},
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: []azgo.NetInterfaceInfoType{
+							{},
+						},
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result when there are no reporting nodes
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	infos := []azgo.NetInterfaceInfoType{}
+
+	for ip, node := range ipToNodeMapping {
+		info := azgo.NetInterfaceInfoType{}
+		info.SetCurrentNode(node)
+		info.SetAddress(ip)
+
+		infos = append(infos, info)
+	}
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: infos,
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, []string{})
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result when the reporting nodes is nil
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	infos = []azgo.NetInterfaceInfoType{}
+
+	for ip, node := range ipToNodeMapping {
+		info := azgo.NetInterfaceInfoType{}
+		info.SetCurrentNode(node)
+		info.SetAddress(ip)
+
+		infos = append(infos, info)
+	}
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: infos,
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, nil)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result when the ips is nil
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	infos = []azgo.NetInterfaceInfoType{}
+
+	for ip, node := range ipToNodeMapping {
+		info := azgo.NetInterfaceInfoType{}
+		info.SetCurrentNode(node)
+		info.SetAddress(ip)
+
+		infos = append(infos, info)
+	}
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: infos,
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, nil, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result when the ips and reporting nodes are nil
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	infos = []azgo.NetInterfaceInfoType{}
+
+	for ip, node := range ipToNodeMapping {
+		info := azgo.NetInterfaceInfoType{}
+		info.SetCurrentNode(node)
+		info.SetAddress(ip)
+
+		infos = append(infos, info)
+	}
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: infos,
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, nil, nil)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should be able to return the reporting LIFs
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	infos = []azgo.NetInterfaceInfoType{}
+
+	for ip, node := range ipToNodeMapping {
+		info := azgo.NetInterfaceInfoType{}
+		info.SetCurrentNode(node)
+		info.SetAddress(ip)
+
+		infos = append(infos, info)
+	}
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: infos,
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(result))
+
+	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should be able to return the reporting LIFs when one of the reporting nodes has no LIF
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	infos = []azgo.NetInterfaceInfoType{}
+
+	for ip, node := range ipToNodeMapping {
+		info := azgo.NetInterfaceInfoType{}
+		info.SetCurrentNode(node)
+		info.SetAddress(ip)
+
+		infos = append(infos, info)
+	}
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: infos,
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, append(reportingNodes, "node5"))
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(result))
+
+	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should be able to return the reporting LIFs when one of the reporting nodes has no LIF
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	infos = []azgo.NetInterfaceInfoType{}
+
+	for ip, node := range ipToNodeMapping {
+		info := azgo.NetInterfaceInfoType{}
+		info.SetCurrentNode(node)
+		info.SetAddress(ip)
+
+		infos = append(infos, info)
+	}
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: infos,
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, append(ips, "9.9.9.9"), reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(result))
+
+	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should be able to return the reporting LIFs when net interface is missing IP
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	infos = []azgo.NetInterfaceInfoType{}
+
+	for ip, node := range ipToNodeMapping {
+		info := azgo.NetInterfaceInfoType{}
+		info.SetCurrentNode(node)
+		info.SetAddress(ip)
+
+		infos = append(infos, info)
+	}
+
+	// Extra entry but without IP address
+	info := azgo.NetInterfaceInfoType{}
+	info.SetCurrentNode("node1")
+	infos = append(infos, info)
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: infos,
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(result))
+
+	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should be able to return the reporting LIFs when one reporting nodes is missing
+	mockZapiClient = newMockZapiClient(t)
+	d, _ = api.NewOntapAPIZAPIFromZapiClientInterface(mockZapiClient)
+
+	infos = []azgo.NetInterfaceInfoType{}
+
+	for ip, node := range ipToNodeMapping {
+		info := azgo.NetInterfaceInfoType{}
+		info.SetCurrentNode(node)
+		info.SetAddress(ip)
+
+		infos = append(infos, info)
+	}
+
+	// Extra entry but without IP address
+	info = azgo.NetInterfaceInfoType{}
+	info.SetAddress("1.2.3.4")
+	infos = append(infos, info)
+
+	mockZapiClient.EXPECT().NetInterfaceGet().DoAndReturn(
+		func() (*azgo.NetInterfaceGetIterResponse, error) {
+			result := &azgo.NetInterfaceGetIterResponse{
+				Result: azgo.NetInterfaceGetIterResponseResult{
+					AttributesListPtr: &azgo.NetInterfaceGetIterResponseResultAttributesList{
+						NetInterfaceInfoPtr: infos,
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, append(ips, "1.2.34"), reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(result))
+
+	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
+}
+
+func TestRestGetSLMLifs(t *testing.T) {
+	ctx := context.Background()
+
+	ips := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "7.7.7.7", "8.8.8.8"}
+	nodes := []string{"node1", "node2", "node3", "node4", "node5"}
+	reportingNodes := []string{"node1", "node2"}
+	ipToNodeMapping := map[string]string{
+		ips[0]: nodes[0],
+		ips[1]: nodes[0],
+		ips[2]: nodes[1],
+		ips[3]: nodes[1],
+		ips[4]: nodes[2],
+		ips[5]: nodes[2],
+		ips[6]: nodes[3],
+		ips[7]: nodes[3],
+	}
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  nil result, ensure we do not panic
+	mockRestClient := newMockRestClient(t)
+	d, err := api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+	assert.Nil(t, err)
+	assert.NotNil(t, d)
+
+	returnErr := fmt.Errorf("some error")
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			return nil, returnErr
+		},
+	).AnyTimes()
+
+	result, err := d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Contains(t, err.Error(), returnErr.Error())
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			return nil, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: []*models.IPInterface{},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: []*models.IPInterface{},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result when there are no reporting nodes
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	infos := []*models.IPInterface{}
+
+	for ip, node := range ipToNodeMapping {
+		info := &models.IPInterface{
+			Location: &models.IPInterfaceLocation{
+				Node: &models.IPInterfaceLocationNode{
+					Name: node,
+				},
+			},
+			IP: &models.IPInfo{
+				Address: models.IPAddress(ip),
+			},
+		}
+
+		infos = append(infos, info)
+	}
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: infos,
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, []string{})
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result when the reporting nodes is nil
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	infos = []*models.IPInterface{}
+
+	for ip, node := range ipToNodeMapping {
+		info := &models.IPInterface{
+			Location: &models.IPInterfaceLocation{
+				Node: &models.IPInterfaceLocationNode{
+					Name: node,
+				},
+			},
+			IP: &models.IPInfo{
+				Address: models.IPAddress(ip),
+			},
+		}
+
+		infos = append(infos, info)
+	}
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: infos,
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, nil)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result when the ips is nil
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	infos = []*models.IPInterface{}
+
+	for ip, node := range ipToNodeMapping {
+		info := &models.IPInterface{
+			Location: &models.IPInterfaceLocation{
+				Node: &models.IPInterfaceLocationNode{
+					Name: node,
+				},
+			},
+			IP: &models.IPInfo{
+				Address: models.IPAddress(ip),
+			},
+		}
+
+		infos = append(infos, info)
+	}
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: infos,
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, nil, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result when the ips and reporting nodes are nil
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	infos = []*models.IPInterface{}
+
+	for ip, node := range ipToNodeMapping {
+		info := &models.IPInterface{
+			Location: &models.IPInterfaceLocation{
+				Node: &models.IPInterfaceLocationNode{
+					Name: node,
+				},
+			},
+			IP: &models.IPInfo{
+				Address: models.IPAddress(ip),
+			},
+		}
+
+		infos = append(infos, info)
+	}
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: infos,
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, nil, nil)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(result))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should be able to return the reporting LIFs
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	infos = []*models.IPInterface{}
+
+	for ip, node := range ipToNodeMapping {
+		info := &models.IPInterface{
+			Location: &models.IPInterfaceLocation{
+				Node: &models.IPInterfaceLocationNode{
+					Name: node,
+				},
+			},
+			IP: &models.IPInfo{
+				Address: models.IPAddress(ip),
+			},
+		}
+
+		infos = append(infos, info)
+	}
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: infos,
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(result))
+
+	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should be able to return the reporting LIFs when one of the reporting nodes has no LIF
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	infos = []*models.IPInterface{}
+
+	for ip, node := range ipToNodeMapping {
+		info := &models.IPInterface{
+			Location: &models.IPInterfaceLocation{
+				Node: &models.IPInterfaceLocationNode{
+					Name: node,
+				},
+			},
+			IP: &models.IPInfo{
+				Address: models.IPAddress(ip),
+			},
+		}
+
+		infos = append(infos, info)
+	}
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: infos,
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, append(reportingNodes, "node5"))
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(result))
+
+	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should be able to return the reporting LIFs when one of the reporting nodes has no LIF
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	infos = []*models.IPInterface{}
+
+	for ip, node := range ipToNodeMapping {
+		info := &models.IPInterface{
+			Location: &models.IPInterfaceLocation{
+				Node: &models.IPInterfaceLocationNode{
+					Name: node,
+				},
+			},
+			IP: &models.IPInfo{
+				Address: models.IPAddress(ip),
+			},
+		}
+
+		infos = append(infos, info)
+	}
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: infos,
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, append(ips, "9.9.9.9"), reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(result))
+
+	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should be able to return the reporting LIFs when net interface is missing IP
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	infos = []*models.IPInterface{}
+
+	for ip, node := range ipToNodeMapping {
+		info := &models.IPInterface{
+			Location: &models.IPInterfaceLocation{
+				Node: &models.IPInterfaceLocationNode{
+					Name: node,
+				},
+			},
+			IP: &models.IPInfo{
+				Address: models.IPAddress(ip),
+			},
+		}
+
+		infos = append(infos, info)
+	}
+
+	// Extra entry but without IP address
+	info := &models.IPInterface{
+		Location: &models.IPInterfaceLocation{
+			Node: &models.IPInterfaceLocationNode{
+				Name: "node1",
+			},
+		},
+	}
+	infos = append(infos, info)
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: infos,
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, ips, reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(result))
+
+	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should be able to return the reporting LIFs when one reporting nodes is missing
+	mockRestClient = newMockRestClient(t)
+	d, _ = api.NewOntapAPIRESTFromRestClientInterface(mockRestClient)
+
+	infos = []*models.IPInterface{}
+
+	for ip, node := range ipToNodeMapping {
+		info := &models.IPInterface{
+			Location: &models.IPInterfaceLocation{
+				Node: &models.IPInterfaceLocationNode{
+					Name: node,
+				},
+			},
+			IP: &models.IPInfo{
+				Address: models.IPAddress(ip),
+			},
+		}
+
+		infos = append(infos, info)
+	}
+
+	// Extra entry but without IP address
+	info = &models.IPInterface{
+		IP: &models.IPInfo{
+			Address: "1.2.3.4",
+		},
+	}
+	infos = append(infos, info)
+
+	mockRestClient.EXPECT().NetworkIPInterfacesList(gomock.Any()).DoAndReturn(
+		func(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
+			result := &networking.NetworkIPInterfacesGetOK{
+				Payload: &models.IPInterfaceResponse{
+					Records: infos,
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	result, err = d.GetSLMDataLifs(ctx, append(ips, "1.2.3.4"), reportingNodes)
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(result))
+
+	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
 }

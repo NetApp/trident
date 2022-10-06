@@ -449,20 +449,20 @@ func (mr *MockOntapAPIMockRecorder) FlexgroupUsedSize(ctx, volumeName interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupUsedSize", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupUsedSize), ctx, volumeName)
 }
 
-// GetReportedDataLifs mocks base method.
-func (m *MockOntapAPI) GetReportedDataLifs(ctx context.Context) (string, []string, error) {
+// GetSLMDataLifs mocks base method.
+func (m *MockOntapAPI) GetSLMDataLifs(ctx context.Context, ips, reportingNodeNames []string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetReportedDataLifs", ctx)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].([]string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret := m.ctrl.Call(m, "GetSLMDataLifs", ctx, ips, reportingNodeNames)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// GetReportedDataLifs indicates an expected call of GetReportedDataLifs.
-func (mr *MockOntapAPIMockRecorder) GetReportedDataLifs(ctx interface{}) *gomock.Call {
+// GetSLMDataLifs indicates an expected call of GetSLMDataLifs.
+func (mr *MockOntapAPIMockRecorder) GetSLMDataLifs(ctx, ips, reportingNodeNames interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReportedDataLifs", reflect.TypeOf((*MockOntapAPI)(nil).GetReportedDataLifs), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSLMDataLifs",
+		reflect.TypeOf((*MockOntapAPI)(nil).GetSLMDataLifs), ctx, ips, reportingNodeNames)
 }
 
 // GetSVMAggregateAttributes mocks base method.
