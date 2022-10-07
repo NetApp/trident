@@ -1052,6 +1052,14 @@ func ValidateNASDriver(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< ValidateNASDriver")
 	}
 
+	isLuks, err := strconv.ParseBool(config.LUKSEncryption)
+	if err != nil {
+		return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", config.LUKSEncryption)
+	}
+	if isLuks {
+		return fmt.Errorf("ONTAP NAS drivers do not support LUKS encrypted volumes")
+	}
+
 	dataLIFs, err := api.NetInterfaceGetDataLIFs(ctx, "nfs")
 	if err != nil {
 		return err
@@ -2032,6 +2040,18 @@ func ValidateStoragePools(
 				if err != nil {
 					return fmt.Errorf("invalid value for splitOnClone in pool %s: %v", poolName, err)
 				}
+			}
+		}
+
+		// Validate LUKS configuration, only boolean value and only supported by ONTAP NAS backends
+		if _, ok := pool.InternalAttributes()[LUKSEncryption]; ok {
+			isLuks, err := strconv.ParseBool(pool.InternalAttributes()[LUKSEncryption])
+			if err != nil {
+				return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", pool.InternalAttributes()[LUKSEncryption])
+			}
+			if isLuks && !(d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName) {
+				return fmt.Errorf("LUKS encrypted volumes are only supported by the following drivers: %s, %s",
+					drivers.OntapSANStorageDriverName, drivers.OntapSANEconomyStorageDriverName)
 			}
 		}
 

@@ -10,12 +10,16 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	tridentconfig "github.com/netapp/trident/config"
 	mock_ontap "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/storage"
+	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
-	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
+	ontap_storage "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
@@ -348,7 +352,7 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.NotNil(t, d)
 
 	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
+		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			return nil, nil
 		},
 	).AnyTimes()
@@ -366,8 +370,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.NotNil(t, d)
 
 	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
-			result := &storage.AggregateCollectionGetOK{
+		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: nil,
 			}
 
@@ -388,8 +392,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.NotNil(t, d)
 
 	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
-			result := &storage.AggregateCollectionGetOK{
+		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					Records: nil,
 				},
@@ -408,8 +412,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.NotNil(t, d)
 
 	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
-			result := &storage.AggregateCollectionGetOK{
+		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					Records: []*models.Aggregate{},
 				},
@@ -432,8 +436,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.NotNil(t, d)
 
 	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
-			result := &storage.AggregateCollectionGetOK{
+		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					Records: []*models.Aggregate{
 						{Name: "aggr2"},
@@ -458,8 +462,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.NotNil(t, d)
 
 	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
-			result := &storage.AggregateCollectionGetOK{
+		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					Records: []*models.Aggregate{
 						{
@@ -487,8 +491,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.NotNil(t, d)
 
 	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
-			result := &storage.AggregateCollectionGetOK{
+		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					Records: []*models.Aggregate{
 						{
@@ -518,8 +522,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.NotNil(t, d)
 
 	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
-			result := &storage.AggregateCollectionGetOK{
+		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					Records: []*models.Aggregate{
 						{
@@ -555,8 +559,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.NotNil(t, d)
 
 	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
-			result := &storage.AggregateCollectionGetOK{
+		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					Records: []*models.Aggregate{
 						{
@@ -696,6 +700,162 @@ func TestGetEncryptionValue(t *testing.T) {
 	val, err = GetEncryptionValue(encryption)
 	assert.NoError(t, err)
 	assert.Equal(t, false, *val)
+}
+
+func getValidOntapNASPool() *storage.StoragePool {
+	pool := &storage.StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+	})
+	pool.SetInternalAttributes(
+		map[string]string{
+			SpaceReserve:    "none",
+			SnapshotPolicy:  "none",
+			SnapshotReserve: "0",
+			UnixPermissions: "777",
+			SnapshotDir:     "false",
+			ExportPolicy:    "default",
+			SecurityStyle:   "unix",
+			Encryption:      "false",
+			SplitOnClone:    "false",
+			TieringPolicy:   "",
+			Size:            "1Gi",
+		},
+	)
+	return pool
+}
+
+func getValidOntapSANPool() *storage.StoragePool {
+	pool := &storage.StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+	})
+	pool.SetInternalAttributes(
+		map[string]string{
+			SpaceReserve:    "none",
+			SnapshotPolicy:  "none",
+			SnapshotReserve: "0",
+			UnixPermissions: "777",
+			SnapshotDir:     "false",
+			ExportPolicy:    "default",
+			SecurityStyle:   "unix",
+			Encryption:      "false",
+			SplitOnClone:    "false",
+			TieringPolicy:   "",
+			Size:            "1Gi",
+			SpaceAllocation: "true",
+			FileSystemType:  "ext4",
+		},
+	)
+	return pool
+}
+
+func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Test no pools, ontap NAS
+	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, tridentconfig.DriverContext("CSI"),
+		false)
+	physicalPools := map[string]storage.Pool{}
+	virtualPools := map[string]storage.Pool{}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+	err := ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 1)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Test one valid virtual pool
+	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, tridentconfig.DriverContext("CSI"),
+		false)
+	physicalPools = map[string]storage.Pool{}
+	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Test two valid virtual pools
+	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, tridentconfig.DriverContext("CSI"),
+		false)
+	physicalPools = map[string]storage.Pool{}
+	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool(), "test2": getValidOntapNASPool()}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	assert.NoError(t, err)
+}
+
+func TestValidateStoragePools_LUKS(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Test one virtual pool, LUKS and ONTAP-SAN allowed
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, false, mockAPI)
+	pool := getValidOntapSANPool()
+	pool.InternalAttributes()[LUKSEncryption] = "true"
+	physicalPools := map[string]storage.Pool{}
+	virtualPools := map[string]storage.Pool{"test": pool}
+	sanStorageDriver.virtualPools = virtualPools
+	sanStorageDriver.physicalPools = physicalPools
+	err := ValidateStoragePools(context.Background(), physicalPools, virtualPools, sanStorageDriver, 0)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Test one virtual pool, LUKS and ONTAP-SAN-Economy allowed
+	mockCtrl = gomock.NewController(t)
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	sanEcoStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, "443", vserverAggrName, false, mockAPI)
+	pool = getValidOntapSANPool()
+	pool.InternalAttributes()[LUKSEncryption] = "true"
+	physicalPools = map[string]storage.Pool{}
+	virtualPools = map[string]storage.Pool{"test": pool}
+	sanEcoStorageDriver.virtualPools = virtualPools
+	sanEcoStorageDriver.physicalPools = physicalPools
+	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, sanEcoStorageDriver, 0)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Test one virtual pool, LUKS and NAS not allowed
+	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, tridentconfig.DriverContext("CSI"),
+		false)
+	pool = getValidOntapNASPool()
+	pool.InternalAttributes()[LUKSEncryption] = "true"
+	physicalPools = map[string]storage.Pool{}
+	virtualPools = map[string]storage.Pool{"test": pool}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Test one virtual pool, LUKS and ONTAP-SAN allowed but invalid value
+	mockCtrl = gomock.NewController(t)
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	sanStorageDriver = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, false, mockAPI)
+	pool = getValidOntapSANPool()
+	pool.InternalAttributes()[LUKSEncryption] = "invalid-not-a-bool"
+	physicalPools = map[string]storage.Pool{}
+	virtualPools = map[string]storage.Pool{"test": pool}
+	sanStorageDriver.virtualPools = virtualPools
+	sanStorageDriver.physicalPools = physicalPools
+	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, sanStorageDriver, 0)
+	assert.Error(t, err)
 }
 
 func TestZapiGetSLMLifs(t *testing.T) {

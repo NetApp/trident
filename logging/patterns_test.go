@@ -40,3 +40,34 @@ func TestBasicAuthorizationRedactor(t *testing.T) {
 		})
 	}
 }
+
+func TestCSISecretsRedactor(t *testing.T) {
+	tests := []struct {
+		name     string
+		line     string
+		expected string
+	}{
+		{
+			name:     "simple case",
+			line:     "secrets:<key:\"blah\" value:\"blah\">",
+			expected: "secrets:<REDACTED>",
+		},
+		{
+			name:     "partial gRPC with one secret",
+			line:     "> >secrets:<key:\\\"previous-luks-passphrase-name\\\" value:\\\"A\\\" > volume_context:<key:\\\"backendUUID\\\" value:\\\"b7a8cfe6-1bd4-4ef6-9361-a3919c661df5\\\" > volume_context:<key:\\\"internalName\\\" value:\\\"trident_pvc_796fea63_0d7d_46aa_ab31_1c8de8894cd4\\\" > volume_context:<key:\\\"name\\\" value:\\\"pvc-796fea63-0d7d-46aa-ab31-1c8de8894cd4\\\" > volume_context:<key:\\\"protocol\\\" value:\\\"block\\\" > volume_context:<key:\\\"storage.kubernetes.io/csiProvisionerIdentity\\\" value:\\\"1662779409100-8081-csi.trident.netapp.io\\\" > \" requestID=05c3fb7e-0d5a-4d6e-b8d3-e4e7eb9054f0 requestSource=CSI",
+			expected: "> >secrets:<REDACTED> volume_context:<key:\\\"backendUUID\\\" value:\\\"b7a8cfe6-1bd4-4ef6-9361-a3919c661df5\\\" > volume_context:<key:\\\"internalName\\\" value:\\\"trident_pvc_796fea63_0d7d_46aa_ab31_1c8de8894cd4\\\" > volume_context:<key:\\\"name\\\" value:\\\"pvc-796fea63-0d7d-46aa-ab31-1c8de8894cd4\\\" > volume_context:<key:\\\"protocol\\\" value:\\\"block\\\" > volume_context:<key:\\\"storage.kubernetes.io/csiProvisionerIdentity\\\" value:\\\"1662779409100-8081-csi.trident.netapp.io\\\" > \" requestID=05c3fb7e-0d5a-4d6e-b8d3-e4e7eb9054f0 requestSource=CSI",
+		},
+		{
+			name:     "full gRPC with 4 secrets",
+			line:     "time=\"2022-09-12T18:54:21Z\" level=debug msg=\"GRPC request: volume_id:\\\"pvc-796fea63-0d7d-46aa-ab31-1c8de8894cd4\\\" publish_context:<key:\\\"LUKSEncryption\\\" value:\\\"true\\\" > publish_context:<key:\\\"filesystemType\\\" value:\\\"ext4\\\" > publish_context:<key:\\\"iscsiIgroup\\\" value:\\\"ubuntu-6a1b5710-75a5-4897-bdc3-3a34005bb0ad\\\" > publish_context:<key:\\\"iscsiInterface\\\" value:\\\"\\\" > publish_context:<key:\\\"iscsiLunNumber\\\" value:\\\"0\\\" > publish_context:<key:\\\"iscsiLunSerial\\\" value:\\\"\\\" > publish_context:<key:\\\"iscsiTargetIqn\\\" value:\\\"iqn.1992-08.com.netapp:sn.19f193c511d711ecb40d001c425e872c:vs.2\\\" > publish_context:<key:\\\"iscsiTargetPortalCount\\\" value:\\\"1\\\" > publish_context:<key:\\\"mountOptions\\\" value:\\\"\\\" > publish_context:<key:\\\"p1\\\" value:\\\"10.211.55.10\\\" > publish_context:<key:\\\"protocol\\\" value:\\\"block\\\" > publish_context:<key:\\\"sharedTarget\\\" value:\\\"true\\\" > publish_context:<key:\\\"useCHAP\\\" value:\\\"false\\\" > staging_target_path:\\\"/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-796fea63-0d7d-46aa-ab31-1c8de8894cd4/globalmount\\\" volume_capability:<mount:<> access_mode:<mode:SINGLE_NODE_WRITER > > secrets:<key:\\\"luks-passphrase\\\" value:\\\"secretB\\\" > secrets:<key:\\\"luks-passphrase-name\\\" value:\\\"B\\\" > secrets:<key:\\\"previous-luks-passphrase\\\" value:\\\"secretA\\\" > secrets:<key:\\\"previous-luks-passphrase-name\\\" value:\\\"A\\\" > volume_context:<key:\\\"backendUUID\\\" value:\\\"b7a8cfe6-1bd4-4ef6-9361-a3919c661df5\\\" > volume_context:<key:\\\"internalName\\\" value:\\\"trident_pvc_796fea63_0d7d_46aa_ab31_1c8de8894cd4\\\" > volume_context:<key:\\\"name\\\" value:\\\"pvc-796fea63-0d7d-46aa-ab31-1c8de8894cd4\\\" > volume_context:<key:\\\"protocol\\\" value:\\\"block\\\" > volume_context:<key:\\\"storage.kubernetes.io/csiProvisionerIdentity\\\" value:\\\"1662779409100-8081-csi.trident.netapp.io\\\" > \" requestID=05c3fb7e-0d5a-4d6e-b8d3-e4e7eb9054f0 requestSource=CSI",
+			expected: "time=\"2022-09-12T18:54:21Z\" level=debug msg=\"GRPC request: volume_id:\\\"pvc-796fea63-0d7d-46aa-ab31-1c8de8894cd4\\\" publish_context:<key:\\\"LUKSEncryption\\\" value:\\\"true\\\" > publish_context:<key:\\\"filesystemType\\\" value:\\\"ext4\\\" > publish_context:<key:\\\"iscsiIgroup\\\" value:\\\"ubuntu-6a1b5710-75a5-4897-bdc3-3a34005bb0ad\\\" > publish_context:<key:\\\"iscsiInterface\\\" value:\\\"\\\" > publish_context:<key:\\\"iscsiLunNumber\\\" value:\\\"0\\\" > publish_context:<key:\\\"iscsiLunSerial\\\" value:\\\"\\\" > publish_context:<key:\\\"iscsiTargetIqn\\\" value:\\\"iqn.1992-08.com.netapp:sn.19f193c511d711ecb40d001c425e872c:vs.2\\\" > publish_context:<key:\\\"iscsiTargetPortalCount\\\" value:\\\"1\\\" > publish_context:<key:\\\"mountOptions\\\" value:\\\"\\\" > publish_context:<key:\\\"p1\\\" value:\\\"10.211.55.10\\\" > publish_context:<key:\\\"protocol\\\" value:\\\"block\\\" > publish_context:<key:\\\"sharedTarget\\\" value:\\\"true\\\" > publish_context:<key:\\\"useCHAP\\\" value:\\\"false\\\" > staging_target_path:\\\"/var/lib/kubelet/plugins/kubernetes.io/csi/pv/pvc-796fea63-0d7d-46aa-ab31-1c8de8894cd4/globalmount\\\" volume_capability:<mount:<> access_mode:<mode:SINGLE_NODE_WRITER > > secrets:<REDACTED> secrets:<REDACTED> secrets:<REDACTED> secrets:<REDACTED> volume_context:<key:\\\"backendUUID\\\" value:\\\"b7a8cfe6-1bd4-4ef6-9361-a3919c661df5\\\" > volume_context:<key:\\\"internalName\\\" value:\\\"trident_pvc_796fea63_0d7d_46aa_ab31_1c8de8894cd4\\\" > volume_context:<key:\\\"name\\\" value:\\\"pvc-796fea63-0d7d-46aa-ab31-1c8de8894cd4\\\" > volume_context:<key:\\\"protocol\\\" value:\\\"block\\\" > volume_context:<key:\\\"storage.kubernetes.io/csiProvisionerIdentity\\\" value:\\\"1662779409100-8081-csi.trident.netapp.io\\\" > \" requestID=05c3fb7e-0d5a-4d6e-b8d3-e4e7eb9054f0 requestSource=CSI",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			input := []byte(test.line)
+			actual := csiSecrets.re.ReplaceAll(input, csiSecrets.rep)
+			assert.Equal(t, test.expected, string(actual))
+		})
+	}
+}

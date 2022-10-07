@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -90,7 +89,7 @@ func ensureDeviceReadable(ctx context.Context, device string) error {
 	defer Logc(ctx).Debug("<<<< devices.ensureDeviceReadable")
 
 	args := []string{"if=" + device, "bs=4096", "count=1", "status=none"}
-	out, err := execCommandWithTimeout(ctx, "dd", 5, false, args...)
+	out, err := execCommandWithTimeout(ctx, "dd", 5*time.Second, false, args...)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("failed to read the device")
 		return err
@@ -111,7 +110,7 @@ func isDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 	defer Logc(ctx).Debug("<<<< devices.isDeviceUnformatted")
 
 	args := []string{"if=" + device, "bs=4096", "count=512", "status=none"}
-	out, err := execCommandWithTimeout(ctx, "dd", 5, false, args...)
+	out, err := execCommandWithTimeout(ctx, "dd", 5*time.Second, false, args...)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("failed to read the device")
 		return false, err
@@ -135,114 +134,6 @@ func isDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 	Logc(ctx).WithFields(log.Fields{"device": device}).Info("Device is unformatted.")
 
 	return true, nil
-}
-
-// getDeviceFSType returns the filesystem for the supplied device.
-func getDeviceFSType(ctx context.Context, device string) (string, error) {
-	Logc(ctx).WithField("device", device).Debug(">>>> devices.getDeviceFSType")
-	defer Logc(ctx).Debug("<<<< devices.getDeviceFSType")
-
-	// blkid return status=2 both in case of an unformatted filesystem as well as for the case when it is
-	// unable to get the filesystem (e.g. IO error), therefore ensure device is available before calling blkid
-	if err := waitForDevice(ctx, device); err != nil {
-		return "", fmt.Errorf("could not find device before checking for the filesystem %v; %s", device, err)
-	}
-
-	out, err := execCommandWithTimeout(ctx, "blkid", 5, true, device)
-	if err != nil {
-		if IsTimeoutError(err) {
-			listAllISCSIDevices(ctx)
-			return "", err
-		} else if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 2 {
-			// EITHER: Disk device is unformatted.
-			// OR: For 'blkid', if the specified token (TYPE/PTTYPE, etc) was
-			// not found, or no (specified) devices could be identified, an
-			// exit code of 2 is returned.
-
-			Logc(ctx).WithField("device", device).Infof("Could not get FSType for device; err: %v", err)
-
-			if unformatted, err := isDeviceUnformatted(ctx, device); err != nil {
-				Logc(ctx).WithField("device",
-					device).Errorf("Unable to identify if the device is unformatted; err: %v", err)
-				return "", err
-			} else if !unformatted {
-				Logc(ctx).WithField("device", device).Errorf("Device is not unformatted; err: %v", err)
-				return "", fmt.Errorf("device %v is not unformatted", device)
-			}
-
-			return "", nil
-		}
-
-		Logc(ctx).WithField("device", device).Errorf("Could not determine FSType for device; err: %v", err)
-		return "", err
-	}
-
-	var fsType string
-
-	if strings.Contains(string(out), "TYPE=") {
-		for _, v := range strings.Split(string(out), " ") {
-			if strings.Contains(v, "TYPE=") {
-				fsType = strings.Split(v, "=")[1]
-				fsType = strings.Replace(fsType, "\"", "", -1)
-				fsType = strings.TrimSpace(fsType)
-			}
-		}
-	}
-
-	if fsType == "" {
-		Logc(ctx).WithField("out", string(out)).Errorf("Unable to identify fsType.")
-
-		//  Read the device to see if it is in fact formatted
-		if unformatted, err := isDeviceUnformatted(ctx, device); err != nil {
-			Logc(ctx).WithFields(log.Fields{
-				"device": device,
-				"err":    err,
-			}).Debugf("Unable to identify if the device is not unformatted.")
-		} else if !unformatted {
-			Logc(ctx).WithField("device", device).Debugf("Device is not unformatted.")
-			return unknownFstype, nil
-		} else {
-			// If we are here blkid should have not retured exit status 0, we need to retry.
-			Logc(ctx).WithField("device", device).Errorf("Device is unformatted.")
-		}
-
-		return "", fmt.Errorf("unable to identify fsType")
-	}
-
-	return fsType, nil
-}
-
-// getDeviceFSTypeRetry returns the filesystem for the supplied device.
-// This function will be deleted when BOF is moved to centralized retry
-func getDeviceFSTypeRetry(ctx context.Context, device string) (string, error) {
-	Logc(ctx).WithField("device", device).Debug(">>>> devices.getDeviceFSTypeRetry")
-	defer Logc(ctx).Debug("<<<< devices.getDeviceFSTypeRetry")
-
-	maxDuration := multipathDeviceDiscoveryTimeoutSecs * time.Second
-
-	checkDeviceFSType := func() error {
-		_, err := getDeviceFSType(ctx, device)
-		return err
-	}
-
-	FSTypeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("FS type not available yet, waiting.")
-	}
-
-	fsTypeBackoff := backoff.NewExponentialBackOff()
-	fsTypeBackoff.InitialInterval = 1 * time.Second
-	fsTypeBackoff.Multiplier = 1.414 // approx sqrt(2)
-	fsTypeBackoff.RandomizationFactor = 0.1
-	fsTypeBackoff.MaxElapsedTime = maxDuration
-
-	// Run the check using an exponential backoff
-	if err := backoff.RetryNotify(checkDeviceFSType, fsTypeBackoff, FSTypeNotify); err != nil {
-		return "", fmt.Errorf("could not determine FS type after %3.2f seconds", maxDuration.Seconds())
-	} else {
-		Logc(ctx).WithField("FS type", device).Debug("Able to determine FS type.")
-		fstype, err := getDeviceFSType(ctx, device)
-		return fstype, err
-	}
 }
 
 func ISCSIRescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
@@ -330,7 +221,7 @@ func reloadMultipathDevice(ctx context.Context, multipathDevice string) error {
 		return fmt.Errorf("cannot reload an empty multipathDevice")
 	}
 
-	_, err := execCommandWithTimeout(ctx, "multipath", 30, true, "-r", "/dev/"+multipathDevice)
+	_, err := execCommandWithTimeout(ctx, "multipath", 30*time.Second, true, "-r", "/dev/"+multipathDevice)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"device": multipathDevice,
@@ -446,7 +337,7 @@ func listAllISCSIDevices(ctx context.Context) {
 	for _, entry := range entries {
 		sysLog = append(sysLog, entry.Name())
 	}
-	out1, _ := execCommandWithTimeout(ctx, "multipath", 5, true, "-ll")
+	out1, _ := execCommandWithTimeout(ctx, "multipath", 5*time.Second, true, "-ll")
 	out2, _ := execIscsiadmCommand(ctx, "-m", "session")
 	Logc(ctx).WithFields(log.Fields{
 		"/dev/dm-*":                  dmLog,
@@ -518,7 +409,7 @@ func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error
 		return err
 	}
 
-	_, err = execCommandWithTimeout(ctx, "multipath", 30, true, "-f", "/dev/"+deviceInfo.MultipathDevice)
+	_, err = execCommandWithTimeout(ctx, "multipath", 30*time.Second, true, "-f", "/dev/"+deviceInfo.MultipathDevice)
 	if err != nil {
 		// nothing to do if it generates an error but log it
 		Logc(ctx).WithFields(log.Fields{

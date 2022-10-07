@@ -961,18 +961,11 @@ func (p *Plugin) nodeStageISCSIVolume(
 		SharedTarget:   sharedTarget,
 	}
 	publishInfo.UseCHAP = useCHAP
-	luks, ok := req.PublishContext["LUKSEncryption"]
-	if ok && luks != "" {
-		publishInfo.LUKSEncryption = luks
-		// TODO(ameade): when luks volume publishing is supported, remove this
-		luksBool, err := strconv.ParseBool(luks)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "could not parse LUKSEncryption into a bool, got %v", luks)
-		}
-		if luksBool {
-			return nil, status.Error(codes.InvalidArgument, "cannot stage LUKS encrypted volumes")
-		}
+	isLUKS, ok := req.PublishContext["LUKSEncryption"]
+	if !ok {
+		isLUKS = ""
 	}
+	publishInfo.LUKSEncryption = isLUKS
 
 	err = unstashIscsiTargetPortals(publishInfo, req.PublishContext)
 	if nil != err {
@@ -1012,7 +1005,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
-	if err := utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo,
+	if err := utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(),
 		AttachISCSIVolumeTimeoutShort); err != nil {
 		// Did we fail to log in?
 		if utils.IsAuthError(err) {
@@ -1021,7 +1014,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
-			if err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo,
+			if err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(),
 				AttachISCSIVolumeTimeoutShort); err != nil {
 				// Bail out no matter what as we've now tried with updated credentials
 				return nil, status.Error(codes.Internal, err.Error())
@@ -1064,6 +1057,19 @@ func (p *Plugin) updateChapInfoFromController(
 func (p *Plugin) nodeUnstageISCSIVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
 ) error {
+	if publishInfo.LUKSEncryption != "" {
+		isLUKS, err := strconv.ParseBool(publishInfo.LUKSEncryption)
+		if err != nil {
+			return fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+		}
+		if isLUKS {
+			err := utils.EnsureLUKSDeviceClosed(ctx, publishInfo.DevicePath)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	// Delete the device from the host
 	err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN,
 		p.unsafeDetach, force)

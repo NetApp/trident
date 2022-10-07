@@ -153,8 +153,9 @@ func Split(r rune) bool {
 // Currently CSI-Proxy forces us to work with C:\var
 // Rmdir - delete the given directory
 // TODO: Call separate rmdir for pod context and plugin context. v1alpha1 for CSI
-//       proxy does a relaxed check for prefix as c:\var\lib\kubelet, so we can do
-//       rmdir with either pod or plugin context.
+//
+//	proxy does a relaxed check for prefix as c:\var\lib\kubelet, so we can do
+//	rmdir with either pod or plugin context.
 func (mounter *csiProxyUtils) Rmdir(ctx context.Context, path string) error {
 	Logc(ctx).WithFields(log.Fields{
 		"remove directory": path,
@@ -197,8 +198,9 @@ func (mounter *csiProxyUtils) IsMountPointMatch(ctx context.Context, mp mount.Mo
 }
 
 // IsLikelyMountPoint - If the directory does not exists, the function will return os.ErrNotExist error.
-//   If the path exists, call to CSI proxy will check if its a link, if its a link then existence of target
-//   path is checked.
+//
+//	If the path exists, call to CSI proxy will check if its a link, if its a link then existence of target
+//	path is checked.
 func (mounter *csiProxyUtils) IsLikelyNotMountPoint(ctx context.Context, path string) (bool, error) {
 	Logc(ctx).WithFields(log.Fields{
 		"IsLikelyNotMountPoint": path,

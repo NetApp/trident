@@ -146,21 +146,37 @@ type execCommandResult struct {
 // execCommandWithTimeout invokes an external shell command and lets it time out if it exceeds the
 // specified interval
 func execCommandWithTimeout(
-	ctx context.Context, name string, timeoutSeconds time.Duration, logOutput bool, args ...string,
+	ctx context.Context, name string, timeout time.Duration, logOutput bool, args ...string,
 ) ([]byte, error) {
-	timeout := timeoutSeconds * time.Second
+	Logc(ctx).WithFields(log.Fields{
+		"command": name,
+		"timeout": timeout,
+		"args":    args,
+	}).Debug(">>>> osutils.execCommandWithTimeoutAndInput.")
 
+	out, err := execCommandWithTimeoutAndInput(ctx, name, timeout, logOutput, "", args...)
+
+	Logc(ctx).Debug("<<<< osutils.execCommandWithTimeoutAndInput.")
+	return out, err
+}
+
+// execCommandWithTimeoutAndInput invokes an external shell command and lets it time out if it exceeds the
+// specified interval
+func execCommandWithTimeoutAndInput(
+	ctx context.Context, name string, timeout time.Duration, logOutput bool, stdin string, args ...string,
+) ([]byte, error) {
 	Logc(ctx).WithFields(log.Fields{
 		"command":        name,
 		"timeoutSeconds": timeout,
 		"args":           args,
-	}).Debug(">>>> osutils.execCommandWithTimeout.")
+	}).Debug(">>>> osutils.execCommandWithTimeoutAndInput.")
 
 	// create context with a cancellation
 	cancelCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	cmd := execCmd(cancelCtx, name, args...)
+	cmd.Stdin = strings.NewReader(stdin)
 	done := make(chan execCommandResult, 1)
 	var result execCommandResult
 
@@ -198,7 +214,7 @@ func execCommandWithTimeout(
 		})
 	}
 
-	logFields.Debug("<<<< osutils.execCommandWithTimeout.")
+	logFields.Debug("<<<< osutils.execCommandWithTimeoutAndInput.")
 
 	return result.Output, result.Error
 }

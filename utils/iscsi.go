@@ -33,7 +33,7 @@ const (
 
 // AttachISCSIVolumeRetry attaches a volume with retry by invoking AttachISCSIVolume with backoff.
 func AttachISCSIVolumeRetry(
-	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, timeout time.Duration,
+	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string, timeout time.Duration,
 ) error {
 	Logc(ctx).Debug(">>>> iscsi.AttachISCSIVolumeRetry")
 	defer Logc(ctx).Debug("<<<< iscsi.AttachISCSIVolumeRetry")
@@ -44,7 +44,7 @@ func AttachISCSIVolumeRetry(
 	}
 
 	checkAttachISCSIVolume := func() error {
-		return AttachISCSIVolume(ctx, name, mountpoint, publishInfo)
+		return AttachISCSIVolume(ctx, name, mountpoint, publishInfo, secrets)
 	}
 
 	attachNotify := func(err error, duration time.Duration) {
@@ -65,7 +65,7 @@ func AttachISCSIVolumeRetry(
 // It may be assumed that this method always runs on the host to which the volume will be attached.  If the mountpoint
 // parameter is specified, the volume will be mounted.  The device path is set on the in-out publishInfo parameter
 // so that it may be mounted later instead.
-func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo) error {
+func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string) error {
 	Logc(ctx).Debug(">>>> iscsi.AttachISCSIVolume")
 	defer Logc(ctx).Debug("<<<< iscsi.AttachISCSIVolume")
 
@@ -150,10 +150,8 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		return err
 	}
 
-	// Lookup all the SCSI device information, and include filesystem type only if not raw block volume
-	needFSType := publishInfo.FilesystemType != fsRaw
-
-	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, publishInfo.IscsiTargetIQN, needFSType, false)
+	// Lookup all the SCSI device information
+	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, publishInfo.IscsiTargetIQN, false, false)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %v", err)
 	} else if deviceInfo == nil {
@@ -164,7 +162,6 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		"scsiLun":         deviceInfo.LUN,
 		"multipathDevice": deviceInfo.MultipathDevice,
 		"devices":         deviceInfo.Devices,
-		"fsType":          deviceInfo.Filesystem,
 		"iqn":             deviceInfo.IQN,
 	}).Debug("Found device.")
 
@@ -181,6 +178,25 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		return fmt.Errorf("could not find device %v; %s", devicePath, err)
 	}
 
+	var isLUKSDevice, luksFormatted bool
+	if publishInfo.LUKSEncryption != "" {
+		isLUKSDevice, err = strconv.ParseBool(publishInfo.LUKSEncryption)
+		if err != nil {
+			return fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+		}
+	}
+	if isLUKSDevice {
+		// Try to Open with current luks passphrase
+		luksPassphrase, ok := secrets["luks-passphrase"]
+		if !ok {
+			return fmt.Errorf("could not open LUKS device, no passphrase provided")
+		}
+		luksFormatted, devicePath, err = EnsureLUKSDevice(ctx, devicePath, name, luksPassphrase)
+		if err != nil {
+			return fmt.Errorf("could not open LUKS device; %v", err)
+		}
+	}
+
 	// Return the device in the publish info in case the mount will be done later
 	publishInfo.DevicePath = devicePath
 
@@ -188,8 +204,29 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		return nil
 	}
 
-	existingFstype := deviceInfo.Filesystem
+	existingFstype, err := getDeviceFSType(ctx, devicePath)
+	if err != nil {
+		return err
+	}
 	if existingFstype == "" {
+		if !isLUKSDevice {
+			if unformatted, err := isDeviceUnformatted(ctx, devicePath); err != nil {
+				Logc(ctx).WithField("device",
+					devicePath).Errorf("Unable to identify if the device is unformatted; err: %v", err)
+				return err
+			} else if !unformatted {
+				Logc(ctx).WithField("device", devicePath).Errorf("Device is not unformatted; err: %v", err)
+				return fmt.Errorf("device %v is not unformatted", devicePath)
+			}
+		} else {
+			// We can safely assume if we just luksFormatted the device, we can also add a filesystem without dataloss
+			if !luksFormatted {
+				Logc(ctx).WithField("device",
+					devicePath).Errorf("Unable to identify if the luks device is empty; err: %v", err)
+				return err
+			}
+		}
+
 		Logc(ctx).WithFields(log.Fields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
 		err := formatVolume(ctx, devicePath, publishInfo.FilesystemType)
 		if err != nil {
@@ -1241,7 +1278,7 @@ func loginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, porta
 	}
 
 	loginArgs := append(args, []string{"--login"}...)
-	if _, err := execIscsiadmCommandWithTimeout(ctx, 10, loginArgs...); err != nil {
+	if _, err := execIscsiadmCommandWithTimeout(ctx, 10*time.Second, loginArgs...); err != nil {
 		Logc(ctx).WithField("error", err).Error("Error logging in to iSCSI target.")
 		return err
 	}
@@ -1500,7 +1537,7 @@ func SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool {
 
 // identifyFindMultipathsValue reads /etc/multipath.conf and identifies find_multipaths value (if set)
 func identifyFindMultipathsValue(ctx context.Context) (string, error) {
-	if output, err := execCommandWithTimeout(ctx, "multipathd", 5, false, "show", "config"); err != nil {
+	if output, err := execCommandWithTimeout(ctx, "multipathd", 5*time.Second, false, "show", "config"); err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"error": err,
 		}).Error("Could not read multipathd configuration")

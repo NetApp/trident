@@ -102,6 +102,14 @@ func AttachBlockOnFileVolume(
 		}
 
 		if existingFstype == "" {
+			if unformatted, err := isDeviceUnformatted(ctx, loopDevice.Name); err != nil {
+				Logc(ctx).WithField("device",
+					loopDevice.Name).Errorf("Unable to identify if the device is unformatted; err: %v", err)
+				return "", "", err
+			} else if !unformatted {
+				Logc(ctx).WithField("device", loopDevice.Name).Errorf("Device is not unformatted; err: %v", err)
+				return "", "", fmt.Errorf("device %v is not unformatted", loopDevice.Name)
+			}
 			Logc(ctx).WithFields(log.Fields{"device": loopDevice.Name, "fsType": fsType}).Debug("Formatting Device.")
 			err := formatVolumeRetry(ctx, loopDevice.Name, fsType)
 			if err != nil {
@@ -182,7 +190,7 @@ func getLoopDeviceInfo(ctx context.Context) ([]LoopDevice, error) {
 	Logc(ctx).Debug(">>>> bof.getLoopDeviceInfo")
 	defer Logc(ctx).Debug("<<<< bof.getLoopDeviceInfo")
 
-	out, err := execCommandWithTimeout(ctx, "losetup", 10, true, "--list", "--json")
+	out, err := execCommandWithTimeout(ctx, "losetup", 10*time.Second, true, "--list", "--json")
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Getting loop device information failed")
 		return nil, err
@@ -305,7 +313,7 @@ func ResizeLoopDevice(ctx context.Context, loopDevice, loopFile string, required
 		return err
 	}
 
-	_, err = execCommandWithTimeout(ctx, "losetup", 10, true, "--set-capacity",
+	_, err = execCommandWithTimeout(ctx, "losetup", 10*time.Second, true, "--set-capacity",
 		loopDevice)
 	if err != nil {
 		Logc(ctx).WithField("loopDevice", loopDevice).WithError(err).Error("Failed to resize the loop device")
@@ -336,7 +344,7 @@ func attachLoopDevice(ctx context.Context, loopFile string) (string, error) {
 	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> bof.attachLoopDevice")
 	defer Logc(ctx).Debug("<<<< bof.attachLoopDevice")
 
-	out, err := execCommandWithTimeout(ctx, "losetup", 10, true, "--find", "--show", "--direct-io", "--nooverlap",
+	out, err := execCommandWithTimeout(ctx, "losetup", 10*time.Second, true, "--find", "--show", "--direct-io", "--nooverlap",
 		loopFile)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to attach loop file.")
@@ -356,7 +364,7 @@ func detachLoopDevice(ctx context.Context, loopDeviceName string) error {
 	Logc(ctx).WithField("loopDeviceName", loopDeviceName).Debug(">>>> bof.DetachLoopDevice")
 	defer Logc(ctx).Debug("<<<< bof.DetachLoopDevice")
 
-	_, err := execCommandWithTimeout(ctx, "losetup", 10, true, "--detach", loopDeviceName)
+	_, err := execCommandWithTimeout(ctx, "losetup", 10*time.Second, true, "--detach", loopDeviceName)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to detach loop device")
 		return fmt.Errorf("failed to detach loop device '%s': %v", loopDeviceName, err)

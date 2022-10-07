@@ -418,7 +418,7 @@ func (d OntapAPIZAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, f
 	if luks != "" {
 		attrResponse, err = d.api.LunSetAttribute(lunPath, "LUKS", luks)
 		if err = azgo.GetError(ctx, attrResponse, err); err != nil {
-			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the luks attribute for new LUN.")
+			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the LUKS attribute for new LUN.")
 		}
 	}
 

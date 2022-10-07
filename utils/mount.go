@@ -57,7 +57,7 @@ func CheckMountOptions(ctx context.Context, procMount MountInfo, mountOptions st
 
 const (
 	umountNotMounted = "not mounted"
-	umountTimeout    = 10
+	umountTimeout    = 10 * time.Second
 )
 
 // RemoveMountPointRetry attempts to unmount and remove the directory of the mountPointPath.  This method should

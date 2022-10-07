@@ -1295,7 +1295,7 @@ func (d *SANStorageDriver) Resize(
 	if volConfig.LUKSEncryption != "" {
 		luks, err := strconv.ParseBool(volConfig.LUKSEncryption)
 		if err != nil {
-			return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", luks)
+			return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", volConfig.LUKSEncryption)
 		}
 		if luks {
 			return fmt.Errorf("cannot resize LUKS encrypted volumes")

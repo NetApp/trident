@@ -2,6 +2,10 @@
 
 package utils
 
+//go:generate mockgen -destination=../mocks/mock_utils/mock_utils.go github.com/netapp/trident/utils LUKSDeviceInterface
+
+import "context"
+
 type VolumeAccessInfo struct {
 	IscsiAccessInfo
 	NfsAccessInfo
@@ -148,4 +152,19 @@ type NodePrepBreadcrumb struct {
 	TridentVersion string `json:"tridentVersion"`
 	NFS            string `json:"nfs,omitempty"`
 	ISCSI          string `json:"iscsi,omitempty"`
+}
+
+type LUKSDeviceInterface interface {
+	DevicePath() string
+	LUKSDevicePath() string
+	LUKSDeviceName() string
+	IsLUKSFormatted(ctx context.Context) (bool, error)
+	IsOpen(ctx context.Context) (bool, error)
+	LUKSFormat(ctx context.Context, luksPassphrase string) error
+	Open(ctx context.Context, luksPassphrase string) error
+}
+
+type LUKSDevice struct {
+	devicePath     string
+	luksDeviceName string
 }
