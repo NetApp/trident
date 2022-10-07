@@ -310,22 +310,6 @@ func discoverInstallationEnvironment() error {
 		return fmt.Errorf("could not initialize Kubernetes client; %v", err)
 	}
 
-	if windows {
-		// Check k8s version before creation of DaemonSet for Windows
-		err = tridentconfig.ValidateKubernetesVersion(tridentconfig.KubernetesVersionMinWindows, client.ServerVersion())
-		if err != nil {
-			windows = false
-			if utils.IsUnsupportedKubernetesVersionError(err) {
-				log.Errorf("Kubernetes version %s is an %v. "+
-					"Trident will not support creation of DaemonSet on windows nodes with an unsupported Kubernetes"+
-					" version.", client.ServerVersion().String(), err)
-				return err
-			} else {
-				return err
-			}
-		}
-	}
-
 	// Before the installation ensure K8s version is valid
 	err = tridentconfig.ValidateKubernetesVersion(tridentconfig.KubernetesVersionMin, client.ServerVersion())
 	if err != nil {
@@ -597,7 +581,7 @@ func prepareYAMLFiles() error {
 		HTTPRequestTimeout:   httpRequestTimeout.String(),
 		ServiceAccountName:   getNodeRBACResourceName(false),
 	}
-	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonArgs)
+	daemonSetYAML := k8sclient.GetCSIDaemonSetYAMLLinux(daemonArgs)
 	if err = writeFile(daemonsetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write DaemonSet YAML file; %v", err)
 	}
@@ -1095,7 +1079,7 @@ func installTrident() (returnError error) {
 			ServiceAccountName:   getNodeRBACResourceName(false),
 		}
 		returnError = client.CreateObjectByYAML(
-			k8sclient.GetCSIDaemonSetYAML(daemonSetArgs))
+			k8sclient.GetCSIDaemonSetYAMLLinux(daemonSetArgs))
 		logFields = log.Fields{}
 	}
 	if returnError != nil {

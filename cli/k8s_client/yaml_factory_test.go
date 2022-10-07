@@ -146,7 +146,7 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 
 	imagePullSecrets := []string{"thisisasecret"}
 
-	version := utils.MustParseSemantic("1.19.0")
+	version := utils.MustParseSemantic("1.20.0")
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          "trident-csi",
@@ -193,7 +193,7 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 
 	imagePullSecrets := []string{"thisisasecret"}
 
-	version := utils.MustParseSemantic("1.19.0")
+	version := utils.MustParseSemantic("1.20.0")
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          "\ntrident-csi",
@@ -231,7 +231,7 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 }
 
 func TestGetCSIDeploymentYAML(t *testing.T) {
-	versions := []string{"1.19.0", "1.19.1", "1.21.0", "1.23.0"}
+	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
 	for _, versionString := range versions {
 		version := utils.MustParseSemantic(versionString)
@@ -351,14 +351,14 @@ func TestGetCSIDeploymentYAMLTolerations(t *testing.T) {
 		fmt.Sprintf("expected default tolerations to not appear in final YAML: %s", yamlData))
 }
 
-func TestGetCSIDaemonSetYAML(t *testing.T) {
-	versions := []string{"1.19.0", "1.21.0", "1.23.0"}
+func TestGetCSIDaemonSetYAMLLinux(t *testing.T) {
+	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
 	for _, versionString := range versions {
 		version := utils.MustParseSemantic(versionString)
 		daemonsetArgs := &DaemonsetYAMLArguments{Version: version}
 
-		yamlData := GetCSIDaemonSetYAML(daemonsetArgs)
+		yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
 		if err != nil {
 			t.Fatalf("expected valid YAML for version %s", versionString)
@@ -366,14 +366,14 @@ func TestGetCSIDaemonSetYAML(t *testing.T) {
 	}
 }
 
-func TestGetCSIDaemonSetYAML_DebugIsTrue(t *testing.T) {
+func TestGetCSIDaemonSetYAMLLinux_DebugIsTrue(t *testing.T) {
 	versions := []string{"1.17.0"}
 
 	for _, versionString := range versions {
 		version := utils.MustParseSemantic(versionString)
 		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, Debug: true}
 
-		yamlData := GetCSIDaemonSetYAML(daemonsetArgs)
+		yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
 		if err != nil {
 			t.Fatalf("expected valid YAML for version %s", versionString)
@@ -381,7 +381,7 @@ func TestGetCSIDaemonSetYAML_DebugIsTrue(t *testing.T) {
 	}
 }
 
-func TestGetCSIDaemonSetYAML_NodeSelectors(t *testing.T) {
+func TestGetCSIDaemonSetYAMLLinux_NodeSelectors(t *testing.T) {
 	daemonsetArgs := &DaemonsetYAMLArguments{
 		NodeSelector: map[string]string{"foo": "bar"},
 	}
@@ -392,7 +392,7 @@ func TestGetCSIDaemonSetYAML_NodeSelectors(t *testing.T) {
         foo: 'bar'
 `
 
-	yamlData := GetCSIDaemonSetYAML(daemonsetArgs)
+	yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 	_, err := yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
@@ -408,7 +408,7 @@ func TestGetCSIDaemonSetYAML_NodeSelectors(t *testing.T) {
         kubernetes.io/arch: amd64
 `
 
-	yamlData = GetCSIDaemonSetYAML(daemonsetArgs)
+	yamlData = GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 	_, err = yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
@@ -426,7 +426,7 @@ func TestGetCSIDaemonSetYAML_NodeSelectors(t *testing.T) {
         kubernetes.io/arch: amd64
 `
 
-	yamlData = GetCSIDaemonSetYAML(daemonsetArgs)
+	yamlData = GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 	_, err = yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
@@ -435,7 +435,7 @@ func TestGetCSIDaemonSetYAML_NodeSelectors(t *testing.T) {
 		fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
 }
 
-func TestGetCSIDaemonSetYAMLTolerations(t *testing.T) {
+func TestGetCSIDaemonSetYAMLLinux_Tolerations(t *testing.T) {
 	daemonsetArgs := &DaemonsetYAMLArguments{
 		Tolerations: []map[string]string{
 			{"key": "foo", "value": "bar", "operator": "Exists", "effect": "NoSchedule"},
@@ -455,7 +455,7 @@ func TestGetCSIDaemonSetYAMLTolerations(t *testing.T) {
         tolerationSeconds: 20
 `
 
-	yamlData := GetCSIDaemonSetYAML(daemonsetArgs)
+	yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 	_, err := yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
@@ -473,7 +473,7 @@ func TestGetCSIDaemonSetYAMLTolerations(t *testing.T) {
         operator: "Exists"
 `
 
-	yamlData = GetCSIDaemonSetYAML(daemonsetArgs)
+	yamlData = GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 	_, err = yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
@@ -494,7 +494,7 @@ func TestGetCSIDaemonSetYAMLTolerations(t *testing.T) {
         operator: "Exists"
 `
 
-	yamlData = GetCSIDaemonSetYAML(daemonsetArgs)
+	yamlData = GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 	_, err = yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
@@ -506,7 +506,7 @@ func TestGetCSIDaemonSetYAMLTolerations(t *testing.T) {
 }
 
 func TestGetCSIDaemonSetYAMLWindows(t *testing.T) {
-	versions := []string{"1.19.0", "1.21.0", "1.23.0"}
+	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
 	for _, versionString := range versions {
 		version := utils.MustParseSemantic(versionString)
@@ -521,7 +521,7 @@ func TestGetCSIDaemonSetYAMLWindows(t *testing.T) {
 }
 
 func TestGetCSIDaemonSetYAMLWindows_DebugIsFalse(t *testing.T) {
-	versions := []string{"1.19.0", "1.21.0", "1.23.0"}
+	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
 	for _, versionString := range versions {
 		version := utils.MustParseSemantic(versionString)

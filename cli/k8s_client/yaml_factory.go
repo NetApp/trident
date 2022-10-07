@@ -329,24 +329,11 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		ipLocalhost = "127.0.0.1"
 	}
 
-	var deploymentYAML string
-	var version string
+	deploymentYAML := csiDeployment120YAMLTemplate
 
 	csiSnapshotterVersion := "v3.0.3"
-
-	if args.Version != nil {
-		version = args.Version.MinorVersionString()
-	}
-
-	switch version {
-	case "17", "18", "19":
-		deploymentYAML = csiDeployment117YAMLTemplate
-	default:
-		deploymentYAML = csiDeployment120YAMLTemplate
-
-		if args.SnapshotCRDVersion == "v1" {
-			csiSnapshotterVersion = "v6.1.0"
-		}
+	if args.SnapshotCRDVersion == "v1" {
+		csiSnapshotterVersion = "v6.1.0"
 	}
 
 	if args.ImageRegistry == "" {
@@ -414,167 +401,6 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 
 	return deploymentYAML
 }
-
-const csiDeployment117YAMLTemplate = `---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {DEPLOYMENT_NAME}
-  {LABELS}
-  {OWNER_REF}
-spec:
-  replicas: 1
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      app: {LABEL_APP}
-  template:
-    metadata:
-      labels:
-        app: {LABEL_APP}
-    spec:
-      serviceAccount: {SERVICE_ACCOUNT}
-      containers:
-      - name: trident-main
-        image: {TRIDENT_IMAGE}
-        ports:
-        - containerPort: 8443
-        - containerPort: 8001
-        command:
-        - /trident_orchestrator
-        args:
-        - "--crd_persistence"
-        - "--k8s_pod"
-        - "--https_rest"
-        - "--https_port=8443"
-        - "--csi_node_name=$(KUBE_NODE_NAME)"
-        - "--csi_endpoint=$(CSI_ENDPOINT)"
-        - "--csi_role=controller"
-        - "--log_format={LOG_FORMAT}"
-        - "--address={IP_LOCALHOST}"
-        - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
-        - "--metrics"
-        {DEBUG}
-        livenessProbe:
-          exec:
-            command:
-            - tridentctl
-            - -s
-            - "{IP_LOCALHOST}:8000"
-            - version
-          failureThreshold: 2
-          initialDelaySeconds: 120
-          periodSeconds: 120
-          timeoutSeconds: 90
-        env:
-        - name: KUBE_NODE_NAME
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: spec.nodeName
-        - name: CSI_ENDPOINT
-          value: unix://plugin/csi.sock
-        - name: TRIDENT_SERVER
-          value: "{IP_LOCALHOST}:8000"
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /plugin
-        - name: certs
-          mountPath: /certs
-          readOnly: true
-      - name: trident-autosupport
-        image: {AUTOSUPPORT_IMAGE}
-        command:
-        - /usr/local/bin/trident-autosupport
-        args:
-        - "--k8s-pod"
-        - "--log-format={LOG_FORMAT}"
-        - "--trident-silence-collector={AUTOSUPPORT_SILENCE}"
-        {AUTOSUPPORT_PROXY}
-        {AUTOSUPPORT_CUSTOM_URL}
-        {AUTOSUPPORT_SERIAL_NUMBER}
-        {AUTOSUPPORT_HOSTNAME}
-        {DEBUG}
-        resources:
-          limits:
-            memory: 1Gi
-        volumeMounts:
-        - name: asup-dir
-          mountPath: /asup
-      - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v2.2.2
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--timeout=600s"
-        - "--csi-address=$(ADDRESS)"
-        - "--retry-interval-start=8s"
-        - "--retry-interval-max=30s"
-        {PROVISIONER_FEATURE_GATES}
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.5.0
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--timeout=60s"
-        - "--retry-interval-start=10s"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.5.0
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--timeout=300s"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
-      - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:{CSI_SNAPSHOTTER_VERSION}
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--timeout=300s"
-        - "--csi-address=$(ADDRESS)"
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        volumeMounts:
-        - name: socket-dir
-          mountPath: /var/lib/csi/sockets/pluginproxy/
-      {IMAGE_PULL_SECRETS}
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
-        {NODE_SELECTOR}
-      {NODE_TOLERATIONS}
-      volumes:
-      - name: socket-dir
-        emptyDir:
-      - name: certs
-        projected:
-          sources:
-          - secret:
-              name: trident-csi
-          - secret:
-              name: trident-encryption-keys
-      - name: asup-dir
-        emptyDir:
-          medium: ""
-          sizeLimit: 1Gi
-`
 
 const csiDeployment120YAMLTemplate = `---
 apiVersion: apps/v1
@@ -795,7 +621,7 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 	return daemonSetYAML
 }
 
-func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
+func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	var debugLine, logLevel string
 
 	if args.Debug {
@@ -806,13 +632,7 @@ func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
 		logLevel = "2"
 	}
 
-	daemonSetYAML := daemonSet118YAMLTemplate
-	if args.Version != nil {
-		switch args.Version.MinorVersion() {
-		case 17:
-			daemonSetYAML = daemonSet117YAMLTemplate
-		}
-	}
+	daemonSetYAML := daemonSet120YAMLTemplateLinux
 
 	if args.ImageRegistry == "" {
 		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
@@ -853,164 +673,7 @@ func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
 	return daemonSetYAML
 }
 
-const daemonSet117YAMLTemplate = `---
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: {DAEMONSET_NAME}
-  {LABELS}
-  {OWNER_REF}
-spec:
-  selector:
-    matchLabels:
-      app: {LABEL_APP}
-  template:
-    metadata:
-      labels:
-        app: {LABEL_APP}
-    spec:
-      serviceAccount: {SERVICE_ACCOUNT}
-      hostNetwork: true
-      hostIPC: true
-      hostPID: true
-      dnsPolicy: ClusterFirstWithHostNet
-      priorityClassName: system-node-critical
-      containers:
-      - name: trident-main
-        securityContext:
-          privileged: true
-          allowPrivilegeEscalation: true
-        image: {TRIDENT_IMAGE}
-        command:
-        - /trident_orchestrator
-        args:
-        - "--no_persistence"
-        - "--rest=false"
-        - "--csi_node_name=$(KUBE_NODE_NAME)"
-        - "--csi_endpoint=$(CSI_ENDPOINT)"
-        - "--csi_role=node"
-        - "--log_format={LOG_FORMAT}"
-        - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
-        - "--https_rest"
-        - "--https_port={PROBE_PORT}"
-        {DEBUG}
-        livenessProbe:
-          httpGet:
-            path: /liveness
-            scheme: HTTPS
-            port: {PROBE_PORT}
-          failureThreshold: 3
-          timeoutSeconds: 1
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /readiness
-            scheme: HTTPS
-            port: {PROBE_PORT}
-          failureThreshold: 5
-          initialDelaySeconds: 10
-          periodSeconds: 10
-        env:
-        - name: KUBE_NODE_NAME
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: spec.nodeName
-        - name: CSI_ENDPOINT
-          value: unix://plugin/csi.sock
-        - name: PATH
-          value: /netapp:/bin
-        volumeMounts:
-        - name: plugin-dir
-          mountPath: /plugin
-        - name: plugins-mount-dir
-          mountPath: {KUBELET_DIR}/plugins
-          mountPropagation: "Bidirectional"
-        - name: pods-mount-dir
-          mountPath: {KUBELET_DIR}/pods
-          mountPropagation: "Bidirectional"
-        - name: dev-dir
-          mountPath: /dev
-        - name: sys-dir
-          mountPath: /sys
-        - name: host-dir
-          mountPath: /host
-          mountPropagation: "Bidirectional"
-        - name: trident-tracking-dir
-          mountPath: /var/lib/trident/tracking
-          mountPropagation: "Bidirectional"
-        - name: certs
-          mountPath: /certs
-          readOnly: true
-      - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.5.1
-        args:
-        - "--v={LOG_LEVEL}"
-        - "--csi-address=$(ADDRESS)"
-        - "--kubelet-registration-path=$(REGISTRATION_PATH)"
-        env:
-        - name: ADDRESS
-          value: /plugin/csi.sock
-        - name: REGISTRATION_PATH
-          value: "{KUBELET_DIR}/plugins/csi.trident.netapp.io/csi.sock"
-        - name: KUBE_NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        volumeMounts:
-        - name: plugin-dir
-          mountPath: /plugin
-        - name: registration-dir
-          mountPath: /registration
-      {IMAGE_PULL_SECRETS}
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
-        {NODE_SELECTOR}
-      {NODE_TOLERATIONS}
-      volumes:
-      - name: plugin-dir
-        hostPath:
-          path: {KUBELET_DIR}/plugins/csi.trident.netapp.io/
-          type: DirectoryOrCreate
-      - name: registration-dir
-        hostPath:
-          path: {KUBELET_DIR}/plugins_registry/
-          type: Directory
-      - name: plugins-mount-dir
-        hostPath:
-          path: {KUBELET_DIR}/plugins
-          type: DirectoryOrCreate
-      - name: pods-mount-dir
-        hostPath:
-          path: {KUBELET_DIR}/pods
-          type: DirectoryOrCreate
-      - name: dev-dir
-        hostPath:
-          path: /dev
-          type: Directory
-      - name: sys-dir
-        hostPath:
-          path: /sys
-          type: Directory
-      - name: host-dir
-        hostPath:
-          path: /
-          type: Directory
-      - name: trident-tracking-dir
-        hostPath:
-          path: /var/lib/trident/tracking
-          type: DirectoryOrCreate
-      - name: certs
-        projected:
-          sources:
-          - secret:
-              name: trident-csi
-          - secret:
-              name: trident-encryption-keys
-`
-
-const daemonSet118YAMLTemplate = `---
+const daemonSet120YAMLTemplateLinux = `---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:

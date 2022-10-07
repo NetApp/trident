@@ -166,7 +166,7 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 		ServiceAccountName:   getNodeRBACResourceName(false),
 	}
 	// trident image here is an empty string because we are already going to get it from the deployment yaml
-	yaml += k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)
+	yaml += k8sclient.GetCSIDaemonSetYAMLLinux(daemonSetArgs)
 
 	return yaml, nil
 }

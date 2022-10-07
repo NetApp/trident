@@ -2127,7 +2127,7 @@ func TestGetDaemonSetInformation(t *testing.T) {
 	}
 }
 
-func TestPutDaemonSet(t *testing.T) {
+func TestPutDaemonSet_Linux(t *testing.T) {
 	daemonSetName := TridentCSI
 	nodeLabel := "app=node.csi.trident.netapp.io"
 	daemonSet := &appsv1.DaemonSet{
@@ -2144,7 +2144,7 @@ func TestPutDaemonSet(t *testing.T) {
 		Debug:                false,
 		Version:              version,
 	}
-	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)
+	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAMLLinux(daemonSetArgs)
 	k8sClientErr := fmt.Errorf("k8s error")
 
 	// defining a custom input type makes testing different cases easier

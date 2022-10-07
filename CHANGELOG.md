@@ -15,7 +15,11 @@
 - **Kubernetes:** Added support for Kubernetes 1.25.
 - Added support for SMB volumes on azure-netapp-files driver.
 
-## v22.04.0
+**Deprecations:**
+
+- **Kubernetes:** Updated minimum supported Kubernetes to 1.20.
+
+## v22.07.0
 
 **Fixes:**
 

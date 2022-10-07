@@ -612,7 +612,8 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 
 // CreateOrPatchCRD creates and establishes a CRD or patches an existing one.
 // TODO: Once Trident v22.01 approaches EOL or CRD versioning schema is established,
-//  re-evaluate if performOperationOnce is necessary.
+//
+//	re-evaluate if performOperationOnce is necessary.
 func (i *Installer) CreateOrPatchCRD(crdName, crdYAML string, performOperationOnce bool) error {
 	var currentCRD *apiextensionv1.CustomResourceDefinition
 	var err error
@@ -1276,7 +1277,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		newDaemonSetYAML = k8sclient.GetCSIDaemonSetYAMLWindows(daemonSetArgs)
 		daemonSetArgs.ServiceAccountName = getNodeRBACResourceName(true)
 	} else {
-		newDaemonSetYAML = k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)
+		newDaemonSetYAML = k8sclient.GetCSIDaemonSetYAMLLinux(daemonSetArgs)
 		daemonSetArgs.ServiceAccountName = getNodeRBACResourceName(false)
 	}
 
