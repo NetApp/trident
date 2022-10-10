@@ -18,6 +18,7 @@
 **Deprecations:**
 
 - **Kubernetes:** Updated minimum supported Kubernetes to 1.20.
+- Removed Astra Data Store (ADS) driver.
 
 ## v22.07.0
 

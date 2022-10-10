@@ -26,7 +26,6 @@ const (
 	AzureNASStorageDriverName          = "azure-netapp-files"
 	AzureNASBlockStorageDriverName     = "azure-netapp-files-subvolume"
 	GCPNFSStorageDriverName            = "gcp-cvs"
-	AstraDSStorageDriverName           = "astrads-nas"
 	FakeStorageDriverName              = "fake"
 )
 

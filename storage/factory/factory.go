@@ -14,7 +14,6 @@ import (
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/astrads"
 	"github.com/netapp/trident/storage_drivers/azure"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/gcp"
@@ -134,8 +133,6 @@ func GetStorageDriver(driverName string) (storage.Driver, error) {
 		storageDriver = &azure.NASBlockStorageDriver{}
 	case drivers.GCPNFSStorageDriverName:
 		storageDriver = &gcp.NFSStorageDriver{}
-	case drivers.AstraDSStorageDriverName:
-		storageDriver = &astrads.StorageDriver{}
 	case drivers.FakeStorageDriverName:
 		storageDriver = &fake.StorageDriver{}
 	default:

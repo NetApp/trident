@@ -975,7 +975,6 @@ type PersistentStorageBackendConfig struct {
 	SolidfireConfig         *drivers.SolidfireStorageDriverConfig `json:"solidfire_config,omitempty"`
 	AzureConfig             *drivers.AzureNASStorageDriverConfig  `json:"azure_config,omitempty"`
 	GCPConfig               *drivers.GCPNFSStorageDriverConfig    `json:"gcp_config,omitempty"`
-	AstraDSConfig           *drivers.AstraDSStorageDriverConfig   `json:"astrads_config,omitempty"`
 	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
 
@@ -991,8 +990,6 @@ func (psbc *PersistentStorageBackendConfig) GetDriverConfig() (drivers.DriverCon
 		driverConfig = psbc.AzureConfig
 	case psbc.GCPConfig != nil:
 		driverConfig = psbc.GCPConfig
-	case psbc.AstraDSConfig != nil:
-		driverConfig = psbc.AstraDSConfig
 	case psbc.FakeStorageDriverConfig != nil:
 		driverConfig = psbc.FakeStorageDriverConfig
 	default:
@@ -1045,8 +1042,6 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 		bytes, err = json.Marshal(p.Config.AzureConfig)
 	case p.Config.GCPConfig != nil:
 		bytes, err = json.Marshal(p.Config.GCPConfig)
-	case p.Config.AstraDSConfig != nil:
-		bytes, err = json.Marshal(p.Config.AstraDSConfig)
 	case p.Config.FakeStorageDriverConfig != nil:
 		bytes, err = json.Marshal(p.Config.FakeStorageDriverConfig)
 	default:
