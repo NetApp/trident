@@ -78,9 +78,44 @@ func NewStorageBackendForConfig(
 	}()
 
 	var storageDriver storage.Driver
+	if storageDriver, err = GetStorageDriver(commonConfig.StorageDriverName); err != nil {
+		Logc(ctx).WithField("error", err).Error("Invalid or unknown storage driver found.")
+		return nil, err
+	}
+
+	Logc(ctx).WithField("driver", commonConfig.StorageDriverName).Debug("Initializing storage driver.")
+
+	// Initialize the driver.  If this fails, return a 'failed' backend object.
+	if err = storageDriver.Initialize(ctx, config.CurrentDriverContext, configJSON, commonConfig,
+		backendSecret, backendUUID); err != nil {
+
+		Logc(ctx).WithField("error", err).Error("Could not initialize storage driver.")
+
+		sb = storage.NewFailedStorageBackend(ctx, storageDriver)
+		err = fmt.Errorf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, err)
+	} else {
+		Logc(ctx).WithField("driver", commonConfig.StorageDriverName).Info("Storage driver initialized.")
+
+		// Create the backend object.  If this calls the driver and fails, return a 'failed' backend object.
+		if sb, err = CreateNewStorageBackend(ctx, storageDriver); err != nil {
+			Logc(ctx).WithField("error", err).Error("Could not create storage backend.")
+		}
+	}
+
+	if err == nil {
+		sb.SetState(storage.Online)
+	}
+	sb.SetBackendUUID(backendUUID)
+	sb.SetConfigRef(configRef)
+
+	return sb, err
+}
+
+func GetStorageDriver(driverName string) (storage.Driver, error) {
+	var storageDriver storage.Driver
 
 	// Pre-driver initialization setup
-	switch commonConfig.StorageDriverName {
+	switch driverName {
 	case drivers.OntapNASStorageDriverName:
 		storageDriver = &ontap.NASStorageDriver{}
 	case drivers.OntapNASFlexGroupStorageDriverName:
@@ -104,40 +139,23 @@ func NewStorageBackendForConfig(
 	case drivers.FakeStorageDriverName:
 		storageDriver = &fake.StorageDriver{}
 	default:
-		err = fmt.Errorf("unknown storage driver: %v", commonConfig.StorageDriverName)
-		return nil, err
+		return nil, fmt.Errorf("unknown storage driver: %v", driverName)
 	}
 
-	Logc(ctx).WithField("driver", commonConfig.StorageDriverName).Debug("Initializing storage driver.")
+	return storageDriver, nil
+}
 
-	// Initialize the driver.  If this fails, return a 'failed' backend object.
-	if err = storageDriver.Initialize(ctx, config.CurrentDriverContext, configJSON, commonConfig,
-		backendSecret, backendUUID); err != nil {
-
-		Logc(ctx).WithField("error", err).Error("Could not initialize storage driver.")
+func CreateNewStorageBackend(ctx context.Context, storageDriver storage.Driver) (storage.Backend, error) {
+	var sb storage.Backend
+	var err error
+	if sb, err = storage.NewStorageBackend(ctx, storageDriver); err != nil {
+		Logc(ctx).WithField("error", err).Error("Could not create storage backend.")
 
 		sb = storage.NewFailedStorageBackend(ctx, storageDriver)
-		err = fmt.Errorf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, err)
-	} else {
-		Logc(ctx).WithField("driver", commonConfig.StorageDriverName).Info("Storage driver initialized.")
-
-		// Create the backend object.  If this calls the driver and fails, return a 'failed' backend object.
-		if sb, err = storage.NewStorageBackend(ctx, storageDriver); err != nil {
-
-			Logc(ctx).WithField("error", err).Error("Could not create storage backend.")
-
-			sb = storage.NewFailedStorageBackend(ctx, storageDriver)
-			err = fmt.Errorf("problem creating storage backend '%s': %v", commonConfig.StorageDriverName, err)
-		} else {
-			Logc(ctx).WithField("backend", sb).Info("Created new storage backend.")
-		}
+		err = fmt.Errorf("problem creating storage backend '%s': %v", storageDriver.Name(), err)
+		return sb, err
 	}
 
-	if err == nil {
-		sb.SetState(storage.Online)
-	}
-	sb.SetBackendUUID(backendUUID)
-	sb.SetConfigRef(configRef)
-
-	return sb, err
+	Logc(ctx).WithField("backend", sb).Info("Created new storage backend.")
+	return sb, nil
 }
