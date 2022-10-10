@@ -169,7 +169,6 @@ func TestGetStorageDriver(t *testing.T) {
 		{"azure-netapp-files", true},
 		{"azure-netapp-files-subvolume", true},
 		{"gcp-cvs", true},
-		{"astrads-nas", true},
 		{"unknown", false},
 	}
 
