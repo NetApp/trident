@@ -103,9 +103,17 @@ func TestRemountDevice(t *testing.T) {
 	assert.True(t, IsUnsupportedError(result), "not UnsupportedError")
 }
 
-func TestGetMountInfo(t *testing.T) {
+func TestGetHostMountInfo(t *testing.T) {
 	ctx := context.Background()
-	result, err := GetMountInfo(ctx)
+	result, err := GetHostMountInfo(ctx)
+	assert.Nil(t, result, "got mount point info")
+	assert.Error(t, err, "no error")
+	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+}
+
+func TestGetSelfMountInfo(t *testing.T) {
+	ctx := context.Background()
+	result, err := GetSelfMountInfo(ctx)
 	assert.Nil(t, result, "got mount point info")
 	assert.Error(t, err, "no error")
 	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")

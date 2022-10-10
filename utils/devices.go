@@ -427,7 +427,7 @@ func GetMountedISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 	Logc(ctx).Debug(">>>> devices.GetMountedISCSIDevices")
 	defer Logc(ctx).Debug("<<<< devices.GetMountedISCSIDevices")
 
-	procSelfMountinfo, err := listProcSelfMountinfo(procSelfMountinfoPath)
+	procSelfMountinfo, err := listProcMountinfo(procSelfMountinfoPath)
 	if err != nil {
 		return nil, err
 	}

@@ -428,7 +428,7 @@ func GetMountedLoopDevices(ctx context.Context) ([]string, error) {
 	Logc(ctx).Debug(">>>> bof.GetMountedLoopDevices")
 	defer Logc(ctx).Debug("<<<< bof.GetMountedLoopDevices")
 
-	procSelfMountInfo, err := listProcSelfMountinfo(procSelfMountinfoPath)
+	procSelfMountInfo, err := listProcMountinfo(procSelfMountinfoPath)
 	if err != nil {
 		return nil, err
 	}

@@ -103,6 +103,8 @@ const (
 	procMountsPath = "/proc/mounts"
 	// Location of the mount file to use
 	procSelfMountinfoPath = "/proc/self/mountinfo"
+	// Location of the host mount file to use
+	procHostMountinfoPath = "/proc/1/mountinfo"
 )
 
 // This represents a single line in /proc/mounts or /etc/fstab.
@@ -129,19 +131,19 @@ type MountInfo struct {
 	SuperOptions []string
 }
 
-// listProcSelfMountinfo (Available since Linux 2.6.26) lists information about mount points
+// listProcMountinfo (Available since Linux 2.6.26) lists information about mount points
 // in the process's mount namespace. Ref: http://man7.org/linux/man-pages/man5/proc.5.html
 // for /proc/[pid]/mountinfo
-func listProcSelfMountinfo(mountFilePath string) ([]MountInfo, error) {
+func listProcMountinfo(mountFilePath string) ([]MountInfo, error) {
 	content, err := ConsistentRead(mountFilePath, maxListTries)
 	if err != nil {
 		return nil, err
 	}
-	return parseProcSelfMountinfo(content)
+	return parseProcMountinfo(content)
 }
 
-// parseProcSelfMountinfo parses the output of /proc/self/mountinfo file into a slice of MountInfo struct
-func parseProcSelfMountinfo(content []byte) ([]MountInfo, error) {
+// parseProcMountinfo parses the output of /proc/self/mountinfo file into a slice of MountInfo struct
+func parseProcMountinfo(content []byte) ([]MountInfo, error) {
 	out := make([]MountInfo, 0)
 	lines := strings.Split(string(content), "\n")
 	for _, line := range lines {

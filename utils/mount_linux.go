@@ -66,7 +66,7 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 	}
 
 	// Read the system mounts
-	procSelfMountinfo, err := listProcSelfMountinfo(procSelfMountinfoPath)
+	procSelfMountinfo, err := listProcMountinfo(procSelfMountinfoPath)
 	if err != nil {
 		Logc(ctx).WithFields(logFields).Errorf("checking mounts failed; %s", err)
 		return false, fmt.Errorf("checking mounts failed; %s", err)
@@ -183,7 +183,7 @@ func IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool
 	Logc(ctx).WithFields(fields).Debug(">>>> mount_linux.IsNFSShareMounted")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< mount_linux.IsNFSShareMounted")
 
-	mounts, err := GetMountInfo(ctx)
+	mounts, err := GetSelfMountInfo(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -202,12 +202,20 @@ func IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool
 	return false, nil
 }
 
-// GetMountInfo returns the list of mounts found in /proc/self/mountinfo
-func GetMountInfo(ctx context.Context) ([]MountInfo, error) {
-	Logc(ctx).Debug(">>>> mount_linux.GetMountInfo")
-	defer Logc(ctx).Debug("<<<< mount_linux.GetMountInfo")
+// GetSelfMountInfo returns the list of mounts found in /proc/self/mountinfo
+func GetSelfMountInfo(ctx context.Context) ([]MountInfo, error) {
+	Logc(ctx).Debug(">>>> mount_linux.GetSelfMountInfo")
+	defer Logc(ctx).Debug("<<<< mount_linux.GetSelfMountInfo")
 
-	return listProcSelfMountinfo(procSelfMountinfoPath)
+	return listProcMountinfo(procSelfMountinfoPath)
+}
+
+//  GetHostMountInfo returns the list of mounts found in /proc/1/mountinfo
+func GetHostMountInfo(ctx context.Context) ([]MountInfo, error) {
+	Logc(ctx).Debug(">>>> mount.GetHostMountInfo")
+	defer Logc(ctx).Debug("<<<< mount.GetHostMountInfo")
+
+	return listProcMountinfo(procHostMountinfoPath)
 }
 
 // MountDevice attaches the supplied device at the supplied location.  Use this for iSCSI devices.

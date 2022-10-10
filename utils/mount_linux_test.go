@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseProcSelfMountinfo(t *testing.T) {
+func TestParseProcMountinfo(t *testing.T) {
 	tests := []struct {
 		name        string
 		content     string
@@ -94,7 +94,7 @@ func TestParseProcSelfMountinfo(t *testing.T) {
 	}
 	for i := range tests {
 		t.Run(tests[i].name, func(t *testing.T) {
-			m, err := parseProcSelfMountinfo([]byte(tests[i].content))
+			m, err := parseProcMountinfo([]byte(tests[i].content))
 			assert.Equal(t, tests[i].expectedErr, err)
 			assert.Equal(t, tests[i].expected, m)
 		})

@@ -41,7 +41,9 @@ const (
 )
 
 // recordTiming is used to record in Prometheus the total time taken for an operation as follows:
-//   defer recordTiming("backend_add")()
+//
+//	defer recordTiming("backend_add")()
+//
 // see also: https://play.golang.org/p/6xRXlhFdqBd
 func recordTiming(operation string, err *error) func() {
 	startTime := time.Now()
@@ -3220,6 +3222,11 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 	return nil
 }
 
+// isDockerPluginMode returns true if the ENV variable config.DockerPluginModeEnvVariable is set
+func isDockerPluginMode() bool {
+	return os.Getenv(config.DockerPluginModeEnvVariable) != ""
+}
+
 // AttachVolume mounts a volume to the local host.  This method is currently only used by Docker,
 // and it should be able to accomplish its task using only the data passed in; it should not need to
 // use the storage controller API.  It may be assumed that this method always runs on the host to
@@ -3245,9 +3252,8 @@ func (o *TridentOrchestrator) AttachVolume(
 	}
 
 	hostMountpoint := mountpoint
-	isDockerPluginModeSet := false
-	if os.Getenv(config.DockerPluginModeEnvVariable) != "" {
-		isDockerPluginModeSet = true
+	isDockerPluginModeSet := isDockerPluginMode()
+	if isDockerPluginModeSet {
 		hostMountpoint = filepath.Join("/host", mountpoint)
 	}
 
@@ -3327,13 +3333,21 @@ func (o *TridentOrchestrator) DetachVolume(ctx context.Context, volumeName, moun
 		return utils.VolumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
+	hostMountpoint := mountpoint
+	isDockerPluginModeSet := isDockerPluginMode()
+	if isDockerPluginModeSet {
+		hostMountpoint = filepath.Join("/host", mountpoint)
+	}
+
 	Logc(ctx).WithFields(log.Fields{
-		"volume":     volumeName,
-		"mountpoint": mountpoint,
+		"volume":                volumeName,
+		"mountpoint":            mountpoint,
+		"hostMountpoint":        hostMountpoint,
+		"isDockerPluginModeSet": isDockerPluginModeSet,
 	}).Debug("Unmounting volume.")
 
 	// Check if the mount point exists, so we know that it's attached and must be cleaned up
-	_, err = os.Stat(mountpoint)
+	_, err = os.Stat(hostMountpoint) // trident is not chrooted, therefore we must use the /host if in plugin mode
 	if err != nil {
 		// Not attached, so nothing to do
 		return nil
@@ -3341,11 +3355,12 @@ func (o *TridentOrchestrator) DetachVolume(ctx context.Context, volumeName, moun
 
 	// Unmount the volume
 	if err := utils.Umount(ctx, mountpoint); err != nil {
+		// utils.Unmount is chrooted, therefore it does NOT need the /host
 		return err
 	}
 
 	// Best effort removal of the mount point
-	_ = os.Remove(mountpoint)
+	_ = os.Remove(hostMountpoint) // trident is not chrooted, therefore we must the /host if in plugin mode
 	return nil
 }
 
