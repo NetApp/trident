@@ -55,6 +55,8 @@ func (c *Config) MarshalJSON() ([]byte, error) {
 	tmp.Pools = c.Pools
 	tmp.AdditionalPools = c.AdditionalPools
 	tmp.ExcludePools = c.ExcludePools
+	// TODO (agagan): The below function MarshalRequestMap always return a positive response.
+	//  The negative use case is not covered in the unit test.
 	attrs, err := storageattribute.MarshalRequestMap(c.Attributes)
 	if err != nil {
 		return nil, err
