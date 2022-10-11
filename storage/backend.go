@@ -361,7 +361,7 @@ func (b *StorageBackend) AddVolume(
 		return nil, err
 	}
 
-	vol := NewVolume(volConfig, b.backendUUID, storagePool.Name(), false)
+	vol := NewVolume(volConfig, b.backendUUID, storagePool.Name(), false, VolumeStateOnline)
 	b.volumes[vol.Config.Name] = vol
 	return vol, nil
 }
@@ -490,7 +490,7 @@ func (b *StorageBackend) CloneVolume(
 		poolName = storagePool.Name()
 	}
 
-	vol := NewVolume(cloneVolConfig, b.backendUUID, poolName, false)
+	vol := NewVolume(cloneVolConfig, b.backendUUID, poolName, false, VolumeStateOnline)
 	b.volumes[vol.Config.Name] = vol
 	return vol, nil
 }
@@ -593,7 +593,7 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 		return nil, fmt.Errorf("failed post import volume operations : %v", err)
 	}
 
-	volume := NewVolume(volConfig, b.backendUUID, drivers.UnsetPool, false)
+	volume := NewVolume(volConfig, b.backendUUID, drivers.UnsetPool, false, VolumeStateOnline)
 	b.volumes[volume.Config.Name] = volume
 	return volume, nil
 }

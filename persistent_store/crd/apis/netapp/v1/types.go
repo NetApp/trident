@@ -388,3 +388,35 @@ type TridentSnapshotList struct {
 	// List of TridentSnapshot objects
 	Items []*TridentSnapshot `json:"items"`
 }
+
+// TridentVolumeReference defines a PVC whose backing volume Trident may share to other namespaces.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentVolumeReference struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Input spec for the Trident Volume Reference
+	Spec TridentVolumeReferenceSpec `json:"spec"`
+}
+
+// TridentVolumeReferenceSpec defines the desired state of TridentVolumeReference
+type TridentVolumeReferenceSpec struct {
+	// PVCName is the name of the referenced PVC
+	PVCName string `json:"pvcName"`
+	// PVCNamespace is the namespace containing the referenced PVC
+	PVCNamespace string `json:"pvcNamespace"`
+}
+
+// TridentVolumeReferenceList is a list of TridentVolumeReference objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentVolumeReferenceList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	// List of TridentVolumeReference objects
+	Items []*TridentVolumeReference `json:"items"`
+}

@@ -1000,6 +1000,25 @@ func TestGetCRDsYAML(t *testing.T) {
 			Required: []string{"volumeID", "nodeID", "readOnly"},
 		},
 	}
+	schema5 := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type: "object",
+			Properties: map[string]apiextensionsv1.JSONSchemaProps{
+				"spec": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"pvcName": {
+							Type: "string",
+						},
+						"pvcNamespace": {
+							Type: "string",
+						},
+					},
+					Required: []string{"pvcName", "pvcNamespace"},
+				},
+			},
+		},
+	}
 
 	expected1 := apiextensionsv1.CustomResourceDefinition{
 		TypeMeta: metav1.TypeMeta{
@@ -1509,6 +1528,35 @@ func TestGetCRDsYAML(t *testing.T) {
 			},
 		},
 	}
+	expected12 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentvolumereferences.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentvolumereferences",
+				Singular:   "tridentvolumereference",
+				Kind:       "TridentVolumeReference",
+				ShortNames: []string{"tvr", "tvref"},
+				Categories: []string{"trident", "trident-external", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:                     "v1",
+					Served:                   true,
+					Storage:                  true,
+					Schema:                   &schema5,
+					AdditionalPrinterColumns: nil,
+				},
+			},
+		},
+	}
 
 	var actual1 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[0]), &actual1), "invalid YAML")
@@ -1575,6 +1623,12 @@ func TestGetCRDsYAML(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(expected11.TypeMeta, actual11.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected11.ObjectMeta, actual11.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected11.Spec, actual11.Spec))
+
+	var actual12 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[11]), &actual12), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected12.TypeMeta, actual12.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected12.ObjectMeta, actual12.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected12.Spec, actual12.Spec))
 }
 
 func TestGetVersionCRDYAML(t *testing.T) {
@@ -1625,6 +1679,63 @@ func TestGetVersionCRDYAML(t *testing.T) {
 
 	actualYAML := GetVersionCRDYAML()
 
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetVolumeReferenceCRDYAML(t *testing.T) {
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type: "object",
+			Properties: map[string]apiextensionsv1.JSONSchemaProps{
+				"spec": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"pvcName": {
+							Type: "string",
+						},
+						"pvcNamespace": {
+							Type: "string",
+						},
+					},
+					Required: []string{"pvcName", "pvcNamespace"},
+				},
+			},
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentvolumereferences.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentvolumereferences",
+				Singular:   "tridentvolumereference",
+				Kind:       "TridentVolumeReference",
+				ShortNames: []string{"tvr", "tvref"},
+				Categories: []string{"trident", "trident-external", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:                     "v1",
+					Served:                   true,
+					Storage:                  true,
+					Schema:                   &schema,
+					AdditionalPrinterColumns: nil,
+				},
+			},
+		},
+	}
+	actualYAML := GetVolumeReferenceCRDYAML()
 	var actual apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))

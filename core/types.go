@@ -41,9 +41,8 @@ type Orchestrator interface {
 	CloneVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	DetachVolume(ctx context.Context, volumeName, mountpoint string) error
 	DeleteVolume(ctx context.Context, volume string) error
-	GetVolume(ctx context.Context, volume string) (*storage.VolumeExternal, error)
-	GetVolumeByInternalName(volumeInternal string, ctx context.Context) (volume string,
-		err error)
+	GetVolume(ctx context.Context, volumeName string) (*storage.VolumeExternal, error)
+	GetVolumeByInternalName(volumeInternal string, ctx context.Context) (volume string, err error)
 	GetVolumeExternal(ctx context.Context, volumeName, backendName string) (*storage.VolumeExternal, error)
 	LegacyImportVolume(
 		ctx context.Context, volumeConfig *storage.VolumeConfig, backendName string, notManaged bool,
@@ -51,12 +50,14 @@ type Orchestrator interface {
 	) (*storage.VolumeExternal, error)
 	ImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	ListVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
-	ListVolumesByPlugin(ctx context.Context, pluginName string) ([]*storage.VolumeExternal, error)
 	PublishVolume(ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo) error
 	UnpublishVolume(ctx context.Context, volumeName, nodeName string) error
 	ResizeVolume(ctx context.Context, volumeName, newSize string) error
 	SetVolumeState(ctx context.Context, volumeName string, state storage.VolumeState) error
 	ReloadVolumes(ctx context.Context) error
+
+	ListSubordinateVolumes(ctx context.Context, sourceVolumeName string) ([]*storage.VolumeExternal, error)
+	GetSubordinateSourceVolume(ctx context.Context, subordinateVolumeName string) (*storage.VolumeExternal, error)
 
 	CreateSnapshot(ctx context.Context, snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error)
 	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotExternal, error)

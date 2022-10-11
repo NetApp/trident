@@ -44,6 +44,7 @@ import (
 const (
 	uidIndex  = "uid"
 	nameIndex = "name"
+	vrefIndex = "vref"
 
 	eventAdd    = "add"
 	eventUpdate = "update"
@@ -95,6 +96,11 @@ type Plugin struct {
 	mrController         cache.SharedIndexInformer
 	mrControllerStopChan chan struct{}
 	mrSource             cache.ListerWatcher
+
+	vrefIndexer            cache.Indexer
+	vrefController         cache.SharedIndexInformer
+	vrefControllerStopChan chan struct{}
+	vrefSource             cache.ListerWatcher
 }
 
 // NewPlugin instantiates this plugin when running outside a pod.
@@ -127,6 +133,7 @@ func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 		scControllerStopChan:   make(chan struct{}),
 		nodeControllerStopChan: make(chan struct{}),
 		mrControllerStopChan:   make(chan struct{}),
+		vrefControllerStopChan: make(chan struct{}),
 		namespace:              clients.Namespace,
 	}
 
@@ -290,6 +297,24 @@ func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 	)
 	p.mrIndexer = p.mrController.GetIndexer()
 
+	// Set up a watch for TridentVolumeReferences
+	p.vrefSource = &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			return clients.TridentClient.TridentV1().TridentVolumeReferences(v1.NamespaceAll).List(ctx, options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return clients.TridentClient.TridentV1().TridentVolumeReferences(v1.NamespaceAll).Watch(ctx, options)
+		},
+	}
+	// Set up the TridentVolumeReferences indexing controller
+	p.vrefController = cache.NewSharedIndexInformer(
+		p.vrefSource,
+		&netappv1.TridentVolumeReference{},
+		CacheSyncPeriod,
+		cache.Indexers{vrefIndex: TridentVolumeReferenceKeyFunc},
+	)
+	p.vrefIndexer = p.vrefController.GetIndexer()
+
 	return p, nil
 }
 
@@ -332,6 +357,27 @@ func MetaNameKeyFunc(obj interface{}) ([]string, error) {
 	return []string{objectMeta.GetName()}, nil
 }
 
+// TridentVolumeReferenceKeyFunc is a KeyFunc which knows how to make keys for TridentVolumeReference
+// CRs.  The key is of the format "<CR namespace>_<referenced PVC namespce>/<referenced PVC name>".
+func TridentVolumeReferenceKeyFunc(obj interface{}) ([]string, error) {
+	if key, ok := obj.(string); ok {
+		return []string{key}, nil
+	}
+
+	vref, ok := obj.(*netappv1.TridentVolumeReference)
+	if !ok {
+		return []string{""}, fmt.Errorf("object is not a TridentVolumeReference CR")
+	}
+	if vref.Spec.PVCName == "" {
+		return []string{""}, fmt.Errorf("TridentVolumeReference CR has no PVCName set")
+	}
+	if vref.Spec.PVCNamespace == "" {
+		return []string{""}, fmt.Errorf("TridentVolumeReference CR has no PVCNamespace set")
+	}
+
+	return []string{vref.CacheKey()}, nil
+}
+
 // Activate starts this Trident frontend.
 func (p *Plugin) Activate() error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
@@ -342,6 +388,7 @@ func (p *Plugin) Activate() error {
 	go p.scController.Run(p.scControllerStopChan)
 	go p.nodeController.Run(p.nodeControllerStopChan)
 	go p.mrController.Run(p.mrControllerStopChan)
+	go p.vrefController.Run(p.vrefControllerStopChan)
 	go p.reconcileNodes(ctx)
 
 	// Configure telemetry
@@ -363,6 +410,7 @@ func (p *Plugin) Deactivate() error {
 	close(p.scControllerStopChan)
 	close(p.nodeControllerStopChan)
 	close(p.mrControllerStopChan)
+	close(p.vrefControllerStopChan)
 	return nil
 }
 
@@ -982,6 +1030,33 @@ func (p *Plugin) GetNodeTopologyLabels(ctx context.Context, nodeName string) (ma
 		}
 	}
 	return topologyLabels, err
+}
+
+// getCachedVolumeReference returns a share (identified by referenced PVC namespace/name) from the client's cache,
+// or an error if not found.
+func (p *Plugin) getCachedVolumeReference(
+	ctx context.Context, vrefNamespace, pvcName, pvcNamespace string,
+) (*netappv1.TridentVolumeReference, error) {
+	logFields := log.Fields{"vrefNamespace": vrefNamespace, "pvcName": pvcName, "pvcNamespace": pvcNamespace}
+
+	key := vrefNamespace + "_" + pvcNamespace + "/" + pvcName
+	items, err := p.vrefIndexer.ByIndex(vrefIndex, key)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).Error("Could not search cache for volume reference.")
+		return nil, fmt.Errorf("could not search cache for volume reference %s: %v", key, err)
+	} else if len(items) == 0 {
+		Logc(ctx).WithFields(logFields).Debug("volume reference object not found in cache.")
+		return nil, fmt.Errorf("volume reference %s not found in cache", key)
+	} else if len(items) > 1 {
+		Logc(ctx).WithFields(logFields).Error("Multiple cached volume reference objects found.")
+		return nil, fmt.Errorf("multiple volume reference objects with key %s found in cache", key)
+	} else if vref, ok := items[0].(*netappv1.TridentVolumeReference); !ok {
+		Logc(ctx).WithFields(logFields).Error("Non-volume-reference cached object found.")
+		return nil, fmt.Errorf("non-volume-reference object %s found in cache", key)
+	} else {
+		Logc(ctx).WithFields(logFields).Debug("Found cached volume reference.")
+		return vref, nil
+	}
 }
 
 // SupportsFeature accepts a CSI feature and returns true if the

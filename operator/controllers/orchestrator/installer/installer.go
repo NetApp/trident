@@ -38,6 +38,7 @@ const (
 	VolumeCRDName             = "tridentvolumes.trident.netapp.io"
 	VolumePublicationCRDName  = "tridentvolumepublications.trident.netapp.io"
 	SnapshotCRDName           = "tridentsnapshots.trident.netapp.io"
+	VolumeReferenceCRDName    = "tridentvolumereferences.trident.netapp.io"
 
 	VolumeSnapshotCRDName        = "volumesnapshots.snapshot.storage.k8s.io"
 	VolumeSnapshotClassCRDName   = "volumesnapshotclasses.snapshot.storage.k8s.io"
@@ -90,6 +91,7 @@ var (
 		VersionCRDName,
 		VolumeCRDName,
 		SnapshotCRDName,
+		VolumeReferenceCRDName,
 		VolumePublicationCRDName,
 	}
 
@@ -601,6 +603,9 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(SnapshotCRDName, k8sclient.GetSnapshotCRDYAML(), false); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(VolumeReferenceCRDName, k8sclient.GetVolumeReferenceCRDYAML(), false); err != nil {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(MirrorRelationshipCRDName, k8sclient.GetMirrorRelationshipCRDYAML(), performOperationOnce); err != nil {

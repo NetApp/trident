@@ -57,6 +57,8 @@ const (
 	AnnImportOriginalName = annPrefix + "/importOriginalName"
 	AnnImportBackendUUID  = annPrefix + "/importBackendUUID"
 	AnnMirrorRelationship = annPrefix + "/mirrorRelationship"
+	AnnVolumeShareFromPVC = annPrefix + "/shareFromPVC"
+	AnnVolumeShareToNS    = annPrefix + "/shareToNamespace"
 )
 
 var features = map[helpers.Feature]*utils.Version{

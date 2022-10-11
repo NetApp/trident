@@ -79,6 +79,7 @@ func recordTransactionTiming(txn *storage.VolumeTransaction, err *error) {
 type TridentOrchestrator struct {
 	backends                 map[string]storage.Backend // key is UUID, not name
 	volumes                  map[string]*storage.Volume
+	subordinateVolumes       map[string]*storage.Volume
 	frontends                map[string]frontend.Plugin
 	mutex                    *sync.Mutex
 	storageClasses           map[string]*storageclass.StorageClass
@@ -103,6 +104,7 @@ func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator 
 	return &TridentOrchestrator{
 		backends:           make(map[string]storage.Backend), // key is UUID, not name
 		volumes:            make(map[string]*storage.Volume),
+		subordinateVolumes: make(map[string]*storage.Volume),
 		frontends:          make(map[string]frontend.Plugin),
 		storageClasses:     make(map[string]*storageclass.StorageClass),
 		nodes:              make(map[string]*utils.Node),
@@ -183,7 +185,7 @@ func (o *TridentOrchestrator) Bootstrap(monitorTransactions bool) error {
 
 	o.bootstrapped = true
 	o.bootstrapError = nil
-	log.Infof("%s bootstrapped successfully.", strings.Title(config.OrchestratorName))
+	log.Infof("%s bootstrapped successfully.", utils.Title(config.OrchestratorName))
 	return nil
 }
 
@@ -321,19 +323,23 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 		// TODO:  If the API evolves, check the Version field here.
 		var backend storage.Backend
 		var ok bool
-		vol := storage.NewVolume(v.Config, v.BackendUUID, v.Pool, v.Orphaned)
-		o.volumes[vol.Config.Name] = vol
-
-		if backend, ok = o.backends[v.BackendUUID]; !ok {
-			Logc(ctx).WithFields(log.Fields{
-				"volume":      v.Config.Name,
-				"backendUUID": v.BackendUUID,
-			}).Warning("Couldn't find backend. Setting state to MissingBackend.")
-			vol.State = storage.VolumeStateMissingBackend
+		vol := storage.NewVolume(v.Config, v.BackendUUID, v.Pool, v.Orphaned, v.State)
+		if vol.IsSubordinate() {
+			o.subordinateVolumes[vol.Config.Name] = vol
 		} else {
-			backend.Volumes()[vol.Config.Name] = vol
-			if fakeDriver, ok := backend.Driver().(*fake.StorageDriver); ok {
-				fakeDriver.BootstrapVolume(ctx, vol)
+			o.volumes[vol.Config.Name] = vol
+
+			if backend, ok = o.backends[v.BackendUUID]; !ok {
+				Logc(ctx).WithFields(log.Fields{
+					"volume":      v.Config.Name,
+					"backendUUID": v.BackendUUID,
+				}).Warning("Couldn't find backend. Setting state to MissingBackend.")
+				vol.State = storage.VolumeStateMissingBackend
+			} else {
+				backend.Volumes()[vol.Config.Name] = vol
+				if fakeDriver, ok := backend.Driver().(*fake.StorageDriver); ok {
+					fakeDriver.BootstrapVolume(ctx, vol)
+				}
 			}
 		}
 
@@ -344,6 +350,7 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 			"backendUUID":  vol.BackendUUID,
 			"pool":         vol.Pool,
 			"orphaned":     vol.Orphaned,
+			"state":        vol.State,
 			"handler":      "Bootstrap",
 		}).Trace("Added an existing volume.")
 		volCount++
@@ -447,6 +454,33 @@ func (o *TridentOrchestrator) bootstrapVolumePublications(ctx context.Context) e
 	return nil
 }
 
+// bootstrapSubordinateVolumes updates the source volumes to point to their subordinates.  Updating the
+// super->sub references here allows us to persist only the scalar sub->super references.
+func (o *TridentOrchestrator) bootstrapSubordinateVolumes(ctx context.Context) error {
+	for volumeName, volume := range o.subordinateVolumes {
+
+		// Get the source volume
+		sourceVolume, ok := o.volumes[volume.Config.ShareSourceVolume]
+		if !ok {
+			Logc(ctx).WithFields(log.Fields{
+				"subordinateVolume": volumeName,
+				"sourceVolume":      volume.Config.ShareSourceVolume,
+				"handler":           "Bootstrap",
+			}).Warning("Source volume for subordinate volume not found.")
+
+			continue
+		}
+
+		// Make the source volume point to the subordinate
+		if sourceVolume.Config.SubordinateVolumes == nil {
+			sourceVolume.Config.SubordinateVolumes = make(map[string]interface{})
+		}
+		sourceVolume.Config.SubordinateVolumes[volumeName] = nil
+	}
+
+	return nil
+}
+
 func (o *TridentOrchestrator) addVolumePublicationToCache(vp *utils.VolumePublication) {
 	// If the volume has no entry we need to initialize the inner map
 	if o.volumePublications[vp.VolumeName] == nil {
@@ -460,8 +494,8 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 
 	type bootstrapFunc func(context.Context) error
 	for _, f := range []bootstrapFunc{
-		o.bootstrapBackends, o.bootstrapStorageClasses, o.bootstrapVolumes,
-		o.bootstrapSnapshots, o.bootstrapVolTxns, o.bootstrapNodes, o.bootstrapVolumePublications,
+		o.bootstrapBackends, o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapSnapshots,
+		o.bootstrapVolTxns, o.bootstrapNodes, o.bootstrapVolumePublications, o.bootstrapSubordinateVolumes,
 	} {
 		err := f(ctx)
 		if err != nil {
@@ -522,6 +556,9 @@ func (o *TridentOrchestrator) updateMetrics() {
 	backendsGauge.Reset()
 	tridentBackendInfo.Reset()
 	for _, backend := range o.backends {
+		if backend == nil {
+			continue
+		}
 		backendsGauge.WithLabelValues(backend.GetDriverName(), backend.State().String()).Inc()
 		tridentBackendInfo.WithLabelValues(backend.GetDriverName(), backend.Name(),
 			backend.BackendUUID()).Set(float64(1))
@@ -531,6 +568,9 @@ func (o *TridentOrchestrator) updateMetrics() {
 	volumesTotalBytes := float64(0)
 	volumeAllocatedBytesGauge.Reset()
 	for _, volume := range o.volumes {
+		if volume == nil {
+			continue
+		}
 		bytes, _ := strconv.ParseFloat(volume.Config.Size, 64)
 		volumesTotalBytes += bytes
 		if backend, err := o.getBackendByBackendUUID(volume.BackendUUID); err == nil {
@@ -1632,8 +1672,21 @@ func (o *TridentOrchestrator) AddVolume(
 
 	volumeConfig.Version = config.OrchestratorAPIVersion
 
+	if volumeConfig.ShareSourceVolume != "" {
+		return o.addSubordinateVolume(ctx, volumeConfig)
+	} else {
+		return o.addVolume(ctx, volumeConfig)
+	}
+}
+
+func (o *TridentOrchestrator) addVolume(
+	ctx context.Context, volumeConfig *storage.VolumeConfig,
+) (externalVol *storage.VolumeExternal, err error) {
 	if _, ok := o.volumes[volumeConfig.Name]; ok {
 		return nil, fmt.Errorf("volume %s already exists", volumeConfig.Name)
+	}
+	if _, ok := o.subordinateVolumes[volumeConfig.Name]; ok {
+		return nil, fmt.Errorf("volume %s exists but is a subordinate volume", volumeConfig.Name)
 	}
 
 	// If a volume is already being created, retry the operation with the same backend
@@ -1914,6 +1967,10 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	// Get the source volume
 	sourceVolume, found := o.volumes[volumeConfig.CloneSourceVolume]
 	if !found {
+		if _, ok := o.subordinateVolumes[volumeConfig.CloneSourceVolume]; ok {
+			return nil, utils.NotFoundError(fmt.Sprintf("cloning subordinate volume %s is not allowed",
+				volumeConfig.CloneSourceVolume))
+		}
 		return nil, utils.NotFoundError(fmt.Sprintf("source volume not found: %s", volumeConfig.CloneSourceVolume))
 	}
 
@@ -1975,7 +2032,9 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	cloneConfig.CloneSourceSnapshot = volumeConfig.CloneSourceSnapshot
 	cloneConfig.Qos = volumeConfig.Qos
 	cloneConfig.QosType = volumeConfig.QosType
-
+	// Clear these values as they were copied from the source volume Config
+	cloneConfig.SubordinateVolumes = make(map[string]interface{})
+	cloneConfig.ShareSourceVolume = ""
 	// Override this value only if SplitOnClone has been defined in clone volume's config
 	if volumeConfig.SplitOnClone != "" {
 		cloneConfig.SplitOnClone = volumeConfig.SplitOnClone
@@ -2652,7 +2711,7 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 }
 
 func (o *TridentOrchestrator) GetVolume(
-	ctx context.Context, volume string,
+	ctx context.Context, volumeName string,
 ) (volExternal *storage.VolumeExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -2663,17 +2722,19 @@ func (o *TridentOrchestrator) GetVolume(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	return o.getVolume(ctx, volume)
+	return o.getVolume(ctx, volumeName)
 }
 
 func (o *TridentOrchestrator) getVolume(
-	_ context.Context, volume string,
+	_ context.Context, volumeName string,
 ) (volExternal *storage.VolumeExternal, err error) {
-	vol, found := o.volumes[volume]
-	if !found {
-		return nil, utils.NotFoundError(fmt.Sprintf("volume %v was not found", volume))
+	if volume, found := o.volumes[volumeName]; found {
+		return volume.ConstructExternal(), nil
 	}
-	return vol.ConstructExternal(), nil
+	if volume, found := o.subordinateVolumes[volumeName]; found {
+		return volume.ConstructExternal(), nil
+	}
+	return nil, utils.NotFoundError(fmt.Sprintf("volume %v was not found", volumeName))
 }
 
 // driverTypeForBackend does the necessary work to get the driver type.  It does
@@ -2696,9 +2757,11 @@ func (o *TridentOrchestrator) ListVolumes(context.Context) (volumes []*storage.V
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
-
-	volumes = make([]*storage.VolumeExternal, 0, len(o.volumes))
+	volumes = make([]*storage.VolumeExternal, 0, (len(o.volumes) + len(o.subordinateVolumes)))
 	for _, v := range o.volumes {
+		volumes = append(volumes, v.ConstructExternal())
+	}
+	for _, v := range o.subordinateVolumes {
 		volumes = append(volumes, v.ConstructExternal())
 	}
 
@@ -2731,13 +2794,14 @@ func (o *TridentOrchestrator) deleteVolume(ctx context.Context, volumeName strin
 	volume := o.volumes[volumeName]
 	volumeBackend := o.backends[volume.BackendUUID]
 
-	// if there are any snapshots for this volume, we need to "soft" delete.
-	// only hard delete this volume when its last snapshot is deleted.
+	// If there are any snapshots or subordinate volumes for this volume, we need to "soft" delete.
+	// Only hard delete this volume when its last snapshot is deleted and no subordinates remain.
 	snapshotsForVolume, err := o.volumeSnapshots(volumeName)
 	if err != nil {
 		return err
 	}
-	if len(snapshotsForVolume) > 0 {
+
+	if len(snapshotsForVolume) > 0 || len(volume.Config.SubordinateVolumes) > 0 {
 		Logc(ctx).WithFields(log.Fields{
 			"volume":                  volumeName,
 			"backendUUID":             volume.BackendUUID,
@@ -2788,6 +2852,17 @@ func (o *TridentOrchestrator) deleteVolume(ctx context.Context, volumeName strin
 		return err
 	}
 
+	// Check if we need to remove a soft-deleted source volume
+	if volume.Config.CloneSourceVolume != "" {
+		if cloneSourceVolume, ok := o.volumes[volume.Config.CloneSourceVolume]; ok && cloneSourceVolume.IsDeleting() {
+			if o.deleteVolume(ctx, cloneSourceVolume.Config.Name) != nil {
+				Logc(ctx).WithField("name", cloneSourceVolume.Config.Name).Warning(
+					"Could not delete volume in deleting state.")
+			}
+		}
+	}
+
+	// Check if we need to remove a soft-deleted backend
 	if volumeBackend.State().IsDeleting() && !volumeBackend.HasVolumes() {
 		if err := o.storeClient.DeleteBackend(ctx, volumeBackend); err != nil {
 			Logc(ctx).WithFields(log.Fields{
@@ -2834,6 +2909,10 @@ func (o *TridentOrchestrator) DeleteVolume(ctx context.Context, volumeName strin
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
+	if _, ok := o.subordinateVolumes[volumeName]; ok {
+		return o.deleteSubordinateVolume(ctx, volumeName)
+	}
+
 	volume, ok := o.volumes[volumeName]
 	if !ok {
 		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
@@ -2877,30 +2956,6 @@ func (o *TridentOrchestrator) DeleteVolume(ctx context.Context, volumeName strin
 	return o.deleteVolume(ctx, volumeName)
 }
 
-func (o *TridentOrchestrator) ListVolumesByPlugin(
-	_ context.Context, pluginName string,
-) (volumes []*storage.VolumeExternal, err error) {
-	if o.bootstrapError != nil {
-		return nil, o.bootstrapError
-	}
-
-	defer recordTiming("volume_list_by_plugin", &err)()
-
-	o.mutex.Lock()
-	defer o.mutex.Unlock()
-
-	volumes = make([]*storage.VolumeExternal, 0)
-	for _, backend := range o.backends {
-		if backendName := backend.GetDriverName(); pluginName != backendName {
-			continue
-		}
-		for _, vol := range backend.Volumes() {
-			volumes = append(volumes, vol.ConstructExternal())
-		}
-	}
-	return volumes, nil
-}
-
 func (o *TridentOrchestrator) PublishVolume(
 	ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo,
 ) (err error) {
@@ -2932,10 +2987,19 @@ func (o *TridentOrchestrator) publishVolume(
 	Logc(ctx).WithFields(fields).Debug(">>>>>> Orchestrator#publishVolume")
 	defer Logc(ctx).Debug("<<<<<< Orchestrator#publishVolume")
 
-	volume, ok := o.volumes[volumeName]
-	if !ok {
+	volume, ok := o.subordinateVolumes[volumeName]
+	if ok {
+		// If volume is a subordinate, replace it with its source volume since that is what we will manipulate.
+		// The inclusion of all volume publications for the source and it subordinates will produce the correct
+		// set of exported nodes.
+		if volume, ok = o.volumes[volume.Config.ShareSourceVolume]; !ok {
+			return utils.NotFoundError(fmt.Sprintf("source volume for subordinate volumes %s not found",
+				volumeName))
+		}
+	} else if volume, ok = o.volumes[volumeName]; !ok {
 		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
+
 	if volume.State.IsDeleting() {
 		return utils.VolumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
@@ -2998,7 +3062,7 @@ func (o *TridentOrchestrator) publishVolume(
 		if !volume.Config.AccessInfo.PublishEnforcement {
 			// Only enforce volume publication access if we're confident we're synced with the container orchestrator
 			if o.volumePublicationsSynced {
-				publications := o.listVolumePublicationsForVolume(ctx, volumeName)
+				publications := o.listVolumePublicationsForVolumeAndSubordinates(ctx, volumeName)
 				// If there are no volume publications or the only publication is the current one, we can enable enforcement
 				var safeToEnable bool
 				switch len(publications) {
@@ -3143,6 +3207,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 				return nil
 			}
 		} else {
+			// TODO(sphadnis): Check if this else block is dead code
 			msg := "unable to get volume publication record"
 			Logc(ctx).WithError(err).WithFields(fields).Error(msg)
 			return fmt.Errorf(msg)
@@ -3176,17 +3241,29 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		TridentUUID: o.uuid,
 	}
 
-	volume, ok := o.volumes[volumeName]
-	if !ok {
+	volume, ok := o.subordinateVolumes[volumeName]
+	if ok {
+		// If volume is a subordinate, replace it with its source volume since that is what we will manipulate.
+		// The inclusion of all volume publications for the source and it subordinates will produce the correct
+		// set of exported nodes.
+		sourceVol := volume.Config.ShareSourceVolume
+		if volume, ok = o.volumes[volume.Config.ShareSourceVolume]; !ok {
+			return utils.NotFoundError(fmt.Sprintf("source volume %s for subordinate volumes %s not found",
+				sourceVol, volumeName))
+		}
+	} else if volume, ok = o.volumes[volumeName]; !ok {
 		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	// Build list of nodes to which the volume remains published
 	nodeMap := make(map[string]*utils.Node)
-	for _, pub := range o.listVolumePublicationsForVolume(ctx, volumeName) {
-		if pub.NodeName == nodeName {
+	for _, pub := range o.listVolumePublicationsForVolumeAndSubordinates(ctx, volume.Config.Name) {
+
+		// Exclude the publication we are unpublishing
+		if pub.VolumeName == volumeName && pub.NodeName == nodeName {
 			continue
 		}
+
 		if n, found := o.nodes[pub.NodeName]; !found {
 			Logc(ctx).WithField("node", pub.NodeName).Warning("Node not found during volume unpublish.")
 			continue
@@ -3396,6 +3473,269 @@ func (o *TridentOrchestrator) SetVolumeState(
 	return nil
 }
 
+// addSubordinateVolume defines a new subordinate volume and updates all references to it.  It does not create any
+// backing storage resources.
+func (o *TridentOrchestrator) addSubordinateVolume(
+	ctx context.Context, volumeConfig *storage.VolumeConfig,
+) (externalVol *storage.VolumeExternal, err error) {
+	var (
+		ok           bool
+		volume       *storage.Volume
+		sourceVolume *storage.Volume
+	)
+
+	// Check if the volume already exists
+	if _, ok = o.volumes[volumeConfig.Name]; ok {
+		return nil, fmt.Errorf("volume %s exists but is not a subordinate volume", volumeConfig.Name)
+	}
+	if _, ok = o.subordinateVolumes[volumeConfig.Name]; ok {
+		return nil, fmt.Errorf("subordinate volume %s already exists", volumeConfig.Name)
+	}
+
+	// Ensure requested size is valid
+	volumeSize, err := strconv.ParseUint(volumeConfig.Size, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid size for subordinate volume %s", volumeConfig.Name)
+	}
+
+	// Disallow illegal conditions for subordinate volumes
+	if volumeConfig.CloneSourceVolume != "" {
+		return nil, fmt.Errorf("subordinate volume may not be a clone")
+	}
+	if volumeConfig.IsMirrorDestination {
+		return nil, fmt.Errorf("subordinate volume may not be part of a mirror")
+	}
+	if volumeConfig.ImportOriginalName != "" {
+		return nil, fmt.Errorf("subordinate volume may not be imported")
+	}
+
+	// Ensure the source exists, is not a subordinate volume, is in a good state, and matches the new volume as needed
+	sourceVolume, ok = o.volumes[volumeConfig.ShareSourceVolume]
+	if !ok {
+		if _, ok = o.subordinateVolumes[volumeConfig.ShareSourceVolume]; ok {
+			return nil, utils.NotFoundError(fmt.Sprintf("creating subordinate to a subordinate volume %s is not allowed",
+				volumeConfig.ShareSourceVolume))
+		}
+		return nil, utils.NotFoundError(fmt.Sprintf("source volume %s for subordinate volume %s not found",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+	} else if sourceVolume.Config.ImportNotManaged {
+		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s is an unmanaged import",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+	} else if sourceVolume.Config.StorageClass != volumeConfig.StorageClass {
+		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s has a different storage class",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+	} else if sourceVolume.Orphaned {
+		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s is orphaned",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+	} else if sourceVolume.State != storage.VolumeStateOnline {
+		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s is not online",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+	}
+
+	// Get the backend and ensure it and the source volume are NFS
+	if backend, ok := o.backends[sourceVolume.BackendUUID]; !ok {
+		return nil, utils.NotFoundError(fmt.Sprintf("backend %s for source volume %s not found",
+			sourceVolume.BackendUUID, sourceVolume.Config.Name))
+	} else if backend.GetProtocol(ctx) != config.File || sourceVolume.Config.AccessInfo.NfsPath == "" {
+		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s must be NFS",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+	}
+
+	// Ensure requested volume size is not larger than the source
+	sourceVolumeSize, err := strconv.ParseUint(sourceVolume.Config.Size, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid size for source volume %s", sourceVolume.Config.Name)
+	}
+	if sourceVolumeSize < volumeSize {
+		return nil, fmt.Errorf(fmt.Sprintf("source volume %s may not be smaller than subordinate volume %s",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+	}
+
+	// Copy a few needed fields from the source volume
+	volumeConfig.AccessInfo = sourceVolume.Config.AccessInfo
+	volumeConfig.FileSystem = sourceVolume.Config.FileSystem
+	volumeConfig.MountOptions = sourceVolume.Config.MountOptions
+	volumeConfig.Protocol = sourceVolume.Config.Protocol
+	volumeConfig.AccessInfo.PublishEnforcement = true
+
+	volume = storage.NewVolume(volumeConfig, sourceVolume.BackendUUID, sourceVolume.Pool, false, storage.VolumeStateSubordinate)
+
+	// Add new volume to persistent store
+	if err = o.storeClient.AddVolume(ctx, volume); err != nil {
+		return nil, err
+	}
+
+	// Register subordinate volume with source volume
+	if sourceVolume.Config.SubordinateVolumes == nil {
+		sourceVolume.Config.SubordinateVolumes = make(map[string]interface{})
+	}
+	sourceVolume.Config.SubordinateVolumes[volume.Config.Name] = nil
+
+	// Update internal cache and return external form of the new volume
+	o.subordinateVolumes[volume.Config.Name] = volume
+	return volume.ConstructExternal(), nil
+}
+
+// deleteSubordinateVolume removes all references to a subordinate volume.  It does not delete any
+// backing storage resources.
+func (o *TridentOrchestrator) deleteSubordinateVolume(ctx context.Context, volumeName string) (err error) {
+	volume, ok := o.subordinateVolumes[volumeName]
+	if !ok {
+		return utils.NotFoundError(fmt.Sprintf("subordinate volume %s not found", volumeName))
+	}
+
+	// Remove volume from persistent store
+	if err = o.deleteVolumeFromPersistentStoreIgnoreError(ctx, volume); err != nil {
+		return err
+	}
+
+	sourceVolume, ok := o.volumes[volume.Config.ShareSourceVolume]
+	if ok {
+		// Unregister subordinate volume with source volume
+		if sourceVolume.Config.SubordinateVolumes != nil {
+			delete(sourceVolume.Config.SubordinateVolumes, volumeName)
+		}
+		if len(sourceVolume.Config.SubordinateVolumes) == 0 {
+			sourceVolume.Config.SubordinateVolumes = nil
+		}
+
+		// If this subordinate volume pinned its source volume in Deleting state, clean up the source volume
+		// if it isn't still pinned by something else (snapshots).
+		if sourceVolume.State.IsDeleting() && len(sourceVolume.Config.SubordinateVolumes) == 0 {
+			if o.deleteVolume(ctx, sourceVolume.Config.Name) != nil {
+				Logc(ctx).WithField("name", sourceVolume.Config.Name).Warning(
+					"Could not delete volume in deleting state.")
+			}
+		}
+	}
+
+	delete(o.subordinateVolumes, volumeName)
+	return nil
+}
+
+// ListSubordinateVolumes returns all subordinate volumes for all source volumes, or all subordinate
+// volumes for a single source volume.
+func (o *TridentOrchestrator) ListSubordinateVolumes(
+	_ context.Context, sourceVolumeName string,
+) (volumes []*storage.VolumeExternal, err error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("subordinate_volume_list", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	var sourceVolumes map[string]*storage.Volume
+
+	if sourceVolumeName == "" {
+		// If listing all subordinate volumes, start with the entire source volume map
+		sourceVolumes = o.volumes
+	} else {
+		// If listing subordinate volumes for a single source volume, make a map with just the source volume
+		if sourceVolume, ok := o.volumes[sourceVolumeName]; !ok {
+			return nil, utils.NotFoundError(fmt.Sprintf("source volume %s not found", sourceVolumeName))
+		} else {
+			sourceVolumes = make(map[string]*storage.Volume)
+			sourceVolumes[sourceVolumeName] = sourceVolume
+		}
+	}
+
+	volumes = make([]*storage.VolumeExternal, 0, len(sourceVolumes))
+
+	for _, sourceVolume := range sourceVolumes {
+		for subordinateVolumeName := range sourceVolume.Config.SubordinateVolumes {
+			if subordinateVolume, ok := o.subordinateVolumes[subordinateVolumeName]; ok {
+				volumes = append(volumes, subordinateVolume.ConstructExternal())
+			}
+		}
+	}
+
+	sort.Sort(storage.ByVolumeExternalName(volumes))
+
+	return volumes, nil
+}
+
+// GetSubordinateSourceVolume returns the parent volume for a given subordinate volume.
+func (o *TridentOrchestrator) GetSubordinateSourceVolume(
+	_ context.Context, subordinateVolumeName string,
+) (volume *storage.VolumeExternal, err error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("subordinate_source_volume_get", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	if subordinateVolume, ok := o.subordinateVolumes[subordinateVolumeName]; !ok {
+		return nil, utils.NotFoundError(fmt.Sprintf("subordinate volume %s not found", subordinateVolumeName))
+	} else {
+		parentVolumeName := subordinateVolume.Config.ShareSourceVolume
+		if sourceVolume, ok := o.volumes[parentVolumeName]; !ok {
+			return nil, utils.NotFoundError(fmt.Sprintf("source volume %s not found", parentVolumeName))
+		} else {
+			volume = sourceVolume.ConstructExternal()
+		}
+
+	}
+
+	return volume, nil
+}
+
+func (o *TridentOrchestrator) resizeSubordinateVolume(ctx context.Context, volumeName, newSize string) error {
+	volume, ok := o.subordinateVolumes[volumeName]
+	if !ok || volume == nil {
+		return utils.NotFoundError(fmt.Sprintf("subordinate volume %s not found", volumeName))
+	}
+
+	sourceVolume, ok := o.volumes[volume.Config.ShareSourceVolume]
+	if !ok || sourceVolume == nil {
+		return utils.NotFoundError(fmt.Sprintf("source volume %s for subordinate volume %s not found",
+			volume.Config.ShareSourceVolume, volumeName))
+	}
+
+	// Determine volume size in bytes
+	newSizeStr, err := utils.ConvertSizeToBytes(newSize)
+	if err != nil {
+		return fmt.Errorf("could not convert volume size %s: %v", newSize, err)
+	}
+	newSizeBytes, err := strconv.ParseUint(newSizeStr, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid volume size: %v", newSize, err)
+	}
+
+	// Determine source volume size in bytes
+	sourceSizeStr, err := utils.ConvertSizeToBytes(sourceVolume.Config.Size)
+	if err != nil {
+		return fmt.Errorf("could not convert source volume size %s: %v", sourceVolume.Config.Size, err)
+	}
+	sourceSizeBytes, err := strconv.ParseUint(sourceSizeStr, 10, 64)
+	if err != nil {
+		return fmt.Errorf("%v is an invalid source volume size: %v", sourceVolume.Config.Size, err)
+	}
+
+	// Allow resizing subordinate volume up to the size of its source volume
+	if newSizeBytes > sourceSizeBytes {
+		return fmt.Errorf("subordinate volume %s may not be larger than source volume %s", volumeName,
+			volume.Config.ShareSourceVolume)
+	}
+
+	// Save the new subordinate volume size before returning success
+	volume.Config.Size = newSizeStr
+
+	if err = o.updateVolumeOnPersistentStore(ctx, volume); err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"volume": volume.Config.Name,
+		}).Error("Unable to update the volume's size in persistent store.")
+		return err
+	}
+
+	return nil
+}
+
 // CreateSnapshot creates a snapshot of the given volume
 func (o *TridentOrchestrator) CreateSnapshot(
 	ctx context.Context, snapshotConfig *storage.SnapshotConfig,
@@ -3425,6 +3765,11 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	// Get the volume
 	volume, ok = o.volumes[snapshotConfig.VolumeName]
 	if !ok {
+		if _, ok = o.subordinateVolumes[snapshotConfig.VolumeName]; ok {
+			// TODO(sphadnis): Check if this block is dead code
+			return nil, utils.NotFoundError(fmt.Sprintf("creating snapshot is not allowed on subordinate volume %s",
+				snapshotConfig.VolumeName))
+		}
 		return nil, utils.NotFoundError(fmt.Sprintf("source volume %s not found", snapshotConfig.VolumeName))
 	}
 	if volume.State.IsDeleting() {
@@ -3645,18 +3990,15 @@ func (o *TridentOrchestrator) deleteSnapshot(ctx context.Context, snapshotConfig
 
 	delete(o.snapshots, snapshot.ID())
 
-	snapshotsForVolume, err := o.volumeSnapshots(snapshotConfig.VolumeName)
-	if err != nil {
-		return err
-	}
-
-	if len(snapshotsForVolume) == 0 && volume.State.IsDeleting() {
-		Logc(ctx).WithFields(log.Fields{
-			"snapshotConfig.VolumeName": snapshotConfig.VolumeName,
-			"backendUUID":               volume.BackendUUID,
-			"volume.State":              volume.State,
-		}).Debug("Hard deleting volume.")
-		return o.deleteVolume(ctx, snapshotConfig.VolumeName)
+	// If this snapshot volume pinned its source volume in Deleting state, clean up the source volume
+	// if it isn't still pinned by something else (subordinate volumes).
+	if volume.State.IsDeleting() {
+		if snapshotsForVolume, err := o.volumeSnapshots(snapshotConfig.VolumeName); err != nil {
+			// TODO(sphadnis): Check if this block is dead code
+			return err
+		} else if len(snapshotsForVolume) == 0 {
+			return o.deleteVolume(ctx, snapshotConfig.VolumeName)
+		}
 	}
 
 	return nil
@@ -3923,6 +4265,10 @@ func (o *TridentOrchestrator) ResizeVolume(ctx context.Context, volumeName, newS
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
+
+	if _, ok := o.subordinateVolumes[volumeName]; ok {
+		return o.resizeSubordinateVolume(ctx, volumeName, newSize)
+	}
 
 	volume, found := o.volumes[volumeName]
 	if !found {
@@ -4608,6 +4954,44 @@ func (o *TridentOrchestrator) listVolumePublicationsForVolume(
 	publications = []*utils.VolumePublication{}
 	for _, pub := range o.volumePublications[volumeName] {
 		publications = append(publications, pub)
+	}
+	return publications
+}
+
+// Change the signature of the func here to return error
+func (o *TridentOrchestrator) listVolumePublicationsForVolumeAndSubordinates(
+	_ context.Context, volumeName string,
+) (publications []*utils.VolumePublication) {
+	publications = []*utils.VolumePublication{}
+
+	// Get volume
+	volume, ok := o.volumes[volumeName]
+	if !ok {
+		if volume, ok = o.subordinateVolumes[volumeName]; !ok {
+			return publications
+		}
+	}
+
+	// If this is a subordinate volume, start with the source volume instead
+	if volume.IsSubordinate() {
+		if volume, ok = o.volumes[volume.Config.ShareSourceVolume]; !ok {
+			return publications
+		}
+	}
+
+	// Build a slice containing the volume and all of its subordinates
+	allVolumes := []*storage.Volume{volume}
+	for subordinateVolumeName := range volume.Config.SubordinateVolumes {
+		if subordinateVolume, ok := o.subordinateVolumes[subordinateVolumeName]; ok {
+			allVolumes = append(allVolumes, subordinateVolume)
+		}
+	}
+
+	// Build slice of all publications for the volume and all of its subordinates
+	for _, v := range allVolumes {
+		for _, pub := range o.volumePublications[v.Config.Name] {
+			publications = append(publications, pub)
+		}
 	}
 	return publications
 }

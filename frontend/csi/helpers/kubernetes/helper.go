@@ -1,4 +1,5 @@
 // Copyright 2020 NetApp, Inc. All Rights Reserved.
+
 package kubernetes
 
 import (
@@ -33,9 +34,8 @@ import (
 // retrieved from the K8S API server, and returns a VolumeConfig structure
 // as needed by Trident to create a new volume.
 func (p *Plugin) GetVolumeConfig(
-	ctx context.Context, name string, sizeBytes int64, parameters map[string]string,
-	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
-	requisiteTopology, preferredTopology, accessibleTopology []map[string]string,
+	ctx context.Context, name string, _ int64, _ map[string]string, _ config.Protocol, _ []config.AccessMode,
+	_ config.VolumeMode, fsType string, requisiteTopology, preferredTopology, _ []map[string]string,
 ) (*storage.VolumeConfig, error) {
 	// Kubernetes CSI passes us the name of what will become a new PV
 	pvName := name
@@ -107,6 +107,14 @@ func (p *Plugin) GetVolumeConfig(
 	if mirrorRelationshipName != "" || volumeConfig.PeerVolumeHandle != "" {
 		volumeConfig.IsMirrorDestination = true
 	}
+
+	// Check for subordinate volume PVC, denoted by an annotation that points to a TridentVolumeReference CR in the
+	// same namespace as the new PVC having the same name as the source PV.  If the new volume is a subordinate, this
+	// function updates the volume config with a reference to its parent.
+	if err = p.validateSubordinateVolumeConfig(ctx, pvc, volumeConfig); err != nil {
+		return nil, err
+	}
+
 	return volumeConfig, nil
 }
 
@@ -292,6 +300,87 @@ func (p *Plugin) getCloneSourceInfo(ctx context.Context, clonePVC *v1.Persistent
 	}
 
 	return sourcePVName, nil
+}
+
+func (p *Plugin) validateSubordinateVolumeConfig(
+	ctx context.Context, subordinatePVC *v1.PersistentVolumeClaim, volConfig *storage.VolumeConfig,
+) error {
+	annotations := subordinatePVC.Annotations
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	// Check if this is a subordinate volume.  If not, there is nothing to do and no reason to return an error.
+	shareAnnotation := getAnnotation(annotations, AnnVolumeShareFromPVC)
+	if shareAnnotation == "" {
+		return nil
+	}
+	sourcePVCPathComponents := strings.Split(shareAnnotation, "/")
+	if len(sourcePVCPathComponents) != 2 || sourcePVCPathComponents[0] == "" || sourcePVCPathComponents[1] == "" {
+		return fmt.Errorf("%s annotation must have the format <pvcNamespace>/<pvcName>", AnnVolumeShareFromPVC)
+	}
+	sourcePVCNamespace := sourcePVCPathComponents[0]
+	sourcePVCName := sourcePVCPathComponents[1]
+
+	// Get the volume reference CR
+	_, err := p.getCachedVolumeReference(ctx, subordinatePVC.Namespace, sourcePVCName, sourcePVCNamespace)
+	if err != nil {
+		return err
+	}
+
+	// Get the source PVC
+	sourcePVC, err := p.getCachedPVCByName(ctx, sourcePVCName, sourcePVCNamespace)
+	if err != nil {
+		return err
+	}
+
+	// Ensure the source PVC has shared itself with the subordinate volume's namespace
+	sourceAnnotations := sourcePVC.Annotations
+	if sourceAnnotations == nil {
+		sourceAnnotations = make(map[string]string)
+	}
+	shareToAnnotation := sourceAnnotations[AnnVolumeShareToNS]
+
+	// Ensure the source PVC has been explicitly shared with the subordinate PVC namespace
+	if !p.matchNamespaceToAnnotation(subordinatePVC.Namespace, shareToAnnotation) {
+		return fmt.Errorf("subordinate volume source PVC is not shared with namespace %s", subordinatePVC.Namespace)
+	}
+
+	// Ensure the subordinate volume and its source volume are the same storage class
+	if subordinatePVC.Spec.StorageClassName != nil && sourcePVC.Spec.StorageClassName != nil &&
+		*subordinatePVC.Spec.StorageClassName != *sourcePVC.Spec.StorageClassName {
+		return fmt.Errorf("subordinate PVC %s must have the same storage class as its source PVC %s",
+			subordinatePVC.Name, sourcePVC.Name)
+	}
+
+	// Validate source PVC status
+	if sourcePVC.Status.Phase != v1.ClaimBound || sourcePVC.Spec.VolumeName == "" {
+		return fmt.Errorf("subordinate volume source PVC is not bound")
+	}
+
+	// Get the PV to which the PVC is bound and validate its status
+	sourcePV, err := p.getCachedPVByName(ctx, sourcePVC.Spec.VolumeName)
+	if err != nil {
+		return err
+	}
+	if sourcePV.Status.Phase != v1.VolumeBound || sourcePV.Spec.ClaimRef == nil ||
+		sourcePV.Spec.ClaimRef.Namespace != sourcePVCNamespace || sourcePV.Spec.ClaimRef.Name != sourcePVCName {
+		return fmt.Errorf("subordinate volume source PV is not bound to the expected PVC")
+	}
+
+	// Update the subordinate volume config to refer to its source volume/PV
+	volConfig.ShareSourceVolume = sourcePV.Name
+	return nil
+}
+
+func (p *Plugin) matchNamespaceToAnnotation(namespace, shareToAnnotation string) bool {
+	shareToNamespaces := strings.Split(shareToAnnotation, ",")
+	for _, shareToNamespace := range shareToNamespaces {
+		if shareToNamespace == namespace || shareToNamespace == "*" {
+			return true
+		}
+	}
+	return false
 }
 
 // GetSnapshotConfig accepts the attributes of a snapshot being requested by the CSI

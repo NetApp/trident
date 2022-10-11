@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -2274,11 +2275,6 @@ func TestOrchestratorNotReady(t *testing.T) {
 		t.Errorf("Expected DeleteVolume to return an error.")
 	}
 
-	volumes, err = orchestrator.ListVolumesByPlugin(ctx(), "")
-	if volumes != nil || !utils.IsNotReadyError(err) {
-		t.Errorf("Expected ListVolumesByPlugin to return an error.")
-	}
-
 	err = orchestrator.AttachVolume(ctx(), "", "", nil)
 	if !utils.IsNotReadyError(err) {
 		t.Errorf("Expected AttachVolume to return an error.")
@@ -4020,25 +4016,36 @@ func TestGetCHAPFailure(t *testing.T) {
 
 func TestPublishVolume(t *testing.T) {
 	var (
-		backendUUID = "1234"
-		nodeName    = "foo"
-		volumeName  = "bar"
-		volume      = &storage.Volume{
+		backendUUID        = "1234"
+		nodeName           = "foo"
+		volumeName         = "bar"
+		subordinateVolName = "subvol"
+		volume             = &storage.Volume{
 			BackendUUID: backendUUID,
 			Config:      &storage.VolumeConfig{AccessInfo: utils.VolumeAccessInfo{}},
+		}
+		subordinatevolume = &storage.Volume{
+			BackendUUID: backendUUID,
+			Config:      &storage.VolumeConfig{ShareSourceVolume: volumeName},
 		}
 		node = &utils.Node{Deleted: false}
 	)
 	tt := []struct {
-		name              string
-		volumeName        string
-		volumes           map[string]*storage.Volume
-		nodes             map[string]*utils.Node
-		pubsSynced        bool
-		lastPub           time.Time
-		volumeEnforceable bool
-		mocks             func(mockBackend *mockstorage.MockBackend,
-			mockStoreClient *mockpersistentstore.MockStoreClient, volume *storage.Volume)
+		name               string
+		volumeName         string
+		shareSourceName    string
+		subordinateVolName string
+		subordinateVolumes map[string]*storage.Volume
+		volumes            map[string]*storage.Volume
+		subVolConfig       *storage.VolumeConfig
+		nodes              map[string]*utils.Node
+		pubsSynced         bool
+		lastPub            time.Time
+		volumeEnforceable  bool
+		mocks              func(
+			mockBackend *mockstorage.MockBackend,
+			mockStoreClient *mockpersistentstore.MockStoreClient, volume *storage.Volume,
+		)
 		wantErr     assert.ErrorAssertionFunc
 		pubTime     assert.ValueAssertionFunc
 		pubEnforced assert.BoolAssertionFunc
@@ -4051,7 +4058,8 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        false,
 			volumeEnforceable: false,
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
@@ -4072,7 +4080,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        false,
 			volumeEnforceable: false,
 			lastPub:           time.Now().Add(-time.Second), // Ensure that "some" time has passed
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
@@ -4093,7 +4102,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        false,
 			volumeEnforceable: false,
 			lastPub:           time.Now().Add(-time.Minute * 2),
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
@@ -4121,7 +4131,8 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        true,
 			volumeEnforceable: false,
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
@@ -4146,7 +4157,8 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        false,
 			volumeEnforceable: true,
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
@@ -4167,7 +4179,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        false,
 			volumeEnforceable: true,
 			lastPub:           time.Now().Add(-time.Second), // Ensure that "some" time has passed
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
@@ -4188,7 +4201,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        false,
 			volumeEnforceable: true,
 			lastPub:           time.Now().Add(-time.Minute * 2),
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
@@ -4212,7 +4226,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        true,
 			volumeEnforceable: true,
 			lastPub:           time.Now().Add(-time.Minute * 2),
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
@@ -4231,7 +4246,8 @@ func TestPublishVolume(t *testing.T) {
 			volumes:           map[string]*storage.Volume{},
 			pubsSynced:        false,
 			volumeEnforceable: false,
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 			},
@@ -4247,7 +4263,8 @@ func TestPublishVolume(t *testing.T) {
 			nodes:             map[string]*utils.Node{nodeName: node},
 			pubsSynced:        false,
 			volumeEnforceable: false,
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				volume.State = storage.VolumeStateDeleting
@@ -4265,7 +4282,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        false,
 			volumeEnforceable: false,
 			lastPub:           time.Now().Add(-time.Minute * 2),
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
@@ -4284,7 +4302,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        false,
 			volumeEnforceable: false,
 			lastPub:           time.Now().Add(-time.Minute * 2),
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
@@ -4305,7 +4324,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        false,
 			volumeEnforceable: false,
 			lastPub:           time.Now().Add(-time.Minute * 2),
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
@@ -4330,7 +4350,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        false,
 			volumeEnforceable: false,
 			lastPub:           time.Now().Add(-time.Minute * 2),
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
@@ -4358,7 +4379,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        false,
 			volumeEnforceable: false,
 			lastPub:           time.Now().Add(-time.Minute * 2),
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
@@ -4386,7 +4408,8 @@ func TestPublishVolume(t *testing.T) {
 			pubsSynced:        false,
 			volumeEnforceable: false,
 			lastPub:           time.Now().Add(-time.Minute * 2),
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
@@ -4407,6 +4430,52 @@ func TestPublishVolume(t *testing.T) {
 			pubEnforced: assert.True,
 			synced:      assert.True,
 		},
+		{
+			name:               "SubordinateVolumeTest",
+			shareSourceName:    volumeName,
+			volumeName:         subordinateVolName,
+			subordinateVolumes: map[string]*storage.Volume{subordinateVolName: subordinatevolume},
+			volumes:            map[string]*storage.Volume{volumeName: volume},
+			subVolConfig:       tu.GenerateVolumeConfig("subvol", 1, "fakeSC", config.File),
+			nodes:              map[string]*utils.Node{nodeName: node},
+			pubsSynced:         false,
+			volumeEnforceable:  false,
+			lastPub:            time.Now().Add(-time.Second), // Ensure that "some" time has passed
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
+			},
+			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.False,
+		},
+		{
+			name:               "SubordinateVolumeTestFail",
+			shareSourceName:    volumeName,
+			volumeName:         subordinateVolName,
+			subordinateVolumes: map[string]*storage.Volume{subordinateVolName: subordinatevolume},
+			volumes:            map[string]*storage.Volume{"newsrcvol": volume},
+			subVolConfig:       tu.GenerateVolumeConfig("subvol", 1, "fakeSC", config.File),
+			nodes:              map[string]*utils.Node{nodeName: node},
+			pubsSynced:         false,
+			volumeEnforceable:  false,
+			lastPub:            time.Now().Add(-time.Second), // Ensure that "some" time has passed
+			mocks: func(
+				mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+			},
+			wantErr:     assert.Error,
+			pubTime:     assert.IsNonIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.False,
+		},
 	}
 
 	for _, tr := range tt {
@@ -4425,11 +4494,13 @@ func TestPublishVolume(t *testing.T) {
 			o.storeClient = mockStoreClient
 			o.backends[backendUUID] = mockBackend
 			o.volumes = tr.volumes
+			o.subordinateVolumes = tr.subordinateVolumes
 			o.nodes = tr.nodes
 			o.volumePublicationsSynced = tr.pubsSynced
 			o.lastVolumePublication = tr.lastPub
 			volume.Config.AccessInfo.PublishEnforcement = tr.volumeEnforceable
-
+			subordinatevolume.Config.AccessInfo.PublishEnforcement = tr.volumeEnforceable
+			subordinatevolume.Config.ShareSourceVolume = tr.shareSourceName
 			tr.mocks(mockBackend, mockStoreClient, volume)
 
 			// Run the test
@@ -4491,7 +4562,11 @@ func TestUnpublishVolume(t *testing.T) {
 		otherNodeName   = "fiz"
 		volumeName      = "bar"
 		otherVolumeName = "baz"
-		volume          = &storage.Volume{BackendUUID: backendUUID}
+		parentSubVols   = map[string]interface{}{"dummy": nil}
+		volConfig       = &storage.VolumeConfig{Name: volumeName, SubordinateVolumes: parentSubVols}
+		volume          = &storage.Volume{BackendUUID: backendUUID, Config: volConfig}
+		subordinateVol  = &storage.Volume{Config: &storage.VolumeConfig{Name: "dummy", ShareSourceVolume: "abc"}}
+		volumeNoBackend = &storage.Volume{Config: volConfig}
 		node            = &utils.Node{Deleted: false}
 		deletedNode     = &utils.Node{Deleted: true}
 		publication     = &utils.VolumePublication{
@@ -4510,6 +4585,10 @@ func TestUnpublishVolume(t *testing.T) {
 		otherNodePublication = &utils.VolumePublication{
 			NodeName:   otherNodeName,
 			VolumeName: volumeName,
+		}
+		otherNodeAndVolPublication = &utils.VolumePublication{
+			NodeName:   otherNodeName,
+			VolumeName: otherVolumeName,
 		}
 	)
 	tt := []struct {
@@ -4636,7 +4715,7 @@ func TestUnpublishVolume(t *testing.T) {
 			volumeName:    volumeName,
 			nodeName:      nodeName,
 			driverContext: config.ContextCSI,
-			volumes:       map[string]*storage.Volume{volumeName: {}},
+			volumes:       map[string]*storage.Volume{volumeName: volumeNoBackend},
 			nodes:         map[string]*utils.Node{nodeName: node},
 			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
@@ -4688,6 +4767,61 @@ func TestUnpublishVolume(t *testing.T) {
 			wantErr:         assert.Error,
 			wantUnpublished: assert.False,
 		},
+		{
+			name:          "NilVolumePublicationError",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: nil}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			wantErr:         assert.Error,
+			wantUnpublished: assert.False,
+		},
+		{
+			name:          "UpdatePublishedVolumeError",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: dirtyPublication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().UpdateVolumePublication(ctx(), gomock.Any()).Return(errors.New("update failed"))
+			},
+			wantErr:         assert.Error,
+			wantUnpublished: assert.False,
+		},
+		{
+			name:          "SubordinateVolumeParentNotFound",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			wantErr:         assert.Error,
+			wantUnpublished: assert.False,
+		},
+		{
+			name:          "NodeNotFoundWarning",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}, "dummy": {"dummy": otherNodeAndVolPublication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().DeleteVolumePublication(ctx(), gomock.Any()).Return(errors.New("failed to delete"))
+			},
+			wantErr:         assert.Error,
+			wantUnpublished: assert.False,
+		},
 	}
 
 	for _, tr := range tt {
@@ -4695,6 +4829,7 @@ func TestUnpublishVolume(t *testing.T) {
 			config.CurrentDriverContext = tr.driverContext
 			defer func() { config.CurrentDriverContext = "" }()
 			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
 			// Create a fake backend with UUID
 			mockBackend := mockstorage.NewMockBackend(mockCtrl)
 			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
@@ -4709,6 +4844,14 @@ func TestUnpublishVolume(t *testing.T) {
 			o.volumes = tr.volumes
 			o.nodes = tr.nodes
 			o.volumePublications = tr.publications
+			o.subordinateVolumes["dummy"] = subordinateVol
+			if tr.name == "SubordinateVolumeParentNotFound" {
+				o.subordinateVolumes[tr.volumeName] = subordinateVol
+			}
+
+			// Resetting to false as some test cases make it true
+			publication.Unpublished = false
+			dirtyPublication.Unpublished = false
 
 			tr.mocks(mockBackend, mockStoreClient)
 
@@ -4718,10 +4861,1685 @@ func TestUnpublishVolume(t *testing.T) {
 			}
 			pub, ok := o.volumePublications[volumeName][nodeName]
 			if ok {
-				if !tr.wantUnpublished(t, pub.Unpublished, "Unpublished flag is incorrect") {
+				if pub != nil && !tr.wantUnpublished(t, pub.Unpublished, "Unpublished flag is incorrect") {
 					return
 				}
 			}
 		})
 	}
+
+	// Tests for Public Unpublish Volume
+	config.CurrentDriverContext = config.ContextDocker
+	defer func() { config.CurrentDriverContext = "" }()
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	// Create orchestrator with fake backend and initial values
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+	o.backends[backendUUID] = mockBackend
+
+	o.bootstrapError = errors.New("bootstrap error")
+	err := o.UnpublishVolume(ctx(), volumeName, nodeName)
+	assert.Error(t, err, "bootstrap error")
+
+	o.bootstrapError = nil
+	err = o.UnpublishVolume(ctx(), volumeName, nodeName)
+	assert.Error(t, err, "volume not found")
+}
+
+func TestBootstrapSubordinateVolumes(t *testing.T) {
+	var (
+		backendUUID       = "1234"
+		subVolumeName     = "sub_abc"
+		sourceVolumeName  = "source_abc"
+		sourceVolConfig   = &storage.VolumeConfig{Name: sourceVolumeName}
+		sourceVolume      = &storage.Volume{Config: sourceVolConfig}
+		subVolConfig      = &storage.VolumeConfig{Name: subVolumeName, ShareSourceVolume: sourceVolumeName}
+		subVolume         = &storage.Volume{Config: subVolConfig}
+		subVolConfig_fail = &storage.VolumeConfig{Name: subVolumeName}
+		subVolume_fail    = &storage.Volume{Config: subVolConfig_fail}
+	)
+
+	tests := []struct {
+		name               string
+		sourceVolumeName   string
+		subVolumeName      string
+		volumes            map[string]*storage.Volume
+		subordinateVolumes map[string]*storage.Volume
+		wantErr            assert.ErrorAssertionFunc
+	}{
+		{
+			name:               "BootStrapSubordinateVolumes",
+			sourceVolumeName:   sourceVolumeName,
+			subVolumeName:      subVolumeName,
+			volumes:            map[string]*storage.Volume{sourceVolumeName: sourceVolume},
+			subordinateVolumes: map[string]*storage.Volume{subVolumeName: subVolume},
+			wantErr:            assert.NoError,
+		},
+		{
+			name:               "BootStrapSubordinateVolumesNotFound",
+			sourceVolumeName:   sourceVolumeName,
+			subVolumeName:      subVolumeName,
+			volumes:            map[string]*storage.Volume{sourceVolumeName: sourceVolume},
+			subordinateVolumes: map[string]*storage.Volume{subVolumeName: subVolume_fail},
+			wantErr:            assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.CurrentDriverContext = config.ContextCSI
+			defer func() { config.CurrentDriverContext = "" }()
+			mockCtrl := gomock.NewController(t)
+
+			// Create a fake backend with UUID
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+			// Create orchestrator with fake backend and initial values
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.subordinateVolumes = tt.subordinateVolumes
+			o.volumes = tt.volumes
+
+			err := o.bootstrapSubordinateVolumes(ctx())
+			if !tt.wantErr(t, err, "Unexpected Result") {
+				return
+			}
+		})
+	}
+}
+
+func TestAddSubordinateVolume(t *testing.T) {
+	backendUUID := "1234"
+	tests := []struct {
+		name                  string
+		sourceVolumeName      string
+		subVolumeName         string
+		shareSourceName       string
+		ImportNotManaged      bool
+		Orphaned              bool
+		IsMirrorDestination   bool
+		SourceVolStorageClass string
+		SubVolStorageClass    string
+		NFSPath               string
+		backendId             string
+		CloneSourceVolume     string
+		ImportOriginalName    string
+		State                 storage.VolumeState
+		sourceVolConfig       *storage.VolumeConfig
+		subVolConfig          *storage.VolumeConfig
+		AddVolErr             error
+		wantErr               assert.ErrorAssertionFunc
+		wantVolumes           *storage.VolumeExternal
+	}{
+		{
+			name:             "AddSubordinateVolumesNotRegularVolume",
+			sourceVolumeName: "fake_vol",
+			subVolumeName:    "fake_vol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fake_vol", 1, "fakeSC", config.File),
+			subVolConfig:     tu.GenerateVolumeConfig("fake_vol", 1, "fakeSC", config.File),
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "AddSubordinateVolumesNotAlreadySubordinate",
+			sourceVolumeName: "fake_vol",
+			subVolumeName:    "fake_sub_vol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:     tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "AddSubordinateVolumesSourceDoesNotExists",
+			sourceVolumeName: "fake_vol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:     tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "AddSubordinateVolumesImportNotManaged",
+			sourceVolumeName: "fake_vol",
+			shareSourceName:  "fake_vol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:     tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			ImportNotManaged: true,
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "AddSubordinateVolumesOrphaned",
+			sourceVolumeName: "fake_vol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:     tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			shareSourceName:  "fake_vol",
+			Orphaned:         true,
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "AddSubordinateVolumesStateNotOnline",
+			sourceVolumeName: "fake_vol",
+			shareSourceName:  "fake_vol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:     tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			State:            storage.VolumeStateDeleting,
+			wantErr:          assert.Error,
+		},
+		{
+			name:                  "AddSubordinateVolumesSCNotSame",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_Source_vol", 1, "sourceSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 1, "subSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			SourceVolStorageClass: "sourceSC",
+			SubVolStorageClass:    "subSC",
+			wantErr:               assert.Error,
+		},
+		{
+			name:                  "AddSubordinateVolumesNoBackendFound",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			SourceVolStorageClass: "fakeSC",
+			SubVolStorageClass:    "fakeSC",
+			backendId:             "fakebackend",
+			wantErr:               assert.Error,
+		},
+		{
+			name:                  "AddSubordinateVolumesSourceNotNFS",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_vol", 1, "fakeSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			SourceVolStorageClass: "fakeSC",
+			SubVolStorageClass:    "fakeSC",
+			backendId:             backendUUID,
+			NFSPath:               "",
+			wantErr:               assert.Error,
+		},
+		{
+			name:                  "AddSubordinateVolumesSubVolSizeInvalid",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_vol", 1, "fakeSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 99999999999999, "fakeSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			NFSPath:               "fakepath",
+			SourceVolStorageClass: "fakeSC",
+			SubVolStorageClass:    "fakeSC",
+			backendId:             backendUUID,
+			wantErr:               assert.Error,
+		},
+		{
+			name:                  "AddSubordinateVolumesSrcVolSizeInvalid",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_vol", 999999999999999, "fakeSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			NFSPath:               "fakepath",
+			SourceVolStorageClass: "fakeSC",
+			SubVolStorageClass:    "fakeSC",
+			backendId:             backendUUID,
+			wantErr:               assert.Error,
+		},
+		{
+			name:                  "AddSubordinateVolumesSubVolSizeLarger",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 10, "fakeSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			NFSPath:               "fakepath",
+			SourceVolStorageClass: "fakeSC",
+			SubVolStorageClass:    "fakeSC",
+			backendId:             backendUUID,
+			wantErr:               assert.Error,
+		},
+		{
+			name:                  "AddSubordinateVolumesCloneTest",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			NFSPath:               "fakepath",
+			SourceVolStorageClass: "fakeSC",
+			SubVolStorageClass:    "fakeSC",
+			CloneSourceVolume:     "fakeclone",
+			backendId:             backendUUID,
+			wantErr:               assert.Error,
+		},
+		{
+			name:                  "AddSubordinateVolumesMirrorTest",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			NFSPath:               "fakepath",
+			IsMirrorDestination:   true,
+			SourceVolStorageClass: "fakeSC",
+			SubVolStorageClass:    "fakeSC",
+			CloneSourceVolume:     "",
+			backendId:             backendUUID,
+			wantErr:               assert.Error,
+		},
+		{
+			name:                  "AddSubordinateVolumesImportNameTest",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			NFSPath:               "fakepath",
+			IsMirrorDestination:   false,
+			ImportOriginalName:    "fakeImportName",
+			SourceVolStorageClass: "fakeSC",
+			SubVolStorageClass:    "fakeSC",
+			CloneSourceVolume:     "",
+			backendId:             backendUUID,
+			wantErr:               assert.Error,
+		},
+		{
+			name:                  "AddSubordinateVolumes",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			NFSPath:               "fakepath",
+			IsMirrorDestination:   false,
+			ImportOriginalName:    "",
+			SourceVolStorageClass: "fakeSC",
+			SubVolStorageClass:    "fakeSC",
+			CloneSourceVolume:     "",
+			backendId:             backendUUID,
+			AddVolErr:             nil,
+			wantErr:               assert.NoError,
+		},
+		{
+			name:                  "AddSubordinateVolumesFail",
+			sourceVolumeName:      "fake_vol",
+			shareSourceName:       "fake_vol",
+			sourceVolConfig:       tu.GenerateVolumeConfig("fake_Source_vol", 1, "fakeSC", config.File),
+			subVolConfig:          tu.GenerateVolumeConfig("fake_sub_vol", 1, "fakeSC", config.File),
+			State:                 storage.VolumeStateOnline,
+			NFSPath:               "fakepath",
+			IsMirrorDestination:   false,
+			ImportOriginalName:    "",
+			SourceVolStorageClass: "fakeSC",
+			SubVolStorageClass:    "fakeSC",
+			CloneSourceVolume:     "",
+			backendId:             backendUUID,
+			wantErr:               assert.Error,
+			AddVolErr:             errors.New("failed to add volume"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.CurrentDriverContext = config.ContextCSI
+			defer func() { config.CurrentDriverContext = "" }()
+			mockCtrl := gomock.NewController(t)
+
+			// Create a fake backend with UUID
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).AnyTimes().Return(tt.AddVolErr).AnyTimes()
+
+			sourceVolume := &storage.Volume{Config: tt.sourceVolConfig}
+			subVolume := &storage.Volume{Config: tt.subVolConfig}
+			tt.subVolConfig.ShareSourceVolume = tt.shareSourceName
+			tt.sourceVolConfig.ImportNotManaged = tt.ImportNotManaged
+			tt.sourceVolConfig.StorageClass = tt.SourceVolStorageClass
+			tt.sourceVolConfig.AccessInfo.NfsPath = tt.NFSPath
+			tt.subVolConfig.StorageClass = tt.SubVolStorageClass
+			tt.subVolConfig.CloneSourceVolume = tt.CloneSourceVolume
+			tt.subVolConfig.IsMirrorDestination = tt.IsMirrorDestination
+			tt.subVolConfig.ImportOriginalName = tt.ImportOriginalName
+			sourceVolume.Orphaned = tt.Orphaned
+			sourceVolume.State = tt.State
+			subVolume.State = storage.VolumeStateSubordinate
+			subVolume.BackendUUID = tt.backendId
+			sourceVolume.BackendUUID = tt.backendId
+
+			volumes := map[string]*storage.Volume{tt.sourceVolumeName: sourceVolume}
+			subordinateVolumes := map[string]*storage.Volume{tt.subVolumeName: subVolume}
+
+			// Create orchestrator with fake backend and initial values
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.subordinateVolumes = subordinateVolumes
+			o.volumes = volumes
+
+			gotVolumes, err := o.addSubordinateVolume(ctx(), tt.subVolConfig)
+			if err == nil {
+				tt.wantVolumes = subVolume.ConstructExternal()
+			} else {
+				tt.wantVolumes = nil
+			}
+			if !tt.wantErr(t, err, "Unexpected Result") {
+				return
+			}
+			if !reflect.DeepEqual(gotVolumes, tt.wantVolumes) {
+				t.Errorf("TridentOrchestrator.ListSubordinateVolumes() = %v, expected %v", gotVolumes, tt.wantVolumes)
+			}
+		})
+	}
+}
+
+func TestListSubordinateVolumes(t *testing.T) {
+	backendUUID := "1234"
+	tests := []struct {
+		name                string
+		sourceVolumeName    string
+		sourceVolConfigName string
+		wrongSrcVolName     string
+		subVolumeName       string
+		bootstrapError      error
+		sourceVolConfig     *storage.VolumeConfig
+		subVolConfig        *storage.VolumeConfig
+		SubordinateVolumes  map[string]interface{}
+		wantErr             assert.ErrorAssertionFunc
+	}{
+		{
+			name:                "ListSubordinateVolumesError",
+			sourceVolumeName:    "fakeSrcVol",
+			sourceVolConfigName: "fakeSrcVol",
+			subVolumeName:       "fakeSubordinateVol",
+			sourceVolConfig:     tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subVolConfig:        tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:      fmt.Errorf("fake error"),
+			wantErr:             assert.Error,
+		},
+		{
+			name:                "ListSubordinateVolumesNoError",
+			sourceVolumeName:    "fakeSrcVol",
+			sourceVolConfigName: "fakeSrcVol",
+			subVolumeName:       "fakeSubordinateVol",
+			sourceVolConfig:     tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subVolConfig:        tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:      nil,
+			wantErr:             assert.NoError,
+		},
+		{
+			name:                "ListSubordinateVolumesNoVolPassed",
+			sourceVolumeName:    "",
+			sourceVolConfigName: "",
+			subVolumeName:       "fakeSubordinateVol",
+			sourceVolConfig:     tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subVolConfig:        tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:      nil,
+			wantErr:             assert.NoError,
+		},
+		{
+			name:                "ListSubordinateVolumesWrongVolPassed",
+			sourceVolumeName:    "fakeSrcVol",
+			sourceVolConfigName: "WrongfakeSrcVol",
+			wrongSrcVolName:     "fakeWrongName",
+			subVolumeName:       "fakeSubordinateVol",
+			sourceVolConfig:     tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subVolConfig:        tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:      nil,
+			wantErr:             assert.Error,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.CurrentDriverContext = config.ContextCSI
+			defer func() { config.CurrentDriverContext = "" }()
+			mockCtrl := gomock.NewController(t)
+
+			// Create a fake backend with UUID
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+			sourceVolume := &storage.Volume{Config: tt.sourceVolConfig}
+			subVolume := &storage.Volume{Config: tt.subVolConfig}
+			tt.sourceVolConfig.SubordinateVolumes = make(map[string]interface{})
+			sourceVolume.Config.SubordinateVolumes[tt.subVolumeName] = nil
+			volumes := map[string]*storage.Volume{tt.sourceVolumeName: sourceVolume}
+			subordinateVolumes := map[string]*storage.Volume{tt.subVolumeName: subVolume}
+			wantVolumes := make([]*storage.VolumeExternal, 0, len(volumes))
+
+			// Create orchestrator with fake backend and initial values
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.subordinateVolumes = subordinateVolumes
+			o.volumes = volumes
+			o.bootstrapError = tt.bootstrapError
+
+			gotVolumes, err := o.ListSubordinateVolumes(ctx(), tt.sourceVolConfigName)
+			if err == nil {
+				wantVolumes = append(wantVolumes, subVolume.ConstructExternal())
+			} else {
+				wantVolumes = nil
+			}
+			if !tt.wantErr(t, err, "Unexpected Result") {
+				return
+			}
+			if !reflect.DeepEqual(gotVolumes, wantVolumes) {
+				t.Errorf("TridentOrchestrator.ListSubordinateVolumes() = %v, expected %v", gotVolumes, wantVolumes)
+			}
+		})
+	}
+}
+
+func TestGetSubordinateSourceVolume(t *testing.T) {
+	backendUUID := "1234"
+	tests := []struct {
+		name                string
+		sourceVolumeName    string
+		sourceVolConfigName string
+		subordVolumeName    string
+		bootstrapError      error
+		sourceVolConfig     *storage.VolumeConfig
+		subordVolConfig     *storage.VolumeConfig
+		wantErr             assert.ErrorAssertionFunc
+	}{
+		{
+			name:                "FindParentVolumeNoError",
+			sourceVolumeName:    "fakeSrcVol",
+			sourceVolConfigName: "fakeSrcVol",
+			subordVolumeName:    "fakeSubordinateVol",
+			sourceVolConfig:     tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subordVolConfig:     tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:      nil,
+			wantErr:             assert.NoError,
+		},
+		{
+			name:                "FindParentVolumeError",
+			sourceVolumeName:    "fakeSrcVol",
+			sourceVolConfigName: "fakeSrcVol",
+			subordVolumeName:    "fakeSubordinateVol",
+			sourceVolConfig:     tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subordVolConfig:     tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:      fmt.Errorf("fake error"),
+			wantErr:             assert.Error,
+		},
+		{
+			name:                "FindParentVolumeError_ParentVolumeNotFound",
+			sourceVolumeName:    "fakeSrcVol1",
+			sourceVolConfigName: "fakeSrcVol",
+			subordVolumeName:    "fakeSubordinateVol",
+			sourceVolConfig:     tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subordVolConfig:     tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:      nil,
+			wantErr:             assert.Error,
+		},
+		{
+			name:                "FindParentVolumeError_SubordinateVolumeNotFound",
+			sourceVolumeName:    "fakeSrcVol1",
+			sourceVolConfigName: "fakeSrcVol",
+			subordVolumeName:    "fakeSubordinateVol1",
+			sourceVolConfig:     tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subordVolConfig:     tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:      nil,
+			wantErr:             assert.Error,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.CurrentDriverContext = config.ContextCSI
+			defer func() { config.CurrentDriverContext = "" }()
+			mockCtrl := gomock.NewController(t)
+
+			// Create a fake backend with UUID
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+			sourceVolume := &storage.Volume{Config: tt.sourceVolConfig}
+			subordVolume := &storage.Volume{Config: tt.subordVolConfig}
+			subordVolume.Config.ShareSourceVolume = sourceVolume.Config.Name
+			tt.sourceVolConfig.SubordinateVolumes = make(map[string]interface{})
+			volumes := map[string]*storage.Volume{tt.sourceVolumeName: sourceVolume}
+			subordinateVolumes := map[string]*storage.Volume{tt.subordVolumeName: subordVolume}
+			if tt.subordVolumeName == "fakeSubordinateVol1" {
+				subordinateVolumes = map[string]*storage.Volume{}
+			}
+			var wantVolume *storage.VolumeExternal
+
+			// Create orchestrator with fake backend and initial values
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.subordinateVolumes = subordinateVolumes
+			o.volumes = volumes
+			o.bootstrapError = tt.bootstrapError
+
+			gotVolume, err := o.GetSubordinateSourceVolume(ctx(), tt.subordVolumeName)
+			if err == nil {
+				wantVolume = sourceVolume.ConstructExternal()
+			} else {
+				wantVolume = nil
+			}
+			if !tt.wantErr(t, err, "Unexpected Result") {
+				return
+			}
+			if !reflect.DeepEqual(gotVolume, wantVolume) {
+				t.Errorf("TridentOrchestrator.FindParentVolume() = %v, expected %v", gotVolume, wantVolume)
+			}
+		})
+	}
+}
+
+func TestListVolumePublicationsForVolumeAndSubordinates(t *testing.T) {
+	backendUUID := "1234"
+	tests := []struct {
+		name                   string
+		sourceVolumeName       string
+		listVolName            string
+		subVolumeName          string
+		subVolumeState         storage.VolumeState
+		bootstrapError         error
+		sourceVolConfig        *storage.VolumeConfig
+		subVolConfig           *storage.VolumeConfig
+		SubordinateVolumes     map[string]interface{}
+		wantVolumePublications []*utils.VolumePublication
+	}{
+		{
+			name:                   "TestListVolumePublicationsForVolumeAndSubordinatesWrongVolume",
+			sourceVolumeName:       "fakeSrcVol",
+			listVolName:            "WrongSrcVolName",
+			subVolumeName:          "fakeSubordinateVol",
+			subVolumeState:         storage.VolumeStateSubordinate,
+			sourceVolConfig:        tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subVolConfig:           tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			wantVolumePublications: []*utils.VolumePublication{},
+		},
+		{
+			name:                   "TestListVolumePublicationsForVolumeAndSubordinatesSubVol",
+			sourceVolumeName:       "fakeSrcVol",
+			listVolName:            "fakeSubordinateVol",
+			subVolumeName:          "fakeSubordinateVol",
+			subVolumeState:         storage.VolumeStateSubordinate,
+			sourceVolConfig:        tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subVolConfig:           tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			wantVolumePublications: []*utils.VolumePublication{},
+		},
+		{
+			name:             "TestListVolumePublicationsForVolumeAndSubordinates",
+			sourceVolumeName: "fakeSrcVol",
+			listVolName:      "fakeSrcVol",
+			subVolumeName:    "fakeSubordinateVol",
+			subVolumeState:   storage.VolumeStateSubordinate,
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subVolConfig:     tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			wantVolumePublications: []*utils.VolumePublication{
+				{
+					Name:       "foo1/bar1",
+					NodeName:   "bar1",
+					VolumeName: "fakeSrcVol",
+					ReadOnly:   true,
+					AccessMode: 1,
+				},
+				{
+					Name:       "foo2/bar2",
+					NodeName:   "bar2",
+					VolumeName: "fakeSubordinateVol",
+					ReadOnly:   true,
+					AccessMode: 1,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.CurrentDriverContext = config.ContextCSI
+			defer func() { config.CurrentDriverContext = "" }()
+			mockCtrl := gomock.NewController(t)
+
+			// Create a fake backend with UUID
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+			// create source and subordinate volumes
+			sourceVolume := &storage.Volume{Config: tt.sourceVolConfig}
+			subVolume := &storage.Volume{Config: tt.subVolConfig}
+			subVolume.State = tt.subVolumeState
+			tt.sourceVolConfig.SubordinateVolumes = make(map[string]interface{})
+			sourceVolume.Config.SubordinateVolumes[tt.subVolumeName] = nil
+			volumes := map[string]*storage.Volume{tt.sourceVolumeName: sourceVolume}
+			subordinateVolumes := map[string]*storage.Volume{tt.subVolumeName: subVolume}
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.subordinateVolumes = subordinateVolumes
+			o.volumes = volumes
+
+			// add the fake publications to orchestrator
+			if len(tt.wantVolumePublications) > 0 {
+				o.addVolumePublicationToCache(tt.wantVolumePublications[0])
+				o.addVolumePublicationToCache(tt.wantVolumePublications[1])
+			}
+
+			gotVolumesPublications := o.listVolumePublicationsForVolumeAndSubordinates(ctx(), tt.listVolName)
+
+			if !reflect.DeepEqual(gotVolumesPublications, tt.wantVolumePublications) {
+				t.Errorf("gotVolumesPublications = %v, expected %v", gotVolumesPublications, tt.wantVolumePublications)
+			}
+		})
+	}
+}
+
+func TestAddVolumeWithSubordinateVolume(t *testing.T) {
+	const (
+		backendName    = "fakeBackend"
+		scName         = "fakeSC"
+		fullVolumeName = "fakeVolume"
+	)
+	var wantVolume *storage.VolumeExternal
+	var wantErr assert.ErrorAssertionFunc
+	wantErr = assert.Error
+	orchestrator := getOrchestrator(t, false)
+
+	fullVolumeConfig := tu.GenerateVolumeConfig(
+		fullVolumeName, 50, scName,
+		config.File,
+	)
+
+	fullVolumeConfig.ShareSourceVolume = "fakeSourceVolume"
+	Volume := &storage.Volume{Config: fullVolumeConfig}
+	gotVolume, err := orchestrator.AddVolume(ctx(), fullVolumeConfig)
+
+	if err == nil {
+		wantVolume = Volume.ConstructExternal()
+	} else {
+		wantVolume = nil
+	}
+	if !wantErr(t, err, "Unexpected Result") {
+		return
+	}
+	if !reflect.DeepEqual(gotVolume, wantVolume) {
+		t.Errorf("GotVolume = %v, expected %v", gotVolume, wantVolume)
+	}
+	cleanup(t, orchestrator)
+}
+
+func TestAddVolumeWhenVolumeExistsAsSubordinateVolume(t *testing.T) {
+	const (
+		backendName    = "fakeBackend"
+		scName         = "fakeSC"
+		fullVolumeName = "fakeVolume"
+	)
+	var wantVolume *storage.VolumeExternal
+	var wantErr assert.ErrorAssertionFunc
+	wantErr = assert.Error
+	orchestrator := getOrchestrator(t, false)
+
+	fullVolumeConfig := tu.GenerateVolumeConfig(
+		fullVolumeName, 50, scName,
+		config.File,
+	)
+
+	Volume := &storage.Volume{Config: fullVolumeConfig}
+	orchestrator.subordinateVolumes[fullVolumeConfig.Name] = Volume
+	gotVolume, err := orchestrator.AddVolume(ctx(), fullVolumeConfig)
+
+	if err == nil {
+		wantVolume = Volume.ConstructExternal()
+	} else {
+		wantVolume = nil
+	}
+	if !wantErr(t, err, "Unexpected Result") {
+		return
+	}
+	if !reflect.DeepEqual(gotVolume, wantVolume) {
+		t.Errorf("GotVolume = %v, expected %v", gotVolume, wantVolume)
+	}
+	cleanup(t, orchestrator)
+}
+
+func TestResizeSubordinateVolume(t *testing.T) {
+	backendUUID := "abcd"
+	tests := []struct {
+		name             string
+		resizeVal        string
+		sourceVolumeName string
+		subordVolumeName string
+		bootstrapError   error
+		sourceVolConfig  *storage.VolumeConfig
+		subordVolConfig  *storage.VolumeConfig
+		wantErr          assert.ErrorAssertionFunc
+	}{
+		{
+			name:             "BootstrapError",
+			resizeVal:        "1gi",
+			sourceVolumeName: "fakeSrcVol",
+			subordVolumeName: "fakeSubordinateVol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subordVolConfig:  tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:   errors.New("bootstrap error"),
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "NilSubordinateVolumeError",
+			resizeVal:        "1gi",
+			sourceVolumeName: "fakeSrcVol",
+			subordVolumeName: "fakeSubordinateVol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subordVolConfig:  tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:   nil,
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "NilParentVolumeError",
+			resizeVal:        "1gi",
+			sourceVolumeName: "fakeSrcVol",
+			subordVolumeName: "fakeSubordinateVol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subordVolConfig:  tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:   nil,
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "UnsupportedResizeValue1",
+			resizeVal:        "2xi",
+			sourceVolumeName: "fakeSrcVol",
+			subordVolumeName: "fakeSubordinateVol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subordVolConfig:  tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:   nil,
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "UnsupportedResizeValue2",
+			resizeVal:        "-2gi",
+			sourceVolumeName: "fakeSrcVol",
+			subordVolumeName: "fakeSubordinateVol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subordVolConfig:  tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:   nil,
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "UnsupportedSourceSizeValue1",
+			resizeVal:        "2gi",
+			sourceVolumeName: "fakeSrcVol",
+			subordVolumeName: "fakeSubordinateVol",
+			sourceVolConfig:  &storage.VolumeConfig{Name: "fakeSrcVol", InternalName: "fakeSrcVol", Size: "1xi", Protocol: config.File, StorageClass: "fakeSC", SnapshotPolicy: "none", SnapshotDir: "none", UnixPermissions: "", VolumeMode: config.Filesystem},
+			subordVolConfig:  tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:   nil,
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "UnsupportedSourceSizeValue2",
+			resizeVal:        "2gi",
+			sourceVolumeName: "fakeSrcVol",
+			subordVolumeName: "fakeSubordinateVol",
+			sourceVolConfig:  &storage.VolumeConfig{Name: "fakeSrcVol", InternalName: "fakeSrcVol", Size: "-1gi", Protocol: config.File, StorageClass: "fakeSC", SnapshotPolicy: "none", SnapshotDir: "none", UnixPermissions: "", VolumeMode: config.Filesystem},
+			subordVolConfig:  tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:   nil,
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "SubordinateSizeGreaterError",
+			resizeVal:        "3Gi",
+			sourceVolumeName: "fakeSrcVol",
+			subordVolumeName: "fakeSubordinateVol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			subordVolConfig:  tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:   nil,
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "PersistentStoreUpdateError",
+			resizeVal:        "2Gi",
+			sourceVolumeName: "fakeSrcVol",
+			subordVolumeName: "fakeSubordinateVol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 2, "fakeSC", config.File),
+			subordVolConfig:  tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:   nil,
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "PersistentStoreUpdateSuccess",
+			resizeVal:        "2Gi",
+			sourceVolumeName: "fakeSrcVol",
+			subordVolumeName: "fakeSubordinateVol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 2, "fakeSC", config.File),
+			subordVolConfig:  tu.GenerateVolumeConfig("fakeSubordinateVol", 1, "fakeSC", config.File),
+			bootstrapError:   nil,
+			wantErr:          assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sourceVolume := &storage.Volume{Config: tt.sourceVolConfig}
+			subordVolume := &storage.Volume{Config: tt.subordVolConfig}
+			subordVolume.Config.ShareSourceVolume = tt.sourceVolumeName
+			tt.sourceVolConfig.SubordinateVolumes = make(map[string]interface{})
+			volumes := map[string]*storage.Volume{tt.sourceVolumeName: sourceVolume}
+			subordinateVolumes := map[string]*storage.Volume{tt.subordVolumeName: subordVolume}
+			if tt.name == "NilSubordinateVolumeError" {
+				subordinateVolumes = map[string]*storage.Volume{tt.subordVolumeName: nil}
+			}
+			if tt.name == "NilParentVolumeError" {
+				volumes = map[string]*storage.Volume{tt.sourceVolumeName: nil}
+			}
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			// Create a fake backend with UUID
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+			mockBackend.EXPECT().GetDriverName().Return("baz").AnyTimes()
+			mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+			mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			if tt.name == "PersistentStoreUpdateError" {
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), gomock.Any()).Return(errors.New("persistent store update failed"))
+			} else {
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+
+			// Create orchestrator with fake backend and initial values
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.subordinateVolumes = subordinateVolumes
+			o.volumes = volumes
+			o.bootstrapError = tt.bootstrapError
+
+			err := o.ResizeVolume(ctx(), tt.subordVolumeName, tt.resizeVal)
+			tt.wantErr(t, err, "Unexpected Result")
+		})
+	}
+}
+
+func TestResizeVolume(t *testing.T) {
+	backendUUID := "abcd"
+	volName := "fakeSrcVol"
+	volConfig := tu.GenerateVolumeConfig(volName, 1, "fakeSC", config.File)
+	volConfig.SubordinateVolumes = make(map[string]interface{})
+
+	tests := []struct {
+		name    string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "VolumeNotFoundError",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "VolumeStateIsDeletingError",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "AddVolumeTransactionError",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "BackendNotFoundError",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "BackendResizeVolumeError",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "PersistentStoreUpdateError",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "DeleteVolumeTranxError",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "PersistentStoreUpdateSuccess",
+			wantErr: assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			vol := &storage.Volume{Config: volConfig}
+			vol.Orphaned = true
+			volumes := map[string]*storage.Volume{}
+			if tt.name != "VolumeNotFoundError" {
+				volumes[volName] = vol
+			}
+			if tt.name == "VolumeStateIsDeletingError" {
+				vol.State = storage.VolumeStateDeleting
+			}
+			if tt.name != "BackendNotFoundError" {
+				vol.BackendUUID = backendUUID
+			}
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			// Create a fake backend with UUID
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+			mockBackend.EXPECT().GetDriverName().Return("baz").AnyTimes()
+			mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+			mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
+			if tt.name == "BackendResizeVolumeError" {
+				mockBackend.EXPECT().ResizeVolume(ctx(), gomock.Any(), gomock.Any()).Return(errors.New("unable to resize"))
+			} else {
+				mockBackend.EXPECT().ResizeVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			}
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			mockStoreClient.EXPECT().GetExistingVolumeTransaction(ctx(), gomock.Any()).Return(nil, nil).AnyTimes()
+			if tt.name == "DeleteVolumeTranxError" {
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("delete failed"))
+			} else {
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+			if tt.name == "AddVolumeTransactionError" {
+				mockStoreClient.EXPECT().AddVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("failed to add to transaction"))
+			} else {
+				mockStoreClient.EXPECT().AddVolumeTransaction(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+			if tt.name == "PersistentStoreUpdateError" {
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), gomock.Any()).Return(errors.New("persistent store update failed"))
+			} else {
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+
+			// Create orchestrator with fake backend and initial values
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.volumes = volumes
+
+			err := o.ResizeVolume(ctx(), volName, "2gi")
+			tt.wantErr(t, err, "Unexpected Result")
+		})
+	}
+}
+
+func TestHandleFailedTranxResizeVolume(t *testing.T) {
+	backendUUID := "abcd"
+	tests := []struct {
+		name    string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "VolumeNotPresent",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "BackendNotFoundError",
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "ResizeVolumeSuccess",
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "ResizeVolumeFail",
+			wantErr: assert.Error,
+		},
+	}
+	vc := tu.GenerateVolumeConfig("fakeVol", 1, "fakeSC", config.File)
+	svt := &storage.VolumeTransaction{Op: storage.ResizeVolume, Config: vc}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			vol := &storage.Volume{Config: vc}
+			if tt.name == "VolumeNotPresent" || tt.name == "ResizeVolumeSuccess" {
+				vol.BackendUUID = backendUUID
+			}
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			// Create a fake backend with UUID
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			mockStoreClient.EXPECT().UpdateVolume(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			if tt.name == "VolumeNotPresent" {
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("delete failed"))
+			} else {
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			if tt.name == "ResizeVolumeSuccess" || tt.name == "ResizeVolumeFail" {
+				o.volumes = map[string]*storage.Volume{"fakeVol": vol}
+			}
+			err := o.handleFailedTransaction(ctx(), svt)
+			tt.wantErr(t, err, "Unexpected Result")
+		})
+	}
+}
+
+func TestDeleteSubordinateVolume(t *testing.T) {
+	backendUUID := "abcd"
+	sc := "fakeSC"
+	srcVolName := "fakeSrcVol"
+	subVolName := "fakeSubordinateVol"
+
+	tests := []struct {
+		name    string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "VolumeNotFound",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "FailedToDeleteVolumeFromPersistentStore",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "SharedSourceVolumeNotFound",
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "ErrorDeletingSourceVolume",
+			wantErr: assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sourceVolume := &storage.Volume{State: storage.VolumeStateDeleting, BackendUUID: backendUUID}
+			sourceVolume.Config = tu.GenerateVolumeConfig(srcVolName, 1, sc, config.File)
+			sourceVolume.Config.SubordinateVolumes = map[string]interface{}{subVolName: nil}
+
+			subordVolume := &storage.Volume{Config: tu.GenerateVolumeConfig(subVolName, 1, sc, config.File)}
+			if tt.name != "SharedSourceVolumeNotFound" {
+				subordVolume.Config.ShareSourceVolume = srcVolName
+			}
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().RemoveVolume(ctx(), gomock.Any()).Return(errors.New("error")).AnyTimes()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			if tt.name == "FailedToDeleteVolumeFromPersistentStore" {
+				mockStoreClient.EXPECT().DeleteVolumeIgnoreNotFound(ctx(), gomock.Any()).Return(errors.New("delete failed"))
+			} else {
+				mockStoreClient.EXPECT().DeleteVolumeIgnoreNotFound(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.volumes[srcVolName] = sourceVolume
+			if tt.name != "VolumeNotFound" {
+				o.subordinateVolumes[subVolName] = subordVolume
+			}
+
+			err := o.deleteSubordinateVolume(ctx(), subVolName)
+			tt.wantErr(t, err, "Unexpected result")
+		})
+	}
+
+	// Calling deleteSubordinateVolume from DeleteVolume function
+	t.Run("DeleteSubVolFromDeleteVol", func(t *testing.T) {
+		srcVolConfig := tu.GenerateVolumeConfig(srcVolName, 1, sc, config.File)
+		srcVol := &storage.Volume{Config: srcVolConfig, BackendUUID: backendUUID}
+		srcVol.Config.SubordinateVolumes = map[string]interface{}{subVolName: nil}
+
+		subVolConfig := tu.GenerateVolumeConfig(subVolName, 1, sc, config.File)
+		subVol := &storage.Volume{Config: subVolConfig}
+		subVol.Config.ShareSourceVolume = srcVolName
+
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
+
+		mockBackend := mockstorage.NewMockBackend(mockCtrl)
+		mockBackend.EXPECT().RemoveVolume(ctx(), gomock.Any()).Return(errors.New("error")).AnyTimes()
+		mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+		mockBackend.EXPECT().GetDriverName().Return("baz").AnyTimes()
+		mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+		mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
+
+		mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+		mockStoreClient.EXPECT().DeleteVolumeIgnoreNotFound(ctx(), gomock.Any()).Return(errors.New("delete failed"))
+
+		o := getOrchestrator(t, false)
+		o.storeClient = mockStoreClient
+		o.backends[backendUUID] = mockBackend
+		o.subordinateVolumes[subVolName] = subVol
+		o.volumes[srcVolName] = srcVol
+
+		err := o.DeleteVolume(ctx(), subVolName)
+		assert.Error(t, err, "delete failed")
+	})
+}
+
+func TestDeleteVolume(t *testing.T) {
+	backendUUID := "abcd"
+	srcVolName := "fakeSrcVol"
+	cloneVolName := "cloneVol"
+	sc := "fakeSC"
+
+	publicDeleteVolumeTests := []struct {
+		name             string
+		sourceVolumeName string
+		sourceVolConfig  *storage.VolumeConfig
+		wantErr          assert.ErrorAssertionFunc
+	}{
+		{
+			name:             "FailedToAddTranx",
+			sourceVolumeName: "fakeSrcVol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "FailedToDeleteTranx",
+			sourceVolumeName: "fakeSrcVol",
+			sourceVolConfig:  tu.GenerateVolumeConfig("fakeSrcVol", 1, "fakeSC", config.File),
+			wantErr:          assert.Error,
+		},
+	}
+
+	for _, tt := range publicDeleteVolumeTests {
+		t.Run(tt.name, func(t *testing.T) {
+			sourceVolume := &storage.Volume{Config: tt.sourceVolConfig, BackendUUID: backendUUID, Orphaned: true}
+			sourceVolume.State = storage.VolumeStateDeleting
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().RemoveVolume(ctx(), gomock.Any()).Return(errors.New("error")).AnyTimes()
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().GetDriverName().Return("baz").AnyTimes()
+			mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+			mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("failed to delete tranx")).AnyTimes()
+			if tt.name == "FailedToAddTranx" {
+				mockStoreClient.EXPECT().GetExistingVolumeTransaction(ctx(), gomock.Any()).Return(nil, errors.New("falied to get tranx"))
+			} else {
+				mockStoreClient.EXPECT().GetExistingVolumeTransaction(ctx(), gomock.Any()).Return(nil, nil)
+				mockStoreClient.EXPECT().AddVolumeTransaction(ctx(), gomock.Any()).Return(nil)
+			}
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.volumes[tt.sourceVolumeName] = sourceVolume
+
+			err := o.DeleteVolume(ctx(), tt.sourceVolumeName)
+			tt.wantErr(t, err, "Unexpected result")
+		})
+	}
+
+	privateDeleteVolumeTests := []struct {
+		name    string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "HasSubordinateVolume",
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "HasSubordinateVolumeError",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "BackendNilError",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "DeleteFromPersistentStoreError",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "DeleteClone",
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "DeleteBackendError",
+			wantErr: assert.Error,
+		},
+	}
+
+	for _, tt := range privateDeleteVolumeTests {
+		t.Run(tt.name, func(t *testing.T) {
+			sourceVolume := &storage.Volume{State: storage.VolumeStateDeleting, BackendUUID: backendUUID, Orphaned: true}
+			sourceVolume.Config = tu.GenerateVolumeConfig(srcVolName, 1, sc, config.File)
+			sourceVolume.Config.CloneSourceVolume = cloneVolName
+			if tt.name == "HasSubordinateVolume" || tt.name == "HasSubordinateVolumeError" {
+				sourceVolume.Config.SubordinateVolumes = map[string]interface{}{"dummyVol": nil}
+			}
+			if tt.name == "BackendNilError" {
+				sourceVolume.BackendUUID = "dummyBackend"
+			}
+
+			var cloneVolume *storage.Volume
+			if tt.name == "DeleteClone" {
+				cloneVolume = &storage.Volume{Config: tu.GenerateVolumeConfig(cloneVolName, 1, sc, config.File)}
+				cloneVolume.State = storage.VolumeStateDeleting
+				cloneVolume.Config.SubordinateVolumes = map[string]interface{}{"dummyVol": nil}
+			}
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().GetDriverName().Return("baz").AnyTimes()
+			mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
+			if tt.name == "DeleteBackendError" {
+				mockBackend.EXPECT().HasVolumes().Return(false)
+				mockBackend.EXPECT().State().Return(storage.Deleting)
+			} else {
+				mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+			}
+			if tt.name == "DeleteFromPersistentStoreError" {
+				mockBackend.EXPECT().RemoveVolume(ctx(), gomock.Any()).Return(&storage.NotManagedError{})
+			} else {
+				mockBackend.EXPECT().RemoveVolume(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("failed to delete tranx")).AnyTimes()
+			if tt.name == "HasSubordinateVolumeError" || tt.name == "DeleteClone" {
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), gomock.Any()).Return(errors.New("error updating volume"))
+			} else {
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+			if tt.name == "BackendNilError" || tt.name == "DeleteFromPersistentStoreError" {
+				mockStoreClient.EXPECT().DeleteVolumeIgnoreNotFound(ctx(), gomock.Any()).Return(errors.New("unable to delete"))
+			} else {
+				mockStoreClient.EXPECT().DeleteVolumeIgnoreNotFound(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+			if tt.name == "DeleteBackendError" {
+				mockStoreClient.EXPECT().DeleteBackend(ctx(), gomock.Any()).Return(errors.New("delete backend failed"))
+			}
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.volumes[srcVolName] = sourceVolume
+			if tt.name == "DeleteClone" {
+				o.volumes[cloneVolName] = cloneVolume
+			}
+
+			err := o.deleteVolume(ctx(), srcVolName)
+			tt.wantErr(t, err, "Unexpected result")
+		})
+	}
+}
+
+func TestHandleFailedDeleteVolumeError(t *testing.T) {
+	backendUUID := "abcd"
+	srcVolName := "fakeSrcVol"
+	sc := "fakeSC"
+	volConfig := tu.GenerateVolumeConfig(srcVolName, 1, sc, config.File)
+	tnx := &storage.VolumeTransaction{Op: storage.DeleteVolume, Config: volConfig}
+	sourceVolume := &storage.Volume{Config: volConfig, BackendUUID: backendUUID}
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().GetDriverName().Return("baz").AnyTimes()
+	mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
+	mockBackend.EXPECT().RemoveVolume(ctx(), gomock.Any()).Return(nil)
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	mockStoreClient.EXPECT().DeleteVolumeIgnoreNotFound(ctx(), gomock.Any()).Return(errors.New("unable to delete volume"))
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("unable to delete transaction"))
+
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+	o.backends[backendUUID] = mockBackend
+	o.volumes[srcVolName] = sourceVolume
+
+	err := o.handleFailedTransaction(ctx(), tnx)
+	assert.Error(t, err, "failed to delete volume transaction")
+}
+
+func TestCreateSnapshotError(t *testing.T) {
+	backendUUID := "abcd"
+	// snap that already exists in o.snapshots
+	sc1 := &storage.SnapshotConfig{Name: "snap1", VolumeName: "vol1"}
+	id1 := sc1.ID()
+	// snap of volume in deleting state
+	sc2 := &storage.SnapshotConfig{Name: "snap2", VolumeName: "vol2"}
+	vol2 := &storage.Volume{Config: &storage.VolumeConfig{Name: "vol2"}, State: storage.VolumeStateDeleting}
+	// snap and vol used in other tests
+	sc3 := &storage.SnapshotConfig{Name: "snap3", VolumeName: "vol3", Version: "1", InternalName: "snap3", VolumeInternalName: "snap3"}
+	vol3 := &storage.Volume{Config: &storage.VolumeConfig{Name: "vol3", InternalName: "vol3"}, BackendUUID: backendUUID}
+	snap3 := &storage.Snapshot{Config: sc3, Created: "1pm", SizeBytes: 100, State: storage.SnapshotStateCreating}
+
+	tests := []struct {
+		name       string
+		snapConfig *storage.SnapshotConfig
+		vol        *storage.Volume
+	}{
+		{
+			name:       "SnapshotExists",
+			snapConfig: sc1,
+			vol:        vol2,
+		},
+		{
+			name:       "VolumeNotFound",
+			snapConfig: &storage.SnapshotConfig{Name: "dummy", VolumeName: "dummy"},
+			vol:        vol2,
+		},
+		{
+			name:       "VolumeInDeletingState",
+			snapConfig: sc2,
+			vol:        vol2,
+		},
+		{
+			name:       "BackendNotFound",
+			snapConfig: &storage.SnapshotConfig{Name: "snap3", VolumeName: "vol3"},
+			vol:        &storage.Volume{Config: &storage.VolumeConfig{Name: "vol3"}, BackendUUID: "dummy"},
+		},
+		{
+			name:       "SnapshotNotPossible",
+			snapConfig: sc3,
+			vol:        vol3,
+		},
+		{
+			name:       "AddVolumeTranxError",
+			snapConfig: sc3,
+			vol:        vol3,
+		},
+		{
+			name:       "MaxLimitError",
+			snapConfig: sc3,
+			vol:        vol3,
+		},
+		{
+			name:       "CreateSnapshotError",
+			snapConfig: sc3,
+			vol:        vol3,
+		},
+		{
+			name:       "AddSnapshotError",
+			snapConfig: sc3,
+			vol:        vol3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().Name().Return("backend").AnyTimes()
+			mockBackend.EXPECT().GetDriverName().Return("driver").AnyTimes()
+			mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+			if tt.name == "SnapshotNotPossible" {
+				mockBackend.EXPECT().CanSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(errors.New("cannot take snapshot"))
+			} else {
+				mockBackend.EXPECT().CanSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			}
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			if tt.name == "AddVolumeTranxError" {
+				mockStoreClient.EXPECT().GetExistingVolumeTransaction(ctx(), gomock.Any()).Return(nil, errors.New("error getting transaction"))
+			} else {
+				mockStoreClient.EXPECT().GetExistingVolumeTransaction(ctx(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+			if tt.name == "MaxLimitError" {
+				mockBackend.EXPECT().CreateSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(nil, utils.MaxLimitReachedError("error"))
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("failed to delete transaction"))
+			}
+			if tt.name == "CreateSnapshotError" {
+				mockBackend.EXPECT().CreateSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed to create snapshot"))
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(nil)
+			}
+
+			if tt.name == "AddSnapshotError" {
+				mockBackend.EXPECT().CreateSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(snap3, nil)
+				mockBackend.EXPECT().DeleteSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(errors.New("cleanup error"))
+				mockStoreClient.EXPECT().AddSnapshot(ctx(), gomock.Any()).Return(errors.New("failed to add snapshot"))
+			}
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.snapshots[id1] = &storage.Snapshot{Config: sc1}
+			o.volumes[tt.vol.Config.Name] = tt.vol
+
+			_, err := o.CreateSnapshot(ctx(), tt.snapConfig)
+			assert.Error(t, err, "unexpected error")
+		})
+	}
+}
+
+func TestDeleteSnapshotError(t *testing.T) {
+	backendUUID := "abcd"
+	volName := "vol"
+	snapName := "snap"
+	snapID := storage.MakeSnapshotID(volName, snapName)
+	snapConfig := &storage.SnapshotConfig{Name: snapName, VolumeName: volName}
+
+	publicTests := []struct {
+		name     string
+		volume   *storage.Volume
+		snapshot *storage.Snapshot
+	}{
+		{
+			name:     "SnapshotNotFound",
+			volume:   &storage.Volume{Config: &storage.VolumeConfig{Name: volName}},
+			snapshot: &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}, State: storage.SnapshotStateCreating},
+		},
+		{
+			name:     "VolumeNotFound",
+			volume:   nil,
+			snapshot: &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}, State: storage.SnapshotStateCreating},
+		},
+		{
+			name:     "NilVolumeFound",
+			volume:   nil,
+			snapshot: &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}, State: storage.SnapshotStateMissingVolume},
+		},
+		{
+			name:     "BackendNotFound",
+			volume:   &storage.Volume{Config: &storage.VolumeConfig{Name: volName}, BackendUUID: backendUUID},
+			snapshot: &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}, State: storage.SnapshotStateCreating},
+		},
+		{
+			name:     "NilBackendFound",
+			volume:   &storage.Volume{Config: &storage.VolumeConfig{Name: volName}, BackendUUID: backendUUID},
+			snapshot: &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}, State: storage.SnapshotStateMissingBackend},
+		},
+		{
+			name:     "AddVolumeTranxFail",
+			volume:   &storage.Volume{Config: &storage.VolumeConfig{Name: volName}, BackendUUID: backendUUID, Orphaned: true},
+			snapshot: &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}, State: storage.SnapshotStateCreating},
+		},
+		{
+			name:     "DeleteSnapshotFail",
+			volume:   &storage.Volume{Config: &storage.VolumeConfig{Name: volName}, BackendUUID: backendUUID, Orphaned: true},
+			snapshot: &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}, State: storage.SnapshotStateCreating},
+		},
+	}
+
+	for _, tt := range publicTests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().Name().Return("backend").AnyTimes()
+			mockBackend.EXPECT().GetDriverName().Return("driver").AnyTimes()
+			mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+			if tt.name == "DeleteSnapshotFail" {
+				mockBackend.EXPECT().DeleteSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(errors.New("delete snapshot failed"))
+			} else {
+				mockBackend.EXPECT().DeleteSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			}
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("failed to delete transaction")).AnyTimes()
+			if tt.name == "NilVolumeFound" || tt.name == "NilBackendFound" {
+				mockStoreClient.EXPECT().DeleteSnapshotIgnoreNotFound(ctx(), gomock.Any()).Return(errors.New("delete failed"))
+			}
+			if tt.name == "AddVolumeTranxFail" {
+				mockStoreClient.EXPECT().GetExistingVolumeTransaction(ctx(), gomock.Any()).Return(nil, errors.New("failed to get transaction"))
+			} else {
+				mockStoreClient.EXPECT().GetExistingVolumeTransaction(ctx(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			if tt.name != "BackendNotFound" {
+				o.backends[backendUUID] = mockBackend
+			}
+			if tt.name == "NilBackendFound" {
+				o.backends[backendUUID] = nil
+			}
+			if tt.name != "SnapshotNotFound" {
+				o.snapshots[snapID] = tt.snapshot
+			}
+			if tt.name != "VolumeNotFound" {
+				o.volumes[volName] = tt.volume
+			}
+
+			err := o.DeleteSnapshot(ctx(), volName, snapName)
+			assert.Error(t, err, "Unexpected error")
+		})
+	}
+
+	privateTests := []struct {
+		name     string
+		volume   *storage.Volume
+		snapshot *storage.Snapshot
+	}{
+		{
+			name:     "VolumeNotFound2",
+			volume:   nil,
+			snapshot: nil,
+		},
+		{
+			name:     "BackendNotFound2",
+			volume:   &storage.Volume{Config: &storage.VolumeConfig{Name: volName}, BackendUUID: backendUUID},
+			snapshot: nil,
+		},
+		{
+			name:     "DeleteFromPersistentStoreFail",
+			volume:   &storage.Volume{Config: &storage.VolumeConfig{Name: volName}, BackendUUID: backendUUID},
+			snapshot: &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}, State: storage.SnapshotStateCreating},
+		},
+		{
+			name:     "EmptyVolumeSnapshots",
+			volume:   &storage.Volume{Config: &storage.VolumeConfig{Name: volName}, BackendUUID: backendUUID, State: storage.VolumeStateDeleting},
+			snapshot: &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}, State: storage.SnapshotStateCreating},
+		},
+	}
+
+	for _, tt := range privateTests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().DeleteSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockBackend.EXPECT().RemoveVolume(ctx(), gomock.Any()).Return(nil).AnyTimes()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			mockStoreClient.EXPECT().DeleteVolumeIgnoreNotFound(ctx(), gomock.Any()).Return(errors.New("delete failed")).AnyTimes()
+			if tt.name == "DeleteFromPersistentStoreFail" {
+				mockStoreClient.EXPECT().DeleteSnapshotIgnoreNotFound(ctx(), gomock.Any()).Return(errors.New("delete failed"))
+			} else {
+				mockStoreClient.EXPECT().DeleteSnapshotIgnoreNotFound(ctx(), gomock.Any()).Return(nil).AnyTimes()
+			}
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.snapshots[snapID] = tt.snapshot
+			if tt.name != "BackendNotFound2" {
+				o.backends[backendUUID] = mockBackend
+			}
+			if tt.name != "VolumeNotFound2" {
+				o.volumes[volName] = tt.volume
+			}
+
+			err := o.deleteSnapshot(ctx(), snapConfig)
+			assert.Error(t, err, "Unexpected error")
+		})
+	}
+}
+
+func TestHandleFailedSnapshot(t *testing.T) {
+	backendUUID := "abcd"
+	snapName := "snap"
+	volName := "vol"
+	snapID := storage.MakeSnapshotID(volName, snapName)
+	snapConfig := &storage.SnapshotConfig{Name: snapName, VolumeName: volName}
+	volConfig := &storage.VolumeConfig{Name: volName}
+	vt := &storage.VolumeTransaction{Config: volConfig, SnapshotConfig: snapConfig}
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend2 := mockstorage.NewMockBackend(mockCtrl)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+	o.snapshots[snapID] = &storage.Snapshot{Config: snapConfig}
+	o.backends["xyz"] = mockBackend2
+	o.backends[backendUUID] = mockBackend
+	o.volumes[volName] = &storage.Volume{Config: volConfig, BackendUUID: backendUUID}
+
+	// storage.AddSnapshot switch case tests
+	vt.Op = storage.AddSnapshot
+
+	mockBackend.EXPECT().DeleteSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(errors.New("failed to delete snapshot"))
+	mockBackend.EXPECT().Name().Return("abc")
+	err := o.handleFailedTransaction(ctx(), vt)
+	assert.Error(t, err, "Delete volume error")
+
+	delete(o.snapshots, snapID)
+	// As sequence of iteration in a map is not fixed, mockBackend2.State() may or may not get called
+	mockBackend2.EXPECT().State().Return(storage.Unknown).AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online)
+	mockBackend.EXPECT().Name().Return("abc")
+	mockBackend.EXPECT().DeleteSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(errors.New("failed to delete snapshot"))
+	err = o.handleFailedTransaction(ctx(), vt)
+	assert.Error(t, err, "Delete snapshot error")
+
+	delete(o.backends, "xyz")
+	mockBackend.EXPECT().State().Return(storage.Online)
+	mockBackend.EXPECT().DeleteSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("failed to delete transaction"))
+	err = o.handleFailedTransaction(ctx(), vt)
+	assert.Error(t, err, "Delete volume transaction error")
+
+	// storage.DeleteSnapshot switch case tests
+	vt.Op = storage.DeleteSnapshot
+
+	o.snapshots[snapID] = &storage.Snapshot{Config: snapConfig}
+	mockBackend.EXPECT().DeleteSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(errors.New("failed to delete snapshot"))
+	mockBackend.EXPECT().Name().Return("abc")
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("failed to delete transaction"))
+	err = o.handleFailedTransaction(ctx(), vt)
+	assert.Error(t, err, "Delete volume transaction error")
 }

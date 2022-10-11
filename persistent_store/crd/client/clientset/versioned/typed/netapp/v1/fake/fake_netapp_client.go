@@ -58,6 +58,10 @@ func (c *FakeTridentV1) TridentVolumePublications(namespace string) v1.TridentVo
 	return &FakeTridentVolumePublications{c, namespace}
 }
 
+func (c *FakeTridentV1) TridentVolumeReferences(namespace string) v1.TridentVolumeReferenceInterface {
+	return &FakeTridentVolumeReferences{c, namespace}
+}
+
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
 func (c *FakeTridentV1) RESTClient() rest.Interface {

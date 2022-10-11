@@ -651,7 +651,11 @@ func (k *CRDClientV1) DeleteBackend(ctx context.Context, b storage.Backend) (err
 	if !b.IsCredentialsFieldSet(ctx) {
 		secretName := k.backendSecretName(b.BackendUUID())
 		if err := k.k8sClient.DeleteSecretDefault(secretName); err != nil {
-			return err
+			if errors.IsNotFound(err) {
+				Logc(ctx).WithField("secret", secretName).Warn("Secret not found while deleting backend")
+			} else {
+				return err
+			}
 		}
 		Logc(ctx).WithField("secret", secretName).Debug("Deleted backend secret.")
 	}

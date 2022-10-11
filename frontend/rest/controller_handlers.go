@@ -499,8 +499,24 @@ func ListVolumes(w http.ResponseWriter, r *http.Request) {
 	response := &ListVolumesResponse{}
 	ListGeneric(w, r, response,
 		func(map[string]string) int {
+			var (
+				volumes []*storage.VolumeExternal
+				volume  *storage.VolumeExternal
+				err     error
+			)
+
 			volumeNames := make([]string, 0)
-			volumes, err := orchestrator.ListVolumes(r.Context())
+
+			if r.URL.Query().Has("subordinateOf") {
+				volumes, err = orchestrator.ListSubordinateVolumes(r.Context(), r.URL.Query().Get("subordinateOf"))
+			} else if r.URL.Query().Has("parentOfSubordinate") {
+				volume, err = orchestrator.GetSubordinateSourceVolume(r.Context(),
+					r.URL.Query().Get("parentOfSubordinate"))
+				volumes = append(volumes, volume)
+			} else {
+				volumes, err = orchestrator.ListVolumes(r.Context())
+			}
+
 			if err != nil {
 				response.Error = err.Error()
 			} else if len(volumes) > 0 {

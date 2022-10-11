@@ -23,6 +23,7 @@ type TridentV1Interface interface {
 	TridentVersionsGetter
 	TridentVolumesGetter
 	TridentVolumePublicationsGetter
+	TridentVolumeReferencesGetter
 }
 
 // TridentV1Client is used to interact with features provided by the trident.netapp.io group.
@@ -72,6 +73,10 @@ func (c *TridentV1Client) TridentVolumes(namespace string) TridentVolumeInterfac
 
 func (c *TridentV1Client) TridentVolumePublications(namespace string) TridentVolumePublicationInterface {
 	return newTridentVolumePublications(c, namespace)
+}
+
+func (c *TridentV1Client) TridentVolumeReferences(namespace string) TridentVolumeReferenceInterface {
+	return newTridentVolumeReferences(c, namespace)
 }
 
 // NewForConfig creates a new TridentV1Client for the given config.

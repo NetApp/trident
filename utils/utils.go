@@ -976,6 +976,7 @@ func ConsistentRead(filename string, attempts int) ([]byte, error) {
 	return nil, fmt.Errorf("could not get consistent content of %s after %d attempts", filename, attempts)
 }
 
+// Title minimally replaces the deprecated strings.Title() function.
 func Title(str string) string {
 	return cases.Title(language.Und, cases.NoLower).String(str)
 }

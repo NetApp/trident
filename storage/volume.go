@@ -60,7 +60,9 @@ type VolumeConfig struct {
 	// PeerVolumeHandle is the internal volume handle for the source volume if this volume is a mirror destination
 	PeerVolumeHandle string `json:"requiredPeerVolumeHandle,omitempty"`
 	// InternalID is an optional, backend-specific identifier to help find an object
-	InternalID string `json:"internalID,omitempty"`
+	InternalID         string                 `json:"internalID,omitempty"`
+	ShareSourceVolume  string                 `json:"shareSourceVolume"`
+	SubordinateVolumes map[string]interface{} `json:"-"`
 }
 
 type VolumeCreatingConfig struct {
@@ -113,6 +115,7 @@ const (
 	VolumeStateDeleting       = VolumeState("deleting")
 	VolumeStateUpgrading      = VolumeState("upgrading")
 	VolumeStateMissingBackend = VolumeState("missing_backend")
+	VolumeStateSubordinate    = VolumeState("subordinate")
 	// TODO should Orphaned be moved to a VolumeState?
 )
 
@@ -148,13 +151,17 @@ func (s VolumeState) IsMissingBackend() bool {
 	return s == VolumeStateMissingBackend
 }
 
-func NewVolume(conf *VolumeConfig, backendUUID, pool string, orphaned bool) *Volume {
+func (s VolumeState) IsSubordinate() bool {
+	return s == VolumeStateSubordinate
+}
+
+func NewVolume(conf *VolumeConfig, backendUUID, pool string, orphaned bool, state VolumeState) *Volume {
 	return &Volume{
 		Config:      conf,
 		BackendUUID: backendUUID,
 		Pool:        pool,
 		Orphaned:    orphaned,
-		State:       VolumeStateOnline,
+		State:       state,
 	}
 }
 
@@ -183,6 +190,14 @@ func (v *Volume) ConstructExternal() *VolumeExternal {
 		Orphaned:    v.Orphaned,
 		State:       v.State,
 	}
+}
+
+func (v *Volume) IsDeleting() bool {
+	return v.State.IsDeleting()
+}
+
+func (v *Volume) IsSubordinate() bool {
+	return v.State.IsSubordinate()
 }
 
 // VolumeExternalWrapper is used to return volumes and errors via channels between goroutines

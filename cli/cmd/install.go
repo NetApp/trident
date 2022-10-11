@@ -49,6 +49,7 @@ const (
 	VersionCRDName            = "tridentversions.trident.netapp.io"
 	VolumeCRDName             = "tridentvolumes.trident.netapp.io"
 	VolumePublicationCRDName  = "tridentvolumepublications.trident.netapp.io"
+	VolumeReferenceCRDName    = "tridentvolumereferences.trident.netapp.io"
 
 	ControllerClusterRoleBindingFilename  = "trident-controller-clusterrolebinding.yaml"
 	LinuxNodeClusterRoleBindingFilename   = "trident-linux-node-clusterrolebinding.yaml"
@@ -150,6 +151,7 @@ var (
 		BackendCRDName,
 		MirrorRelationshipCRDName,
 		NodeCRDName,
+		VolumeReferenceCRDName,
 		SnapshotCRDName,
 		SnapshotInfoCRDName,
 		StorageClassCRDName,

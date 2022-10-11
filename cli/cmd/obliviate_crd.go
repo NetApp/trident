@@ -142,6 +142,10 @@ func deleteCRs() error {
 		return err
 	}
 
+	if err := deleteVolumeReferences(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -769,6 +773,62 @@ func deleteSnapshots() error {
 	return nil
 }
 
+func deleteVolumeReferences() error {
+	crd := "tridentvolumereferences.trident.netapp.io"
+	logFields := log.Fields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		log.WithField("CRD", crd).Debug("CRD not present.")
+		return nil
+	}
+
+	vrefs, err := crdClientset.TridentV1().TridentVolumeReferences(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(vrefs.Items) == 0 {
+		log.WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, vref := range vrefs.Items {
+		if vref.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentVolumeReferences(vref.Namespace).Delete(ctx(), vref.Name, deleteOpts)
+		}
+	}
+
+	vrefs, err = crdClientset.TridentV1().TridentVolumeReferences(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, vref := range vrefs.Items {
+		if vref.HasTridentFinalizers() {
+			crCopy := vref.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentVolumeReferences(vref.Namespace).Update(ctx(), crCopy, updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				log.Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := crdClientset.TridentV1().TridentVolumeReferences(vref.Namespace).Delete
+		if err := deleteWithRetry(deleteFunc, ctx(), vref.Name, nil); err != nil {
+			log.Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	log.WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
 func deleteCRDs() error {
 	crdNames := []string{
 		"tridentversions.trident.netapp.io",
@@ -782,6 +842,7 @@ func deleteCRDs() error {
 		"tridenttransactions.trident.netapp.io",
 		"tridentsnapshots.trident.netapp.io",
 		"tridentvolumepublications.trident.netapp.io",
+		"tridentvolumereferences.trident.netapp.io",
 	}
 
 	for _, crdName := range crdNames {

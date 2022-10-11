@@ -204,6 +204,7 @@ rules:
       - tridentstorageclasses
       - tridentvolumes
       - tridentvolumepublications
+      - tridentvolumereferences
       - tridentnodes
       - tridenttransactions
       - tridentsnapshots

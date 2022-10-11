@@ -32,6 +32,8 @@ type Interface interface {
 	TridentVolumes() TridentVolumeInformer
 	// TridentVolumePublications returns a TridentVolumePublicationInformer.
 	TridentVolumePublications() TridentVolumePublicationInformer
+	// TridentVolumeReferences returns a TridentVolumeReferenceInformer.
+	TridentVolumeReferences() TridentVolumeReferenceInformer
 }
 
 type version struct {
@@ -98,4 +100,9 @@ func (v *version) TridentVolumes() TridentVolumeInformer {
 // TridentVolumePublications returns a TridentVolumePublicationInformer.
 func (v *version) TridentVolumePublications() TridentVolumePublicationInformer {
 	return &tridentVolumePublicationInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// TridentVolumeReferences returns a TridentVolumeReferenceInformer.
+func (v *version) TridentVolumeReferences() TridentVolumeReferenceInformer {
+	return &tridentVolumeReferenceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

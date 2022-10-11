@@ -11,20 +11,27 @@ import (
 	"strconv"
 
 	"github.com/dustin/go-humanize"
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
-
-	"github.com/olekukonko/tablewriter"
-	"github.com/spf13/cobra"
 )
 
-var backendsByUUID map[string]*storage.BackendExternal
+var (
+	getSourceVolume      string
+	getSubordinateVolume string
+	backendsByUUID       map[string]*storage.BackendExternal
+)
 
 func init() {
 	getCmd.AddCommand(getVolumeCmd)
+	getVolumeCmd.Flags().StringVar(&getSourceVolume, "subordinateOf", "", "Limit query to subordinates of volume")
+	getVolumeCmd.Flags().StringVar(&getSubordinateVolume, "parentOfSubordinate", "",
+		"Limit query to subordinate source volume")
+	getVolumeCmd.MarkFlagsMutuallyExclusive("subordinateOf", "parentOfSubordinate")
 	backendsByUUID = make(map[string]*storage.BackendExternal)
 }
 
@@ -35,6 +42,12 @@ var getVolumeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == ModeTunnel {
 			command := []string{"get", "volume"}
+			if getSourceVolume != "" {
+				command = append(command, "--subordinateOf", getSourceVolume)
+			}
+			if getSubordinateVolume != "" {
+				command = append(command, "--parentOfSubordinate", getSubordinateVolume)
+			}
 			TunnelCommand(append(command, args...))
 			return nil
 		} else {
@@ -90,6 +103,12 @@ func volumeList(volumeNames []string) error {
 
 func GetVolumes() ([]string, error) {
 	url := BaseURL() + "/volume"
+	if getSourceVolume != "" {
+		url += "?subordinateOf=" + getSourceVolume
+	}
+	if getSubordinateVolume != "" {
+		url += "?parentOfSubordinate=" + getSubordinateVolume
+	}
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
 	if err != nil {

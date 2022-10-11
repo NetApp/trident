@@ -487,6 +487,21 @@ func (mr *MockOrchestratorMockRecorder) GetStorageClass(arg0, arg1 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStorageClass", reflect.TypeOf((*MockOrchestrator)(nil).GetStorageClass), arg0, arg1)
 }
 
+// GetSubordinateSourceVolume mocks base method.
+func (m *MockOrchestrator) GetSubordinateSourceVolume(arg0 context.Context, arg1 string) (*storage.VolumeExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubordinateSourceVolume", arg0, arg1)
+	ret0, _ := ret[0].(*storage.VolumeExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSubordinateSourceVolume indicates an expected call of GetSubordinateSourceVolume.
+func (mr *MockOrchestratorMockRecorder) GetSubordinateSourceVolume(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubordinateSourceVolume", reflect.TypeOf((*MockOrchestrator)(nil).GetSubordinateSourceVolume), arg0, arg1)
+}
+
 // GetVersion mocks base method.
 func (m *MockOrchestrator) GetVersion(arg0 context.Context) (string, error) {
 	m.ctrl.T.Helper()
@@ -697,6 +712,21 @@ func (mr *MockOrchestratorMockRecorder) ListStorageClasses(arg0 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListStorageClasses", reflect.TypeOf((*MockOrchestrator)(nil).ListStorageClasses), arg0)
 }
 
+// ListSubordinateVolumes mocks base method.
+func (m *MockOrchestrator) ListSubordinateVolumes(arg0 context.Context, arg1 string) ([]*storage.VolumeExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSubordinateVolumes", arg0, arg1)
+	ret0, _ := ret[0].([]*storage.VolumeExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSubordinateVolumes indicates an expected call of ListSubordinateVolumes.
+func (mr *MockOrchestratorMockRecorder) ListSubordinateVolumes(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSubordinateVolumes", reflect.TypeOf((*MockOrchestrator)(nil).ListSubordinateVolumes), arg0, arg1)
+}
+
 // ListVolumePublications mocks base method.
 func (m *MockOrchestrator) ListVolumePublications(arg0 context.Context) ([]*utils.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
@@ -755,21 +785,6 @@ func (m *MockOrchestrator) ListVolumes(arg0 context.Context) ([]*storage.VolumeE
 func (mr *MockOrchestratorMockRecorder) ListVolumes(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumes", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumes), arg0)
-}
-
-// ListVolumesByPlugin mocks base method.
-func (m *MockOrchestrator) ListVolumesByPlugin(arg0 context.Context, arg1 string) ([]*storage.VolumeExternal, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListVolumesByPlugin", arg0, arg1)
-	ret0, _ := ret[0].([]*storage.VolumeExternal)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListVolumesByPlugin indicates an expected call of ListVolumesByPlugin.
-func (mr *MockOrchestratorMockRecorder) ListVolumesByPlugin(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumesByPlugin", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumesByPlugin), arg0, arg1)
 }
 
 // PeriodicallyReconcileNodeAccessOnBackends mocks base method.
