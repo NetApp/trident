@@ -1031,6 +1031,14 @@ func (c *Controller) reconcileTridentPresent(key KeyItem, operatorCSIDeployments
 
 	callingResourceType := key.resourceType
 
+	if deploymentNamespace == "" {
+		if controllingCRBasedOnStatus != nil {
+			deploymentNamespace = controllingCRBasedOnStatus.Namespace
+		} else {
+			deploymentNamespace = metav1.NamespaceDefault
+		}
+	}
+
 	log.WithFields(log.Fields{
 		"callingCRName":               callingCRName,
 		"callingResourceType":         callingResourceType,
@@ -1088,7 +1096,7 @@ func (c *Controller) reconcileTridentPresent(key KeyItem, operatorCSIDeployments
 	} else {
 		if controllingCRBasedOnInstall == nil {
 			// We should not be in this situation, removing all the Trident deployments and other remnants
-			if err := c.uninstallTridentAll(metav1.NamespaceDefault); err != nil {
+			if err := c.uninstallTridentAll(deploymentNamespace); err != nil {
 				return utils.ReconcileFailedError(err)
 			}
 			// Uninstall succeeded, so re-run the reconcile loop

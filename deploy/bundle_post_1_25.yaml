@@ -282,6 +282,7 @@ rules:
       - services
       - serviceaccounts
     verbs:
+      - get
       - list
       - create
   - apiGroups:
