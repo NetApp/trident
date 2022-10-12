@@ -29,6 +29,8 @@ const (
 	temporaryMountDir                   = "/tmp_mnt"
 	volumeMountDir                      = "/vol_mnt"
 	unknownFstype                       = "<unknown>"
+	iscsiadmLoginTimeout                = "10"
+	iscsiadmLoginRetryMax               = "1"
 )
 
 // AttachISCSIVolumeRetry attaches a volume with retry by invoking AttachISCSIVolume with backoff.
@@ -1275,6 +1277,30 @@ func loginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, porta
 				return err
 			}
 		}
+	}
+
+	loginTimeOutArgs := append(args,
+		[]string{
+			"--op=update",
+			"--name",
+			"node.conn[0].timeo.login_timeout",
+			"--value=" + iscsiadmLoginTimeout,
+		}...)
+	if _, err := execIscsiadmCommand(ctx, loginTimeOutArgs...); err != nil {
+		Logc(ctx).Error("Error running iscsiadm set login timeout.")
+		return err
+	}
+
+	loginRetryMaxArgs := append(args,
+		[]string{
+			"--op=update",
+			"--name",
+			"node.session.initial_login_retry_max",
+			"--value=" + iscsiadmLoginRetryMax,
+		}...)
+	if _, err := execIscsiadmCommand(ctx, loginRetryMaxArgs...); err != nil {
+		Logc(ctx).Error("Error running iscsiadm set login retry max.")
+		return err
 	}
 
 	loginArgs := append(args, []string{"--login"}...)

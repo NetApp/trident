@@ -28,7 +28,7 @@ const (
 	tridentDeviceInfoPath         = "/var/lib/trident/tracking"
 	lockID                        = "csi_node_server"
 	volumePublishInfoFilename     = "volumePublishInfo.json"
-	AttachISCSIVolumeTimeoutShort = 15 * time.Second
+	AttachISCSIVolumeTimeoutShort = 20 * time.Second
 	iSCSINodeUnstageMaxDuration   = 15 * time.Second
 )
 
