@@ -8,6 +8,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/elastic/go-sysinfo"
+
 	. "github.com/netapp/trident/logger"
 )
 
@@ -22,11 +24,28 @@ func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	return nil, UnsupportedError("getIPAddresses is not supported for windows")
 }
 
-// GetHostSystemInfo unused stub function
+// SMBActiveOnHost will always return true as it is native to windows
+func SMBActiveOnHost(ctx context.Context) (bool, error) {
+	Logc(ctx).Debug(">>>> osutils_windows.SMBActiveOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_windows.SMBActiveOnHost")
+	return true, nil
+}
+
+// GetHostSystemInfo returns the information about OS type and platform
 func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
-	Logc(ctx).Debug(">>>> osutils_windows.GetHostSystemInfo")
-	defer Logc(ctx).Debug("<<<< osutils_windows.GetHostSystemInfo")
-	return nil, UnsupportedError("GetHostSystemInfo is not supported for windows")
+	osInfo, err := sysinfo.Host()
+	if err != nil {
+		return nil, err
+	}
+
+	// For windows, host.OS.Distro will correspond 'windows'
+	// host.OS.Version will correspond to 'Windows Server 20xx Datacenter'
+
+	host := &HostSystem{}
+	host.OS.Distro = osInfo.Info().OS.Platform
+	host.OS.Version = osInfo.Info().OS.Name
+
+	return host, nil
 }
 
 // NFSActiveOnHost unused stub function

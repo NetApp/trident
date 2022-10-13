@@ -12,9 +12,8 @@ import (
 func TestGetHostSystemInfo(t *testing.T) {
 	ctx := context.Background()
 	result, err := GetHostSystemInfo(ctx)
-	assert.Nil(t, result, "host system information is populated")
-	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.NotNil(t, result, "host system information is not populated")
+	assert.NoError(t, err, "no error")
 }
 
 func TestNFSActiveOnHost(t *testing.T) {
@@ -37,4 +36,11 @@ func TestGetIPAddresses(t *testing.T) {
 	assert.Nil(t, result, "got ip address")
 	assert.Error(t, err, "no error")
 	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+}
+
+func TestSMBActiveOnHost(t *testing.T) {
+	ctx := context.Background()
+	result, err := SMBActiveOnHost(ctx)
+	assert.True(t, result, "smb is not active on the host")
+	assert.NoError(t, err, "error")
 }

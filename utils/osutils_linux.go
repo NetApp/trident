@@ -242,3 +242,10 @@ func GetTargetFilePath(ctx context.Context, resourcePath, arg string) string {
 	defer Logc(ctx).Debug("<<<< osutils_linux.GetTargetFilePath")
 	return path.Join(resourcePath, arg)
 }
+
+// SMBActiveOnHost will always return false on non-windows platform
+func SMBActiveOnHost(ctx context.Context) (bool, error) {
+	Logc(ctx).Debug(">>>> osutils_linux.SMBActiveOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_linux.SMBActiveOnHost")
+	return false, UnsupportedError("SMBActiveOnHost is not supported for linux")
+}

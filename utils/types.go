@@ -143,9 +143,9 @@ type HostSystem struct {
 }
 
 type SystemOS struct {
-	Distro  string `json:"distro"` // ubuntu/centos/rhel
+	Distro  string `json:"distro"` // ubuntu/centos/rhel/windows
 	Version string `json:"version"`
-	Release string `json:"release"`
+	Release string `json:"release,omitempty"`
 }
 
 type NodePrepBreadcrumb struct {

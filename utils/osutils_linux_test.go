@@ -197,3 +197,11 @@ func TestGetTargetFilePath(t *testing.T) {
 	result := GetTargetFilePath(ctx, "/host/path1", "/test/path")
 	assert.NotEmpty(t, result, "path is empty")
 }
+
+func TestSMBActiveOnHost(t *testing.T) {
+	ctx := context.Background()
+	result, err := SMBActiveOnHost(ctx)
+	assert.False(t, result, "smb is active on the host")
+	assert.Error(t, err, "no error")
+	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+}

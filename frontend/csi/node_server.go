@@ -611,6 +611,14 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 		services = append(services, "NFS")
 	}
 
+	smbActive, err := utils.SMBActiveOnHost(ctx)
+	if err != nil {
+		Logc(ctx).WithError(err).Warn("Error discovering SMB service on host.")
+	}
+	if smbActive {
+		services = append(services, "SMB")
+	}
+
 	iscsiActive, err := utils.ISCSIActiveOnHost(ctx, *p.hostInfo)
 	if err != nil {
 		Logc(ctx).WithError(err).Warn("Error discovering iSCSI service on host.")
@@ -1014,7 +1022,8 @@ func (p *Plugin) nodeStageISCSIVolume(
 			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
-			if err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(),
+			if err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo,
+				req.GetSecrets(),
 				AttachISCSIVolumeTimeoutShort); err != nil {
 				// Bail out no matter what as we've now tried with updated credentials
 				return nil, status.Error(codes.Internal, err.Error())

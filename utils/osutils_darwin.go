@@ -51,3 +51,10 @@ func GetTargetFilePath(ctx context.Context, resourcePath, arg string) string {
 	defer Logc(ctx).Debug("<<<< osutils_darwin.GetTargetFilePath")
 	return ""
 }
+
+// SMBActiveOnHost will always return false on non-windows platform
+func SMBActiveOnHost(ctx context.Context) (bool, error) {
+	Logc(ctx).Debug(">>>> osutils_darwin.SMBActiveOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_darwin.SMBActiveOnHost")
+	return false, UnsupportedError("SMBActiveOnHost is not supported for darwin")
+}
