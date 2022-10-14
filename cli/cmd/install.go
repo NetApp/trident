@@ -1018,14 +1018,14 @@ func installTrident() (returnError error) {
 
 	// Create the DaemonSet
 	if windows {
-		if useYAML && fileExists(daemonsetPath) {
-			returnError = validateTridentDaemonSet()
+		if useYAML && fileExists(windowsDaemonSetPath) {
+			returnError = validateTridentDaemonSet(windowsDaemonSetPath)
 			if returnError != nil {
 				returnError = fmt.Errorf("please correct the DaemonSet YAML file; %v", returnError)
 				return
 			}
-			returnError = client.CreateObjectByFile(daemonsetPath)
-			logFields = log.Fields{"path": daemonsetPath}
+			returnError = client.CreateObjectByFile(windowsDaemonSetPath)
+			logFields = log.Fields{"path": windowsDaemonSetPath}
 		} else {
 			daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
 				DaemonsetName:        getDaemonSetName(true),
@@ -1055,7 +1055,7 @@ func installTrident() (returnError error) {
 
 	// Create the DaemonSet
 	if useYAML && fileExists(daemonsetPath) {
-		returnError = validateTridentDaemonSet()
+		returnError = validateTridentDaemonSet(daemonsetPath)
 		if returnError != nil {
 			returnError = fmt.Errorf("please correct the DaemonSet YAML file; %v", returnError)
 			return
@@ -1835,8 +1835,8 @@ func validateTridentService() error {
 	return nil
 }
 
-func validateTridentDaemonSet() error {
-	daemonset, err := readDaemonSetFromFile(daemonsetPath)
+func validateTridentDaemonSet(yamlPath string) error {
+	daemonset, err := readDaemonSetFromFile(yamlPath)
 	if err != nil {
 		return fmt.Errorf("could not load DaemonSet YAML file; %v", err)
 	}
