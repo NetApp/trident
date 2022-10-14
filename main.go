@@ -104,6 +104,9 @@ var (
 	// iSCSI
 	iSCSISelfHealingInterval = flag.Duration("iscsi_self_healing_interval", config.IscsiSelfHealingInterval,
 		"Interval at which the iSCSI self-healing thread is invoked")
+	iSCSISelfHealingWaitTime = flag.Duration("iscsi_self_healing_wait_time",
+		config.ISCSISelfHealingWaitTime,
+		"Wait time after which iSCSI self-healing attempts to fix stale sessions")
 
 	storeClient  persistentstore.Client
 	enableDocker bool
@@ -387,14 +390,14 @@ func main() {
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, &nodeHelper, *enableForceDetach,
-				*iSCSISelfHealingInterval)
+				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 		case csi.CSIAllInOne:
 			txnMonitor = true
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, &controllerHelper, &nodeHelper, *csiUnsafeNodeDetach,
-				*iSCSISelfHealingInterval)
+				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the CSI frontend. %v", err)

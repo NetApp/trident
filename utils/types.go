@@ -197,3 +197,60 @@ type LUKSDevice struct {
 	devicePath     string
 	luksDeviceName string
 }
+
+// Data structure and related interfaces to help iSCSI self-healing
+/*
+	PortalToLunMapping (map)
+	 Key: Portal (string)
+	 Value: <PortalInfo, LUNInfo>
+
+		PortalInfo {
+			iSCSITargetIQN (string)
+			UseCHAP	(bool)
+			Credentials {
+				IscsiUsername
+				IscsiInitiatorSecret
+				IscsiTargetUsername
+				IscsiTargetSecret (string)
+			}
+			LastFixAttempt (int32)
+		}
+
+		LUNInfo {
+			LUNs (map)
+			 key: LunID (int32)
+			 value: VolumeID (string)
+		}
+*/
+
+type CHAPCredentials struct {
+	ISCSIUsername        string
+	ISCSIInitiatorSecret string
+	ISCSITargetUsername  string
+	ISCSITargetSecret    string
+}
+
+type LUNData struct {
+	LUN      int32
+	VolumeId string
+}
+
+type PortalInfo struct {
+	ISCSITargetIQN string
+	UseCHAP        bool
+	Credentials    CHAPCredentials
+	LastFixAttempt int32
+}
+
+type LUNInfo struct {
+	LUNs map[int32]string
+}
+
+type PortalLUNData struct {
+	PortalInfoValue *PortalInfo
+	LUNInfoValue    *LUNInfo
+}
+
+type PortalLUNMapping struct {
+	PortalToLUNMapping map[string]PortalLUNData
+}

@@ -161,6 +161,9 @@ const (
 
 	// IscsiSelfHealingInterval is an interval with which the iSCSI self-healing thread is called periodically
 	IscsiSelfHealingInterval = 300 * time.Second
+
+	// ISCSISelfHealingWaitTime is an interval after which iSCSI self-healing attempts to fix stale sessions.
+	ISCSISelfHealingWaitTime = 420 * time.Second
 )
 
 var (

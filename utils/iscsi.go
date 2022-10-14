@@ -31,6 +31,29 @@ const (
 	unknownFstype                       = "<unknown>"
 	iscsiadmLoginTimeout                = "10"
 	iscsiadmLoginRetryMax               = "1"
+	iSCSISessionStateLoggedIn           = "LOGGED_IN"
+
+	// ISCSI 'multipath -ll' command out states for each HCTL
+	iSCSIMultipathStateActive  = "active"
+	iSCSIMultipathStateReady   = "ready"
+	iSCSIMultipathStateRunning = "running"
+
+	// ISCSI self-healing actions
+	iSCSIActionScan            = 0
+	iSCSIActionLoginScan       = 1
+	iSCSIActionLogoutLoginScan = 2
+	maxAttemptsForLogout       = 3
+)
+
+var (
+	// PublishedPortalLUNs is to track published portal-LUN in memory map
+	PublishedPortalLUNs = &PortalLUNMapping{PortalToLUNMapping: make(map[string]PortalLUNData)}
+
+	// DiffPortalLUNs is to track difference of published portal-LUN state with current state of the node
+	DiffPortalLUNs = &PortalLUNMapping{PortalToLUNMapping: make(map[string]PortalLUNData)}
+
+	// currentFixAttempt is running counter for fix attempt for a session
+	currentFixAttemptCount int32
 )
 
 var IscsiUtils = NewIscsiReconcileUtils()
@@ -1203,6 +1226,39 @@ func configureISCSITarget(ctx context.Context, iqn, portal, name, value string) 
 	return nil
 }
 
+// GetAllVolumeIDs returns names of all the volume IDs based on tracking files
+func GetAllVolumeIDs(ctx context.Context, trackingFileDirectory string) []string {
+	Logc(ctx).WithField("trackingFileDirectory", trackingFileDirectory).Debug(">>>> iscsi.GetAllVolumeIDs")
+	defer Logc(ctx).Debug("<<<< iscsi.GetAllVolumeIDs")
+
+	files, err := ioutil.ReadDir(trackingFileDirectory)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"error": err,
+		}).Warn("Failed to get list of tracking files.")
+
+		return nil
+	}
+
+	if len(files) == 0 {
+		Logc(ctx).Debug("No tracking file found.")
+		return nil
+	}
+
+	volumeIDs := make([]string, 0)
+	for _, file := range files {
+		if !file.IsDir() && strings.HasPrefix(file.Name(), "pvc-") && strings.HasSuffix(file.Name(), ".json") {
+			volumeIDs = append(volumeIDs, strings.TrimSuffix(file.Name(), ".json"))
+		}
+	}
+
+	if len(volumeIDs) == 0 {
+		Logc(ctx).Debug("No volume ID found.")
+	}
+
+	return volumeIDs
+}
+
 // loginISCSITarget logs in to an iSCSI target.
 func loginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, portal string) error {
 	Logc(ctx).WithFields(log.Fields{
@@ -1621,4 +1677,854 @@ func (h *IscsiReconcileHelper) ReconcileISCSIVolumeInfo(
 	}
 
 	return false, nil
+}
+
+type SessionPortalInfo struct {
+	PortalIP  string
+	TargetIQN string
+}
+
+// GetCurrentSessionPortalMap - gets the current Session and associated portal map from "iscsiadm -m session"
+func GetCurrentSessionPortalMap(ctx context.Context) (map[string]SessionPortalInfo, error) {
+	Logc(ctx).Debug(">>>> iscsi.GetCurrentSessionPortalMap")
+	defer Logc(ctx).Debug("<<<< iscsi.GetCurrentSessionPortalMap")
+
+	mapSessionToPortal := make(map[string]SessionPortalInfo)
+
+	sessionInfo, err := getISCSISessionInfo(ctx)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
+		return nil, err
+	}
+
+	for _, sInfo := range sessionInfo {
+		mapSessionToPortal[sInfo.SID] = SessionPortalInfo{sInfo.PortalIP, sInfo.TargetName}
+	}
+
+	Logc(ctx).Debugf("Session:Portal Map - %v", mapSessionToPortal)
+	return mapSessionToPortal, nil
+}
+
+// GetCurrentMultipathActiveLUNs - extracts the active LUUs as per multipath -ll command output
+func GetCurrentMultipathActiveLUNs(ctx context.Context) (map[string]struct{}, error) {
+	Logc(ctx).Debug(">>>> iscsi.getCurrentMultipathActiveLUNs")
+	defer Logc(ctx).Debug("<<<< iscsi.getCurrentMultipathActiveLUNs")
+
+	activeHCTLs := make(map[string]struct{})
+
+	content, err := execCommand(ctx, "multipath", "-ll")
+	if err != nil {
+		Logc(ctx).WithField("error", err).Debug("Problem checking multipath info.")
+		return nil, err
+	}
+
+	/*
+		#multipath -ll | grep running
+
+		`- 2:0:0:0 sda 8:0  active ready running
+		`- 3:0:0:4 sde 8:64 active ready running
+		`- 3:0:0:3 sdd 8:48 active ready running
+		`- 2:0:0:1 sdc 8:32 active ready running
+		`- 2:0:0:2 sdb 8:16 failed faulty running
+
+		a[1] == 2:0:0:0 hctl
+		a[4] == active, failed, or i/o waiting
+		a[5] == ready/faulty
+		a[6] == running <-- Shows all the previously attached LUNs irrespective of their state
+	*/
+
+	lines := strings.Split(strings.TrimSpace(string(content)), "\n")
+	for _, l := range lines {
+		if !strings.Contains(l, "running") {
+			continue
+		}
+		devInfo := strings.Fields(l)
+		if len(devInfo) > 6 {
+			if devInfo[4] == iSCSIMultipathStateActive &&
+				devInfo[5] == iSCSIMultipathStateReady &&
+				devInfo[6] == iSCSIMultipathStateRunning {
+				activeHCTLs[devInfo[1]] = struct{}{}
+			} else {
+				Logc(ctx).WithField("HCTL", devInfo[1]).Debug("Skipping faulty connection.")
+			}
+		}
+	}
+
+	return activeHCTLs, nil
+}
+
+// GetISCSISessionLUNsInfo - extracts the Luns attached in a session from
+// iscsiadm -m session -r<sid> -P3| grep Lun
+func GetISCSISessionLUNsInfo(ctx context.Context, sid string) ([]string, error) {
+	Logc(ctx).Debug(">>>> iscsi.GetISCSISessionLUNsInfo")
+	defer Logc(ctx).Debug("<<<< iscsi.GetISCSISessionLUNsInfo")
+
+	/*
+		#iscsiadm -m session -r6 -P3 | grep Lun
+			scsi3 Channel 00 Id 0 Lun: 3
+			scsi3 Channel 00 Id 0 Lun: 4
+
+		a[0]==host
+		a[2]==channel
+		a[4]==target
+		a[5]==lun
+
+	*/
+
+	var hctlInfo []string
+
+	content, err := execIscsiadmCommand(ctx, "-m", "session", "-r", sid, "-P3")
+	if err != nil {
+		exitErr, ok := err.(*exec.ExitError)
+		if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == iSCSIErrNoObjsFound {
+			Logc(ctx).Debug("No iSCSI session found.")
+			return nil, nil
+		} else {
+			Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
+			return nil, err
+		}
+	}
+
+	lines := strings.Split(strings.TrimSpace(string(content)), "\n")
+	for _, l := range lines {
+		if !strings.Contains(l, "Lun:") {
+			// skip this line
+			continue
+		}
+
+		devInfo := strings.Fields(l)
+		if len(devInfo) > 6 {
+			hostNum := devInfo[0]
+			hostNum = hostNum[4:] // extract the host number
+			channelNum := 0
+			_, err := fmt.Sscan(devInfo[2], &channelNum)
+			if err != nil {
+				Logc(ctx).WithField("Error", err).Debug("Error converting value; setting channel as 0.")
+				channelNum = 0
+			}
+			ch := strconv.Itoa(channelNum)
+			hctl := fmt.Sprintf("%s:%s:%s:%s", hostNum, ch, devInfo[4], devInfo[6])
+
+			hctlInfo = append(hctlInfo, hctl)
+		}
+	}
+
+	return hctlInfo, nil
+}
+
+// IsISCSISessionStale - reads /sys/class/iscsi_session/session<sid>/state and returns true if it is not "LOGGED_IN".git
+// Looks that the state of an already established session to identify if it is
+// logged in or not, if it is not logged in then it could be a stale session.
+// For now, we are relying on the sysfs files
+func IsISCSISessionStale(ctx context.Context, sid string) bool {
+	Logc(ctx).Debug(">>>> iscsi.IsISCSISessionStale")
+	defer Logc(ctx).Debug("<<<< iscsi.IsISCSISessionStale")
+
+	// Find the session state from the session at /sys/class/iscsi_session/sessionXXX/state
+	filename := fmt.Sprintf(chrootPathPrefix+"/sys/class/iscsi_session/session%s/state", sid)
+	sessionStateBytes, err := ioutil.ReadFile(filename)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"path":  filename,
+			"error": err,
+		}).Error("Could not read session state file")
+		return false
+	}
+
+	sessionState := strings.TrimSpace(string(sessionStateBytes))
+
+	Logc(ctx).WithFields(log.Fields{
+		"sessionID":    sid,
+		"sessionState": sessionState,
+		"sysfsFile":    filename,
+	}).Debug("Found iSCSI session state.")
+
+	return sessionState != iSCSISessionStateLoggedIn
+}
+
+// RemoveFromPortalLUNMapping - removes a portal entry in the given map of portal to LUN mapping
+func RemoveFromPortalLUNMapping(ctx context.Context, publishInfo *VolumePublishInfo, portalLUNMap *PortalLUNMapping) {
+	if portalLUNMap == nil || len(portalLUNMap.PortalToLUNMapping) == 0 {
+		Logc(ctx).Debug("Portal to LUN mapping is empty, nothing to remove.")
+		return
+	}
+	lId := publishInfo.IscsiLunNumber
+	allPortals := append(publishInfo.IscsiPortals, publishInfo.IscsiTargetPortal)
+	for _, portal := range allPortals {
+		portalLUNMap.RemoveLUNFromPortal(portal, lId)
+	}
+}
+
+// AddToPortalLUNMapping - adds a portal entry to the global PortalLunMapping map. Extracts the
+// required iSCSI Target IQN, CHAP Credentials if any from the provided VolumePublishInfo and
+// populates the map against the portal
+func AddToPortalLUNMapping(ctx context.Context, publishInfo *VolumePublishInfo, volId string) {
+	if PublishedPortalLUNs == nil {
+		// Initialize and use it
+		PublishedPortalLUNs = &PortalLUNMapping{PortalToLUNMapping: make(map[string]PortalLUNData)}
+	}
+
+	newLUNData := LUNData{publishInfo.IscsiLunNumber, volId}
+
+	// Extract required portal info
+	credentials := CHAPCredentials{
+		publishInfo.IscsiUsername,
+		publishInfo.IscsiInitiatorSecret,
+		publishInfo.IscsiTargetUsername,
+		publishInfo.IscsiTargetSecret,
+	}
+	portalInfo := PortalInfo{
+		publishInfo.IscsiTargetIQN,
+		publishInfo.UseCHAP,
+		credentials,
+		0,
+	}
+
+	allPortals := append(publishInfo.IscsiPortals, publishInfo.IscsiTargetPortal)
+	for _, portal := range allPortals {
+		if !PublishedPortalLUNs.CheckPortalExists(portal) {
+			if err := PublishedPortalLUNs.AddPortal(portal, portalInfo); err != nil {
+				Logc(ctx).Errorf("Failed to add portal %v to self-healing map; err: %v", portal, err)
+			}
+		}
+		if err := PublishedPortalLUNs.AddLUNToPortal(portal, newLUNData); err != nil {
+			Logc(ctx).Errorf("Failed to add LUN %v to portal %v in self-healing map; err:  %v", newLUNData, portal, err)
+		}
+	}
+}
+
+// PopulateCurrentPortalLUNState - populates the "portLunsMap" representing current state of the node.
+// Caller of this should provide the "SessionID : <Portal IP, TargetIQN>" information
+//  1. Gets active HCTLs from 'multipath -ll' info
+//  2. Navigate through SID:Portal map, verify if that is not a stale session.
+//     Read the sysfs file /sys/class/iscsi_session/session<id>/state to determine state of session
+//     a) If stale session (state != LOGGED_IN), skip to next entry in the map
+//     b) If session is active, navigate through the list of LUNs behind this session:
+//     - compare with active HCTL info extracted in step 1
+//     - if it is not in faulty state, add LUN id to portLUNsMap, else skip to next LUN
+func PopulateCurrentPortalLUNState(
+	ctx context.Context,
+	sidPortalMap map[string]SessionPortalInfo,
+) (*PortalLUNMapping, error) {
+	var err error
+	var lInfo int64
+	// Declare to track active host:channel:target:LUN
+	var hctls []string
+	var mpInfo map[string]struct{}
+
+	portLUNsMap := &PortalLUNMapping{PortalToLUNMapping: make(map[string]PortalLUNData)}
+
+	// Get multipath -ll information
+	if mpInfo, err = GetCurrentMultipathActiveLUNs(ctx); err != nil {
+		Logc(ctx).WithField("Error", err).Debug("Could not get multipath info.")
+		return portLUNsMap, err
+	}
+
+	for sid, portal := range sidPortalMap {
+		if IsISCSISessionStale(ctx, sid) {
+			Logc(ctx).WithFields(log.Fields{
+				"SessionID": sid,
+				"Portal":    portal,
+			}).Debug("session is stale.")
+			// Stale session, skip.
+			continue
+		}
+
+		// Add portal to current map first
+		portalInfo := PortalInfo{ISCSITargetIQN: portal.TargetIQN}
+		if err := portLUNsMap.AddPortal(portal.PortalIP, portalInfo); err != nil {
+			Logc(ctx).WithFields(log.Fields{
+				"Portal": portal,
+				"Error":  err,
+			}).Debug("Could not add portal to current state map.")
+			// Skip, proceed to verify next session
+			continue
+		}
+
+		if hctls, err = GetISCSISessionLUNsInfo(ctx, sid); err != nil {
+			Logc(ctx).WithField("Error", err).Debug("iSCSI sessions not found.")
+			continue
+		}
+
+		for _, hctl := range hctls {
+			if _, found := mpInfo[hctl]; found {
+				hctl = strings.Split(hctl, ":")[3]
+				if lInfo, err = strconv.ParseInt(hctl, 10, 32); err != nil {
+					Logc(ctx).WithField("LUNNumber", lInfo).Errorf("Could not parse LUN number")
+					// Skip, proceed to next LUN
+					continue
+				}
+
+				lData := LUNData{LUN: int32(lInfo)}
+				if err := portLUNsMap.AddLUNToPortal(portal.PortalIP, lData); err != nil {
+					Logc(ctx).WithFields(log.Fields{
+						"Portal":    portal.PortalIP,
+						"LUNNumber": lInfo,
+						"Error":     err,
+					}).Error("Could not add LUN to portal")
+				} else {
+					Logc(ctx).WithFields(log.Fields{
+						"LUNId":  lInfo,
+						"Portal": portal.PortalIP,
+					}).Debug("LUN added to portal in current state.")
+				}
+			}
+			// else - multipath reports faulty or failed for this lun hence not found, skip the lun
+		}
+	}
+
+	Logc(ctx).Debugf("Current state - Port Luns Map: %v", portLUNsMap)
+	return portLUNsMap, nil
+}
+
+// GetNextSessionToHeal - chooses the next session from the list of stale sessions if any.
+// Caller should provide the current state of the node. This compares the pristine PublishedPortalLuns,
+// prepares the difference of current with published.
+// Navigate through the list and pick up a session randomly.
+//   - Not a perfect fairness algorithm to pick the session for healing, but to mitigate some starvation.
+func GetNextSessionToHeal(ctx context.Context, currentPortalToLUNState PortalLUNMapping) (string, []int32, int) {
+	var returnPortal string
+	var err error
+	var listLUNsToBeScanned []int32
+	var lastFixCounter int32
+
+	if PublishedPortalLUNs.IsEmpty() {
+		// Clear DiffPortalLuns, cleanup
+		DiffPortalLUNs.RemoveAllPortals()
+		return "", nil, 0
+	}
+
+	// List out portals that are in PublishedPortalLUNs but not in currentPortalToLUNState.
+	// For all the portals exist in PublishedPortalLUNs
+	// 1. If a portal does not exist in current state, then need to login and scan.
+	// 2. If a portal exists in current state too, identify any missing LUNs, if there are missing LUNs,
+	//    need to scan those LUNs, else no action is required.
+	//
+	// Self-healing does not concern about additional portals in current state compared to published.
+	for portal, portalLunData := range PublishedPortalLUNs.PortalToLUNMapping {
+		if found := currentPortalToLUNState.CheckPortalExists(portal); !found {
+			// No session found, make an entry with empty LUN list
+			if err = DiffPortalLUNs.AddPortal(portal, *portalLunData.PortalInfoValue); err != nil {
+				Logc(ctx).Debugf("could not add portal %v to diff map", portal)
+			}
+			continue
+		}
+
+		// Portal found in current state, check if there are any missing LUNs from published map
+		currentPortLUNInfo := currentPortalToLUNState.GetPortalLUNMapping(portal).LUNInfoValue
+		pristinePortLUNInfo := portalLunData.LUNInfoValue
+		missingLUNs := pristinePortLUNInfo.IdentifyMissingLUNs(*currentPortLUNInfo)
+		if len(missingLUNs) == 0 {
+			// No missing LUNs, remove from DiffPortalLUNs if already exists
+			DiffPortalLUNs.RemovePortal(portal)
+			continue
+		}
+
+		// Found missing LUNs
+		lData := BuildLUNData(missingLUNs)
+		if found := DiffPortalLUNs.CheckPortalExists(portal); !found {
+			if err = DiffPortalLUNs.AddPortal(portal, *portalLunData.PortalInfoValue); err != nil {
+				Logc(ctx).Debugf("Could not add portal %v to diff map", portal)
+			} else {
+				// Getting into diff map now (not in immediate prev cycle), set the Fix attempt to running counter.
+				// To avoid the corner case of scheduling it for logout action on first fix attempt,
+				// assign last fix attempt equal to multiple of maxAttemptsForLogout
+				lfa := currentFixAttemptCount
+				if lfa%maxAttemptsForLogout == maxAttemptsForLogout-1 {
+					lfa++
+				}
+				// swallow error, error cannot occur as we just added portal
+				_ = DiffPortalLUNs.SetLastFixAttemptForPortal(portal, lfa)
+				_ = PublishedPortalLUNs.SetLastFixAttemptForPortal(portal, lfa)
+			}
+		}
+		if err = DiffPortalLUNs.AddLUNsToPortal(portal, lData); err != nil {
+			Logc(ctx).Debug("Portal information is not valid.")
+		}
+	}
+
+	Logc(ctx).Debugf("Difference of current portals from Published Portal Lun Mapping: %v", DiffPortalLUNs)
+	if DiffPortalLUNs.IsEmpty() {
+		// All sessions are healthy. Reset counters in the original memory map 'PublishedPortalLUNs'
+		PublishedPortalLUNs.ResetAllLastFixAttempt()
+		currentFixAttemptCount = 0
+		// Return empty portal, and caller should determine to ignore calling healing attempt on empty
+		return "", nil, 0
+	}
+
+	pickNone := true
+	for portal, portalLunData := range DiffPortalLUNs.PortalToLUNMapping {
+		returnPortal = portal
+		if portalLunData.PortalInfoValue.GetLastFixAttempt() < currentFixAttemptCount {
+			pickNone = false
+			break
+		}
+	}
+
+	if pickNone {
+		// all sessions are tried equal number of times. pick any, here we pick the last one  while navigating
+		// through DiffPortalLuns, assuming we get random entry from map data structure
+
+		// Increment Fix Attempt counter as all portals got equal number of chances for healing
+		currentFixAttemptCount++
+	}
+
+	_ = DiffPortalLUNs.IncLastFixAttemptForPortal(returnPortal)
+	_ = PublishedPortalLUNs.IncLastFixAttemptForPortal(returnPortal)
+
+	listLUNsToBeScanned, err = DiffPortalLUNs.GetLUNsForPortal(returnPortal)
+	if err != nil {
+		// Very unlikely, skip this cycle
+		Logc(ctx).Debug("Could not get LUNs")
+		return "", nil, 0
+	}
+	lastFixCounter, err = DiffPortalLUNs.GetLastFixAttemptForPortal(returnPortal)
+	if err != nil {
+		Logc(ctx).Debugf("could not get last fixed attempt for portal: %v", returnPortal)
+		lastFixCounter = currentFixAttemptCount
+	}
+	Logc(ctx).WithFields(log.Fields{
+		"Portal":         returnPortal,
+		"LastFixAttempt": lastFixCounter,
+	}).Debug("Session requires heal.")
+
+	if lastFixCounter%maxAttemptsForLogout == 0 {
+		// Logout and login, scan all LUNs
+		if allLuns, err := PublishedPortalLUNs.GetLUNsForPortal(returnPortal); err == nil {
+			return returnPortal, allLuns, iSCSIActionLogoutLoginScan
+		} else {
+			Logc(ctx).Debugf("Could not get list of LUNs, error: %v", err)
+		}
+	}
+
+	if len(listLUNsToBeScanned) == 0 {
+		// Try logging in and scan LUNs
+		if allLuns, err := PublishedPortalLUNs.GetLUNsForPortal(returnPortal); err == nil {
+			return returnPortal, allLuns, iSCSIActionLoginScan
+		} else {
+			Logc(ctx).Debugf("Could not get list of LUNs, error: %v", err)
+		}
+	}
+
+	// Some LUNs are missing, just scan the portal in hope to get the devices online.
+	return returnPortal, listLUNsToBeScanned, iSCSIActionScan
+}
+
+// ISCSISelfHeal  - prepares the current state of portal to LUN mapping, pass it to
+// GetNextSessionToHeal to pick the session. Call the handler to work on login, logout/login or scan action.
+func ISCSISelfHeal(ctx context.Context) {
+	var err error
+	var currentMap *PortalLUNMapping
+	var sidPortalMap map[string]SessionPortalInfo
+	var portal string
+	var listLUNs []int32
+	var action int
+
+	if err = iSCSIPreChecks(ctx); err != nil {
+		return
+	}
+
+	sidPortalMap, err = GetCurrentSessionPortalMap(ctx)
+	if err != nil {
+		Logc(ctx).WithField("Error", err).
+			Debug("Skipping self heal cycle - could not get session<->portal information")
+		return
+	}
+
+	if currentMap, err = PopulateCurrentPortalLUNState(ctx, sidPortalMap); err != nil {
+		Logc(ctx).WithField("Error", err).
+			Debug("Skipping self heal cycle - could not determine current state: multipath tool error")
+		return
+	}
+	Logc(ctx).WithField("Portal-LUNs", currentMap).Debug("Current state of portals on node")
+	portal, listLUNs, action = GetNextSessionToHeal(ctx, *currentMap)
+	Logc(ctx).WithFields(log.Fields{
+		"Portal": portal,
+		"LUNs":   listLUNs,
+		"Action": action,
+	}).Debugf("Processing self healing.")
+
+	return
+}
+
+// BuildLUNData - builds slice of LUNData with default volumeID from a given slice of LUN IDs.
+func BuildLUNData(luns []int32) []LUNData {
+	lData := make([]LUNData, len(luns))
+	for i, lId := range luns {
+		lData[i] = LUNData{LUN: lId}
+	}
+	return lData
+}
+
+// AddLUN - adds a LUN to the map of LUNs.
+func (l *LUNInfo) AddLUN(m LUNData) {
+	if l == nil {
+		return
+	}
+
+	if l.LUNs == nil {
+		l.LUNs = make(map[int32]string)
+	}
+	l.LUNs[m.LUN] = m.VolumeId
+}
+
+// AddLUNs - adds the list of LUNs to map of LUNs.
+func (l *LUNInfo) AddLUNs(s []LUNData) {
+	if l == nil {
+		return
+	}
+
+	if l.LUNs == nil {
+		// Map is empty, initialize.
+		l.LUNs = make(map[int32]string)
+	}
+
+	for _, k := range s {
+		l.LUNs[k.LUN] = k.VolumeId
+	}
+}
+
+// RemoveLUN - removes given LUN from map of LUNs.
+func (l *LUNInfo) RemoveLUN(x int32) {
+	if l == nil {
+		return
+	}
+	delete(l.LUNs, x)
+}
+
+// IsEmpty - verifies whether there are any LUNs present.
+func (l *LUNInfo) IsEmpty() bool {
+	if l == nil || len(l.LUNs) == 0 {
+		return true
+	}
+
+	return false
+}
+
+// GetAllLUNs - returns list of LUN IDs.
+func (l *LUNInfo) GetAllLUNs() []int32 {
+	if l == nil {
+		return []int32{}
+	}
+
+	luns := make([]int32, 0, len(l.LUNs))
+	for k := range l.LUNs {
+		luns = append(luns, k)
+	}
+
+	return luns
+}
+
+// CheckLUNExists - verifies whether the given LUN exists in map of LUNs.
+func (l *LUNInfo) CheckLUNExists(x int32) bool {
+	if l == nil {
+		return false
+	}
+	if _, ok := l.LUNs[x]; ok {
+		return true
+	}
+	return false
+}
+
+// IdentifyMissingLUNs - return the missing LUNs i.e., existing in l but not in m.
+func (l *LUNInfo) IdentifyMissingLUNs(m LUNInfo) []int32 {
+	if l == nil || len(l.LUNs) == 0 {
+		return []int32{}
+	}
+
+	if len(m.LUNs) == 0 {
+		return l.GetAllLUNs()
+	}
+
+	var luns []int32
+	for k := range l.LUNs {
+		if !m.CheckLUNExists(k) {
+			luns = append(luns, k)
+		}
+	}
+
+	return luns
+}
+
+// GetVolumeId - returns volume ID associated with LUN.
+func (l *LUNInfo) GetVolumeId(x int32) (string, error) {
+	if l == nil || len(l.LUNs) == 0 {
+		return "", fmt.Errorf("invalid pointer to LUNInfo")
+	}
+
+	if volId, ok := l.LUNs[x]; ok {
+		return volId, nil
+	}
+
+	return "", fmt.Errorf("LUN not found")
+}
+
+func (l *LUNInfo) String() string {
+	return fmt.Sprintf("LUNs: %v", l.GetAllLUNs())
+}
+
+// GetTargetIQN - returns ISCSITargetIQN.
+func (p *PortalInfo) GetTargetIQN() string {
+	if p == nil {
+		return ""
+	}
+	return p.ISCSITargetIQN
+}
+
+// CHAPInUse - returns the setting of CHAP.
+func (p *PortalInfo) CHAPInUse() bool {
+	if p == nil {
+		return false
+	}
+	return p.UseCHAP
+}
+
+// GetCHAPCredentials - returns the credentials from the PortalInfo.
+func (p *PortalInfo) GetCHAPCredentials() CHAPCredentials {
+	if p == nil {
+		return CHAPCredentials{}
+	}
+	return p.Credentials
+}
+
+// UpdateCHAPCredentials - updates CHAP credentials with provided.
+func (p *PortalInfo) UpdateCHAPCredentials(credentials CHAPCredentials) {
+	if p != nil {
+		p.Credentials = credentials
+	}
+}
+
+// IsValid verifies if there is non-nul Target IQN set.
+func (p *PortalInfo) IsValid() bool {
+	if p != nil && p.ISCSITargetIQN != "" {
+		return true
+	}
+	return false
+}
+
+func (p *PortalInfo) String() string {
+	if p == nil {
+		return ""
+	}
+	return fmt.Sprintf("iSCSITargetIQN: %v, useCHAP: %v, lastFixAttempt: %v",
+		p.ISCSITargetIQN, p.UseCHAP, p.LastFixAttempt)
+}
+
+// GetLastFixAttempt - returns the running fix attempt counter if any for the portal.
+func (p *PortalInfo) GetLastFixAttempt() int32 {
+	if p == nil {
+		return -1
+	}
+	return p.LastFixAttempt
+}
+
+// IncLastFixAttempt - increments fix attempt counter by 1.
+func (p *PortalInfo) IncLastFixAttempt() {
+	if p != nil {
+		p.LastFixAttempt++
+	}
+}
+
+// SetLastFixAttempt - sets fix attempt counter by given value.
+func (p *PortalInfo) SetLastFixAttempt(val int32) {
+	if p != nil {
+		p.LastFixAttempt = val
+	}
+}
+
+// IsEmpty - Verifies whether the portal to LUN mapping is empty or not.
+func (p *PortalLUNMapping) IsEmpty() bool {
+	return p == nil || len(p.PortalToLUNMapping) == 0
+}
+
+// AddPortal - creates an entry with no LUNs associated.
+// Should be idempotent. Do not add if exists already.
+func (p *PortalLUNMapping) AddPortal(portal string, portalInfo PortalInfo) error {
+	var newLUNInfo LUNInfo
+
+	if !portalInfo.IsValid() {
+		return fmt.Errorf("invalid portal, no IQN found")
+	}
+
+	if p == nil {
+		return fmt.Errorf("portalLunMapping is nil, initialize before use")
+	}
+
+	if p.PortalToLUNMapping == nil {
+		p.PortalToLUNMapping = make(map[string]PortalLUNData)
+	} else {
+		if _, found := p.PortalToLUNMapping[portal]; found {
+			return fmt.Errorf("portal already exists, not adding")
+		}
+	}
+
+	newLUNInfo.LUNs = make(map[int32]string)
+	portalLunData := PortalLUNData{
+		PortalInfoValue: &portalInfo,
+		LUNInfoValue:    &newLUNInfo,
+	}
+	p.PortalToLUNMapping[portal] = portalLunData
+
+	return nil
+}
+
+// GetPortalLUNMapping - returns the portalInfo and if any LUNs behind.
+func (p *PortalLUNMapping) GetPortalLUNMapping(portal string) *PortalLUNData {
+	if p == nil || p.PortalToLUNMapping == nil {
+		return nil
+	}
+
+	if portalLUNData, found := p.PortalToLUNMapping[portal]; found {
+		return &portalLUNData
+	}
+
+	return nil
+}
+
+// AddLUNToPortal - adds portal and a LUN:VolumeID to map.
+func (p *PortalLUNMapping) AddLUNToPortal(portal string, lData LUNData) error {
+	portalLunData := p.GetPortalLUNMapping(portal)
+
+	if portalLunData == nil {
+		return fmt.Errorf("portal entry not found")
+	}
+	if !portalLunData.PortalInfoValue.IsValid() {
+		return fmt.Errorf("invalid portal information")
+	}
+
+	portalLunData.LUNInfoValue.AddLUN(lData)
+
+	return nil
+}
+
+// AddLUNsToPortal - adds portal and associated list of LUNs.
+func (p *PortalLUNMapping) AddLUNsToPortal(portal string, luns []LUNData) error {
+	portalLUNData := p.GetPortalLUNMapping(portal)
+
+	if portalLUNData == nil {
+		return fmt.Errorf("portal entry not found")
+	}
+	if !portalLUNData.PortalInfoValue.IsValid() {
+		return fmt.Errorf("invalid portal information")
+	}
+
+	portalLUNData.LUNInfoValue.AddLUNs(luns)
+
+	return nil
+}
+
+// CheckPortalExists - checks whether the portal is already in the map.
+func (p *PortalLUNMapping) CheckPortalExists(portal string) bool {
+	if ok := p.GetPortalLUNMapping(portal); ok != nil {
+		return true
+	}
+
+	return false
+}
+
+// RemovePortal - removes portal from portal:LUNs in-mem map.
+func (p *PortalLUNMapping) RemovePortal(portal string) {
+	if p != nil {
+		delete(p.PortalToLUNMapping, portal)
+	}
+}
+
+// RemoveLUNFromPortal - removes one LUN from the given portal LUN mapping.
+func (p *PortalLUNMapping) RemoveLUNFromPortal(portal string, l int32) {
+	portalLUNData := p.GetPortalLUNMapping(portal)
+
+	if portalLUNData == nil {
+		// do nothing
+		return
+	}
+
+	portalLUNData.LUNInfoValue.RemoveLUN(l)
+
+	// if this is the last LUN, remove the portal entry
+	if portalLUNData.LUNInfoValue.IsEmpty() {
+		p.RemovePortal(portal)
+	}
+}
+
+// String - prints values of the map.
+func (p *PortalLUNMapping) String() string {
+	if p.IsEmpty() {
+		return "empty portal to LUN mapping info"
+	}
+
+	var sb strings.Builder
+	for portal, portalLunData := range p.PortalToLUNMapping {
+		portalInfoString := portalLunData.PortalInfoValue.String()
+		lunInfoString := portalLunData.LUNInfoValue.String()
+		sb.WriteString(fmt.Sprintf("Portal: {%v}, portalInfo: {%v}, LunInfo:  {%v} ",
+			portal, portalInfoString, lunInfoString))
+	}
+
+	return sb.String()
+}
+
+// GetLUNsForPortal - returns the list of LunIDs associated with this portal/session.
+func (p *PortalLUNMapping) GetLUNsForPortal(portal string) ([]int32, error) {
+	portalLUNData := p.GetPortalLUNMapping(portal)
+
+	if portalLUNData != nil {
+		return portalLUNData.LUNInfoValue.GetAllLUNs(), nil
+	} else {
+		return nil, fmt.Errorf("portal entry not found, no LUNs returned")
+	}
+}
+
+// GetLastFixAttemptForPortal - reads the number of attempts to fix any issue for the given portal.
+func (p *PortalLUNMapping) GetLastFixAttemptForPortal(portal string) (int32, error) {
+	portalLUNData := p.GetPortalLUNMapping(portal)
+
+	if portalLUNData != nil {
+		return portalLUNData.PortalInfoValue.GetLastFixAttempt(), nil
+	}
+	return 0, fmt.Errorf("portal entry not found")
+}
+
+// IncLastFixAttemptForPortal - increments counter.
+func (p *PortalLUNMapping) IncLastFixAttemptForPortal(portal string) error {
+	portalLUNData := p.GetPortalLUNMapping(portal)
+
+	if portalLUNData != nil {
+		portalLUNData.PortalInfoValue.IncLastFixAttempt()
+		return nil
+	}
+
+	return fmt.Errorf("portal entry not found")
+}
+
+// SetLastFixAttemptForPortal - sets the running fix attempt counter for the given portal.
+func (p *PortalLUNMapping) SetLastFixAttemptForPortal(portal string, val int32) error {
+	portalLUNData := p.GetPortalLUNMapping(portal)
+
+	if portalLUNData != nil {
+		portalLUNData.PortalInfoValue.SetLastFixAttempt(val)
+		return nil
+	}
+
+	return fmt.Errorf("portal entry not found")
+}
+
+// ResetAllLastFixAttempt - clear the counters
+func (p *PortalLUNMapping) ResetAllLastFixAttempt() {
+	if p.IsEmpty() {
+		return
+	}
+	for key := range p.PortalToLUNMapping {
+		_ = p.SetLastFixAttemptForPortal(key, 0)
+	}
+}
+
+// RemoveAllPortals - clears all the contents in portal to LUN mapping.
+func (p *PortalLUNMapping) RemoveAllPortals() {
+	if p.IsEmpty() {
+		return
+	}
+
+	for k := range p.PortalToLUNMapping {
+		delete(p.PortalToLUNMapping, k)
+	}
 }

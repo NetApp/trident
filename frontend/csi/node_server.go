@@ -28,6 +28,7 @@ const (
 	AttachISCSIVolumeTimeoutShort = 20 * time.Second
 	iSCSINodeUnstageMaxDuration   = 15 * time.Second
 	iSCSISelfHealingLockContext   = "ISCSISelfHealingThread"
+	iSCSISelfHealingExcludeBE     = "solidfire"
 )
 
 var (
@@ -916,6 +917,31 @@ func unstashIscsiTargetPortals(publishInfo *utils.VolumePublishInfo, reqPublishI
 	return nil
 }
 
+func (p *Plugin) populatePortalLUNMapping(ctx context.Context) {
+	volumeIDs := utils.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
+	for _, volumeID := range volumeIDs {
+		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeID)
+		if err != nil {
+			Logc(ctx).WithFields(log.Fields{
+				"VolumeID": volumeID,
+				"Error":    err.Error(),
+			}).Error("Volume tracking file info not found.")
+
+			continue
+		}
+
+		publishInfo := &trackingInfo.VolumePublishInfo
+		iscsiTarget := publishInfo.VolumeAccessInfo.IscsiTargetIQN
+		// Exclude solidfire backend for now. Solidfire maintains a different handle 'Current Portal'
+		// which is not published or captured in VolumePublishInfo, current self-healing logic does not
+		// work for logout, login or scan as it is designed to work with published portal information.
+		iqnToExclude := iSCSISelfHealingExcludeBE
+		if iscsiTarget != "" && !strings.Contains(iscsiTarget, iqnToExclude) {
+			utils.AddToPortalLUNMapping(ctx, publishInfo, volumeID)
+		}
+	}
+}
+
 func (p *Plugin) nodeStageISCSIVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
@@ -1009,6 +1035,9 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 	}
 
+	// update in-mem map used for self healing tracking
+	utils.AddToPortalLUNMapping(ctx, publishInfo, req.GetVolumeId())
+
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
 	if err := utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(),
 		AttachISCSIVolumeTimeoutShort); err != nil {
@@ -1080,6 +1109,8 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 			}
 		}
 	}
+	// remove entries in self-healing map.
+	utils.RemoveFromPortalLUNMapping(ctx, publishInfo, utils.PublishedPortalLUNs)
 
 	// Delete the device from the host.
 	err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN,
@@ -1452,15 +1483,13 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 	return volumeId, stagingTargetPath, nil
 }
 
-// iSCSISelfHealing  is a function to implement iSCSI self-healing functionality which would correct sessions which
-// are in faulty state. This function is invoked periodically.
+// iSCSISelfHealing  implements iSCSI self-healing functionality which would correct sessions
+// those are in faulty state. This function is invoked periodically.
 func iSCSISelfHealing(ctx context.Context) {
 	utils.Lock(ctx, iSCSISelfHealingLockContext, lockID)
 	defer utils.Unlock(ctx, iSCSISelfHealingLockContext, lockID)
 
-	// Do Self healing work here
-	log.Info("******** Do self healing work here ********")
-	// Self healing work is complete
+	utils.ISCSISelfHeal(ctx)
 
 	return
 }

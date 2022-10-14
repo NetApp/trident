@@ -65,6 +65,7 @@ type Plugin struct {
 	iscsiSelfHealingTicker   *time.Ticker
 	iscsiSelfHealingChannel  chan struct{}
 	iscsiSelfHealingInterval time.Duration
+	iscsiSelfHealingWaitTime time.Duration
 }
 
 func NewControllerPlugin(
@@ -116,7 +117,7 @@ func NewControllerPlugin(
 func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
 	unsafeDetach bool, helper *nodehelpers.NodeHelper, enableForceDetach bool,
-	iscsiSelfHealingInterval time.Duration,
+	iscsiSelfHealingInterval, iscsiStaleSessionWaitTime time.Duration,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
@@ -140,6 +141,7 @@ func NewNodePlugin(
 		unsafeDetach:             unsafeDetach,
 		opCache:                  sync.Map{},
 		iscsiSelfHealingInterval: iscsiSelfHealingInterval,
+		iscsiSelfHealingWaitTime: iscsiStaleSessionWaitTime,
 	}
 
 	if runtime.GOOS == "windows" {
@@ -200,7 +202,7 @@ func NewNodePlugin(
 func NewAllInOnePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
 	controllerHelper *controllerhelpers.ControllerHelper, nodeHelper *nodehelpers.NodeHelper, unsafeDetach bool,
-	iscsiSelfHealingInterval time.Duration,
+	iscsiSelfHealingInterval, iscsiStaleSessionWaitTime time.Duration,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
@@ -216,6 +218,7 @@ func NewAllInOnePlugin(
 		nodeHelper:               *nodeHelper,
 		opCache:                  sync.Map{},
 		iscsiSelfHealingInterval: iscsiSelfHealingInterval,
+		iscsiSelfHealingWaitTime: iscsiStaleSessionWaitTime,
 	}
 
 	// Define controller capabilities
@@ -381,11 +384,17 @@ func (p *Plugin) startISCSISelfHealingThread(ctx context.Context) {
 		Logc(ctx).Debugf("Iscsi self-healing is disabled.")
 		return
 	}
+	if p.iscsiSelfHealingWaitTime < p.iscsiSelfHealingInterval {
+		// Stale session wait time is not advised to be smaller than self-heal interval
+		p.iscsiSelfHealingWaitTime = time.Duration(1.5 * float64(p.iscsiSelfHealingInterval))
+	}
 
 	Logc(ctx).WithField("iSCSI self-healing interval:", p.iscsiSelfHealingInterval).Debugf(
 		"iSCSI self-healing is enabled.")
 	p.iscsiSelfHealingTicker = time.NewTicker(p.iscsiSelfHealingInterval)
 	p.iscsiSelfHealingChannel = make(chan struct{})
+
+	p.populatePortalLUNMapping(ctx)
 
 	go func() {
 		for {
