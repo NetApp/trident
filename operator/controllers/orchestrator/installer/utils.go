@@ -10,12 +10,12 @@ func getServiceAccountName(csi bool) string {
 
 func getRBACResourceNames() []string {
 	names := []string{
-		TridentCSIController,
-		TridentCSILinuxNode,
+		TridentControllerResourceName,
+		TridentNodeLinuxResourceName,
 	}
 
 	if windows {
-		names = append(names, TridentCSIWindowsNode)
+		names = append(names, TridentNodeWindowsResourceName)
 	}
 
 	return names
@@ -59,16 +59,16 @@ func getResourceQuotaName() string {
 
 func getControllerRBACResourceName(csi bool) string {
 	if csi {
-		return TridentCSIController
+		return TridentControllerResourceName
 	}
 	return TridentLegacy
 }
 
 func getNodeRBACResourceName(windows bool) string {
 	if windows {
-		return TridentCSIWindowsNode
+		return TridentNodeWindowsResourceName
 	}
-	return TridentCSILinuxNode
+	return TridentNodeLinuxResourceName
 }
 
 func getDeploymentName(csi bool) string {

@@ -1682,10 +1682,10 @@ func (k *K8sClient) GetServiceAccountInformation(
 		unwantedServiceAccounts = serviceAccounts
 	} else {
 		// Rules:
-		// 1. If there are no service accounts named trident-csi-controller/trident-csi-linux-node
-		//    or trident-csi-windows-node and one or many other service accounts exist that matches
+		// 1. If there are no service accounts named trident-controller/trident-node-linux
+		//    or trident-node-windows and one or many other service accounts exist that matches
 		//    the label then remove all the service accounts.
-		// 2. If there is a service accounts named trident-csi-controller/trident-csi-linux-node
+		// 2. If there is a service accounts named trident-controller/trident-node-linux
 		//    and one or many other service account exist that matches the label then remove all
 		// other service accounts.
 		for _, serviceAccount := range serviceAccounts {

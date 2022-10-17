@@ -298,9 +298,9 @@ rules:
       - update
       - patch
     resourceNames:
-      - trident-csi-controller
-      - trident-csi-linux-node
-      - trident-csi-windows-node
+      - trident-controller
+      - trident-node-linux
+      - trident-node-windows
       - trident-csi
       - trident
   - apiGroups:
@@ -323,9 +323,9 @@ rules:
       - update
       - patch
     resourceNames:
-      - trident-csi-controller
-      - trident-csi-linux-node
-      - trident-csi-windows-node
+      - trident-controller
+      - trident-node-linux
+      - trident-node-windows
       - trident-csi
       - trident
   - apiGroups:
@@ -358,9 +358,9 @@ rules:
     resources:
       - securitycontextconstraints
     resourceNames:
-      - trident-csi-controller
-      - trident-csi-linux-node
-      - trident-csi-windows-node
+      - trident-controller
+      - trident-node-linux
+      - trident-node-windows
       - trident
     verbs:
       - delete
