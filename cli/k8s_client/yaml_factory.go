@@ -209,7 +209,8 @@ rules:
       - tridentpods
 `
 
-func GetClusterRoleBindingYAML(namespace, name string, flavor OrchestratorFlavor,
+func GetClusterRoleBindingYAML(
+	namespace, name string, flavor OrchestratorFlavor,
 	labels, controllingCRDetails map[string]string, csi bool,
 ) string {
 	var crbYAML string
@@ -917,7 +918,7 @@ spec:
           mountPath: /certs
           readOnly: true
         - name: kubelet-dir
-          mountPath: "C:\\var\\lib\\kubelet"
+          mountPath: C:\var\lib\kubelet
         - name: plugin-dir
           mountPath: C:\csi
         - name: csi-proxy-fs-pipe-v1
@@ -946,25 +947,25 @@ spec:
         - --csi-address=$(CSI_ENDPOINT)
         - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
         livenessProbe:
-        exec:
-          command:
-          - /csi-node-driver-registrar.exe
-          - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
-          - --mode=kubelet-registration-probe
-        initialDelaySeconds: 60
-        timeoutSeconds: 30
+          exec:
+            command:
+            - /csi-node-driver-registrar.exe
+            - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+            - --mode=kubelet-registration-probe
+          initialDelaySeconds: 60
+          timeoutSeconds: 30
         env:
         - name: CSI_ENDPOINT
           value: unix:///csi/csi.sock
         - name: DRIVER_REG_SOCK_PATH
-          value: C:\\var\\lib\\kubelet\\plugins\\csi.trident.netapp.io\\csi.sock
+          value: C:\var\lib\kubelet\plugins\csi.trident.netapp.io\csi.sock
         - name: KUBE_NODE_NAME
           valueFrom:
           fieldRef:
             fieldPath: spec.nodeName
         volumeMounts:
         - name: kubelet-dir
-          mountPath: "C:\\var\\lib\\kubelet"
+          mountPath: C:\var\lib\kubelet
         - name: plugin-dir
           mountPath: C:\csi
         - name: registration-dir
@@ -987,7 +988,7 @@ spec:
           - --v=2
         env:
           - name: CSI_ENDPOINT
-            value: unix://C:\\csi\\csi.sock
+            value: unix:///csi/csi.sock
         resources:
           limits:
             memory: 100Mi
