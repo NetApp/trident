@@ -935,13 +935,13 @@ spec:
         - name: csi-proxy-smb-pipe-v1beta1
           mountPath: \\.\pipe\csi-proxy-smb-v1beta1
         resources:
-        limits:
-          memory: 400Mi
-        requests:
-          cpu: 10m
-          memory: 20Mi
+          limits:
+            memory: 400Mi
+          requests:
+            cpu: 10m
+            memory: 20Mi
       - name: node-driver-registrar
-        image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.5.1
         args:
         - --v=2
         - --csi-address=$(CSI_ENDPOINT)
@@ -961,8 +961,8 @@ spec:
           value: C:\var\lib\kubelet\plugins\csi.trident.netapp.io\csi.sock
         - name: KUBE_NODE_NAME
           valueFrom:
-          fieldRef:
-            fieldPath: spec.nodeName
+            fieldRef:
+              fieldPath: spec.nodeName
         volumeMounts:
         - name: kubelet-dir
           mountPath: C:\var\lib\kubelet
@@ -980,7 +980,7 @@ spec:
         volumeMounts:
           - mountPath: C:\csi
             name: plugin-dir
-        image: k8s.gcr.io/sig-storage/livenessprobe:v2.5.0
+        image: {CSI_SIDECAR_REGISTRY}/livenessprobe:v2.5.0
         args:
           - --csi-address=$(CSI_ENDPOINT)
           - --probe-timeout=3s
