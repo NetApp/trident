@@ -234,6 +234,14 @@ rules:
       - delete
       - update
       - patch
+  - apiGroups:
+      - policy
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+    resourceNames:
+      - tridentpods
   # Now Operator specific permissions
   - apiGroups:
       - ""
@@ -329,6 +337,23 @@ rules:
       - trident-csi
       - trident
   - apiGroups:
+      - policy
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - list
+      - create
+  - apiGroups:
+      - policy
+    resources:
+      - podsecuritypolicies
+    resourceNames:
+      - tridentpods
+    verbs:
+      - delete
+      - update
+      - patch
+  - apiGroups:
       - security.openshift.io
     resources:
       - securitycontextconstraints
@@ -349,6 +374,14 @@ rules:
       - delete
       - update
       - patch
+  - apiGroups:
+      - policy
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+    resourceNames:
+      - tridentoperatorpods
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
