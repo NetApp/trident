@@ -26,6 +26,9 @@ spec:
       labels:
         app: operator.trident.netapp.io
         name: trident-operator
+    {{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8 }}
+    {{- end }}
     spec:
       nodeSelector:
         kubernetes.io/arch: amd64
@@ -42,6 +45,9 @@ spec:
 {{ toYaml .Values.tolerations | indent 8 }}
       {{- end }}
       serviceAccountName: trident-operator
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
       containers:
       - command:
         - /trident-operator

@@ -11,9 +11,13 @@ podAnnotations: {}
 ## Deployment Annotations
 deploymentAnnotations: {}
 
+podLabels: {}
+
 ## Tolerations for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
+
+priorityClassName: ""
 
 ## Affinity for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
@@ -30,8 +34,6 @@ affinity: {}
 
 # tridentNodePluginTolerations overrides tolerations for Pods running the Trident Node CSI Plugin 
 # tridentNodePluginTolerations: []
-
-
 
 # imageRegistry identifies the registry for the trident-operator, trident, and other images.  Leave empty to accept the default.
 imageRegistry: ""
