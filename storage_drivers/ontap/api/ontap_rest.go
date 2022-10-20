@@ -3655,8 +3655,35 @@ func (c RestClient) FlexgroupSetQosPolicyGroupName(
 
 // FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
 // Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error {
-	return c.VolumeDisableSnapshotDirectoryAccess(ctx, name)
+func (c RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx context.Context, flexGroupVolumeName string) error {
+	volume, err := c.getVolumeByNameAndStyle(ctx, flexGroupVolumeName, models.VolumeStyleFlexgroup)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find flexgroup volume with name %v", flexGroupVolumeName)
+	}
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUIDPathParameter = uuid
+
+	volumeInfo := &models.Volume{}
+	volumeInfo.SnapshotDirectoryAccessEnabled = ToBoolPointer(false)
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return c.PollJobStatus(ctx, volumeModifyAccepted.Payload)
 }
 
 func (c RestClient) FlexGroupModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error {
