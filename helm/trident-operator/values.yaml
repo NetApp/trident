@@ -19,16 +19,16 @@ tolerations: []
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 affinity: {}
 
-# tridentControllerPluginNodeSelector additional nodeSelectors for the Pod running the Trident Controller CSI Plugin
+# tridentControllerPluginNodeSelector additional nodeSelectors for the Pod running the Trident Controller CSI Plugin.
 # tridentControllerPluginNodeSelector : {}
 
-# tridentControllerPluginTolerations overrides tolerations for the Pod running the Trident Controler CSI Plugin
+# tridentControllerPluginTolerations overrides tolerations for the Pod running the Trident Controler CSI Plugin.
 # tridentControllerPluginTolerations: []
 
-# tridentNodePluginNodeSelector additional nodeSelectors for Pods running the Trident Node CSI Plugin
+# tridentNodePluginNodeSelector additional nodeSelectors for Pods running the Trident Node CSI Plugin.
 # tridentNodePluginNodeSelector : {}
 
-# tridentNodePluginTolerations overrides tolerations for Pods running the Trident Node CSI Plugin 
+# tridentNodePluginTolerations overrides tolerations for Pods running the Trident Node CSI Plugin. 
 # tridentNodePluginTolerations: []
 
 
@@ -42,9 +42,8 @@ imagePullPolicy: IfNotPresent
 # imagePullSecrets sets the image pull secrets for the trident-operator, trident, and other images.
 imagePullSecrets: []
 
-# kubeletDir allows overriding the host location of kubelet's internal state. (default "/var/lib/kubelet")
+# kubeletDir allows overriding the host location of kubelet's internal state. (default "/var/lib/kubelet").
 kubeletDir: ""
-
 
 
 # operatorDebug allows enabling debug logging in trident-operator.
@@ -55,7 +54,6 @@ operatorImage: ""
 
 # operatorImageTag allows overriding the tag of the trident-operator image.
 operatorImageTag: ""
-
 
 
 # tridentDebug allows enabling debug logging from the Trident deployment.
@@ -80,7 +78,7 @@ tridentAutosupportImage: ""
 # tridentAutosupportImageTag allows overriding the tag of the image for Trident's Autosupport container.
 tridentAutosupportImageTag: "22.07"
 
-# tridentAutosupportProxy allows Trident's autosupport container to phone home via an HTTP proxy
+# tridentAutosupportProxy allows Trident's autosupport container to phone home via an HTTP proxy.
 tridentAutosupportProxy: ""
 
 # tridentLogFormat sets the Trident logging format (text or json).
@@ -98,8 +96,11 @@ tridentEnableNodePrep: false
 # (Deprecated) tridentSkipK8sVersionCheck allows overriding the k8s version limit for Trident.
 tridentSkipK8sVersionCheck: false
 
-# tridentProbePort allows overriding the default port used for k8s liveness/readiness probes
+# tridentProbePort allows overriding the default port used for k8s liveness/readiness probes.
 tridentProbePort: ""
 
-# windows allows Trident to be installed on Windows worker node
+# windows allows Trident to be installed on Windows worker node.
 windows: false
+
+# enableForceDetach allows enabling the force detach feature.
+enableForceDetach: false

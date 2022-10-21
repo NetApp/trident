@@ -188,6 +188,7 @@ type DaemonsetYAMLArguments struct {
 	ImagePullSecrets     []string            `json:"imagePullSecrets"`
 	Labels               map[string]string   `json:"labels"`
 	ControllingCRDetails map[string]string   `json:"controllingCRDetails"`
+	EnableForceDetach    bool                `json:"enableForceDetach"`
 	Debug                bool                `json:"debug"`
 	Version              *utils.Version      `json:"version"`
 	HTTPRequestTimeout   string              `json:"httpRequestTimeout"`

@@ -50,6 +50,7 @@ const (
 var (
 	// CR inputs
 	csi                bool
+	enableForceDetach  bool
 	debug              bool
 	useIPv6            bool
 	silenceAutosupport bool
@@ -273,6 +274,7 @@ func (i *Installer) setInstallationParams(
 
 	// Get values from CR
 	csi = true
+	enableForceDetach = cr.Spec.EnableForceDetach
 	debug = cr.Spec.Debug
 	useIPv6 = cr.Spec.IPv6
 	windows = cr.Spec.Windows
@@ -545,6 +547,7 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	identifiedSpecValues := netappv1.TridentOrchestratorSpecValues{
+		EnableForceDetach:       strconv.FormatBool(enableForceDetach),
 		Debug:                   strconv.FormatBool(debug),
 		LogFormat:               logFormat,
 		TridentImage:            tridentImage,
@@ -1269,6 +1272,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		ImagePullSecrets:     imagePullSecrets,
 		Labels:               labels,
 		ControllingCRDetails: controllingCRDetails,
+		EnableForceDetach:    enableForceDetach,
 		Debug:                debug,
 		Version:              i.client.ServerVersion(),
 		HTTPRequestTimeout:   httpTimeout,

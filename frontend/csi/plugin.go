@@ -4,6 +4,7 @@ package csi
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"runtime"
@@ -38,7 +39,8 @@ type Plugin struct {
 	endpoint string
 	role     string
 
-	unsafeDetach bool
+	unsafeDetach      bool
+	enableForceDetach bool
 
 	hostInfo *utils.HostSystem
 
@@ -106,19 +108,28 @@ func NewControllerPlugin(
 
 func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
-	unsafeDetach bool,
+	unsafeDetach, enableForceDetach bool,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
+	msg := "Force detach feature %s"
+	if enableForceDetach {
+		msg = fmt.Sprintf(msg, "enabled.")
+	} else {
+		msg = fmt.Sprintf(msg, "disabled.")
+	}
+	Logc(ctx).Info(msg)
+
 	p := &Plugin{
-		orchestrator: orchestrator,
-		name:         Provisioner,
-		nodeName:     nodeName,
-		version:      tridentconfig.OrchestratorVersion.ShortString(),
-		endpoint:     endpoint,
-		role:         CSINode,
-		unsafeDetach: unsafeDetach,
-		opCache:      sync.Map{},
+		orchestrator:      orchestrator,
+		name:              Provisioner,
+		nodeName:          nodeName,
+		version:           tridentconfig.OrchestratorVersion.ShortString(),
+		endpoint:          endpoint,
+		role:              CSINode,
+		unsafeDetach:      unsafeDetach,
+		enableForceDetach: enableForceDetach,
+		opCache:           sync.Map{},
 	}
 
 	if runtime.GOOS == "windows" {

@@ -33,6 +33,7 @@ type TridentOrchestratorList struct {
 
 // TridentOrchestratorSpec defines the desired state of TridentOrchestrator
 type TridentOrchestratorSpec struct {
+	EnableForceDetach            bool              `json:"enableForceDetach"`
 	Debug                        bool              `json:"debug"`
 	Namespace                    string            `json:"namespace"`
 	IPv6                         bool              `json:"IPv6,omitempty"`
@@ -103,6 +104,7 @@ type TridentOrchestratorStatus struct {
 }
 
 type TridentOrchestratorSpecValues struct {
+	EnableForceDetach       string            `json:"enableForceDetach"`
 	Debug                   string            `json:"debug"`
 	IPv6                    string            `json:"IPv6"`
 	SilenceAutosupport      string            `json:"silenceAutosupport"`

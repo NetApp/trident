@@ -658,6 +658,7 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{KUBELET_DIR}", kubeletDir)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{FORCE_DETACH_BOOL}", strconv.FormatBool(args.EnableForceDetach))
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
@@ -714,6 +715,7 @@ spec:
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
         - "--https_port={PROBE_PORT}"
+        - "--enable_force_detach={FORCE_DETACH_BOOL}"
         {DEBUG}
         startupProbe:
           httpGet:

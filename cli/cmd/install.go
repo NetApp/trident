@@ -98,6 +98,7 @@ var (
 	enableNodePrep          bool
 	skipK8sVersionCheck     bool
 	windows                 bool
+	enableForceDetach       bool
 	pvName                  string
 	pvcName                 string
 	tridentImage            string
@@ -179,6 +180,8 @@ func init() {
 		"Don't send autosupport bundles to NetApp automatically.")
 	installCmd.Flags().BoolVar(&enableNodePrep, "enable-node-prep", false,
 		"(Deprecated) Attempt to automatically install required packages on nodes.")
+	installCmd.Flags().BoolVar(&enableForceDetach, "enable-force-detach", false,
+		"Enable the force detach feature.")
 
 	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName,
 		"The name of the legacy PVC used by Trident, will ensure this does not exist.")
@@ -580,6 +583,7 @@ func prepareYAMLFiles() error {
 		ImagePullSecrets:     []string{},
 		Labels:               daemonSetlabels,
 		ControllingCRDetails: nil,
+		EnableForceDetach:    enableForceDetach,
 		Debug:                Debug,
 		Version:              client.ServerVersion(),
 		HTTPRequestTimeout:   httpRequestTimeout.String(),
@@ -1078,6 +1082,7 @@ func installTrident() (returnError error) {
 			ImagePullSecrets:     []string{},
 			Labels:               daemonSetlabels,
 			ControllingCRDetails: nil,
+			EnableForceDetach:    enableForceDetach,
 			Debug:                Debug,
 			Version:              client.ServerVersion(),
 			HTTPRequestTimeout:   httpRequestTimeout.String(),

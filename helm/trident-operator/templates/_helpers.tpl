@@ -87,6 +87,17 @@ Trident debug
 {{- end }}
 
 {{/*
+Trident force detach
+*/}}
+{{- define "trident.enableForceDetach" -}}
+{{- if .Values.enableForceDetach | printf "%v" | eq "true" }}
+{{- "true" }}
+{{- else }}
+{{- "false" }}
+{{- end }}
+{{- end }}
+
+{{/*
 Trident IPv6
 */}}
 {{- define "trident.IPv6" -}}

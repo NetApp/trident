@@ -62,8 +62,8 @@ var (
 		fmt.Sprintf("CSI role to play: '%s' or '%s'", csi.CSIController, csi.CSINode))
 
 	csiUnsafeNodeDetach = flag.Bool("csi_unsafe_detach", false, "Prefer to detach successfully rather than safely")
-
-	nodePrep = flag.Bool("node_prep", true, "Attempt to install required packages on nodes.")
+	enableForceDetach   = new(bool)
+	nodePrep            = flag.Bool("node_prep", true, "Attempt to install required packages on nodes.")
 
 	// Persistence
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
@@ -230,6 +230,12 @@ func main() {
 	var txnMonitor bool
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	// These features are only supported on Linux.
+	if runtime.GOOS == "linux" {
+		enableForceDetach = flag.Bool("enable_force_detach", false, "Enable force detach feature.")
+	}
+
 	flag.Parse()
 	preBootstrapFrontends := make([]frontend.Plugin, 0)
 	postBootstrapFrontends := make([]frontend.Plugin, 0)
@@ -353,7 +359,7 @@ func main() {
 			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator, &hybridPlugin)
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach)
+				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, *enableForceDetach)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 		case csi.CSIAllInOne:

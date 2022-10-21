@@ -381,6 +381,57 @@ func TestGetCSIDaemonSetYAMLLinux_DebugIsTrue(t *testing.T) {
 	}
 }
 
+func TestGetCSIDaemonSetYAMLLinux_ForceDetach(t *testing.T) {
+	versions := []string{"1.20.0"}
+	expectedStr := `- "--enable_force_detach=%s"`
+	disabled := "false"
+	enabled := "true"
+	expectedDisabled := fmt.Sprintf(expectedStr, disabled)
+	expectedEnabled := fmt.Sprintf(expectedStr, enabled)
+
+	type Args struct {
+		Enabled    bool
+		Expected   string
+		Unexpected string
+		FailStr    string
+		FailStr2   string
+	}
+
+	testArgs := []*Args{
+		{
+			Enabled:    false,
+			Expected:   expectedDisabled,
+			Unexpected: expectedEnabled,
+			FailStr:    disabled,
+			FailStr2:   enabled,
+		},
+		{
+			Enabled:    true,
+			Expected:   expectedEnabled,
+			Unexpected: expectedDisabled,
+			FailStr:    enabled,
+			FailStr2:   disabled,
+		},
+	}
+
+	for _, args := range testArgs {
+		for _, versionString := range versions {
+			version := utils.MustParseSemantic(versionString)
+			daemonsetArgs := &DaemonsetYAMLArguments{Version: version, EnableForceDetach: args.Enabled}
+
+			yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
+			_, err := yaml.YAMLToJSON([]byte(yamlData))
+			if err != nil {
+				t.Fatalf("expected valid YAML for version %s", versionString)
+			}
+			failMsg := fmt.Sprintf("expected enableForceDetach to be %s in final YAML: %s", args.FailStr, yamlData)
+			assert.Contains(t, yamlData, args.Expected, failMsg)
+			failMsg2 := fmt.Sprintf("did not expect enableForceDetach to be %s in final YAML: %s", args.FailStr2, yamlData)
+			assert.NotContains(t, yamlData, args.Unexpected, failMsg2)
+		}
+	}
+}
+
 func TestGetCSIDaemonSetYAMLLinux_NodeSelectors(t *testing.T) {
 	daemonsetArgs := &DaemonsetYAMLArguments{
 		NodeSelector: map[string]string{"foo": "bar"},
