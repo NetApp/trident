@@ -4,21 +4,35 @@
 
 ## Changes since v22.07.0
 
+- **IMPORTANT**: Kubernetes 1.25 is now supported in Trident. Please upgrade Trident prior to upgrading Kubernetes.
+- **IMPORTANT**: Trident will now strictly enforce the use of multipathing configuration in SAN environments, with a recommended value of `find_multipaths: no` in multipath.conf file. Use of non-multipathing configuration or use of `find_multipaths: yes` or `find_multipaths: smart` value in multipath.conf file will result in mount failures. Trident has recommended the use of `find_multipaths: no` since the 21.07 release.
+
 **Fixes:**
 
 - Fixed issue specific to ONTAP backend created using `credentials` field failing to come online during 22.07.0
   upgrade (Issue [#759](https://github.com/NetApp/trident/issues/759))
+- **Docker:** Fixed an issue causing the Docker volume plugin to fail to start in some environments (Issues [#548](https://github.com/NetApp/trident/issues/548), [#760](https://github.com/NetApp/trident/issues/760)).
 - Fixed SLM issue specific to ONTAP SAN backends to ensure only subset of data LIFs belonging to reporting nodes are published.
+- Fixed performance issue where unnecessary scans for iSCSI LUNs happened when attaching a volume.
+- Removed granular retries within Trident's iSCSI workflow to fail fast and reduce external retry intervals.
+- Fixed issue where an error was returned when flushing an iSCSI device when the corresponding multipath device was already flushed.
 
 **Enhancements**
 
 - **Kubernetes:** Added support for Kubernetes 1.25.
-- Added support for SMB volumes on azure-netapp-files driver.
+  - Added new operator yaml (`bundle_post_1_25.yaml`) without a `PodSecurityPolicy` to support Kubernetes 1.25.
+- **Kubernetes:** Added a separate ServiceAccount, ClusterRole, and ClusterRoleBinding for the Trident Deployment and DaemonSet to allow future permissions enhancements.
+- **Kubernetes:** Added support for cross-namespace volume sharing.
+- All Trident ontap-* storage drivers now work with the ONTAP REST API.
+- Added support for LUKS-encrypted volumes for ontap-san and ontap-san-economy storage drivers.
+- Added support for Windows Server 2019 nodes.
+- Added support for SMB volumes on Windows nodes through the azure-netapp-files storage driver.
 
 **Deprecations:**
 
 - **Kubernetes:** Updated minimum supported Kubernetes to 1.20.
 - Removed Astra Data Store (ADS) driver.
+- Removed support for `yes` and `smart` options for `find_multipaths` when configuring worker node multipathing for iSCSI.
 
 ## v22.07.0
 
