@@ -44,6 +44,10 @@ type MultipleVolumeResponse struct {
 	Items []storage.VolumeExternal `json:"items"`
 }
 
+type MultipleVolumePublicationResponse struct {
+	Items []utils.VolumePublicationExternal `json:"items"`
+}
+
 type MultipleNodeResponse struct {
 	Items []utils.Node `json:"items"`
 }

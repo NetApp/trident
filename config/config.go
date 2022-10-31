@@ -195,11 +195,25 @@ var (
 	NodeURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/node"
 	SnapshotURL     = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/snapshot"
 	ChapURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/chap"
+	PublicationURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/publication"
 	StoreURL        = "/" + OrchestratorName + "/store"
 
 	UsingPassthroughStore bool
 	CurrentDriverContext  DriverContext
 	OrchestratorTelemetry = Telemetry{TridentVersion: OrchestratorVersion.String()}
+
+	// CSIAccessModes are defined by CSI
+	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
+	CSIAccessModes = map[int32]string{
+		0: "UNKNOWN",
+		1: "SINGLE_NODE_WRITER",
+		2: "SINGLE_NODE_READER_ONLY",
+		3: "MULTI_NODE_READER_ONLY",
+		4: "MULTI_NODE_SINGLE_WRITER",
+		5: "MULTI_NODE_MULTI_WRITER",
+		6: "SINGLE_NODE_SINGLE_WRITER",
+		7: "SINGLE_NODE_MULTI_WRITER",
+	}
 )
 
 func IsValidProtocol(p Protocol) bool {

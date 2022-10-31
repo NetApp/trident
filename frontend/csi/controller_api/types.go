@@ -20,4 +20,5 @@ type TridentController interface {
 	GetNodes(ctx context.Context) ([]string, error)
 	DeleteNode(ctx context.Context, name string) error
 	GetChap(ctx context.Context, volume, node string) (*utils.IscsiChapInfo, error)
+	UpdateVolumePublication(ctx context.Context, publication *utils.VolumePublicationExternal) error
 }

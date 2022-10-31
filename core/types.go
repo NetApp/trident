@@ -79,14 +79,14 @@ type Orchestrator interface {
 	PeriodicallyReconcileNodeAccessOnBackends()
 
 	AddVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
-	UpdateVolumePublication(ctx context.Context, nodeName, volumeName string, notSafeToAttach *bool) error
+	UpdateVolumePublication(ctx context.Context, volumeName, nodeName string, notSafeToAttach *bool) error
 	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*utils.VolumePublication, error)
-	ListVolumePublications(ctx context.Context) ([]*utils.VolumePublicationExternal, error)
+	ListVolumePublications(ctx context.Context, notSafeToAttach *bool) ([]*utils.VolumePublicationExternal, error)
 	ListVolumePublicationsForVolume(
-		ctx context.Context, volumeName string,
+		ctx context.Context, volumeName string, notSafeToAttach *bool,
 	) (publications []*utils.VolumePublicationExternal, err error)
 	ListVolumePublicationsForNode(
-		ctx context.Context, nodeName string,
+		ctx context.Context, nodeName string, notSafeToAttach *bool,
 	) (publications []*utils.VolumePublicationExternal, err error)
 	DeleteVolumePublication(ctx context.Context, volumeName, nodeName string) error
 

@@ -2965,44 +2965,63 @@ func TestListVolumePublications(t *testing.T) {
 	// Set the store client behavior we don't care about for this testcase
 	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
 	// Create a fake VolumePublication
-	fakePub := &utils.VolumePublication{
-		Name:       "foo/bar",
-		NodeName:   "bar",
-		VolumeName: "foo",
-		ReadOnly:   true,
-		AccessMode: 1,
+	fakePub1 := &utils.VolumePublication{
+		Name:            "foo/bar",
+		NodeName:        "bar",
+		VolumeName:      "foo",
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToAttach: false,
 	}
 	fakePub2 := &utils.VolumePublication{
-		Name:       "baz/biz",
-		NodeName:   "biz",
-		VolumeName: "baz",
-		ReadOnly:   true,
-		AccessMode: 1,
+		Name:            "baz/biz",
+		NodeName:        "biz",
+		VolumeName:      "baz",
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToAttach: false,
 	}
 	fakePub3 := &utils.VolumePublication{
-		Name:       fmt.Sprintf("%s/buz", fakePub.VolumeName),
-		NodeName:   "buz",
-		VolumeName: fakePub.VolumeName,
-		ReadOnly:   true,
-		AccessMode: 1,
+		Name:            fmt.Sprintf("%s/buz", fakePub1.VolumeName),
+		NodeName:        "buz",
+		VolumeName:      fakePub1.VolumeName,
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToAttach: true,
 	}
 	// Create an instance of the orchestrator for this test
 	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	orchestrator.addVolumePublicationToCache(fakePub1)
 	orchestrator.addVolumePublicationToCache(fakePub2)
 	orchestrator.addVolumePublicationToCache(fakePub3)
 
-	expectedPubs := []*utils.VolumePublicationExternal{
-		fakePub.ConstructExternal(),
+	expectedAllPubs := []*utils.VolumePublicationExternal{
+		fakePub1.ConstructExternal(),
 		fakePub2.ConstructExternal(),
 		fakePub3.ConstructExternal(),
 	}
-	actualPubs, err := orchestrator.ListVolumePublications(context.Background())
+	expectedCleanPubs := []*utils.VolumePublicationExternal{
+		fakePub1.ConstructExternal(),
+		fakePub2.ConstructExternal(),
+	}
+	expectedDirtyPubs := []*utils.VolumePublicationExternal{
+		fakePub3.ConstructExternal(),
+	}
+
+	actualPubs, err := orchestrator.ListVolumePublications(context.Background(), nil)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
-	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
+	assert.ElementsMatch(t, expectedAllPubs, actualPubs, "incorrect publication list returned")
+
+	actualPubs, err = orchestrator.ListVolumePublications(context.Background(), utils.Ptr(false))
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.ElementsMatch(t, expectedCleanPubs, actualPubs, "incorrect publication list returned")
+
+	actualPubs, err = orchestrator.ListVolumePublications(context.Background(), utils.Ptr(true))
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.ElementsMatch(t, expectedDirtyPubs, actualPubs, "incorrect publication list returned")
 }
 
 func TestListVolumePublicationsNotFound(t *testing.T) {
@@ -3016,7 +3035,7 @@ func TestListVolumePublicationsNotFound(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 
-	actualPubs, err := orchestrator.ListVolumePublications(context.Background())
+	actualPubs, err := orchestrator.ListVolumePublications(context.Background(), nil)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
@@ -3045,7 +3064,7 @@ func TestListVolumePublicationsError(t *testing.T) {
 	// Simulate a bootstrap error
 	orchestrator.bootstrapError = fmt.Errorf("some error")
 
-	actualPubs, err := orchestrator.ListVolumePublications(context.Background())
+	actualPubs, err := orchestrator.ListVolumePublications(context.Background(), nil)
 	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
@@ -3057,40 +3076,57 @@ func TestListVolumePublicationsForVolume(t *testing.T) {
 	// Set the store client behavior we don't care about for this testcase
 	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
 	// Create a fake VolumePublication
-	fakePub := &utils.VolumePublication{
-		Name:       "foo/bar",
-		NodeName:   "bar",
-		VolumeName: "foo",
-		ReadOnly:   true,
-		AccessMode: 1,
+	fakePub1 := &utils.VolumePublication{
+		Name:            "foo/bar",
+		NodeName:        "bar",
+		VolumeName:      "foo",
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToAttach: false,
 	}
 	fakePub2 := &utils.VolumePublication{
-		Name:       "baz/biz",
-		NodeName:   "biz",
-		VolumeName: "baz",
-		ReadOnly:   true,
-		AccessMode: 1,
+		Name:            "baz/biz",
+		NodeName:        "biz",
+		VolumeName:      "baz",
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToAttach: false,
 	}
 	fakePub3 := &utils.VolumePublication{
-		Name:       fmt.Sprintf("%s/buz", fakePub.VolumeName),
-		NodeName:   "buz",
-		VolumeName: fakePub.VolumeName,
-		ReadOnly:   true,
-		AccessMode: 1,
+		Name:            fmt.Sprintf("%s/buz", fakePub1.VolumeName),
+		NodeName:        "buz",
+		VolumeName:      fakePub1.VolumeName,
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToAttach: true,
 	}
 	// Create an instance of the orchestrator for this test
 	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	orchestrator.addVolumePublicationToCache(fakePub1)
 	orchestrator.addVolumePublicationToCache(fakePub2)
 	orchestrator.addVolumePublicationToCache(fakePub3)
 
-	expectedPubs := []*utils.VolumePublicationExternal{fakePub.ConstructExternal(), fakePub3.ConstructExternal()}
-	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), fakePub.VolumeName)
+	expectedAllPubs := []*utils.VolumePublicationExternal{fakePub1.ConstructExternal(), fakePub3.ConstructExternal()}
+	expectedCleanPubs := []*utils.VolumePublicationExternal{fakePub1.ConstructExternal()}
+	expectedDirtyPubs := []*utils.VolumePublicationExternal{fakePub3.ConstructExternal()}
+
+	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(),
+		fakePub1.VolumeName, nil)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
-	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
+	assert.ElementsMatch(t, expectedAllPubs, actualPubs, "incorrect publication list returned")
+
+	actualPubs, err = orchestrator.ListVolumePublicationsForVolume(context.Background(),
+		fakePub1.VolumeName, utils.Ptr(false))
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.ElementsMatch(t, expectedCleanPubs, actualPubs, "incorrect publication list returned")
+
+	actualPubs, err = orchestrator.ListVolumePublicationsForVolume(context.Background(),
+		fakePub1.VolumeName, utils.Ptr(true))
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.ElementsMatch(t, expectedDirtyPubs, actualPubs, "incorrect publication list returned")
 }
 
 func TestListVolumePublicationsForVolumeNotFound(t *testing.T) {
@@ -3114,7 +3150,7 @@ func TestListVolumePublicationsForVolumeNotFound(t *testing.T) {
 	// Populate volume publications
 	orchestrator.addVolumePublicationToCache(fakePub)
 
-	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), "NotFound")
+	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), "NotFound", nil)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
@@ -3143,7 +3179,7 @@ func TestListVolumePublicationsForVolumeError(t *testing.T) {
 	// Simulate a bootstrap error
 	orchestrator.bootstrapError = fmt.Errorf("some error")
 
-	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), fakePub.VolumeName)
+	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), fakePub.VolumeName, nil)
 	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
@@ -3155,40 +3191,56 @@ func TestListVolumePublicationsForNode(t *testing.T) {
 	// Set the store client behavior we don't care about for this testcase
 	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
 	// Create a fake VolumePublication
-	fakePub := &utils.VolumePublication{
-		Name:       "foo/bar",
-		NodeName:   "bar",
-		VolumeName: "foo",
-		ReadOnly:   true,
-		AccessMode: 1,
+	fakePub1 := &utils.VolumePublication{
+		Name:            "foo/bar",
+		NodeName:        "bar",
+		VolumeName:      "foo",
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToAttach: false,
 	}
 	fakePub2 := &utils.VolumePublication{
-		Name:       "baz/biz",
-		NodeName:   "biz",
-		VolumeName: "baz",
-		ReadOnly:   true,
-		AccessMode: 1,
+		Name:            "baz/biz",
+		NodeName:        "biz",
+		VolumeName:      "baz",
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToAttach: false,
 	}
 	fakePub3 := &utils.VolumePublication{
-		Name:       fmt.Sprintf("%s/buz", fakePub.VolumeName),
-		NodeName:   "buz",
-		VolumeName: fakePub.VolumeName,
-		ReadOnly:   true,
-		AccessMode: 1,
+		Name:            fmt.Sprintf("%s/buz", fakePub1.VolumeName),
+		NodeName:        "buz",
+		VolumeName:      fakePub1.VolumeName,
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToAttach: true,
 	}
 	// Create an instance of the orchestrator for this test
 	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	orchestrator.addVolumePublicationToCache(fakePub1)
 	orchestrator.addVolumePublicationToCache(fakePub2)
 	orchestrator.addVolumePublicationToCache(fakePub3)
 
-	expectedPubs := []*utils.VolumePublicationExternal{fakePub2.ConstructExternal()}
-	actualPubs, err := orchestrator.ListVolumePublicationsForNode(context.Background(), fakePub2.NodeName)
+	expectedAllPubs := []*utils.VolumePublicationExternal{fakePub2.ConstructExternal()}
+	expectedCleanPubs := []*utils.VolumePublicationExternal{fakePub2.ConstructExternal()}
+	expectedDirtyPubs := []*utils.VolumePublicationExternal{}
+
+	actualPubs, err := orchestrator.ListVolumePublicationsForNode(context.Background(), fakePub2.NodeName, nil)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
-	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
+	assert.ElementsMatch(t, expectedAllPubs, actualPubs, "incorrect publication list returned")
+
+	actualPubs, err = orchestrator.ListVolumePublicationsForNode(context.Background(), fakePub2.NodeName,
+		utils.Ptr(false))
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.ElementsMatch(t, expectedCleanPubs, actualPubs, "incorrect publication list returned")
+
+	actualPubs, err = orchestrator.ListVolumePublicationsForNode(context.Background(), fakePub2.NodeName,
+		utils.Ptr(true))
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.ElementsMatch(t, expectedDirtyPubs, actualPubs, "incorrect publication list returned")
 }
 
 func TestListVolumePublicationsForNodeNotFound(t *testing.T) {
@@ -3212,7 +3264,7 @@ func TestListVolumePublicationsForNodeNotFound(t *testing.T) {
 	// Populate volume publications
 	orchestrator.addVolumePublicationToCache(fakePub)
 
-	actualPubs, err := orchestrator.ListVolumePublicationsForNode(context.Background(), "NotFound")
+	actualPubs, err := orchestrator.ListVolumePublicationsForNode(context.Background(), "NotFound", nil)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
@@ -3241,7 +3293,7 @@ func TestListVolumePublicationsForNodeError(t *testing.T) {
 	// Simulate a bootstrap error
 	orchestrator.bootstrapError = fmt.Errorf("some error")
 
-	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), fakePub.NodeName)
+	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), fakePub.NodeName, nil)
 	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }

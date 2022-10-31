@@ -152,15 +152,33 @@ var controllerRoutes = Routes{
 		DeleteNode,
 	},
 	Route{
+		"GetVolumePublication",
+		"GET",
+		config.PublicationURL + "/{volume}/{node}",
+		GetVolumePublication,
+	},
+	Route{
+		"ListVolumePublications",
+		"GET",
+		config.PublicationURL,
+		ListVolumePublications,
+	},
+	Route{
+		"ListVolumePublicationsForVolume",
+		"GET",
+		config.VolumeURL + "/{volume}/publication",
+		ListVolumePublicationsForVolume,
+	},
+	Route{
 		"ListVolumePublicationsForNode",
 		"GET",
-		config.NodeURL + "/{node}/publications",
+		config.NodeURL + "/{node}/publication",
 		ListVolumePublicationsForNode,
 	},
 	Route{
 		"UpdateVolumePublication",
-		"POST",
-		config.NodeURL + "/{node}/{volume}",
+		"PUT",
+		config.PublicationURL + "/{volume}/{node}",
 		UpdateVolumePublication,
 	},
 	Route{

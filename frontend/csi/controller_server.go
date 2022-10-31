@@ -579,7 +579,7 @@ func (p *Plugin) ListVolumes(
 					PublishedNodeIds: []string{},
 				}
 				// Find all the nodes to which this volume has been published
-				publications, err := p.orchestrator.ListVolumePublicationsForVolume(ctx, csiVolume.VolumeId)
+				publications, err := p.orchestrator.ListVolumePublicationsForVolume(ctx, csiVolume.VolumeId, nil)
 				if err != nil {
 					msg := fmt.Sprintf("error listing volume publications for volume %s", csiVolume.VolumeId)
 					Logc(ctx).WithError(err).Error(msg)

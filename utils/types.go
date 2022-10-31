@@ -102,7 +102,7 @@ type VolumePublicationExternal struct {
 	// The access mode values are defined by CSI
 	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
 	AccessMode      int32 `json:"accessMode"`
-	NotSafeToAttach bool  `json:"notSafeToAttach"`
+	NotSafeToAttach *bool `json:"notSafeToAttach,omitempty"`
 }
 
 func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
@@ -112,7 +112,7 @@ func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
 		VolumeName:      v.VolumeName,
 		ReadOnly:        v.ReadOnly,
 		AccessMode:      v.AccessMode,
-		NotSafeToAttach: v.NotSafeToAttach,
+		NotSafeToAttach: Ptr(v.NotSafeToAttach),
 	}
 }
 

@@ -4907,7 +4907,7 @@ func (o *TridentOrchestrator) getVolumePublication(
 
 // ListVolumePublications returns a list of all volume publications
 func (o *TridentOrchestrator) ListVolumePublications(
-	context.Context,
+	ctx context.Context, notSafeToAttach *bool,
 ) (publications []*utils.VolumePublicationExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -4921,7 +4921,9 @@ func (o *TridentOrchestrator) ListVolumePublications(
 	publications = []*utils.VolumePublicationExternal{}
 	for _, pubs := range o.volumePublications {
 		for _, pub := range pubs {
-			publications = append(publications, pub.ConstructExternal())
+			if notSafeToAttach == nil || *notSafeToAttach == pub.NotSafeToAttach {
+				publications = append(publications, pub.ConstructExternal())
+			}
 		}
 	}
 	return publications, nil
@@ -4929,7 +4931,7 @@ func (o *TridentOrchestrator) ListVolumePublications(
 
 // ListVolumePublicationsForVolume returns a list of all volume publications for a given volume
 func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
-	ctx context.Context, volumeName string,
+	ctx context.Context, volumeName string, notSafeToAttach *bool,
 ) (publications []*utils.VolumePublicationExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -4943,7 +4945,9 @@ func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 	internalPubs := o.listVolumePublicationsForVolume(ctx, volumeName)
 	publications = make([]*utils.VolumePublicationExternal, 0, len(internalPubs))
 	for _, pub := range internalPubs {
-		publications = append(publications, pub.ConstructExternal())
+		if notSafeToAttach == nil || *notSafeToAttach == pub.NotSafeToAttach {
+			publications = append(publications, pub.ConstructExternal())
+		}
 	}
 	return
 }
@@ -4998,7 +5002,7 @@ func (o *TridentOrchestrator) listVolumePublicationsForVolumeAndSubordinates(
 
 // ListVolumePublicationsForNode returns a list of all volume publications for a given node
 func (o *TridentOrchestrator) ListVolumePublicationsForNode(
-	ctx context.Context, nodeName string,
+	ctx context.Context, nodeName string, notSafeToAttach *bool,
 ) (publications []*utils.VolumePublicationExternal, err error) {
 	fields := log.Fields{"NodeName": nodeName}
 	Logc(ctx).WithFields(fields).Debug(">>>>>> GetVolumePublications")
@@ -5016,7 +5020,9 @@ func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 	internalPubs := o.listVolumePublicationsForNode(ctx, nodeName)
 	publications = make([]*utils.VolumePublicationExternal, 0, len(internalPubs))
 	for _, pub := range internalPubs {
-		publications = append(publications, pub.ConstructExternal())
+		if notSafeToAttach == nil || *notSafeToAttach == pub.NotSafeToAttach {
+			publications = append(publications, pub.ConstructExternal())
+		}
 	}
 	return
 }

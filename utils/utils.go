@@ -990,3 +990,8 @@ func GetPrintableBoolPtrValue(bPtr *bool) string {
 	}
 	return "none"
 }
+
+// Ptr converts any value into a pointer to that value.
+func Ptr[T any](v T) *T {
+	return &v
+}

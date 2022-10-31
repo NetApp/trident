@@ -9,8 +9,9 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/netapp/trident/config"
@@ -28,7 +29,7 @@ type ControllerRestClient struct {
 func CreateTLSRestClient(url, caFile, certFile, keyFile string) (TridentController, error) {
 	tlsConfig := &tls.Config{MinVersion: config.MinClientTLSVersion}
 	if "" != caFile {
-		caCert, err := ioutil.ReadFile(caFile)
+		caCert, err := os.ReadFile(caFile)
 		if err != nil {
 			return nil, err
 		}
@@ -101,7 +102,7 @@ func (c *ControllerRestClient) InvokeAPI(
 	}
 	defer response.Body.Close()
 
-	responseBody, err := ioutil.ReadAll(response.Body)
+	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error reading response body; %v", err)
 	}
@@ -208,4 +209,24 @@ func (c *ControllerRestClient) GetChap(ctx context.Context, volume, node string)
 		return nil, fmt.Errorf(msg)
 	}
 	return createResponse.CHAP, nil
+}
+
+// UpdateVolumePublication updates a volume publication in the Trident controller.  At present, the only value
+// modified is NotSafeToAttach.
+func (c *ControllerRestClient) UpdateVolumePublication(
+	ctx context.Context, publication *utils.VolumePublicationExternal,
+) error {
+	body, err := json.Marshal(publication)
+	if err != nil {
+		return fmt.Errorf("error marshaling update publication request; %v", err)
+	}
+	url := config.PublicationURL + "/" + publication.VolumeName + "/" + publication.NodeName
+	resp, _, err := c.InvokeAPI(ctx, body, "PUT", url, false, false)
+	if err != nil {
+		return fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
+	}
+	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("could not update volume publication")
+	}
+	return nil
 }

@@ -1443,3 +1443,17 @@ func TestGetPrintableBoolPtrValue(t *testing.T) {
 	pval = GetPrintableBoolPtrValue(bPtr)
 	assert.Equal(t, "true", pval)
 }
+
+func TestPtr(t *testing.T) {
+	i := 42
+	pi := Ptr(i)
+	assert.Equal(t, i, *pi)
+
+	s := "test"
+	ps := Ptr(s)
+	assert.Equal(t, s, *ps)
+
+	a := [2]int{1, 2}
+	pa := Ptr(a)
+	assert.Equal(t, a, *pa)
+}
