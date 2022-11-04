@@ -19,7 +19,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	tridentconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/frontend/csi/helpers"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
@@ -150,7 +150,7 @@ func (p *Plugin) CreateVolume(
 	if isRawBlockAccessType && isFileMountAccessType {
 		return nil, status.Error(codes.InvalidArgument, "mixed block and mount capabilities")
 	} else if isRawBlockAccessType {
-		if !p.helper.SupportsFeature(ctx, CSIBlockVolumes) {
+		if !p.controllerHelper.SupportsFeature(ctx, CSIBlockVolumes) {
 			Logc(ctx).WithFields(fields).Error("Raw block volumes are not supported for this container orchestrator.")
 			return nil, status.Error(codes.FailedPrecondition,
 				"raw block volumes are not supported for this container orchestrator")
@@ -209,10 +209,10 @@ func (p *Plugin) CreateVolume(
 	}
 
 	// Convert volume creation options into a Trident volume config
-	volConfig, err := p.helper.GetVolumeConfig(ctx, req.Name, sizeBytes, req.Parameters, protocol, accessModes,
+	volConfig, err := p.controllerHelper.GetVolumeConfig(ctx, req.Name, sizeBytes, req.Parameters, protocol, accessModes,
 		volumeMode, fsType, requisiteTopologies, preferredTopologies, nil)
 	if err != nil {
-		p.helper.RecordVolumeEvent(ctx, req.Name, helpers.EventTypeNormal, "ProvisioningFailed", err.Error())
+		p.controllerHelper.RecordVolumeEvent(ctx, req.Name, controllerhelpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
@@ -259,10 +259,10 @@ func (p *Plugin) CreateVolume(
 	}
 
 	if err != nil {
-		p.helper.RecordVolumeEvent(ctx, req.Name, helpers.EventTypeNormal, "ProvisioningFailed", err.Error())
+		p.controllerHelper.RecordVolumeEvent(ctx, req.Name, controllerhelpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	} else {
-		p.helper.RecordVolumeEvent(ctx, req.Name, v1.EventTypeNormal, "ProvisioningSuccess", "provisioned a volume")
+		p.controllerHelper.RecordVolumeEvent(ctx, req.Name, v1.EventTypeNormal, "ProvisioningSuccess", "provisioned a volume")
 	}
 
 	csiVolume, err := p.getCSIVolumeFromTridentVolume(ctx, newVolume)
@@ -660,9 +660,9 @@ func (p *Plugin) CreateSnapshot(
 	}
 
 	// Convert snapshot creation options into a Trident snapshot config
-	snapshotConfig, err := p.helper.GetSnapshotConfig(volumeName, snapshotName)
+	snapshotConfig, err := p.controllerHelper.GetSnapshotConfig(volumeName, snapshotName)
 	if err != nil {
-		p.helper.RecordVolumeEvent(ctx, req.Name, helpers.EventTypeNormal, "ProvisioningFailed", err.Error())
+		p.controllerHelper.RecordVolumeEvent(ctx, req.Name, controllerhelpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 

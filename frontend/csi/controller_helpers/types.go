@@ -1,8 +1,8 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
-package helpers
+package controllerhelpers
 
-//go:generate mockgen -destination=../../../mocks/mock_frontend/mock_csi/mock_helpers/mock_helpers.go github.com/netapp/trident/frontend/csi/helpers HybridPlugin
+//go:generate mockgen -destination=../../../mocks/mock_frontend/mock_csi/mock_controller_helpers/mock_controller_helpers.go github.com/netapp/trident/frontend/csi/controller_helpers ControllerHelper
 
 import (
 	"context"
@@ -21,10 +21,10 @@ const (
 
 type Feature string
 
-// HybridPlugin is the common interface used by the "helper" objects used by
-// the CSI controller.  The helpers supply CO-specific details at certain
+// ControllerHelper is the common interface used by the "helper" objects used by
+// the CSI controller.  The controller_helpers supply CO-specific details at certain
 // points of CSI workflows.
-type HybridPlugin interface {
+type ControllerHelper interface {
 	// GetVolumeConfig accepts the attributes of a volume being requested by the CSI
 	// provisioner, adds in any CO-specific details about the new volume, and returns
 	// a VolumeConfig structure as needed by Trident to create a new volume.

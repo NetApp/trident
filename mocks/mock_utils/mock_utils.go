@@ -37,7 +37,7 @@ func (m *MockLUKSDeviceInterface) EXPECT() *MockLUKSDeviceInterfaceMockRecorder 
 // DevicePath mocks base method.
 func (m *MockLUKSDeviceInterface) DevicePath() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DevicePath")
+	ret := m.ctrl.Call(m, "devicePath")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
@@ -45,7 +45,7 @@ func (m *MockLUKSDeviceInterface) DevicePath() string {
 // DevicePath indicates an expected call of DevicePath.
 func (mr *MockLUKSDeviceInterfaceMockRecorder) DevicePath() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DevicePath", reflect.TypeOf((*MockLUKSDeviceInterface)(nil).DevicePath))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "devicePath", reflect.TypeOf((*MockLUKSDeviceInterface)(nil).DevicePath))
 }
 
 // IsLUKSFormatted mocks base method.

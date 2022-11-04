@@ -15,14 +15,11 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 	"golang.org/x/net/context"
 	"golang.org/x/sys/unix"
 
 	. "github.com/netapp/trident/logger"
 )
-
-var osFs = afero.NewOsFs()
 
 const (
 	luksCommandTimeout time.Duration = time.Second * 300

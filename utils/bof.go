@@ -5,6 +5,7 @@ package utils
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -18,6 +19,8 @@ import (
 
 	. "github.com/netapp/trident/logger"
 )
+
+var BofUtils = NewBlockOnFileReconcileUtils()
 
 func AttachBlockOnFileVolume(
 	ctx context.Context, mountPath string, publishInfo *VolumePublishInfo,
@@ -74,7 +77,7 @@ func AttachBlockOnFileVolume(
 	}
 
 	// Attach the NFS-backed loop file to a loop device only if it isn't already attached
-	attached, loopDevice, err := GetLoopDeviceAttachedToFile(ctx, loopFile)
+	attached, loopDevice, err := BofUtils.GetLoopDeviceAttachedToFile(ctx, loopFile)
 	if err != nil {
 		return "", "", err
 	}
@@ -83,7 +86,7 @@ func AttachBlockOnFileVolume(
 			return "", "", err
 		}
 
-		if attached, loopDevice, err = GetLoopDeviceAttachedToFile(ctx, loopFile); err != nil {
+		if attached, loopDevice, err = BofUtils.GetLoopDeviceAttachedToFile(ctx, loopFile); err != nil {
 			return "", "", err
 		} else if !attached {
 			return "", "", fmt.Errorf("could not detect new loop device attachment to %s", loopFile)
@@ -209,7 +212,7 @@ func getLoopDeviceInfo(ctx context.Context) ([]LoopDevice, error) {
 	return loopDevicesResponse.LoopDevices, nil
 }
 
-func GetLoopDeviceAttachedToFile(ctx context.Context, loopFile string) (bool, *LoopDevice, error) {
+func (h *BlockOnFileReconcileHelper) GetLoopDeviceAttachedToFile(ctx context.Context, loopFile string) (bool, *LoopDevice, error) {
 	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> bof.GetLoopDeviceAttachedToFile")
 	defer Logc(ctx).Debug("<<<< bof.GetLoopDeviceAttachedToFile")
 
@@ -388,7 +391,7 @@ func WaitForLoopDeviceDetach(
 	checkLoopDevices := func() error {
 		var err error
 
-		if deviceAttached, loopDevice, err = GetLoopDeviceAttachedToFile(ctx, loopFile); err != nil {
+		if deviceAttached, loopDevice, err = BofUtils.GetLoopDeviceAttachedToFile(ctx, loopFile); err != nil {
 			return backoff.Permanent(err)
 		} else if deviceAttached {
 			return fmt.Errorf("loopback device '%s' still attached to '%s'", loopDevice.Name, loopFile)
@@ -530,4 +533,26 @@ func SafeToRemoveNFSMount(ctx context.Context, nfsMountPoint string) bool {
 
 	Logc(ctx).Debug("NFS mountpoint does not contain subvolumes in use.")
 	return true
+}
+
+// ReconcileBlockOnFileVolumeInfo returns true if any of the expected conditions for a present volume are true (e.g. the
+// expected loop device exists).
+func (h *BlockOnFileReconcileHelper) ReconcileBlockOnFileVolumeInfo(
+	ctx context.Context, trackingInfo *VolumeTrackingInfo,
+) (bool, error) {
+	pubInfo := trackingInfo.VolumePublishInfo
+	nfsMountpoint := pubInfo.NFSMountpoint
+	loopFile := path.Join(nfsMountpoint, pubInfo.SubvolumeName)
+
+	isLoopDeviceAttached, _, err := BofUtils.GetLoopDeviceAttachedToFile(ctx, loopFile)
+	errTemplate := "failed to get loop device for loop file '%s': %v"
+	if err != nil {
+		return false, errors.New(fmt.Sprintf(errTemplate, loopFile, err))
+	}
+
+	if isLoopDeviceAttached {
+		return true, nil
+	}
+
+	return false, nil
 }

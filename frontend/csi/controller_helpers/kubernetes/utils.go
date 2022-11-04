@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -21,15 +21,15 @@ import (
 )
 
 // validateKubeVersion logs a warning if the detected Kubernetes version is outside the supported range.
-func (p *Plugin) validateKubeVersion() error {
+func (h *helper) validateKubeVersion() error {
 	// Parse Kubernetes version into a SemVer object for simple comparisons
-	if version, err := utils.ParseSemantic(p.kubeVersion.GitVersion); err != nil {
+	if version, err := utils.ParseSemantic(h.kubeVersion.GitVersion); err != nil {
 		return err
 	} else if !version.AtLeast(utils.MustParseMajorMinorVersion(config.KubernetesVersionMin)) {
 		log.Warnf("%s v%s may not support container orchestrator version %s.%s (%s)! Supported "+
 			"Kubernetes versions are %s-%s. K8S helper frontend proceeds as if you are running Kubernetes %s!",
-			config.OrchestratorName, config.OrchestratorVersion, p.kubeVersion.Major, p.kubeVersion.Minor,
-			p.kubeVersion.GitVersion, config.KubernetesVersionMin, config.KubernetesVersionMax,
+			config.OrchestratorName, config.OrchestratorVersion, h.kubeVersion.Major, h.kubeVersion.Minor,
+			h.kubeVersion.GitVersion, config.KubernetesVersionMin, config.KubernetesVersionMax,
 			config.KubernetesVersionMax)
 	}
 	return nil
@@ -39,26 +39,26 @@ func (p *Plugin) validateKubeVersion() error {
 // given event on the PV. It saves the phase and emits the event only when
 // the phase has actually changed from the version saved in API server.
 // (Based on pkg/controller/volume/persistentvolume/pv_controller.go)
-func (p *Plugin) updatePVPhaseWithEvent(
+func (h *helper) updatePVPhaseWithEvent(
 	ctx context.Context, pv *v1.PersistentVolume, phase v1.PersistentVolumePhase, eventType, reason, message string,
 ) (*v1.PersistentVolume, error) {
 	if pv.Status.Phase == phase {
 		// Nothing to do.
 		return pv, nil
 	}
-	newPV, err := p.updatePVPhase(ctx, pv, phase, message)
+	newPV, err := h.updatePVPhase(ctx, pv, phase, message)
 	if err != nil {
 		return nil, err
 	}
 
-	p.eventRecorder.Event(newPV, eventType, reason, message)
+	h.eventRecorder.Event(newPV, eventType, reason, message)
 
 	return newPV, nil
 }
 
 // updatePVPhase saves new PV phase to API server.
 // (Based on pkg/controller/volume/persistentvolume/pv_controller.go)
-func (p *Plugin) updatePVPhase(
+func (h *helper) updatePVPhase(
 	ctx context.Context, pv *v1.PersistentVolume, phase v1.PersistentVolumePhase, message string,
 ) (*v1.PersistentVolume, error) {
 	if pv.Status.Phase == phase {
@@ -71,11 +71,11 @@ func (p *Plugin) updatePVPhase(
 	pvClone.Status.Phase = phase
 	pvClone.Status.Message = message
 
-	return p.kubeClient.CoreV1().PersistentVolumes().UpdateStatus(ctx, pvClone, updateOpts)
+	return h.kubeClient.CoreV1().PersistentVolumes().UpdateStatus(ctx, pvClone, updateOpts)
 }
 
 // patchPV patches a PV after an update.
-func (p *Plugin) patchPV(
+func (h *helper) patchPV(
 	ctx context.Context, oldPV, newPV *v1.PersistentVolume,
 ) (*v1.PersistentVolume, error) {
 	oldPVData, err := json.Marshal(oldPV)
@@ -93,12 +93,12 @@ func (p *Plugin) patchPV(
 		return nil, fmt.Errorf("error creating the two-way merge patch for PV %q: %v", newPV.Name, err)
 	}
 
-	return p.kubeClient.CoreV1().PersistentVolumes().Patch(
+	return h.kubeClient.CoreV1().PersistentVolumes().Patch(
 		ctx, newPV.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
 }
 
 // patchPVC patches a PVC after an update.
-func (p *Plugin) patchPVC(
+func (h *helper) patchPVC(
 	ctx context.Context, oldPVC, newPVC *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
 	oldPVCData, err := json.Marshal(oldPVC)
@@ -116,12 +116,12 @@ func (p *Plugin) patchPVC(
 		return nil, fmt.Errorf("error creating the two-way merge patch for PVC %q: %v", newPVC.Name, err)
 	}
 
-	return p.kubeClient.CoreV1().PersistentVolumeClaims(oldPVC.Namespace).Patch(
+	return h.kubeClient.CoreV1().PersistentVolumeClaims(oldPVC.Namespace).Patch(
 		ctx, newPVC.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts)
 }
 
 // patchPVCStatus patches a PVC status after an update.
-func (p *Plugin) patchPVCStatus(
+func (h *helper) patchPVCStatus(
 	ctx context.Context, oldPVC, newPVC *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
 	oldPVCData, err := json.Marshal(oldPVC)
@@ -139,24 +139,24 @@ func (p *Plugin) patchPVCStatus(
 		return nil, fmt.Errorf("error creating the two-way merge patch for PVC %q: %v", newPVC.Name, err)
 	}
 
-	return p.kubeClient.CoreV1().PersistentVolumeClaims(newPVC.Namespace).Patch(
+	return h.kubeClient.CoreV1().PersistentVolumeClaims(newPVC.Namespace).Patch(
 		ctx, newPVC.Name, commontypes.StrategicMergePatchType, patchBytes, patchOpts, "status")
 }
 
 // getPVForPVC returns the PV for a bound PVC.
-func (p *Plugin) getPVForPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolume, error) {
+func (h *helper) getPVForPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolume, error) {
 	if pvc.Status.Phase != v1.ClaimBound || pvc.Spec.VolumeName == "" {
 		return nil, nil
 	}
-	return p.kubeClient.CoreV1().PersistentVolumes().Get(ctx, pvc.Spec.VolumeName, getOpts)
+	return h.kubeClient.CoreV1().PersistentVolumes().Get(ctx, pvc.Spec.VolumeName, getOpts)
 }
 
 // getPVCForPV returns the PVC for a PV.
-func (p *Plugin) getPVCForPV(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolumeClaim, error) {
+func (h *helper) getPVCForPV(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolumeClaim, error) {
 	if pv.Spec.ClaimRef == nil {
 		return nil, nil
 	}
-	return p.kubeClient.CoreV1().PersistentVolumeClaims(
+	return h.kubeClient.CoreV1().PersistentVolumeClaims(
 		pv.Spec.ClaimRef.Namespace).Get(ctx, pv.Spec.ClaimRef.Name, getOpts)
 }
 
@@ -211,7 +211,7 @@ func getPVCProvisioner(pvc *v1.PersistentVolumeClaim) string {
 	return ""
 }
 
-func (p *Plugin) checkValidStorageClassReceived(ctx context.Context, claim *v1.PersistentVolumeClaim) error {
+func (h *helper) checkValidStorageClassReceived(ctx context.Context, claim *v1.PersistentVolumeClaim) error {
 	// Filter unrelated claims
 	if claim.Spec.StorageClassName == nil || *claim.Spec.StorageClassName == "" {
 		Logc(ctx).WithFields(log.Fields{

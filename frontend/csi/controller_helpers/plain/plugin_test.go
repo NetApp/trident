@@ -15,7 +15,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/csi"
-	"github.com/netapp/trident/frontend/csi/helpers"
+	controller_helpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	mock "github.com/netapp/trident/mocks/mock_core"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 func TestPluginActivate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
-	plugin := NewPlugin(orchestrator)
+	plugin := NewHelper(orchestrator)
 
 	err := plugin.Activate()
 	assert.NoError(t, err, "Error is not nil")
@@ -39,7 +39,7 @@ func TestPluginActivate(t *testing.T) {
 func TestPluginDeactivate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
-	plugin := NewPlugin(orchestrator)
+	plugin := NewHelper(orchestrator)
 
 	err := plugin.Deactivate()
 	assert.NoError(t, err, "Error is not nil")
@@ -48,7 +48,7 @@ func TestPluginDeactivate(t *testing.T) {
 func TestGetName(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
-	plugin := NewPlugin(orchestrator)
+	plugin := NewHelper(orchestrator)
 
 	pluginName := plugin.GetName()
 	assert.Equal(t, "plain_csi_helper", pluginName, "Plugin name does not match")
@@ -57,7 +57,7 @@ func TestGetName(t *testing.T) {
 func TestPluginVersion(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
-	plugin := NewPlugin(orchestrator)
+	plugin := NewHelper(orchestrator)
 
 	pluginVersion := plugin.Version()
 	assert.Equal(t, csi.Version, pluginVersion, "Plugin version does not match")
@@ -67,7 +67,11 @@ func TestGetVolumeConfig(t *testing.T) {
 	ctx := context.TODO()
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
-	plugin := NewPlugin(orchestrator)
+	p := NewHelper(orchestrator)
+	plugin, ok := p.(controller_helpers.ControllerHelper)
+	if !ok {
+		t.Fatal("Could not cast the helper to a ControllerHelper!")
+	}
 
 	type volumeConfigTest struct {
 		volumeName         string
@@ -130,7 +134,11 @@ func TestGetVolumeConfig(t *testing.T) {
 func TestPluginGetSnapshotConfig(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
-	plugin := NewPlugin(orchestrator)
+	p := NewHelper(orchestrator)
+	plugin, ok := p.(controller_helpers.ControllerHelper)
+	if !ok {
+		t.Fatal("Could not cast the helper to a ControllerHelper!")
+	}
 
 	type snapshotConfigTest struct {
 		volumeName   string
@@ -162,7 +170,11 @@ func TestPluginGetNodeTopologies(t *testing.T) {
 	ctx := context.TODO()
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
-	plugin := NewPlugin(orchestrator)
+	p := NewHelper(orchestrator)
+	plugin, ok := p.(controller_helpers.ControllerHelper)
+	if !ok {
+		t.Fatal("Could not cast the helper to a ControllerHelper!")
+	}
 
 	nodeTopologylabels, err := plugin.GetNodeTopologyLabels(ctx, "node")
 	assert.Nil(t, err, "Error is not nil")
@@ -173,9 +185,13 @@ func TestPluginRecordVolumeEvent(t *testing.T) {
 	ctx := context.TODO()
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
-	plugin := NewPlugin(orchestrator)
+	p := NewHelper(orchestrator)
+	plugin, ok := p.(controller_helpers.ControllerHelper)
+	if !ok {
+		t.Fatal("Could not cast the helper to a ControllerHelper!")
+	}
 
-	plugin.RecordVolumeEvent(ctx, "node", helpers.EventTypeNormal, "ProvisioningSuccess",
+	plugin.RecordVolumeEvent(ctx, "node", controller_helpers.EventTypeNormal, "ProvisioningSuccess",
 		"provisioned a volume")
 }
 
@@ -183,19 +199,27 @@ func TestPluginRecordNodeEvent(t *testing.T) {
 	ctx := context.TODO()
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
-	plugin := NewPlugin(orchestrator)
+	p := NewHelper(orchestrator)
+	plugin, ok := p.(controller_helpers.ControllerHelper)
+	if !ok {
+		t.Fatal("Could not cast the helper to a ControllerHelper!")
+	}
 
-	plugin.RecordNodeEvent(ctx, "node", helpers.EventTypeWarning, "ProvisioningSuccess",
+	plugin.RecordNodeEvent(ctx, "node", controller_helpers.EventTypeWarning, "ProvisioningSuccess",
 		"provisioned a volume")
 }
 
 func TestSupportsFeature(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
-	plugin := NewPlugin(orchestrator)
+	p := NewHelper(orchestrator)
+	plugin, ok := p.(controller_helpers.ControllerHelper)
+	if !ok {
+		t.Fatal("Could not cast the helper to a ControllerHelper!")
+	}
 
 	type supportedFeature struct {
-		feature  helpers.Feature
+		feature  controller_helpers.Feature
 		expected bool
 	}
 

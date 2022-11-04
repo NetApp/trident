@@ -14,13 +14,13 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
-
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
 	drivers "github.com/netapp/trident/storage_drivers"

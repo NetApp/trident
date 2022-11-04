@@ -5,6 +5,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -13,8 +14,19 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
+
+// MockFs is a struct that embeds the afero in-memory filesystem, so that we can
+// implement a version of Open that can return a permissions error.
+type MockFs struct {
+	afero.MemMapFs
+}
+
+func (m *MockFs) Open(name string) (afero.File, error) {
+	return nil, fs.ErrPermission
+}
 
 var testStringSlice = []string{
 	"foo",

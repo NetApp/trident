@@ -294,4 +294,3 @@ type RestClientInterface interface {
 	// equivalent to filer::> volume quota policy rule show
 	QuotaEntryList(ctx context.Context, volumeName string) (*storage.QuotaRuleCollectionGetOK, error)
 }
-

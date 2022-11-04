@@ -22,9 +22,12 @@ import (
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/crd"
 	"github.com/netapp/trident/frontend/csi"
-	"github.com/netapp/trident/frontend/csi/helpers"
-	k8shelper "github.com/netapp/trident/frontend/csi/helpers/kubernetes"
-	plainhelper "github.com/netapp/trident/frontend/csi/helpers/plain"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
+	k8sctrlhelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
+	plainctrlhelper "github.com/netapp/trident/frontend/csi/controller_helpers/plain"
+	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	k8snodehelper "github.com/netapp/trident/frontend/csi/node_helpers/kubernetes"
+	plainnodehelper "github.com/netapp/trident/frontend/csi/node_helpers/plain"
 	"github.com/netapp/trident/frontend/docker"
 	"github.com/netapp/trident/frontend/metrics"
 	"github.com/netapp/trident/frontend/rest"
@@ -331,20 +334,35 @@ func main() {
 			log.Fatal("CSI is enabled but csi_node_name was not specified.")
 		}
 
-		var hybridFrontend frontend.Plugin
+		var hybridControllerFrontend frontend.Plugin
+		var hybridNodeFrontend frontend.Plugin
 		if *k8sAPIServer != "" || *k8sPod {
-			hybridFrontend, err = k8shelper.NewPlugin(orchestrator, *k8sAPIServer, *k8sConfigPath)
+			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath)
+			hybridNodeFrontend, err = k8snodehelper.NewHelper(orchestrator, *k8sConfigPath)
 		} else {
-			hybridFrontend = plainhelper.NewPlugin(orchestrator)
+			hybridControllerFrontend = plainctrlhelper.NewHelper(orchestrator)
+			hybridNodeFrontend = plainnodehelper.NewHelper(orchestrator)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the K8S hybrid frontend. %v", err)
 		}
-		orchestrator.AddFrontend(hybridFrontend)
-		postBootstrapFrontends = append(postBootstrapFrontends, hybridFrontend)
-		hybridPlugin, ok := hybridFrontend.(helpers.HybridPlugin)
+
+		if *csiRole == csi.CSIController || *csiRole == csi.CSIAllInOne {
+			orchestrator.AddFrontend(hybridControllerFrontend)
+			postBootstrapFrontends = append(postBootstrapFrontends, hybridControllerFrontend)
+		}
+		controllerHelper, ok := hybridControllerFrontend.(controllerhelpers.ControllerHelper)
 		if !ok {
-			log.Fatalf("%e", utils.TypeAssertionError("hybridFrontend.(helpers.HybridPlugin)"))
+			log.Fatalf("%v", utils.TypeAssertionError("hybridControllerFrontend.(controllerhelpers.ControllerHelper)"))
+		}
+
+		if *csiRole == csi.CSINode || *csiRole == csi.CSIAllInOne {
+			orchestrator.AddFrontend(hybridNodeFrontend)
+			postBootstrapFrontends = append(postBootstrapFrontends, hybridNodeFrontend)
+		}
+		nodeHelper, ok := hybridNodeFrontend.(nodehelpers.NodeHelper)
+		if !ok {
+			log.Fatalf("%v", utils.TypeAssertionError("hybridNodeFrontend.(nodehelpers.NodeHelper)"))
 		}
 
 		log.WithFields(log.Fields{
@@ -356,16 +374,16 @@ func main() {
 		switch *csiRole {
 		case csi.CSIController:
 			txnMonitor = true
-			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator, &hybridPlugin)
+			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator, &controllerHelper)
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, *enableForceDetach)
+				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, &nodeHelper, *enableForceDetach)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 		case csi.CSIAllInOne:
 			txnMonitor = true
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, &hybridPlugin, *csiUnsafeNodeDetach)
+				*httpsClientKey, *aesKey, orchestrator, &controllerHelper, &nodeHelper, *csiUnsafeNodeDetach)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the CSI frontend. %v", err)
@@ -437,6 +455,11 @@ func main() {
 	}
 	for _, f := range postBootstrapFrontends {
 		if err := f.Activate(); err != nil {
+			// If there is a terminal error during reconciliation, then the node plugin needs to be restarted so that we
+			// can try again.
+			if csi.IsTerminalReconciliationError(err) {
+				log.Fatal(err)
+			}
 			log.Error(err)
 		}
 	}

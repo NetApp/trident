@@ -3,7 +3,10 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,4 +34,48 @@ func TestUnsupportedCapacityRangeError(t *testing.T) {
 		ok, _ := HasUnsupportedCapacityRangeError(wrappedError)
 		assert.Equal(t, true, ok)
 	})
+}
+
+func TestAsInvalidJSONError(t *testing.T) {
+	unmarshalTypeErr := &json.UnmarshalTypeError{
+		Value:  "",
+		Type:   reflect.TypeOf(fmt.Errorf("foo")),
+		Offset: 0,
+		Struct: "",
+		Field:  "",
+	}
+	nilTypeUnmarshalTypeErr := &json.UnmarshalTypeError{}
+	syntaxErr := &json.SyntaxError{}
+	unexpectedEOF := io.ErrUnexpectedEOF
+	anEOF := io.EOF
+	invalidJSON := &invalidJSONError{}
+	notFound := &notFoundError{}
+
+	unexpectedMsg := "Expected provided error to be usable as an InvalidJSONError!"
+	unexpectedInvalidJson := "Did not expect the provided error to be usable as an InvalidJSONError"
+
+	type Args struct {
+		Provided      error
+		Expected      bool
+		UnexpectedStr string
+		TestName      string
+	}
+
+	testCases := []Args{
+		{nil, false, unexpectedInvalidJson, "Nil error"},
+		{unmarshalTypeErr, true, unexpectedMsg, "JSON UnmarshalTypeError"},
+		{nilTypeUnmarshalTypeErr, true, unexpectedMsg, "Nil typed JSON UnmarshalTypeError"},
+		{syntaxErr, true, unexpectedMsg, "JSON SyntaxError"},
+		{unexpectedEOF, true, unexpectedMsg, "Unexpected EOF Error"},
+		{anEOF, true, unexpectedMsg, "EOF Error"},
+		{invalidJSON, true, unexpectedMsg, "Already InvalidJSONError"},
+		{notFound, false, unexpectedInvalidJson, "NotFoundError"},
+	}
+
+	for _, args := range testCases {
+		t.Run(args.TestName, func(t *testing.T) {
+			_, isInvalidErr := AsInvalidJSONError(args.Provided)
+			assert.Equal(t, args.Expected, isInvalidErr, args.UnexpectedStr)
+		})
+	}
 }

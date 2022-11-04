@@ -9,11 +9,12 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+
 	config "github.com/netapp/trident/config"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	storage "github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
-	utils "github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils"
 )
 
 // MockStoreClient is a mock of Client interface.

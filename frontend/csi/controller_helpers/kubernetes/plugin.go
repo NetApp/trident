@@ -31,7 +31,7 @@ import (
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi"
-	"github.com/netapp/trident/frontend/csi/helpers"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logger"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
@@ -57,13 +57,13 @@ var (
 		`^pvc-(?P<uid>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$`)
 )
 
-type K8SHelperPlugin interface {
+type K8SControllerHelperPlugin interface {
 	frontend.Plugin
 	ImportVolume(ctx context.Context, request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error)
 	UpgradeVolume(ctx context.Context, request *storage.UpgradeVolumeRequest) (*storage.VolumeExternal, error)
 }
 
-type Plugin struct {
+type helper struct {
 	orchestrator  core.Orchestrator
 	tridentClient clientset.Interface
 	restConfig    rest.Config
@@ -103,8 +103,8 @@ type Plugin struct {
 	vrefSource             cache.ListerWatcher
 }
 
-// NewPlugin instantiates this plugin when running outside a pod.
-func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string) (*Plugin, error) {
+// NewHelper instantiates this plugin when running outside a pod.
+func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string) (frontend.Plugin, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
 
 	Logc(ctx).Info("Initializing K8S helper frontend.")
@@ -122,7 +122,7 @@ func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 		return nil, fmt.Errorf("K8S helper frontend could not retrieve API server's version: %v", err)
 	}
 
-	p := &Plugin{
+	p := &helper{
 		orchestrator:           orchestrator,
 		tridentClient:          clients.TridentClient,
 		restConfig:             *clients.RestConfig,
@@ -318,10 +318,10 @@ func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 	return p, nil
 }
 
-func (p *Plugin) GetNode(ctx context.Context, nodeName string) (*v1.Node, error) {
+func (h *helper) GetNode(ctx context.Context, nodeName string) (*v1.Node, error) {
 	Logc(ctx).WithField("nodeName", nodeName).Debug("GetNode")
 
-	node, err := p.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
+	node, err := h.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
 	return node, err
 }
 
@@ -379,23 +379,23 @@ func TridentVolumeReferenceKeyFunc(obj interface{}) ([]string, error) {
 }
 
 // Activate starts this Trident frontend.
-func (p *Plugin) Activate() error {
+func (h *helper) Activate() error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
 
 	Logc(ctx).Info("Activating K8S helper frontend.")
-	go p.pvcController.Run(p.pvcControllerStopChan)
-	go p.pvController.Run(p.pvControllerStopChan)
-	go p.scController.Run(p.scControllerStopChan)
-	go p.nodeController.Run(p.nodeControllerStopChan)
-	go p.mrController.Run(p.mrControllerStopChan)
-	go p.vrefController.Run(p.vrefControllerStopChan)
-	go p.reconcileNodes(ctx)
+	go h.pvcController.Run(h.pvcControllerStopChan)
+	go h.pvController.Run(h.pvControllerStopChan)
+	go h.scController.Run(h.scControllerStopChan)
+	go h.nodeController.Run(h.nodeControllerStopChan)
+	go h.mrController.Run(h.mrControllerStopChan)
+	go h.vrefController.Run(h.vrefControllerStopChan)
+	go h.reconcileNodes(ctx)
 
 	// Configure telemetry
 	config.OrchestratorTelemetry.Platform = string(config.PlatformKubernetes)
-	config.OrchestratorTelemetry.PlatformVersion = p.Version()
+	config.OrchestratorTelemetry.PlatformVersion = h.Version()
 
-	if err := p.handleFailedPVUpgrades(ctx); err != nil {
+	if err := h.handleFailedPVUpgrades(ctx); err != nil {
 		return fmt.Errorf("error cleaning up previously failed PV upgrades; %v", err)
 	}
 
@@ -403,31 +403,31 @@ func (p *Plugin) Activate() error {
 }
 
 // Deactivate stops this Trident frontend.
-func (p *Plugin) Deactivate() error {
+func (h *helper) Deactivate() error {
 	log.Info("Deactivating K8S helper frontend.")
-	close(p.pvcControllerStopChan)
-	close(p.pvControllerStopChan)
-	close(p.scControllerStopChan)
-	close(p.nodeControllerStopChan)
-	close(p.mrControllerStopChan)
-	close(p.vrefControllerStopChan)
+	close(h.pvcControllerStopChan)
+	close(h.pvControllerStopChan)
+	close(h.scControllerStopChan)
+	close(h.nodeControllerStopChan)
+	close(h.mrControllerStopChan)
+	close(h.vrefControllerStopChan)
 	return nil
 }
 
 // GetName returns the name of this Trident frontend.
-func (p *Plugin) GetName() string {
-	return helpers.KubernetesHelper
+func (h *helper) GetName() string {
+	return controllerhelpers.KubernetesHelper
 }
 
 // Version returns the version of this Trident frontend (the detected K8S version).
-func (p *Plugin) Version() string {
-	return p.kubeVersion.GitVersion
+func (h *helper) Version() string {
+	return h.kubeVersion.GitVersion
 }
 
 // listClusterNodes returns the list of worker node names as a map for kubernetes cluster
-func (p *Plugin) listClusterNodes(ctx context.Context) (map[string]bool, error) {
+func (h *helper) listClusterNodes(ctx context.Context) (map[string]bool, error) {
 	nodeNames := make(map[string]bool)
-	nodes, err := p.kubeClient.CoreV1().Nodes().List(ctx, listOpts)
+	nodes, err := h.kubeClient.CoreV1().Nodes().List(ctx, listOpts)
 	if err != nil {
 		err = fmt.Errorf("error reading kubernetes nodes; %v", err)
 		Logc(ctx).Error(err)
@@ -440,14 +440,14 @@ func (p *Plugin) listClusterNodes(ctx context.Context) (map[string]bool, error) 
 }
 
 // reconcileNodes will make sure that Trident's list of nodes does not include any unnecessary node
-func (p *Plugin) reconcileNodes(ctx context.Context) {
+func (h *helper) reconcileNodes(ctx context.Context) {
 	Logc(ctx).Debug("Performing node reconciliation.")
-	clusterNodes, err := p.listClusterNodes(ctx)
+	clusterNodes, err := h.listClusterNodes(ctx)
 	if err != nil {
 		Logc(ctx).WithField("err", err).Errorf("unable to list nodes in Kubernetes; aborting node reconciliation")
 		return
 	}
-	tridentNodes, err := p.orchestrator.ListNodes(ctx)
+	tridentNodes, err := h.orchestrator.ListNodes(ctx)
 	if err != nil {
 		Logc(ctx).WithField("err", err).Errorf("unable to list nodes in Trident; aborting node reconciliation")
 		return
@@ -458,7 +458,7 @@ func (p *Plugin) reconcileNodes(ctx context.Context) {
 			// Trident node no longer exists in cluster, remove it
 			Logc(ctx).WithField("node", node.Name).
 				Debug("Node not found in Kubernetes; removing from Trident.")
-			err = p.orchestrator.DeleteNode(ctx, node.Name)
+			err = h.orchestrator.DeleteNode(ctx, node.Name)
 			if err != nil {
 				Logc(ctx).WithFields(log.Fields{
 					"node": node.Name,
@@ -471,43 +471,43 @@ func (p *Plugin) reconcileNodes(ctx context.Context) {
 }
 
 // addPVC is the add handler for the PVC watcher.
-func (p *Plugin) addPVC(obj interface{}) {
+func (h *helper) addPVC(obj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	switch pvc := obj.(type) {
 	case *v1.PersistentVolumeClaim:
-		p.processPVC(ctx, pvc, eventAdd)
+		h.processPVC(ctx, pvc, eventAdd)
 	default:
 		Logc(ctx).Errorf("K8S helper expected PVC; got %v", obj)
 	}
 }
 
 // updatePVC is the update handler for the PVC watcher.
-func (p *Plugin) updatePVC(_, newObj interface{}) {
+func (h *helper) updatePVC(_, newObj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	switch pvc := newObj.(type) {
 	case *v1.PersistentVolumeClaim:
-		p.processPVC(ctx, pvc, eventUpdate)
+		h.processPVC(ctx, pvc, eventUpdate)
 	default:
 		Logc(ctx).Errorf("K8S helper expected PVC; got %v", newObj)
 	}
 }
 
 // deletePVC is the delete handler for the PVC watcher.
-func (p *Plugin) deletePVC(obj interface{}) {
+func (h *helper) deletePVC(obj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	switch pvc := obj.(type) {
 	case *v1.PersistentVolumeClaim:
-		p.processPVC(ctx, pvc, eventDelete)
+		h.processPVC(ctx, pvc, eventDelete)
 	default:
 		Logc(ctx).Errorf("K8S helper expected PVC; got %v", obj)
 	}
 }
 
 // processPVC logs the add/update/delete PVC events.
-func (p *Plugin) processPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim, eventType string) {
+func (h *helper) processPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim, eventType string) {
 	// Validate the PVC
 	size, ok := pvc.Spec.Resources.Requests[v1.ResourceStorage]
 	if !ok {
@@ -537,10 +537,10 @@ func (p *Plugin) processPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim, 
 
 // getCachedPVCByName returns a PVC (identified by namespace/name) from the client's cache,
 // or an error if not found.  In most cases it may be better to call waitForCachedPVCByName().
-func (p *Plugin) getCachedPVCByName(ctx context.Context, name, namespace string) (*v1.PersistentVolumeClaim, error) {
+func (h *helper) getCachedPVCByName(ctx context.Context, name, namespace string) (*v1.PersistentVolumeClaim, error) {
 	logFields := log.Fields{"name": name, "namespace": namespace}
 
-	item, exists, err := p.pvcIndexer.GetByKey(namespace + "/" + name)
+	item, exists, err := h.pvcIndexer.GetByKey(namespace + "/" + name)
 	if err != nil {
 		Logc(ctx).WithFields(logFields).Error("Could not search cache for PVC by name.")
 		return nil, fmt.Errorf("could not search cache for PVC %s/%s: %v", namespace, name, err)
@@ -558,14 +558,14 @@ func (p *Plugin) getCachedPVCByName(ctx context.Context, name, namespace string)
 
 // waitForCachedPVCByUID returns a PVC (identified by namespace/name) from the client's cache, waiting in a
 // backoff loop for the specified duration for the PVC to become available.
-func (p *Plugin) waitForCachedPVCByName(
+func (h *helper) waitForCachedPVCByName(
 	ctx context.Context, name, namespace string, maxElapsedTime time.Duration,
 ) (*v1.PersistentVolumeClaim, error) {
 	var pvc *v1.PersistentVolumeClaim
 
 	checkForCachedPVC := func() error {
 		var pvcError error
-		pvc, pvcError = p.getCachedPVCByName(ctx, name, namespace)
+		pvc, pvcError = h.getCachedPVCByName(ctx, name, namespace)
 		return pvcError
 	}
 	pvcNotify := func(err error, duration time.Duration) {
@@ -592,8 +592,8 @@ func (p *Plugin) waitForCachedPVCByName(
 
 // getCachedPVCByUID returns a PVC (identified by UID) from the client's cache,
 // or an error if not found.  In most cases it may be better to call waitForCachedPVCByUID().
-func (p *Plugin) getCachedPVCByUID(ctx context.Context, uid string) (*v1.PersistentVolumeClaim, error) {
-	items, err := p.pvcIndexer.ByIndex(uidIndex, uid)
+func (h *helper) getCachedPVCByUID(ctx context.Context, uid string) (*v1.PersistentVolumeClaim, error) {
+	items, err := h.pvcIndexer.ByIndex(uidIndex, uid)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Could not search cache for PVC by UID.")
 		return nil, fmt.Errorf("could not search cache for PVC with UID %s: %v", uid, err)
@@ -618,14 +618,14 @@ func (p *Plugin) getCachedPVCByUID(ctx context.Context, uid string) (*v1.Persist
 
 // waitForCachedPVCByUID returns a PVC (identified by UID) from the client's cache, waiting in a
 // backoff loop for the specified duration for the PVC to become available.
-func (p *Plugin) waitForCachedPVCByUID(
+func (h *helper) waitForCachedPVCByUID(
 	ctx context.Context, uid string, maxElapsedTime time.Duration,
 ) (*v1.PersistentVolumeClaim, error) {
 	var pvc *v1.PersistentVolumeClaim
 
 	checkForCachedPVC := func() error {
 		var pvcError error
-		pvc, pvcError = p.getCachedPVCByUID(ctx, uid)
+		pvc, pvcError = h.getCachedPVCByUID(ctx, uid)
 		return pvcError
 	}
 	pvcNotify := func(err error, duration time.Duration) {
@@ -648,10 +648,10 @@ func (p *Plugin) waitForCachedPVCByUID(
 	return pvc, nil
 }
 
-func (p *Plugin) getCachedPVByName(ctx context.Context, name string) (*v1.PersistentVolume, error) {
+func (h *helper) getCachedPVByName(ctx context.Context, name string) (*v1.PersistentVolume, error) {
 	logFields := log.Fields{"name": name}
 
-	item, exists, err := p.pvIndexer.GetByKey(name)
+	item, exists, err := h.pvIndexer.GetByKey(name)
 	if err != nil {
 		Logc(ctx).WithFields(logFields).Error("Could not search cache for PV by name.")
 		return nil, fmt.Errorf("could not search cache for PV: %v", err)
@@ -667,10 +667,10 @@ func (p *Plugin) getCachedPVByName(ctx context.Context, name string) (*v1.Persis
 	}
 }
 
-func (p *Plugin) isPVInCache(ctx context.Context, name string) (bool, error) {
+func (h *helper) isPVInCache(ctx context.Context, name string) (bool, error) {
 	logFields := log.Fields{"name": name}
 
-	item, exists, err := p.pvIndexer.GetByKey(name)
+	item, exists, err := h.pvIndexer.GetByKey(name)
 	if err != nil {
 		Logc(ctx).WithFields(logFields).Error("Could not search cache for PV.")
 		return false, fmt.Errorf("could not search cache for PV: %v", err)
@@ -686,14 +686,14 @@ func (p *Plugin) isPVInCache(ctx context.Context, name string) (bool, error) {
 	}
 }
 
-func (p *Plugin) waitForCachedPVByName(
+func (h *helper) waitForCachedPVByName(
 	ctx context.Context, name string, maxElapsedTime time.Duration,
 ) (*v1.PersistentVolume, error) {
 	var pv *v1.PersistentVolume
 
 	checkForCachedPV := func() error {
 		var pvError error
-		pv, pvError = p.getCachedPVByName(ctx, name)
+		pv, pvError = h.getCachedPVByName(ctx, name)
 		return pvError
 	}
 	pvNotify := func(err error, duration time.Duration) {
@@ -717,28 +717,28 @@ func (p *Plugin) waitForCachedPVByName(
 }
 
 // addStorageClass is the add handler for the storage class watcher.
-func (p *Plugin) addStorageClass(obj interface{}) {
+func (h *helper) addStorageClass(obj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	switch sc := obj.(type) {
 	case *k8sstoragev1beta.StorageClass:
-		p.processStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventAdd)
+		h.processStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventAdd)
 	case *k8sstoragev1.StorageClass:
-		p.processStorageClass(ctx, sc, eventAdd)
+		h.processStorageClass(ctx, sc, eventAdd)
 	default:
 		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", obj)
 	}
 }
 
 // updateStorageClass is the update handler for the storage class watcher.
-func (p *Plugin) updateStorageClass(_, newObj interface{}) {
+func (h *helper) updateStorageClass(_, newObj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	switch sc := newObj.(type) {
 	case *k8sstoragev1beta.StorageClass:
-		p.processStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventUpdate)
+		h.processStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventUpdate)
 	case *k8sstoragev1.StorageClass:
-		p.processStorageClass(ctx, sc, eventUpdate)
+		h.processStorageClass(ctx, sc, eventUpdate)
 	default:
 		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v",
 			newObj)
@@ -746,21 +746,21 @@ func (p *Plugin) updateStorageClass(_, newObj interface{}) {
 }
 
 // deleteStorageClass is the delete handler for the storage class watcher.
-func (p *Plugin) deleteStorageClass(obj interface{}) {
+func (h *helper) deleteStorageClass(obj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	switch sc := obj.(type) {
 	case *k8sstoragev1beta.StorageClass:
-		p.processStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventDelete)
+		h.processStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventDelete)
 	case *k8sstoragev1.StorageClass:
-		p.processStorageClass(ctx, sc, eventDelete)
+		h.processStorageClass(ctx, sc, eventDelete)
 	default:
 		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", obj)
 	}
 }
 
 // processStorageClass logs and handles add/update/delete events for CSI Trident storage classes.
-func (p *Plugin) processStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass, eventType string) {
+func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass, eventType string) {
 	// Validate the storage class
 	if sc.Provisioner != csi.Provisioner {
 		return
@@ -775,18 +775,18 @@ func (p *Plugin) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 	switch eventType {
 	case eventAdd:
 		Logc(ctx).WithFields(logFields).Debug("Storage class added to cache.")
-		p.processAddedStorageClass(ctx, sc)
+		h.processAddedStorageClass(ctx, sc)
 	case eventUpdate:
 		Logc(ctx).WithFields(logFields).Debug("Storage class updated in cache.")
 		// Make sure Trident has a record of this storage class.
-		if storageClass, _ := p.orchestrator.GetStorageClass(ctx, sc.Name); storageClass == nil {
+		if storageClass, _ := h.orchestrator.GetStorageClass(ctx, sc.Name); storageClass == nil {
 			Logc(ctx).WithFields(logFields).Warn("K8S helper has no record of the updated " +
 				"storage class; instead it will try to create it.")
-			p.processAddedStorageClass(ctx, sc)
+			h.processAddedStorageClass(ctx, sc)
 		}
 	case eventDelete:
 		Logc(ctx).WithFields(logFields).Debug("Storage class deleted from cache.")
-		p.processDeletedStorageClass(ctx, sc)
+		h.processDeletedStorageClass(ctx, sc)
 	}
 }
 
@@ -803,7 +803,7 @@ func removeSCParameterPrefix(key string) string {
 }
 
 // processAddedStorageClass informs the orchestrator of a new storage class.
-func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass) {
+func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass) {
 	scConfig := new(storageclass.Config)
 	scConfig.Name = sc.Name
 	scConfig.Attributes = make(map[string]storageattribute.Request)
@@ -875,7 +875,7 @@ func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 	}
 
 	// Add the storage class
-	if _, err := p.orchestrator.AddStorageClass(ctx, scConfig); err != nil {
+	if _, err := h.orchestrator.AddStorageClass(ctx, scConfig); err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"name":        sc.Name,
 			"provisioner": sc.Provisioner,
@@ -892,11 +892,11 @@ func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 }
 
 // processDeletedStorageClass informs the orchestrator of a deleted storage class.
-func (p *Plugin) processDeletedStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass) {
+func (h *helper) processDeletedStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass) {
 	logFields := log.Fields{"name": sc.Name}
 
 	// Delete the storage class from Trident
-	err := p.orchestrator.DeleteStorageClass(ctx, sc.Name)
+	err := h.orchestrator.DeleteStorageClass(ctx, sc.Name)
 	if err != nil {
 		Logc(ctx).WithFields(logFields).Errorf("K8S helper could not delete the storage class: %v", err)
 	} else {
@@ -906,10 +906,10 @@ func (p *Plugin) processDeletedStorageClass(ctx context.Context, sc *k8sstoragev
 
 // getCachedStorageClassByName returns a storage class (identified by name) from the client's cache,
 // or an error if not found.  In most cases it may be better to call waitForCachedStorageClassByName().
-func (p *Plugin) getCachedStorageClassByName(ctx context.Context, name string) (*k8sstoragev1.StorageClass, error) {
+func (h *helper) getCachedStorageClassByName(ctx context.Context, name string) (*k8sstoragev1.StorageClass, error) {
 	logFields := log.Fields{"name": name}
 
-	item, exists, err := p.scIndexer.GetByKey(name)
+	item, exists, err := h.scIndexer.GetByKey(name)
 	if err != nil {
 		Logc(ctx).WithFields(logFields).Error("Could not search cache for storage class by name.")
 		return nil, fmt.Errorf("could not search cache for storage class %s: %v", name, err)
@@ -927,14 +927,14 @@ func (p *Plugin) getCachedStorageClassByName(ctx context.Context, name string) (
 
 // waitForCachedStorageClassByName returns a storage class (identified by name) from the client's cache,
 // waiting in a backoff loop for the specified duration for the storage class to become available.
-func (p *Plugin) waitForCachedStorageClassByName(
+func (h *helper) waitForCachedStorageClassByName(
 	ctx context.Context, name string, maxElapsedTime time.Duration,
 ) (*k8sstoragev1.StorageClass, error) {
 	var sc *k8sstoragev1.StorageClass
 
 	checkForCachedSC := func() error {
 		var scError error
-		sc, scError = p.getCachedStorageClassByName(ctx, name)
+		sc, scError = h.getCachedStorageClassByName(ctx, name)
 		return scError
 	}
 	scNotify := func(err error, duration time.Duration) {
@@ -959,43 +959,43 @@ func (p *Plugin) waitForCachedStorageClassByName(
 }
 
 // addNode is the add handler for the node watcher.
-func (p *Plugin) addNode(obj interface{}) {
+func (h *helper) addNode(obj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	switch node := obj.(type) {
 	case *v1.Node:
-		p.processNode(ctx, node, eventAdd)
+		h.processNode(ctx, node, eventAdd)
 	default:
 		Logc(ctx).Errorf("K8S helper expected Node; got %v", obj)
 	}
 }
 
 // updateNode is the update handler for the node watcher.
-func (p *Plugin) updateNode(_, newObj interface{}) {
+func (h *helper) updateNode(_, newObj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	switch node := newObj.(type) {
 	case *v1.Node:
-		p.processNode(ctx, node, eventUpdate)
+		h.processNode(ctx, node, eventUpdate)
 	default:
 		Logc(ctx).Errorf("K8S helper expected Node; got %v", newObj)
 	}
 }
 
 // deleteNode is the delete handler for the node watcher.
-func (p *Plugin) deleteNode(obj interface{}) {
+func (h *helper) deleteNode(obj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	switch node := obj.(type) {
 	case *v1.Node:
-		p.processNode(ctx, node, eventDelete)
+		h.processNode(ctx, node, eventDelete)
 	default:
 		Logc(ctx).Errorf("K8S helper expected Node; got %v", obj)
 	}
 }
 
 // processNode logs and handles the add/update/delete node events.
-func (p *Plugin) processNode(ctx context.Context, node *v1.Node, eventType string) {
+func (h *helper) processNode(ctx context.Context, node *v1.Node, eventType string) {
 	logFields := log.Fields{
 		"name": node.Name,
 	}
@@ -1006,7 +1006,7 @@ func (p *Plugin) processNode(ctx context.Context, node *v1.Node, eventType strin
 	case eventUpdate:
 		Logc(ctx).WithFields(logFields).Debug("Node updated in cache.")
 	case eventDelete:
-		err := p.orchestrator.DeleteNode(ctx, node.Name)
+		err := h.orchestrator.DeleteNode(ctx, node.Name)
 		if err != nil {
 			if !utils.IsNotFoundError(err) {
 				Logc(ctx).WithFields(logFields).Errorf("error deleting node from Trident's database; %v", err)
@@ -1016,10 +1016,10 @@ func (p *Plugin) processNode(ctx context.Context, node *v1.Node, eventType strin
 	}
 }
 
-func (p *Plugin) GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error) {
+func (h *helper) GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error) {
 	Logc(ctx).WithField("nodeName", nodeName).Debug("GetNode")
 
-	node, err := p.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
+	node, err := h.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -1034,13 +1034,13 @@ func (p *Plugin) GetNodeTopologyLabels(ctx context.Context, nodeName string) (ma
 
 // getCachedVolumeReference returns a share (identified by referenced PVC namespace/name) from the client's cache,
 // or an error if not found.
-func (p *Plugin) getCachedVolumeReference(
+func (h *helper) getCachedVolumeReference(
 	ctx context.Context, vrefNamespace, pvcName, pvcNamespace string,
 ) (*netappv1.TridentVolumeReference, error) {
 	logFields := log.Fields{"vrefNamespace": vrefNamespace, "pvcName": pvcName, "pvcNamespace": pvcNamespace}
 
 	key := vrefNamespace + "_" + pvcNamespace + "/" + pvcName
-	items, err := p.vrefIndexer.ByIndex(vrefIndex, key)
+	items, err := h.vrefIndexer.ByIndex(vrefIndex, key)
 	if err != nil {
 		Logc(ctx).WithFields(logFields).Error("Could not search cache for volume reference.")
 		return nil, fmt.Errorf("could not search cache for volume reference %s: %v", key, err)
@@ -1061,11 +1061,11 @@ func (p *Plugin) getCachedVolumeReference(
 
 // SupportsFeature accepts a CSI feature and returns true if the
 // feature exists and is supported.
-func (p *Plugin) SupportsFeature(ctx context.Context, feature helpers.Feature) bool {
-	kubeSemVersion, err := utils.ParseSemantic(p.kubeVersion.GitVersion)
+func (h *helper) SupportsFeature(ctx context.Context, feature controllerhelpers.Feature) bool {
+	kubeSemVersion, err := utils.ParseSemantic(h.kubeVersion.GitVersion)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
-			"version": p.kubeVersion.GitVersion,
+			"version": h.kubeVersion.GitVersion,
 			"error":   err,
 		}).Errorf("unable to parse Kubernetes version")
 		return false

@@ -3,8 +3,10 @@
 package utils
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -480,4 +482,61 @@ func IsTooManyRequestsError(err error) bool {
 	}
 	_, ok := err.(*tooManyRequestsError)
 	return ok
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// invalidJSONError (if could not unmarshal JSON for any non-retryable reason)
+//////////////////////////////////////////////////////////////////////////////
+
+type invalidJSONError struct {
+	message string
+}
+
+func (e *invalidJSONError) Error() string { return e.message }
+
+func InvalidJSONError(message string) error {
+	return &invalidJSONError{message}
+}
+
+func IsInvalidJSONError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*invalidJSONError)
+	return ok
+}
+
+// AsInvalidJSONError returns an InvalidJSONError, true if the error means the data cannot be unmarshaled, or the
+// original error, false if it does not meet those conditions.
+func AsInvalidJSONError(err error) (error, bool) {
+	var syntaxErr *json.SyntaxError
+	var jsonErr *json.UnmarshalTypeError
+
+	if err == nil {
+		return err, false
+	}
+
+	isJsonErr := errors.As(err, &jsonErr)
+	jErr, ok := err.(*json.UnmarshalTypeError)
+	// If a json.UnmarshalTypeError has a Type field that is nil, calling Error() on it will cause a nil pointer panic.
+	isNilTypeErr := ok && jErr.Type == nil
+
+	isSyntaxErr := errors.As(err, &syntaxErr)
+	isEOFErr := errors.Is(err, io.ErrUnexpectedEOF) || errors.Is(err, io.EOF)
+	asInvalidJSON := isJsonErr || isEOFErr || isSyntaxErr
+
+	// IsInvalidJSONError checks for nil.
+	if IsInvalidJSONError(err) {
+		return err, true
+	}
+
+	if asInvalidJSON {
+		msg := "is nil-typed json.UnmarshalTypeError"
+		if !isNilTypeErr {
+			msg = err.Error()
+		}
+		return InvalidJSONError(msg), true
+	}
+
+	return err, false
 }

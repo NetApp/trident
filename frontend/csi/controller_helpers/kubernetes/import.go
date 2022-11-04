@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -26,7 +26,7 @@ import (
 //
 /////////////////////////////////////////////////////////////////////////////
 
-func (p *Plugin) ImportVolume(
+func (h *helper) ImportVolume(
 	ctx context.Context, request *storage.ImportVolumeRequest,
 ) (*storage.VolumeExternal, error) {
 	Logc(ctx).WithField("request", request).Debug("ImportVolume")
@@ -37,7 +37,7 @@ func (p *Plugin) ImportVolume(
 		return nil, fmt.Errorf("the pvcData field does not contain valid base64-encoded data: %v", err)
 	}
 
-	existingVol, err := p.orchestrator.GetVolumeByInternalName(request.InternalName, ctx)
+	existingVol, err := h.orchestrator.GetVolumeByInternalName(request.InternalName, ctx)
 	if err == nil {
 		return nil, utils.FoundError(fmt.Sprintf("PV %s already exists for volume %s",
 			existingVol, request.InternalName))
@@ -58,7 +58,7 @@ func (p *Plugin) ImportVolume(
 		"PVC_requestedSize": claim.Spec.Resources.Requests[v1.ResourceStorage],
 	}).Debug("ImportVolume: received PVC data.")
 
-	if err = p.checkValidStorageClassReceived(ctx, claim); err != nil {
+	if err = h.checkValidStorageClassReceived(ctx, claim); err != nil {
 		return nil, err
 	}
 
@@ -67,7 +67,7 @@ func (p *Plugin) ImportVolume(
 	}
 
 	// Lookup backend ID from given name
-	backend, err := p.orchestrator.GetBackend(ctx, request.Backend)
+	backend, err := h.orchestrator.GetBackend(ctx, request.Backend)
 	if err != nil {
 		return nil, fmt.Errorf("could not find backend %s; %v", request.Backend, err)
 	}
@@ -82,7 +82,7 @@ func (p *Plugin) ImportVolume(
 	claim.Annotations[AnnStorageProvisioner] = csi.Provisioner
 
 	// Set the PVC's storage field to the actual volume size.
-	volExternal, err := p.orchestrator.GetVolumeExternal(ctx, request.InternalName, request.Backend)
+	volExternal, err := h.orchestrator.GetVolumeExternal(ctx, request.InternalName, request.Backend)
 	if err != nil {
 		return nil, fmt.Errorf("volume import failed to get size of volume: %v", err)
 	}
@@ -96,7 +96,7 @@ func (p *Plugin) ImportVolume(
 		"claimSize": claim.Spec.Resources.Requests[v1.ResourceStorage],
 	}).Debug("Volume import determined volume size")
 
-	pvc, pvcErr := p.createImportPVC(ctx, claim)
+	pvc, pvcErr := h.createImportPVC(ctx, claim)
 	if pvcErr != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"claim": claim.Name,
@@ -110,19 +110,19 @@ func (p *Plugin) ImportVolume(
 
 	// Wait for the import to happen and the PV to be created by the sidecar
 	// after which we can then request the volume object from the core to return
-	_, err = p.waitForCachedPVByName(ctx, pvName, ImportPVCacheWaitPeriod)
+	_, err = h.waitForCachedPVByName(ctx, pvName, ImportPVCacheWaitPeriod)
 	if err != nil {
 		return nil, fmt.Errorf("error waiting for PV %s; %v", pvName, err)
 	}
 
-	volume, err := p.orchestrator.GetVolume(ctx, pvName)
+	volume, err := h.orchestrator.GetVolume(ctx, pvName)
 	if err != nil {
 		return nil, fmt.Errorf("error getting volume %s; %v", pvName, err)
 	}
 	return volume, nil
 }
 
-func (p *Plugin) createImportPVC(
+func (h *helper) createImportPVC(
 	ctx context.Context, claim *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
 	Logc(ctx).WithFields(log.Fields{
@@ -131,7 +131,7 @@ func (p *Plugin) createImportPVC(
 	}).Debug("CreateImportPVC: ready to create PVC")
 
 	createOpts := metav1.CreateOptions{}
-	pvc, err := p.kubeClient.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(ctx, claim, createOpts)
+	pvc, err := h.kubeClient.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(ctx, claim, createOpts)
 	if err != nil {
 		return nil, fmt.Errorf("error occurred during PVC creation: %v", err)
 	}

@@ -2,9 +2,12 @@
 
 package utils
 
-//go:generate mockgen -destination=../mocks/mock_utils/mock_utils.go github.com/netapp/trident/utils LUKSDeviceInterface
+import (
+	"context"
+)
 
-import "context"
+//go:generate mockgen -destination=../mocks/mock_utils/mock_json_utils.go github.com/netapp/trident/utils JSONReaderWriter
+//go:generate mockgen -destination=../mocks/mock_utils/mock_utils.go github.com/netapp/trident/utils LUKSDeviceInterface
 
 type VolumeAccessInfo struct {
 	IscsiAccessInfo
@@ -82,6 +85,13 @@ type VolumeTrackingPublishInfo struct {
 	StagingTargetPath string `json:"stagingTargetPath"`
 }
 
+type VolumeTrackingInfo struct {
+	VolumePublishInfo
+	VolumeTrackingInfoPath string
+	StagingTargetPath      string              `json:"stagingTargetPath"`
+	PublishedPaths         map[string]struct{} `json:"publishedTargetPaths"`
+}
+
 type VolumePublication struct {
 	Name       string `json:"name"`
 	NodeName   string `json:"node"`
@@ -152,6 +162,11 @@ type NodePrepBreadcrumb struct {
 	TridentVersion string `json:"tridentVersion"`
 	NFS            string `json:"nfs,omitempty"`
 	ISCSI          string `json:"iscsi,omitempty"`
+}
+
+type JSONReaderWriter interface {
+	WriteJSONFile(ctx context.Context, fileContents interface{}, filepath, fileDescription string) error
+	ReadJSONFile(ctx context.Context, fileContents interface{}, filepath, fileDescription string) error
 }
 
 type LUKSDeviceInterface interface {

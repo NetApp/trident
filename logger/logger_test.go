@@ -57,3 +57,36 @@ func TestGenerateRequestContext(t *testing.T) {
 		assert.NotNil(t, result, "context is nil")
 	}
 }
+
+func TestFormatMessageForLog(t *testing.T) {
+	msg := "this is a test"
+	punctuated := "this is a test."
+	titled := "This is a test"
+	caps := "THIS IS A TEST"
+	caps_punc := "THIS IS A TEST."
+	no_changes_needed := "This is a test."
+
+	expectedMsg := "This is a test."
+	assertErr := "Expected the string to be titled and punctuated."
+
+	type Args struct {
+		TestString string
+		Expected   string
+		TestName   string
+	}
+
+	testCases := []Args{
+		{msg, expectedMsg, "All lowercase, no punctuation"},
+		{punctuated, expectedMsg, "All lowercase, but already has punctuation"},
+		{titled, expectedMsg, "Already a title, but no punctuation"},
+		{caps, expectedMsg, "All caps, no punctuation"},
+		{caps_punc, expectedMsg, "All caps, with punctuation"},
+		{no_changes_needed, expectedMsg, "Already titled and punctuated"},
+	}
+
+	for _, args := range testCases {
+		t.Run(args.TestName, func(t *testing.T) {
+			assert.Equal(t, args.Expected, FormatMessageForLog(args.TestString), assertErr)
+		})
+	}
+}

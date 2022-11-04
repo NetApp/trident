@@ -22,7 +22,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
-	"github.com/netapp/trident/frontend/csi/helpers"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logger"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/storage"
@@ -4677,7 +4677,7 @@ func (o *TridentOrchestrator) AddNode(
 	defer o.updateMetrics()
 	// Check if node services have changed
 	if node.HostInfo != nil && len(node.HostInfo.Services) > 0 {
-		nodeEventCallback(helpers.EventTypeNormal, "TridentServiceDiscovery", fmt.Sprintf("%s detected on host.",
+		nodeEventCallback(controllerhelpers.EventTypeNormal, "TridentServiceDiscovery", fmt.Sprintf("%s detected on host.",
 			node.HostInfo.Services))
 	}
 

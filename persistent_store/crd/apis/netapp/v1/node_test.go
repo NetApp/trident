@@ -5,9 +5,9 @@ package v1
 import (
 	"testing"
 
-	"github.com/netapp/trident/utils"
-
 	log "github.com/sirupsen/logrus"
+
+	"github.com/netapp/trident/utils"
 )
 
 func init() {

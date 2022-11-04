@@ -1,5 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
-
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
@@ -16,7 +15,7 @@ import (
 	"github.com/netapp/trident/config"
 	frontendcommon "github.com/netapp/trident/frontend/common"
 	"github.com/netapp/trident/frontend/csi"
-	"github.com/netapp/trident/frontend/csi/helpers"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logger"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
@@ -25,7 +24,7 @@ import (
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// This file contains the methods that implement the HybridPlugin interface.
+// This file contains the methods that implement the ControllerHelper interface.
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +32,7 @@ import (
 // the CSI provisioner, combines those with PVC and storage class info
 // retrieved from the K8S API server, and returns a VolumeConfig structure
 // as needed by Trident to create a new volume.
-func (p *Plugin) GetVolumeConfig(
+func (h *helper) GetVolumeConfig(
 	ctx context.Context, name string, _ int64, _ map[string]string, _ config.Protocol, _ []config.AccessMode,
 	_ config.VolumeMode, fsType string, requisiteTopology, preferredTopology, _ []map[string]string,
 ) (*storage.VolumeConfig, error) {
@@ -45,7 +44,7 @@ func (p *Plugin) GetVolumeConfig(
 	defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolumeConfig")
 
 	// Get the PVC corresponding to the new PV being provisioned
-	pvc, err := p.getPVCForCSIVolume(ctx, pvName)
+	pvc, err := h.getPVCForCSIVolume(ctx, pvName)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +73,7 @@ func (p *Plugin) GetVolumeConfig(
 	}
 
 	// Get the cached storage class for this PVC
-	sc, err := p.getStorageClass(ctx, scName)
+	sc, err := h.getStorageClass(ctx, scName)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +90,7 @@ func (p *Plugin) GetVolumeConfig(
 		annotations, sc, requisiteTopology, preferredTopology)
 
 	// Check if we're cloning a PVC, and if so, do some further validation
-	if cloneSourcePVName, err := p.getCloneSourceInfo(ctx, pvc); err != nil {
+	if cloneSourcePVName, err := h.getCloneSourceInfo(ctx, pvc); err != nil {
 		return nil, err
 	} else if cloneSourcePVName != "" {
 		volumeConfig.CloneSourceVolume = cloneSourcePVName
@@ -99,7 +98,7 @@ func (p *Plugin) GetVolumeConfig(
 
 	// Check for TMRs pointing to this PVC
 	mirrorRelationshipName := getAnnotation(annotations, AnnMirrorRelationship)
-	volumeConfig.PeerVolumeHandle, err = p.getPVCMirrorPeer(pvc, mirrorRelationshipName)
+	volumeConfig.PeerVolumeHandle, err = h.getPVCMirrorPeer(pvc, mirrorRelationshipName)
 	if err != nil {
 		Logc(ctx).WithError(err).Errorf("Issue discovering potential mirroring peers for PVC %v", pvc.Name)
 		return nil, err
@@ -111,7 +110,7 @@ func (p *Plugin) GetVolumeConfig(
 	// Check for subordinate volume PVC, denoted by an annotation that points to a TridentVolumeReference CR in the
 	// same namespace as the new PVC having the same name as the source PV.  If the new volume is a subordinate, this
 	// function updates the volume config with a reference to its parent.
-	if err = p.validateSubordinateVolumeConfig(ctx, pvc, volumeConfig); err != nil {
+	if err = h.validateSubordinateVolumeConfig(ctx, pvc, volumeConfig); err != nil {
 		return nil, err
 	}
 
@@ -120,10 +119,10 @@ func (p *Plugin) GetVolumeConfig(
 
 // getPVCMirrorPeer returns the spec.remoteVolumeHandle of the TMR pointing to this PVC
 // or returns an error if the TMR cannot be discovered
-func (p *Plugin) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelationshipName string) (string, error) {
+func (h *helper) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelationshipName string) (string, error) {
 	var relationship *netappv1.TridentMirrorRelationship
 	if mirrorRelationshipName != "" {
-		relationshipObj, exists, err := p.mrIndexer.GetByKey(pvc.Namespace + "/" + mirrorRelationshipName)
+		relationshipObj, exists, err := h.mrIndexer.GetByKey(pvc.Namespace + "/" + mirrorRelationshipName)
 		if err != nil {
 			return "", err
 		}
@@ -137,7 +136,7 @@ func (p *Plugin) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelations
 		}
 	}
 	// If TMR is pointing to PVC but PVC is missing annotation, we search for a single TMR pointing to the PVC
-	relationships := p.mrIndexer.List()
+	relationships := h.mrIndexer.List()
 	for index := range relationships {
 		rel, ok := relationships[index].(*netappv1.TridentMirrorRelationship)
 		if !ok {
@@ -181,7 +180,7 @@ func (p *Plugin) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelations
 // cache if not found after an initial wait, and waits again after the resync.  This strategy
 // is necessary because CSI only provides us with the PVC's UID, and the Kubernetes API does
 // not support querying objects by UID.
-func (p *Plugin) getPVCForCSIVolume(ctx context.Context, name string) (*v1.PersistentVolumeClaim, error) {
+func (h *helper) getPVCForCSIVolume(ctx context.Context, name string) (*v1.PersistentVolumeClaim, error) {
 	// Get the PVC UID from the volume name.  The CSI provisioner sidecar creates
 	// volume names of the form "pvc-<PVC_UID>".
 	pvcUID, err := getPVCUIDFromCSIVolumeName(name)
@@ -190,16 +189,16 @@ func (p *Plugin) getPVCForCSIVolume(ctx context.Context, name string) (*v1.Persi
 	}
 
 	// Get the cached PVC that started this workflow
-	pvc, err := p.waitForCachedPVCByUID(ctx, pvcUID, PreSyncCacheWaitPeriod)
+	pvc, err := h.waitForCachedPVCByUID(ctx, pvcUID, PreSyncCacheWaitPeriod)
 	if err != nil {
 		Logc(ctx).WithField("uid", pvcUID).Warningf("PVC not found in local cache: %v", err)
 
 		// Not found immediately, so re-sync and try again
-		if err = p.pvcIndexer.Resync(); err != nil {
+		if err = h.pvcIndexer.Resync(); err != nil {
 			return nil, fmt.Errorf("could not refresh local PVC cache: %v", err)
 		}
 
-		if pvc, err = p.waitForCachedPVCByUID(ctx, pvcUID, PostSyncCacheWaitPeriod); err != nil {
+		if pvc, err = h.waitForCachedPVCByUID(ctx, pvcUID, PostSyncCacheWaitPeriod); err != nil {
 			Logc(ctx).WithField("uid", pvcUID).Errorf("PVC not found in local cache after resync: %v", err)
 			return nil, fmt.Errorf("could not find PVC with UID %s: %v", pvcUID, err)
 		}
@@ -231,17 +230,17 @@ func getPVCUIDFromCSIVolumeName(volumeName string) (string, error) {
 // getStorageClass accepts the name of a storage class and returns the storage class object
 // as read from the Kubernetes API server.  The method waits for the object to appear in cache,
 // resyncs the cache if not found after an initial wait, and waits again after the resync.
-func (p *Plugin) getStorageClass(ctx context.Context, name string) (*k8sstoragev1.StorageClass, error) {
-	sc, err := p.waitForCachedStorageClassByName(ctx, name, PreSyncCacheWaitPeriod)
+func (h *helper) getStorageClass(ctx context.Context, name string) (*k8sstoragev1.StorageClass, error) {
+	sc, err := h.waitForCachedStorageClassByName(ctx, name, PreSyncCacheWaitPeriod)
 	if err != nil {
 		Logc(ctx).WithField("name", name).Warningf("Storage class not found in local cache: %v", err)
 
 		// Not found immediately, so re-sync and try again
-		if err = p.scIndexer.Resync(); err != nil {
+		if err = h.scIndexer.Resync(); err != nil {
 			return nil, fmt.Errorf("could not refresh local storage class cache: %v", err)
 		}
 
-		if sc, err = p.waitForCachedStorageClassByName(ctx, name, PostSyncCacheWaitPeriod); err != nil {
+		if sc, err = h.waitForCachedStorageClassByName(ctx, name, PostSyncCacheWaitPeriod); err != nil {
 			Logc(ctx).WithField("name", name).Errorf("Storage class not found in local cache after resync: %v", err)
 			return nil, fmt.Errorf("could not find storage class %s: %v", name, err)
 		}
@@ -256,7 +255,7 @@ func (p *Plugin) getStorageClass(ctx context.Context, name string) (*k8sstoragev
 // name of the source PV as needed by Trident to clone a volume as well as an optional
 // snapshot name (also potentially unknown to CSI).  Note that these legacy clone annotations
 // will be overridden if the VolumeContentSource is set in the CSI CreateVolume request.
-func (p *Plugin) getCloneSourceInfo(ctx context.Context, clonePVC *v1.PersistentVolumeClaim) (string, error) {
+func (h *helper) getCloneSourceInfo(ctx context.Context, clonePVC *v1.PersistentVolumeClaim) (string, error) {
 	// Check if this is a clone operation
 	annotations := processPVCAnnotations(clonePVC, "")
 	sourcePVCName := getAnnotation(annotations, AnnCloneFromPVC)
@@ -266,7 +265,7 @@ func (p *Plugin) getCloneSourceInfo(ctx context.Context, clonePVC *v1.Persistent
 
 	// Check that the source PVC is in the same namespace.
 	// NOTE: For VolumeContentSource this check is performed by CSI
-	sourcePVC, err := p.waitForCachedPVCByName(ctx, sourcePVCName, clonePVC.Namespace, PreSyncCacheWaitPeriod)
+	sourcePVC, err := h.waitForCachedPVCByName(ctx, sourcePVCName, clonePVC.Namespace, PreSyncCacheWaitPeriod)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"sourcePVCName": sourcePVCName,
@@ -302,7 +301,7 @@ func (p *Plugin) getCloneSourceInfo(ctx context.Context, clonePVC *v1.Persistent
 	return sourcePVName, nil
 }
 
-func (p *Plugin) validateSubordinateVolumeConfig(
+func (h *helper) validateSubordinateVolumeConfig(
 	ctx context.Context, subordinatePVC *v1.PersistentVolumeClaim, volConfig *storage.VolumeConfig,
 ) error {
 	annotations := subordinatePVC.Annotations
@@ -323,13 +322,13 @@ func (p *Plugin) validateSubordinateVolumeConfig(
 	sourcePVCName := sourcePVCPathComponents[1]
 
 	// Get the volume reference CR
-	_, err := p.getCachedVolumeReference(ctx, subordinatePVC.Namespace, sourcePVCName, sourcePVCNamespace)
+	_, err := h.getCachedVolumeReference(ctx, subordinatePVC.Namespace, sourcePVCName, sourcePVCNamespace)
 	if err != nil {
 		return err
 	}
 
 	// Get the source PVC
-	sourcePVC, err := p.getCachedPVCByName(ctx, sourcePVCName, sourcePVCNamespace)
+	sourcePVC, err := h.getCachedPVCByName(ctx, sourcePVCName, sourcePVCNamespace)
 	if err != nil {
 		return err
 	}
@@ -342,7 +341,7 @@ func (p *Plugin) validateSubordinateVolumeConfig(
 	shareToAnnotation := sourceAnnotations[AnnVolumeShareToNS]
 
 	// Ensure the source PVC has been explicitly shared with the subordinate PVC namespace
-	if !p.matchNamespaceToAnnotation(subordinatePVC.Namespace, shareToAnnotation) {
+	if !h.matchNamespaceToAnnotation(subordinatePVC.Namespace, shareToAnnotation) {
 		return fmt.Errorf("subordinate volume source PVC is not shared with namespace %s", subordinatePVC.Namespace)
 	}
 
@@ -359,7 +358,7 @@ func (p *Plugin) validateSubordinateVolumeConfig(
 	}
 
 	// Get the PV to which the PVC is bound and validate its status
-	sourcePV, err := p.getCachedPVByName(ctx, sourcePVC.Spec.VolumeName)
+	sourcePV, err := h.getCachedPVByName(ctx, sourcePVC.Spec.VolumeName)
 	if err != nil {
 		return err
 	}
@@ -373,7 +372,7 @@ func (p *Plugin) validateSubordinateVolumeConfig(
 	return nil
 }
 
-func (p *Plugin) matchNamespaceToAnnotation(namespace, shareToAnnotation string) bool {
+func (h *helper) matchNamespaceToAnnotation(namespace, shareToAnnotation string) bool {
 	shareToNamespaces := strings.Split(shareToAnnotation, ",")
 	for _, shareToNamespace := range shareToNamespaces {
 		if shareToNamespace == namespace || shareToNamespace == "*" {
@@ -385,7 +384,7 @@ func (p *Plugin) matchNamespaceToAnnotation(namespace, shareToAnnotation string)
 
 // GetSnapshotConfig accepts the attributes of a snapshot being requested by the CSI
 // provisioner and returns a SnapshotConfig structure as needed by Trident to create a new snapshot.
-func (p *Plugin) GetSnapshotConfig(volumeName, snapshotName string) (*storage.SnapshotConfig, error) {
+func (h *helper) GetSnapshotConfig(volumeName, snapshotName string) (*storage.SnapshotConfig, error) {
 	return &storage.SnapshotConfig{
 		Version:    config.OrchestratorAPIVersion,
 		Name:       snapshotName,
@@ -395,7 +394,7 @@ func (p *Plugin) GetSnapshotConfig(volumeName, snapshotName string) (*storage.Sn
 
 // RecordVolumeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
 // PVC, and posts and event message on the PVC object with the K8S API server.
-func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {
+func (h *helper) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {
 	Logc(ctx).WithFields(log.Fields{
 		"name":      name,
 		"eventType": eventType,
@@ -403,16 +402,16 @@ func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason,
 		"message":   message,
 	}).Debug("Volume event.")
 
-	if pvc, err := p.getPVCForCSIVolume(ctx, name); err != nil {
+	if pvc, err := h.getPVCForCSIVolume(ctx, name); err != nil {
 		Logc(ctx).WithField("error", err).Debug("Failed to find PVC for event.")
 	} else {
-		p.eventRecorder.Event(pvc, mapEventType(eventType), reason, message)
+		h.eventRecorder.Event(pvc, mapEventType(eventType), reason, message)
 	}
 }
 
 // RecordNodeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
 // PVC, and posts and event message on the PVC object with the K8S API server.
-func (p *Plugin) RecordNodeEvent(ctx context.Context, name, eventType, reason, message string) {
+func (h *helper) RecordNodeEvent(ctx context.Context, name, eventType, reason, message string) {
 	Logc(ctx).WithFields(log.Fields{
 		"name":      name,
 		"eventType": eventType,
@@ -420,10 +419,10 @@ func (p *Plugin) RecordNodeEvent(ctx context.Context, name, eventType, reason, m
 		"message":   message,
 	}).Debug("Node event.")
 
-	if node, err := p.GetNode(ctx, name); err != nil {
+	if node, err := h.GetNode(ctx, name); err != nil {
 		Logc(ctx).WithField("error", err).Debug("Failed to find Node for event.")
 	} else {
-		p.eventRecorder.Event(node, mapEventType(eventType), reason, message)
+		h.eventRecorder.Event(node, mapEventType(eventType), reason, message)
 	}
 }
 
@@ -432,9 +431,9 @@ func (p *Plugin) RecordNodeEvent(ctx context.Context, name, eventType, reason, m
 // coupled to Kubernetes.
 func mapEventType(eventType string) string {
 	switch eventType {
-	case helpers.EventTypeNormal:
+	case controllerhelpers.EventTypeNormal:
 		return v1.EventTypeNormal
-	case helpers.EventTypeWarning:
+	case controllerhelpers.EventTypeWarning:
 		return v1.EventTypeWarning
 	default:
 		return v1.EventTypeWarning

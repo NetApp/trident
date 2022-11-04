@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
@@ -20,7 +20,7 @@ import (
 
 // updateLegacyPV handles deletion of Trident-created legacy (non-CSI) PVs.  This method specifically
 // handles the case where the PV transitions to the Released or Failed state after a PVC is deleted.
-func (p *Plugin) updateLegacyPV(oldObj, newObj interface{}) {
+func (h *helper) updateLegacyPV(oldObj, newObj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	// Ensure we got PV objects
@@ -51,18 +51,18 @@ func (p *Plugin) updateLegacyPV(oldObj, newObj interface{}) {
 	}
 
 	// Delete the volume on the backend
-	if err := p.orchestrator.DeleteVolume(ctx, pv.Name); err != nil && !utils.IsNotFoundError(err) {
+	if err := h.orchestrator.DeleteVolume(ctx, pv.Name); err != nil && !utils.IsNotFoundError(err) {
 		// Updating the PV's phase to "VolumeFailed", so that a storage admin can take action.
 		message := fmt.Sprintf("failed to delete the volume for PV %s: %s. Will eventually retry, "+
 			"but the volume and PV may need to be manually deleted.", pv.Name, err.Error())
-		_, _ = p.updatePVPhaseWithEvent(ctx, pv, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message)
+		_, _ = h.updatePVPhaseWithEvent(ctx, pv, v1.VolumeFailed, v1.EventTypeWarning, "FailedVolumeDelete", message)
 		Logc(ctx).Errorf("K8S helper %s", message)
 		// PV must be manually deleted by the admin after removing the volume.
 		return
 	}
 
 	// Delete the PV
-	err := p.kubeClient.CoreV1().PersistentVolumes().Delete(ctx, pv.Name, deleteOpts)
+	err := h.kubeClient.CoreV1().PersistentVolumes().Delete(ctx, pv.Name, deleteOpts)
 	if err != nil {
 		if !strings.HasSuffix(err.Error(), "not found") {
 			// PVs provisioned by external provisioners seem to end up in

@@ -17,8 +17,8 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
-	"github.com/netapp/trident/frontend/csi/helpers"
-	k8shelper "github.com/netapp/trident/frontend/csi/helpers/kubernetes"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
+	k8shelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -588,12 +588,12 @@ func ImportVolume(w http.ResponseWriter, r *http.Request) {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			k8sFrontend, err := orchestrator.GetFrontend(r.Context(), helpers.KubernetesHelper)
+			k8sFrontend, err := orchestrator.GetFrontend(r.Context(), controllerhelpers.KubernetesHelper)
 			if err != nil {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			k8s, ok := k8sFrontend.(k8shelper.K8SHelperPlugin)
+			k8s, ok := k8sFrontend.(k8shelper.K8SControllerHelperPlugin)
 			if !ok {
 				err = fmt.Errorf("unable to obtain Kubernetes frontend")
 				response.setError(err)
@@ -651,12 +651,12 @@ func UpgradeVolume(w http.ResponseWriter, r *http.Request) {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			k8sHelperFrontend, err := orchestrator.GetFrontend(r.Context(), helpers.KubernetesHelper)
+			k8sHelperFrontend, err := orchestrator.GetFrontend(r.Context(), controllerhelpers.KubernetesHelper)
 			if err != nil {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			k8sHelper, ok := k8sHelperFrontend.(k8shelper.K8SHelperPlugin)
+			k8sHelper, ok := k8sHelperFrontend.(k8shelper.K8SControllerHelperPlugin)
 			if !ok {
 				err = fmt.Errorf("unable to obtain K8S helper frontend")
 				response.setError(err)
@@ -830,9 +830,9 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 			}
 
 			var csiFrontend frontend.Plugin
-			csiFrontend, err = orchestrator.GetFrontend(r.Context(), helpers.KubernetesHelper)
+			csiFrontend, err = orchestrator.GetFrontend(r.Context(), controllerhelpers.KubernetesHelper)
 			if err != nil {
-				csiFrontend, err = orchestrator.GetFrontend(r.Context(), helpers.PlainCSIHelper)
+				csiFrontend, err = orchestrator.GetFrontend(r.Context(), controllerhelpers.PlainCSIHelper)
 			}
 			if err != nil {
 				err = fmt.Errorf("could not get CSI helper frontend")
@@ -840,7 +840,7 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 				return httpStatusCodeForAdd(err)
 			}
 
-			helper, ok := csiFrontend.(helpers.HybridPlugin)
+			helper, ok := csiFrontend.(controllerhelpers.ControllerHelper)
 			if !ok {
 				err = fmt.Errorf("could not get CSI hybrid frontend")
 				response.setError(err)

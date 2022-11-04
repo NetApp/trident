@@ -24,11 +24,11 @@ const (
 	FakeStorageClass = "fakeStorageClass"
 )
 
-func newMockPlugin(t *testing.T) (*mockcore.MockOrchestrator, *Plugin) {
+func newMockPlugin(t *testing.T) (*mockcore.MockOrchestrator, *helper) {
 	mockCtrl := gomock.NewController(t)
 	mockCore := mockcore.NewMockOrchestrator(mockCtrl)
 
-	plugin := &Plugin{
+	plugin := &helper{
 		orchestrator: mockCore,
 	}
 

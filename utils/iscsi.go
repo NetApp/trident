@@ -33,6 +33,8 @@ const (
 	iscsiadmLoginRetryMax               = "1"
 )
 
+var IscsiUtils = NewIscsiReconcileUtils()
+
 // AttachISCSIVolumeRetry attaches a volume with retry by invoking AttachISCSIVolume with backoff.
 func AttachISCSIVolumeRetry(
 	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string, timeout time.Duration,
@@ -314,9 +316,9 @@ func parseInitiatorIQNs(ctx context.Context, contents string) []string {
 	return iqns
 }
 
-// getSysfsBlockDirsForLUN returns the list of directories in sysfs where the block devices should appear
+// GetSysfsBlockDirsForLUN returns the list of directories in sysfs where the block devices should appear
 // after the scan is successful. One directory is returned for each path in the host session map.
-func getSysfsBlockDirsForLUN(lunID int, hostSessionMap map[int]int) []string {
+func (h *IscsiReconcileHelper) GetSysfsBlockDirsForLUN(lunID int, hostSessionMap map[int]int) []string {
 	paths := make([]string, 0)
 	for hostNumber, sessionNumber := range hostSessionMap {
 		p := fmt.Sprintf(
@@ -327,8 +329,8 @@ func getSysfsBlockDirsForLUN(lunID int, hostSessionMap map[int]int) []string {
 	return paths
 }
 
-// getDevicesForLUN find the /dev/sd* device names for an iSCSI LUN.
-func getDevicesForLUN(paths []string) ([]string, error) {
+// GetDevicesForLUN find the /dev/sd* device names for an iSCSI LUN.
+func (h *IscsiReconcileHelper) GetDevicesForLUN(paths []string) ([]string, error) {
 	devices := make([]string, 0)
 	for _, p := range paths {
 		dirname := p + "/block"
@@ -363,7 +365,7 @@ func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) err
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.waitForDeviceScan")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.waitForDeviceScan")
 
-	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
+	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
 	if len(hostSessionMap) == 0 {
 		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 	}
@@ -378,7 +380,7 @@ func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) err
 		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
 	}
 
-	paths := getSysfsBlockDirsForLUN(lunID, hostSessionMap)
+	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 	Logc(ctx).Debugf("Scanning paths: %v", paths)
 	found := make([]string, 0)
 
@@ -468,16 +470,12 @@ func iSCSIDiscovery(ctx context.Context, portal string) ([]ISCSIDiscoveryInfo, e
 
 	/*
 	   iscsiadm -m discovery -t st -p 10.63.152.249:3260
-
 	   10.63.152.249:3260,1 iqn.1992-08.com.netapp:2752.600a0980006074c20000000056b32c4d
 	   10.63.152.250:3260,2 iqn.1992-08.com.netapp:2752.600a0980006074c20000000056b32c4d
-
 	   a[0]==10.63.152.249:3260,1
 	   a[1]==iqn.1992-08.com.netapp:2752.600a0980006074c20000000056b32c4d
-
 	   For IPv6
 	   [fd20:8b1e:b258:2000:f816:3eff:feec:2]:3260,1038 iqn.1992-08.com.netapp:sn.7894d7af053711ea88b100a0b886136a
-
 	   a[0]==[fd20:8b1e:b258:2000:f816:3eff:feec:2]:3260,1038
 	   a[1]==iqn.1992-08.com.netapp:sn.7894d7af053711ea88b100a0b886136a
 	*/
@@ -541,10 +539,8 @@ func getISCSISessionInfo(ctx context.Context) ([]ISCSISessionInfo, error) {
 
 	/*
 	   # iscsiadm -m session
-
 	   tcp: [3] 10.0.207.7:3260,1028 iqn.1992-08.com.netapp:sn.afbb1784f77411e582f8080027e22798:vs.3 (non-flash)
 	   tcp: [4] 10.0.207.9:3260,1029 iqn.1992-08.com.netapp:sn.afbb1784f77411e582f8080027e22798:vs.3 (non-flash)
-
 	   a[0]==tcp:
 	   a[1]==[4]
 	   a[2]==10.0.207.9:3260,1029
@@ -746,14 +742,14 @@ func iSCSIScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
 
 // IsAlreadyAttached checks if there is already an established iSCSI session to the specified LUN.
 func IsAlreadyAttached(ctx context.Context, lunID int, targetIqn string) bool {
-	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, targetIqn)
+	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIqn)
 	if len(hostSessionMap) == 0 {
 		return false
 	}
 
-	paths := getSysfsBlockDirsForLUN(lunID, hostSessionMap)
+	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 
-	devices, err := getDevicesForLUN(paths)
+	devices, err := IscsiUtils.GetDevicesForLUN(paths)
 	if nil != err {
 		return false
 	}
@@ -853,8 +849,8 @@ func handleInvalidSerials(
 		return nil
 	}
 
-	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, targetIqn)
-	paths := getSysfsBlockDirsForLUN(lunID, hostSessionMap)
+	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIqn)
+	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 	for _, path := range paths {
 		serial, err := getLunSerial(ctx, path)
 		if err != nil {
@@ -899,7 +895,7 @@ func handleInvalidSerials(
 
 // GetISCSIHostSessionMapForTarget returns a map of iSCSI host numbers to iSCSI session numbers
 // for a given iSCSI target.
-func GetISCSIHostSessionMapForTarget(ctx context.Context, iSCSINodeName string) map[int]int {
+func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Context, iSCSINodeName string) map[int]int {
 	fields := log.Fields{"iSCSINodeName": iSCSINodeName}
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.GetISCSIHostSessionMapForTarget")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.GetISCSIHostSessionMapForTarget")
@@ -1599,4 +1595,30 @@ func iSCSIPreChecks(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// ReconcileISCSIVolumeInfo returns true if any of the expected conditions for a present volume are true (e.g. the
+// expected LUN exists).
+func (h *IscsiReconcileHelper) ReconcileISCSIVolumeInfo(
+	ctx context.Context, trackingInfo *VolumeTrackingInfo,
+) (bool, error) {
+	pubInfo := trackingInfo.VolumePublishInfo
+	lun := int(pubInfo.IscsiLunNumber)
+	iqn := pubInfo.IscsiTargetIQN
+
+	sessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iqn)
+	if len(sessionMap) > 0 {
+		return true, nil
+	}
+
+	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lun, sessionMap)
+	devices, err := IscsiUtils.GetDevicesForLUN(paths)
+	if err != nil {
+		return false, err
+	}
+	if len(devices) > 0 {
+		return true, nil
+	}
+
+	return false, nil
 }

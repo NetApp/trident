@@ -5,6 +5,7 @@ package logger
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -43,4 +44,17 @@ func GenerateRequestContext(ctx context.Context, requestID, requestSource string
 	ctx = context.WithValue(ctx, ContextKeyRequestID, requestID)
 	ctx = context.WithValue(ctx, ContextKeyRequestSource, requestSource)
 	return ctx
+}
+
+// FormatMessageForLog capitalizes the first letter of the string, and adds punctuation.
+func FormatMessageForLog(msg string) string {
+	msg = strings.ToLower(msg)
+	runes := []rune(msg)
+
+	sentenceCased := strings.ToUpper(string(runes[0])) + string(runes[1:])
+	if !strings.HasSuffix(sentenceCased, ".") {
+		sentenceCased += "."
+	}
+
+	return sentenceCased
 }

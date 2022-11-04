@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -9,7 +9,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	csiConfig "github.com/netapp/trident/frontend/csi"
-	"github.com/netapp/trident/frontend/csi/helpers"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	"github.com/netapp/trident/utils"
 )
 
@@ -61,7 +61,7 @@ const (
 	AnnVolumeShareToNS    = annPrefix + "/shareToNamespace"
 )
 
-var features = map[helpers.Feature]*utils.Version{
+var features = map[controllerhelpers.Feature]*utils.Version{
 	csiConfig.ExpandCSIVolumes: utils.MustParseSemantic("1.16.0"),
 	csiConfig.CSIBlockVolumes:  utils.MustParseSemantic("1.14.0"),
 }

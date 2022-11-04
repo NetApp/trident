@@ -640,7 +640,7 @@ func GetISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 				// Get the host/session map, using a cached value if available
 				hostSessionMap, ok := hostSessionMapCache[targetIQN]
 				if !ok {
-					hostSessionMap = GetISCSIHostSessionMapForTarget(ctx, targetIQN)
+					hostSessionMap = IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
 					hostSessionMapCache[targetIQN] = hostSessionMap
 				}
 
@@ -867,7 +867,7 @@ func getDeviceInfoForLUN(
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.getDeviceInfoForLUN")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.getDeviceInfoForLUN")
 
-	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
+	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
 
 	// During detach if hostSessionMap count is zero, we should be fine
 	if len(hostSessionMap) == 0 {
@@ -879,9 +879,9 @@ func getDeviceInfoForLUN(
 		}
 	}
 
-	paths := getSysfsBlockDirsForLUN(lunID, hostSessionMap)
+	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 
-	devices, err := getDevicesForLUN(paths)
+	devices, err := IscsiUtils.GetDevicesForLUN(paths)
 	if nil != err {
 		return nil, err
 	} else if 0 == len(devices) {
@@ -989,14 +989,14 @@ func waitForMultipathDeviceForLUN(ctx context.Context, lunID int, iSCSINodeName 
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.waitForMultipathDeviceForLUN")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.waitForMultipathDeviceForLUN")
 
-	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
+	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
 	if len(hostSessionMap) == 0 {
 		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
 	}
 
-	paths := getSysfsBlockDirsForLUN(lunID, hostSessionMap)
+	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 
-	devices, err := getDevicesForLUN(paths)
+	devices, err := IscsiUtils.GetDevicesForLUN(paths)
 	if nil != err {
 		return err
 	}

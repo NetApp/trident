@@ -11,8 +11,10 @@ import (
 	"strings"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
@@ -148,4 +150,78 @@ func containsEncryptedCHAP(input map[string]string) bool {
 		}
 	}
 	return false
+}
+
+// getVolumeProtocolFromPublishInfo examines the publish info read from the staging target path and determines
+// the protocol type from the volume (File or Block or Block-on-File).
+func getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (config.Protocol, error) {
+	nfsIP := publishInfo.VolumeAccessInfo.NfsServerIP
+	iqn := publishInfo.VolumeAccessInfo.IscsiTargetIQN
+	subvolName := publishInfo.VolumeAccessInfo.SubvolumeName
+	smbPath := publishInfo.SMBPath
+
+	nfsSet := nfsIP != ""
+	iqnSet := iqn != ""
+	subvolSet := subvolName != ""
+	smbSet := smbPath != ""
+
+	isSmb := smbSet && !nfsSet && !iqnSet
+	isNfs := nfsSet && !iqnSet && !smbSet
+	isBof := isNfs && subvolSet
+	isIscsi := iqnSet && !nfsSet && !smbSet
+
+	if isSmb || (isNfs && !isBof) {
+		return config.File, nil
+	} else if isBof {
+		return config.BlockOnFile, nil
+	} else if isIscsi {
+		return config.Block, nil
+	}
+
+	fields := log.Fields{
+		"SMBPath":        smbPath,
+		"SubvolumeName":  subvolName,
+		"IscsiTargetIQN": iqn,
+		"NfsServerIP":    nfsIP,
+	}
+
+	errMsg := "unable to infer volume protocol"
+	Logc(context.Background()).WithFields(fields).Error(FormatMessageForLog(errMsg))
+
+	return "", fmt.Errorf(errMsg)
+}
+
+// performProtocolSpecificReconciliation checks the protocol-specific conditions that signify whether a volume exists.
+// Nothing is done for NFS because NodeUnstageVolume for NFS only checks for the staging path. The ISCSI and Block on
+// File conditions are the same conditions that are checked in NodeUnstageVolume.
+func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *utils.VolumeTrackingInfo) (bool, error) {
+	Logc(ctx).Debug(">>>> performProtocolSpecificReconciliation")
+	defer Logc(ctx).Debug("<<<< performProtocolSpecificReconciliation")
+
+	atLeastOneConditionMet := false
+	protocol, err := getVolumeProtocolFromPublishInfo(&trackingInfo.VolumePublishInfo)
+	if err != nil {
+		// If we are unable to determine the protocol from the publish info then something is very wrong and we consider
+		// this an invalid tracking file.
+		errMsg := fmt.Sprintf("unable to determine protocol info from publish info; %v", err)
+		return false, InvalidTrackingFileError(errMsg)
+	}
+
+	// Nothing more than checking the staging path needs to be done for NFS, so ignore that case.
+	switch protocol {
+	case config.Block:
+		atLeastOneConditionMet, err = iscsiUtils.ReconcileISCSIVolumeInfo(ctx, trackingInfo)
+		if err != nil {
+			return false, fmt.Errorf("unable to reconcile ISCSI volume info: %v", err)
+		}
+		return atLeastOneConditionMet, nil
+	case config.BlockOnFile:
+		atLeastOneConditionMet, err = bofUtils.ReconcileBlockOnFileVolumeInfo(ctx, trackingInfo)
+		if err != nil {
+			return false, fmt.Errorf("unable to reconcile Block-on-file volume info: %v", err)
+		}
+		return atLeastOneConditionMet, nil
+	}
+
+	return false, nil
 }

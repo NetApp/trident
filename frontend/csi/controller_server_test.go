@@ -13,23 +13,25 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
-	mockhelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_helpers"
+	mockhelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 )
 
 var ctx = context.Background()
 
-func generateController(mockOrchestrator *mockcore.MockOrchestrator, mockHelper *mockhelpers.MockHybridPlugin) *Plugin {
+func generateController(
+	mockOrchestrator *mockcore.MockOrchestrator, mockHelper *mockhelpers.MockControllerHelper,
+) *Plugin {
 	controllerServer := &Plugin{
-		orchestrator: mockOrchestrator,
-		name:         Provisioner,
-		nodeName:     "foo",
-		version:      tridentconfig.OrchestratorVersion.ShortString(),
-		endpoint:     "bar",
-		role:         CSIController,
-		helper:       mockHelper,
-		opCache:      sync.Map{},
+		orchestrator:     mockOrchestrator,
+		name:             Provisioner,
+		nodeName:         "foo",
+		version:          tridentconfig.OrchestratorVersion.ShortString(),
+		endpoint:         "bar",
+		role:             CSIController,
+		controllerHelper: mockHelper,
+		opCache:          sync.Map{},
 	}
 	return controllerServer
 }
@@ -45,6 +47,21 @@ func generateFakePublishVolumeRequest() *csi.ControllerPublishVolumeRequest {
 		},
 	}
 	return req
+}
+
+func generateVolumePublicationFromCSIPublishRequest(req *csi.ControllerPublishVolumeRequest) *utils.VolumePublication {
+	vp := &utils.VolumePublication{
+		Name:       utils.GenerateVolumePublishName(req.GetVolumeId(), req.GetNodeId()),
+		VolumeName: req.GetVolumeId(),
+		NodeName:   req.GetNodeId(),
+		ReadOnly:   req.GetReadonly(),
+	}
+	if req.VolumeCapability != nil {
+		if req.VolumeCapability.GetAccessMode() != nil {
+			vp.AccessMode = int32(req.VolumeCapability.GetAccessMode().GetMode())
+		}
+	}
+	return vp
 }
 
 func generateFakeUnpublishVolumeRequest() *csi.ControllerUnpublishVolumeRequest {
@@ -82,7 +99,7 @@ func TestControllerPublishVolume(t *testing.T) {
 	// Create a mocked orchestrator
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	// Create a mocked helper
-	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
 	// Create an instance of ControllerServer for this test
 	controllerServer := generateController(mockOrchestrator, mockHelper)
 
@@ -108,7 +125,7 @@ func TestControllerPublishVolume_BlockProtocol(t *testing.T) {
 	// Create a mocked orchestrator
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	// Create a mocked helper
-	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
 	// Create an instance of ControllerServer for this test
 	controllerServer := generateController(mockOrchestrator, mockHelper)
 
@@ -148,7 +165,7 @@ func TestControllerUnpublishVolume(t *testing.T) {
 	// Create a mocked orchestrator
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	// Create a mocked helper
-	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
 	// Create an instance of ControllerServer for this test
 	controllerServer := generateController(mockOrchestrator, mockHelper)
 
@@ -166,7 +183,7 @@ func TestControllerUnpublishVolume_NotFoundErrors(t *testing.T) {
 	// Create a mocked orchestrator
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	// Create a mocked helper
-	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
 	// Create an instance of ControllerServer for this test
 	controllerServer := generateController(mockOrchestrator, mockHelper)
 

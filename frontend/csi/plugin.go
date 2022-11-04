@@ -19,7 +19,8 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
-	"github.com/netapp/trident/frontend/csi/helpers"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
+	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
@@ -44,8 +45,9 @@ type Plugin struct {
 
 	hostInfo *utils.HostSystem
 
-	restClient controllerAPI.TridentController
-	helper     helpers.HybridPlugin
+	restClient       controllerAPI.TridentController
+	controllerHelper controllerhelpers.ControllerHelper
+	nodeHelper       nodehelpers.NodeHelper
 
 	aesKey []byte
 
@@ -61,19 +63,19 @@ type Plugin struct {
 }
 
 func NewControllerPlugin(
-	nodeName, endpoint, aesKeyFile string, orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
+	nodeName, endpoint, aesKeyFile string, orchestrator core.Orchestrator, helper *controllerhelpers.ControllerHelper,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	p := &Plugin{
-		orchestrator: orchestrator,
-		name:         Provisioner,
-		nodeName:     nodeName,
-		version:      tridentconfig.OrchestratorVersion.ShortString(),
-		endpoint:     endpoint,
-		role:         CSIController,
-		helper:       *helper,
-		opCache:      sync.Map{},
+		orchestrator:     orchestrator,
+		name:             Provisioner,
+		nodeName:         nodeName,
+		version:          tridentconfig.OrchestratorVersion.ShortString(),
+		endpoint:         endpoint,
+		role:             CSIController,
+		controllerHelper: *helper,
+		opCache:          sync.Map{},
 	}
 
 	var err error
@@ -108,7 +110,7 @@ func NewControllerPlugin(
 
 func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
-	unsafeDetach, enableForceDetach bool,
+	unsafeDetach bool, helper *nodehelpers.NodeHelper, enableForceDetach bool,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
@@ -127,8 +129,9 @@ func NewNodePlugin(
 		version:           tridentconfig.OrchestratorVersion.ShortString(),
 		endpoint:          endpoint,
 		role:              CSINode,
-		unsafeDetach:      unsafeDetach,
+		nodeHelper:        *helper,
 		enableForceDetach: enableForceDetach,
+		unsafeDetach:      unsafeDetach,
 		opCache:           sync.Map{},
 	}
 
@@ -189,20 +192,21 @@ func NewNodePlugin(
 // identity interfaces.
 func NewAllInOnePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
-	helper *helpers.HybridPlugin, unsafeDetach bool,
+	controllerHelper *controllerhelpers.ControllerHelper, nodeHelper *nodehelpers.NodeHelper, unsafeDetach bool,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	p := &Plugin{
-		orchestrator: orchestrator,
-		name:         Provisioner,
-		nodeName:     nodeName,
-		version:      tridentconfig.OrchestratorVersion.ShortString(),
-		endpoint:     endpoint,
-		role:         CSIAllInOne,
-		unsafeDetach: unsafeDetach,
-		helper:       *helper,
-		opCache:      sync.Map{},
+		orchestrator:     orchestrator,
+		name:             Provisioner,
+		nodeName:         nodeName,
+		version:          tridentconfig.OrchestratorVersion.ShortString(),
+		endpoint:         endpoint,
+		role:             CSIAllInOne,
+		unsafeDetach:     unsafeDetach,
+		controllerHelper: *controllerHelper,
+		nodeHelper:       *nodeHelper,
+		opCache:          sync.Map{},
 	}
 
 	// Define controller capabilities

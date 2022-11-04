@@ -9,11 +9,12 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+
 	core "github.com/netapp/trident/core"
 	frontend "github.com/netapp/trident/frontend"
 	storage "github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
-	utils "github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils"
 )
 
 // MockOrchestrator is a mock of Orchestrator interface.

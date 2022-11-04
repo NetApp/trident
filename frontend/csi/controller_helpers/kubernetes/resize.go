@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 package kubernetes
 
 import (
@@ -24,7 +24,7 @@ import (
 // updatePVCResize is the update handler for the PVC watcher whose job is to
 // detect PVCs with increased capacity requests and resize the underlying PV
 // and PVC to match the request.
-func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
+func (h *helper) updatePVCResize(oldObj, newObj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	// Ensure we got PVC objects
@@ -65,7 +65,7 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 		Logc(ctx).WithField("name", newPVC.Name).Warning("K8S helper found empty storage class for PVC.")
 		return
 	}
-	sc, err := p.getCachedStorageClassByName(ctx, scName)
+	sc, err := h.getCachedStorageClassByName(ctx, scName)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"name":         newPVC.Name,
@@ -83,7 +83,7 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	// Verify the storage class allows resize
 	if sc.AllowVolumeExpansion == nil || !(*sc.AllowVolumeExpansion) {
 		message := "can't resize a PV whose storage class doesn't allow volume expansion."
-		p.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
+		h.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
 		Logc(ctx).WithFields(log.Fields{
 			"PVC":          newPVC.Name,
 			"storageClass": sc.Name,
@@ -94,7 +94,7 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	// Verify the volume is being grown
 	if newPVCSize.Cmp(oldPVCSize) < 0 || (newPVCSize.Cmp(oldPVCSize) == 0 && currentSize.Cmp(newPVCSize) > 0) {
 		message := "can't shrink a PV."
-		p.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
+		h.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
 		Logc(ctx).WithField("PVC", newPVC.Name).Warningf("K8S helper %s", message)
 		return
 	}
@@ -114,7 +114,7 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	// non-negligible amount of time.
 
 	// Verify Trident knows about the volume
-	volume, err := p.orchestrator.GetVolume(ctx, newPVC.Spec.VolumeName)
+	volume, err := h.orchestrator.GetVolume(ctx, newPVC.Spec.VolumeName)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"PVC":   newPVC.Name,
@@ -127,13 +127,13 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	// We only allow resizing NFS PVs as it doesn't require a host-side component to resize the file system.
 	if volume.Config.Protocol != tridentconfig.File {
 		message := "can't resize a non-NFS PV."
-		p.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
+		h.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
 		Logc(ctx).WithFields(log.Fields{"PVC": newPVC.Name}).Debugf("K8S helper %s", message)
 		return
 	}
 
 	// Get the PV from Kubernetes
-	pv, err := p.getPVForPVC(ctx, newPVC)
+	pv, err := h.getPVForPVC(ctx, newPVC)
 	if err != nil || pv == nil {
 		Logc(ctx).WithFields(log.Fields{
 			"PVC":   newPVC.Name,
@@ -144,34 +144,34 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 	}
 
 	// Resize the volume and PV
-	if err = p.resizeVolumeAndPV(ctx, pv, newPVCSize); err != nil {
+	if err = h.resizeVolumeAndPV(ctx, pv, newPVCSize); err != nil {
 		message := fmt.Sprintf("failed in resizing the volume or PV: %v", err)
-		p.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
+		h.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
 		Logc(ctx).WithFields(log.Fields{"PVC": newPVC.Name}).Errorf("K8S helper %v", message)
 		return
 	}
 
 	// Update the PVC
-	updatedPVC, err := p.resizePVC(ctx, newPVC, newPVCSize)
+	updatedPVC, err := h.resizePVC(ctx, newPVC, newPVCSize)
 	if err != nil {
 		message := fmt.Sprintf("failed to update the PVC size: %v.", err)
 		if updatedPVC == nil {
-			p.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
+			h.eventRecorder.Event(newPVC, v1.EventTypeWarning, "ResizeFailed", message)
 		} else {
-			p.eventRecorder.Event(updatedPVC, v1.EventTypeWarning, "ResizeFailed", message)
+			h.eventRecorder.Event(updatedPVC, v1.EventTypeWarning, "ResizeFailed", message)
 		}
 		Logc(ctx).WithFields(log.Fields{"PVC": newPVC.Name}).Errorf("K8S helper %v", message)
 		return
 	}
-	p.eventRecorder.Event(updatedPVC, v1.EventTypeNormal, "ResizeSuccess", "resized the PV and volume.")
+	h.eventRecorder.Event(updatedPVC, v1.EventTypeNormal, "ResizeSuccess", "resized the PV and volume.")
 }
 
 // resizeVolumeAndPV resizes the volume on the storage backend and updates the PV size.
-func (p *Plugin) resizeVolumeAndPV(ctx context.Context, pv *v1.PersistentVolume, newSize resource.Quantity) error {
+func (h *helper) resizeVolumeAndPV(ctx context.Context, pv *v1.PersistentVolume, newSize resource.Quantity) error {
 	pvSize := pv.Spec.Capacity[v1.ResourceStorage]
 	if pvSize.Cmp(newSize) < 0 {
 		// Calling the orchestrator to resize the volume on the storage backend.
-		if err := p.orchestrator.ResizeVolume(ctx, pv.Name, fmt.Sprintf("%d", newSize.Value())); err != nil {
+		if err := h.orchestrator.ResizeVolume(ctx, pv.Name, fmt.Sprintf("%d", newSize.Value())); err != nil {
 			return err
 		}
 	} else if pvSize.Cmp(newSize) == 0 {
@@ -183,7 +183,7 @@ func (p *Plugin) resizeVolumeAndPV(ctx context.Context, pv *v1.PersistentVolume,
 	// Update the PV
 	pvClone := pv.DeepCopy()
 	pvClone.Spec.Capacity[v1.ResourceStorage] = newSize
-	pvUpdated, err := p.patchPV(ctx, pv, pvClone)
+	pvUpdated, err := h.patchPV(ctx, pv, pvClone)
 	if err != nil {
 		return err
 	}
@@ -202,12 +202,12 @@ func (p *Plugin) resizeVolumeAndPV(ctx context.Context, pv *v1.PersistentVolume,
 }
 
 // resizePVC updates the PVC size.
-func (p *Plugin) resizePVC(
+func (h *helper) resizePVC(
 	ctx context.Context, pvc *v1.PersistentVolumeClaim, newSize resource.Quantity,
 ) (*v1.PersistentVolumeClaim, error) {
 	pvcClone := pvc.DeepCopy()
 	pvcClone.Status.Capacity[v1.ResourceStorage] = newSize
-	pvcUpdated, err := p.patchPVCStatus(ctx, pvc, pvcClone)
+	pvcUpdated, err := h.patchPVCStatus(ctx, pvc, pvcClone)
 	if err != nil {
 		return nil, err
 	}

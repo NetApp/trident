@@ -1,8 +1,8 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package csi
 
-import "github.com/netapp/trident/frontend/csi/helpers"
+import controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 
 const (
 	Version           = "1.1"
@@ -10,6 +10,6 @@ const (
 	LegacyProvisioner = "netapp.io/trident"
 
 	// CSI supported features
-	CSIBlockVolumes  helpers.Feature = "CSI_BLOCK_VOLUMES"
-	ExpandCSIVolumes helpers.Feature = "EXPAND_CSI_VOLUMES"
+	CSIBlockVolumes  controllerhelpers.Feature = "CSI_BLOCK_VOLUMES"
+	ExpandCSIVolumes controllerhelpers.Feature = "EXPAND_CSI_VOLUMES"
 )

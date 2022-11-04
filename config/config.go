@@ -143,7 +143,8 @@ const (
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
 	KubernetesCSISidecarRegistry = "registry.k8s.io/sig-storage"
 
-	NamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+	NamespaceFile          = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+	VolumeTrackingInfoPath = "/var/lib/trident/tracking"
 
 	// Pod Security Standards
 	PodSecurityStandardsEnforceLabel   = "pod-security.kubernetes.io/enforce"

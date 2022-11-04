@@ -4,12 +4,17 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"go.uber.org/multierr"
 
 	. "github.com/netapp/trident/logger"
@@ -22,6 +27,17 @@ const (
 	fsExt4 = "ext4"
 	fsRaw  = "raw"
 )
+
+var (
+	osFs             = afero.NewOsFs()
+	JsonReaderWriter = NewJSONReaderWriter()
+)
+
+type jsonReaderWriter struct{}
+
+func NewJSONReaderWriter() JSONReaderWriter {
+	return &jsonReaderWriter{}
+}
 
 // DFInfo data structure for wrapping the parsed output from the 'df' command
 type DFInfo struct {
@@ -210,4 +226,79 @@ func expandFilesystem(ctx context.Context, cmd, cmdArguments, tmpMountPoint stri
 	}
 
 	return postExpandSize, nil
+}
+
+// WriteJSONFile writes the contents of any type of struct to a file, with logging.
+func (j jsonReaderWriter) WriteJSONFile(
+	ctx context.Context, fileContents interface{}, filepath, fileDescription string,
+) error {
+	file, err := osFs.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0o600)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = file.Close() }()
+
+	if err = json.NewEncoder(file).Encode(fileContents); err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"filename": filepath,
+			"error":    err.Error(),
+		}).Error(fmt.Sprintf("Unable to write %s file.", fileDescription))
+		return err
+	}
+
+	return nil
+}
+
+// ReadJSONFile reads a file at the specified path and deserializes its contents into the provided fileContents var.
+// fileContents must be a pointer to a struct, not a pointer type!
+func (j *jsonReaderWriter) ReadJSONFile(
+	ctx context.Context, fileContents interface{}, filepath, fileDescription string,
+) error {
+	file, err := osFs.Open(filepath)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return NotFoundError(err.Error())
+		}
+		return err
+	}
+	defer func() { _ = file.Close() }()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	// We do not consider an empty file valid JSON.
+	if fileInfo.Size() == 0 {
+		return InvalidJSONError("file was empty, which is not considered valid JSON")
+	}
+
+	err = json.NewDecoder(file).Decode(fileContents)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"filename": filepath,
+			"error":    err.Error(),
+		}).Error(fmt.Sprintf("Could not parse %s file.", fileDescription))
+
+		e, _ := AsInvalidJSONError(err)
+		return e
+	}
+
+	return nil
+}
+
+// DeleteFile deletes the file at the provided path, and provides additional logging.
+func DeleteFile(ctx context.Context, filepath, fileDescription string) (string, error) {
+	if err := osFs.Remove(filepath); err != nil {
+		logFields := log.Fields{strings.ReplaceAll(fileDescription, " ", ""): filepath, "error": err}
+
+		if os.IsNotExist(err) {
+			Logc(ctx).WithFields(logFields).Warning(fmt.Sprintf("%s file does not exist.", Title(fileDescription)))
+			return "", nil
+		} else {
+			Logc(ctx).WithFields(logFields).Error(fmt.Sprintf("Removing %s file failed.", fileDescription))
+			return "", err
+		}
+	}
+
+	return filepath, nil
 }

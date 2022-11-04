@@ -707,6 +707,7 @@ spec:
         - /trident_orchestrator
         args:
         - "--no_persistence"
+        - "--k8s_pod"
         - "--rest=false"
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
@@ -747,6 +748,8 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
+        - name: KUBELET_DIR
+          value: {KUBELET_DIR}
         - name: CSI_ENDPOINT
           value: unix://plugin/csi.sock
         - name: PATH
@@ -866,6 +869,7 @@ spec:
         - trident_orchestrator.exe
         args:
         - "--no_persistence"
+        - "--k8s_pod"
         - "--rest=false"
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
@@ -913,6 +917,8 @@ spec:
               fieldPath: spec.nodeName
         - name: CSI_ENDPOINT
           value: unix:///csi/csi.sock
+        - name: KUBELET_DIR
+          value: {KUBELET_DIR}
         volumeMounts:
         - name: trident-tracking-dir
           mountPath: C:\var\lib\trident\tracking
@@ -920,7 +926,7 @@ spec:
           mountPath: /certs
           readOnly: true
         - name: kubelet-dir
-          mountPath: C:\var\lib\kubelet
+          mountPath: {KUBELET_DIR}
         - name: plugin-dir
           mountPath: C:\csi
         - name: csi-proxy-fs-pipe-v1
@@ -960,14 +966,14 @@ spec:
         - name: CSI_ENDPOINT
           value: unix:///csi/csi.sock
         - name: DRIVER_REG_SOCK_PATH
-          value: C:\var\lib\kubelet\plugins\csi.trident.netapp.io\csi.sock
+          value: {KUBELET_DIR}\plugins\csi.trident.netapp.io\csi.sock
         - name: KUBE_NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
         volumeMounts:
         - name: kubelet-dir
-          mountPath: C:\var\lib\kubelet
+          mountPath: {KUBELET_DIR}
         - name: plugin-dir
           mountPath: C:\csi
         - name: registration-dir
@@ -1033,15 +1039,15 @@ spec:
             path: \\.\pipe\csi-proxy-smb-v1beta1
         - name: registration-dir
           hostPath:
-            path: C:\var\lib\kubelet\plugins_registry\
+            path: {KUBELET_DIR}\plugins_registry\
             type: Directory
         - name: kubelet-dir
           hostPath:
-            path: C:\var\lib\kubelet\
+            path: {KUBELET_DIR}\
             type: Directory
         - name: plugin-dir
           hostPath:
-            path: C:\var\lib\kubelet\plugins\csi.trident.netapp.io\
+            path: {KUBELET_DIR}\plugins\csi.trident.netapp.io\
             type: DirectoryOrCreate
 `
 
