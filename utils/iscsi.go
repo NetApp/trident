@@ -24,7 +24,7 @@ import (
 
 const (
 	iSCSIErrNoObjsFound                 = 21
-	iSCSIErrLoginAuthFailed             = 24
+	ISCSIErrLoginAuthFailed             = 24
 	multipathDeviceDiscoveryTimeoutSecs = 90
 	temporaryMountDir                   = "/tmp_mnt"
 	volumeMountDir                      = "/vol_mnt"
@@ -39,9 +39,9 @@ const (
 	iSCSIMultipathStateRunning = "running"
 
 	// ISCSI self-healing actions
-	iSCSIActionScan            = 0
-	iSCSIActionLoginScan       = 1
-	iSCSIActionLogoutLoginScan = 2
+	ISCSIActionScan            = 0
+	ISCSIActionLoginScan       = 1
+	ISCSIActionLogoutLoginScan = 2
 	maxAttemptsForLogout       = 3
 )
 
@@ -1259,15 +1259,15 @@ func GetAllVolumeIDs(ctx context.Context, trackingFileDirectory string) []string
 	return volumeIDs
 }
 
-// loginISCSITarget logs in to an iSCSI target.
-func loginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, portal string) error {
+// LoginISCSITarget logs in to an iSCSI target.
+func LoginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, portal string) error {
 	Logc(ctx).WithFields(log.Fields{
 		"IQN":     publishInfo.IscsiTargetIQN,
 		"Portal":  portal,
 		"iface":   publishInfo.IscsiInterface,
 		"useCHAP": publishInfo.UseCHAP,
-	}).Debug(">>>> iscsi.loginISCSITarget")
-	defer Logc(ctx).Debug("<<<< iscsi.loginISCSITarget")
+	}).Debug(">>>> iscsi.LoginISCSITarget")
+	defer Logc(ctx).Debug("<<<< iscsi.LoginISCSITarget")
 
 	args := []string{"-m", "node", "-T", publishInfo.IscsiTargetIQN, "-p", formatPortal(portal)}
 	listAllISCSIDevices(ctx)
@@ -1358,6 +1358,11 @@ func loginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, porta
 	loginArgs := append(args, []string{"--login"}...)
 	if _, err := execIscsiadmCommandWithTimeout(ctx, 10*time.Second, loginArgs...); err != nil {
 		Logc(ctx).WithField("error", err).Error("Error logging in to iSCSI target.")
+		exitErr, ok := err.(*exec.ExitError)
+		if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == ISCSIErrLoginAuthFailed {
+			return AuthError("iSCSI login failed: CHAP authorization failure")
+		}
+
 		return err
 	}
 	listAllISCSIDevices(ctx)
@@ -1415,14 +1420,13 @@ func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, po
 		}
 
 		// Log in to target
-		if err := loginISCSITarget(ctx, publishInfo, portal); err != nil {
+		if err := LoginISCSITarget(ctx, publishInfo, portal); err != nil {
 			Logc(ctx).WithFields(log.Fields{
 				"err":      err,
 				"portalIP": portal,
 			}).Error("Login to iSCSI target failed.")
 			if !loginFailedDueToChap {
-				exitErr, ok := err.(*exec.ExitError)
-				if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == iSCSIErrLoginAuthFailed {
+				if IsAuthError(err) {
 					Logc(ctx).Debug("iSCSI login failed - authorization failed using CHAP")
 					loginFailedDueToChap = true
 				}
@@ -1540,7 +1544,7 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 				publishInfo := &VolumePublishInfo{}
 				publishInfo.UseCHAP = false
 				publishInfo.IscsiTargetIQN = target.TargetName
-				err = loginISCSITarget(ctx, publishInfo, target.PortalIP)
+				err = LoginISCSITarget(ctx, publishInfo, target.PortalIP)
 				if err != nil {
 					return fmt.Errorf("login to iSCSI target failed: %v", err)
 				}
@@ -1842,6 +1846,35 @@ func IsISCSISessionStale(ctx context.Context, sid string) bool {
 	return sessionState != iSCSISessionStateLoggedIn
 }
 
+// InitiateScanForLuns scans all paths to each of the LUNs passed.
+func InitiateScanForLuns(ctx context.Context, luns []int32, iSCSINodeName string) error {
+	fields := log.Fields{
+		"lunIDs":        luns,
+		"iSCSINodeName": iSCSINodeName,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.InitiateScanForLuns")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.InitiateScanForLuns")
+
+	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
+	if len(hostSessionMap) == 0 {
+		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
+	}
+
+	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
+	hosts := make([]int, 0)
+	for hostNumber := range hostSessionMap {
+		hosts = append(hosts, hostNumber)
+	}
+
+	for _, lun := range luns {
+		if err := iSCSIScanTargetLUN(ctx, int(lun), hosts); err != nil {
+			Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
+		}
+	}
+
+	return nil
+}
+
 // RemoveFromPortalLUNMapping - removes a portal entry in the given map of portal to LUN mapping
 func RemoveFromPortalLUNMapping(ctx context.Context, publishInfo *VolumePublishInfo, portalLUNMap *PortalLUNMapping) {
 	if portalLUNMap == nil || len(portalLUNMap.PortalToLUNMapping) == 0 {
@@ -2091,7 +2124,7 @@ func GetNextSessionToHeal(ctx context.Context, currentPortalToLUNState PortalLUN
 	if lastFixCounter%maxAttemptsForLogout == 0 {
 		// Logout and login, scan all LUNs
 		if allLuns, err := PublishedPortalLUNs.GetLUNsForPortal(returnPortal); err == nil {
-			return returnPortal, allLuns, iSCSIActionLogoutLoginScan
+			return returnPortal, allLuns, ISCSIActionLogoutLoginScan
 		} else {
 			Logc(ctx).Debugf("Could not get list of LUNs, error: %v", err)
 		}
@@ -2100,19 +2133,19 @@ func GetNextSessionToHeal(ctx context.Context, currentPortalToLUNState PortalLUN
 	if len(listLUNsToBeScanned) == 0 {
 		// Try logging in and scan LUNs
 		if allLuns, err := PublishedPortalLUNs.GetLUNsForPortal(returnPortal); err == nil {
-			return returnPortal, allLuns, iSCSIActionLoginScan
+			return returnPortal, allLuns, ISCSIActionLoginScan
 		} else {
 			Logc(ctx).Debugf("Could not get list of LUNs, error: %v", err)
 		}
 	}
 
 	// Some LUNs are missing, just scan the portal in hope to get the devices online.
-	return returnPortal, listLUNsToBeScanned, iSCSIActionScan
+	return returnPortal, listLUNsToBeScanned, ISCSIActionScan
 }
 
-// ISCSISelfHeal  - prepares the current state of portal to LUN mapping, pass it to
+// ISCSISelfHealSession  - prepares the current state of portal to LUN mapping, pass it to
 // GetNextSessionToHeal to pick the session. Call the handler to work on login, logout/login or scan action.
-func ISCSISelfHeal(ctx context.Context) {
+func ISCSISelfHealSession(ctx context.Context) (string, []int32, int, error) {
 	var err error
 	var currentMap *PortalLUNMapping
 	var sidPortalMap map[string]SessionPortalInfo
@@ -2121,20 +2154,20 @@ func ISCSISelfHeal(ctx context.Context) {
 	var action int
 
 	if err = iSCSIPreChecks(ctx); err != nil {
-		return
+		return portal, listLUNs, action, err
 	}
 
 	sidPortalMap, err = GetCurrentSessionPortalMap(ctx)
 	if err != nil {
 		Logc(ctx).WithField("Error", err).
 			Debug("Skipping self heal cycle - could not get session<->portal information")
-		return
+		return portal, listLUNs, action, err
 	}
 
 	if currentMap, err = PopulateCurrentPortalLUNState(ctx, sidPortalMap); err != nil {
 		Logc(ctx).WithField("Error", err).
 			Debug("Skipping self heal cycle - could not determine current state: multipath tool error")
-		return
+		return portal, listLUNs, action, err
 	}
 	Logc(ctx).WithField("Portal-LUNs", currentMap).Debug("Current state of portals on node")
 	portal, listLUNs, action = GetNextSessionToHeal(ctx, *currentMap)
@@ -2144,7 +2177,7 @@ func ISCSISelfHeal(ctx context.Context) {
 		"Action": action,
 	}).Debugf("Processing self healing.")
 
-	return
+	return portal, listLUNs, action, nil
 }
 
 // BuildLUNData - builds slice of LUNData with default volumeID from a given slice of LUN IDs.
@@ -2527,4 +2560,113 @@ func (p *PortalLUNMapping) RemoveAllPortals() {
 	for k := range p.PortalToLUNMapping {
 		delete(p.PortalToLUNMapping, k)
 	}
+}
+
+// UpdateChapInfoForPortal to update chap info for a given portal.
+func (p *PortalLUNMapping) UpdateChapInfoForPortal(portal string, publishInfo *VolumePublishInfo) error {
+	if p.IsEmpty() {
+		return fmt.Errorf("portal entry not found")
+	}
+	var portalInfo *PortalInfo
+	var err error
+	chapInfo := CHAPCredentials{
+		ISCSIUsername:        publishInfo.IscsiUsername,
+		ISCSITargetUsername:  publishInfo.IscsiTargetUsername,
+		ISCSITargetSecret:    publishInfo.IscsiTargetSecret,
+		ISCSIInitiatorSecret: publishInfo.IscsiInitiatorSecret,
+	}
+
+	if portalInfo, err = p.GetPortalInfo(portal); err != nil {
+		return fmt.Errorf("unable to update the chap info")
+	}
+	portalInfo.UpdateCHAPCredentials(chapInfo)
+
+	return nil
+}
+
+// GetVolumeIDForPortal to get any valid volume ID behind a given portal.
+func (p *PortalLUNMapping) GetVolumeIDForPortal(portal string) (string, error) {
+	if p.IsEmpty() {
+		return "", fmt.Errorf("portal entry not found")
+	}
+	if portal != "" {
+		if lunInfoValue, err := p.GetLunInfo(portal); err != nil {
+			return "", fmt.Errorf("portal is invalid")
+		} else {
+			for _, volumeID := range lunInfoValue.LUNs {
+				if volumeID != "" {
+					return volumeID, nil
+				}
+			}
+			return "", fmt.Errorf("no valid volume id is found")
+		}
+	} else {
+		return "", fmt.Errorf("portal is invalid")
+	}
+}
+
+// GetPortalInfo to get portal info for a given portal.
+func (p *PortalLUNMapping) GetPortalInfo(portal string) (*PortalInfo, error) {
+	if p.IsEmpty() {
+		return nil, fmt.Errorf("portal entry not found")
+	}
+
+	if portal != "" {
+		portalLunData := p.GetPortalLUNMapping(portal)
+		if portalLunData != nil {
+			return portalLunData.PortalInfoValue, nil
+		} else {
+			return nil, fmt.Errorf("invalid portal lun data ")
+		}
+	} else {
+		return nil, fmt.Errorf("invalid portal")
+	}
+}
+
+// GetLunInfo to get LUN info value for a given portal.
+func (p *PortalLUNMapping) GetLunInfo(portal string) (*LUNInfo, error) {
+	if p.IsEmpty() {
+		return nil, fmt.Errorf("portal entry not found")
+	}
+
+	if portal != "" {
+		portalLunData := p.GetPortalLUNMapping(portal)
+		if portalLunData != nil {
+			return portalLunData.LUNInfoValue, nil
+		} else {
+			return nil, fmt.Errorf("no lun info found")
+		}
+	} else {
+		return nil, fmt.Errorf("invalid portal")
+	}
+}
+
+func (p *PortalLUNMapping) CreatePublishInfo(portal string) (*VolumePublishInfo, error) {
+	if p.IsEmpty() {
+		return nil, fmt.Errorf("portal entry not found")
+	}
+
+	portalLunData, err := p.GetPortalInfo(portal)
+	if err != nil {
+		return nil, err
+	}
+
+	chapCredentials := portalLunData.Credentials
+
+	publishInfo := VolumePublishInfo{
+		VolumeAccessInfo: VolumeAccessInfo{
+			IscsiAccessInfo: IscsiAccessInfo{
+				IscsiTargetIQN: portalLunData.ISCSITargetIQN,
+				IscsiChapInfo: IscsiChapInfo{
+					UseCHAP:              portalLunData.UseCHAP,
+					IscsiUsername:        chapCredentials.ISCSIUsername,
+					IscsiTargetUsername:  chapCredentials.ISCSITargetUsername,
+					IscsiTargetSecret:    chapCredentials.ISCSITargetSecret,
+					IscsiInitiatorSecret: chapCredentials.ISCSIInitiatorSecret,
+				},
+			},
+		},
+	}
+
+	return &publishInfo, nil
 }

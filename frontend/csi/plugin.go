@@ -402,7 +402,7 @@ func (p *Plugin) startISCSISelfHealingThread(ctx context.Context) {
 			case tick := <-p.iscsiSelfHealingTicker.C:
 				Logc(ctx).WithField("tick", tick).Debug("ISCSI self-healing is running.")
 				// perform self healing here
-				iSCSISelfHealing(ctx)
+				p.iSCSISelfHealing(ctx)
 			case <-p.iscsiSelfHealingChannel:
 				Logc(ctx).Debugf("ISCSI self-healing stopped.")
 				return

@@ -1483,13 +1483,88 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 	return volumeId, stagingTargetPath, nil
 }
 
+// selfHealingRectifySession to rectify a session which has been identified as ghost session.
+// If it is determined that re-login is required, perform re login to the sessions and then scan for all the LUNs.
+func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, luns []int32, action int) error {
+	var err error
+	var volID string
+	var publishInfo *utils.VolumePublishInfo
+	publishedPortalLUNs := *utils.PublishedPortalLUNs
+
+	if len(portal) == 0 {
+		return fmt.Errorf("portal is invalid")
+	}
+
+	if publishInfo, err = publishedPortalLUNs.CreatePublishInfo(portal); err != nil {
+		return err
+	}
+
+	switch action {
+	case utils.ISCSIActionLogoutLoginScan:
+		if err = utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
+			return fmt.Errorf("error while logging out of target %s", publishInfo.IscsiTargetIQN)
+		} else {
+			Logc(ctx).Info("Logout is successful.")
+		}
+		// Logout is successful, fallthrough to perform login.
+		fallthrough
+	case utils.ISCSIActionLoginScan:
+		if err = utils.LoginISCSITarget(ctx, publishInfo, portal); err != nil {
+			// If there is an authentication error, update CHAP info from controller and re-try login.
+			if publishInfo.UseCHAP {
+				if utils.IsAuthError(err) {
+					if volID, err = publishedPortalLUNs.GetVolumeIDForPortal(portal); err != nil {
+						return err
+					}
+					req := &csi.NodeStageVolumeRequest{VolumeId: volID}
+					if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
+						return fmt.Errorf("could not update CHAP info for target %s", publishInfo.IscsiTargetIQN)
+					} else {
+						// Update the portal-LUN map with the latest CHAP info
+						if err = publishedPortalLUNs.UpdateChapInfoForPortal(portal, publishInfo); err != nil {
+							Logc(ctx).Debugf("Error while updating the CHAP info into portal-LUN map: %v", err)
+						}
+						// Try login with the updated CHAP info
+						if err = utils.LoginISCSITarget(ctx, publishInfo, portal); err != nil {
+							return fmt.Errorf("error while logging in with the updated CHAP info  %s",
+								publishInfo.IscsiTargetIQN)
+						}
+					}
+				} else {
+					return fmt.Errorf("error while logging in to target %s", publishInfo.IscsiTargetIQN)
+				}
+			} else {
+				return fmt.Errorf("error while logging in to target %s", publishInfo.IscsiTargetIQN)
+			}
+		} else {
+			Logc(ctx).Info("Login to target is successful.")
+		}
+		// Login is successful, fallthrough to perform scan
+		fallthrough
+	case utils.ISCSIActionScan:
+		if err = utils.InitiateScanForLuns(ctx, luns, publishInfo.IscsiTargetIQN); err != nil {
+			Logc(ctx).Debug("Error while rescanning of LUNs.")
+		}
+	default:
+		Logc(ctx).Debug("No valid action to be taken in iSCSI self-healing.")
+	}
+
+	return nil
+}
+
 // iSCSISelfHealing  implements iSCSI self-healing functionality which would correct sessions
 // those are in faulty state. This function is invoked periodically.
-func iSCSISelfHealing(ctx context.Context) {
+func (p *Plugin) iSCSISelfHealing(ctx context.Context) {
 	utils.Lock(ctx, iSCSISelfHealingLockContext, lockID)
 	defer utils.Unlock(ctx, iSCSISelfHealingLockContext, lockID)
 
-	utils.ISCSISelfHeal(ctx)
+	if portal, listLUNs, action, err := utils.ISCSISelfHealSession(ctx); err != nil {
+		Logc(ctx).WithField("Error", err).Debug("Skipping self heal cycle.")
+	} else {
+		if err := p.selfHealingRectifySession(ctx, portal, listLUNs, action); err != nil {
+			Logc(ctx).WithField("error", err).Debug("Error while healing attempt")
+		}
+	}
 
 	return
 }
