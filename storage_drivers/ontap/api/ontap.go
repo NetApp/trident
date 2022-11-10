@@ -971,7 +971,7 @@ func (d Client) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (d Client) VolumeCreate(
 	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle string, encrypt bool, snapshotReserve int,
+	exportPolicy, securityStyle string, encrypt bool, snapshotReserve int, groupId int, userId int,
 ) (*azgo.VolumeCreateResponse, error) {
 	request := azgo.NewVolumeCreateRequest().
 		SetVolume(name).
@@ -982,7 +982,9 @@ func (d Client) VolumeCreate(
 		SetUnixPermissions(unixPermissions).
 		SetExportPolicy(exportPolicy).
 		SetVolumeSecurityStyle(securityStyle).
-		SetEncrypt(encrypt)
+		SetEncrypt(encrypt).
+		SetGroupId(groupId).
+		SetUserId(userId)
 
 	if snapshotReserve != NumericalValueNotSet {
 		request.SetPercentageSnapshotReserve(snapshotReserve)
