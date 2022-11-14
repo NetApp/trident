@@ -121,7 +121,7 @@ type OntapAPI interface {
 
 	GetSVMUUID() string
 
-	QtreeExists(ctx context.Context, name, volumePrefix string) (bool, string, error)
+	QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error)
 	QtreeCreate(
 		ctx context.Context, name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy string,
 	) error

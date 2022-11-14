@@ -905,8 +905,8 @@ func (d OntapAPIREST) ExportRuleList(ctx context.Context, policyName string) (ma
 	return rules, nil
 }
 
-func (d OntapAPIREST) QtreeExists(ctx context.Context, name, volumePrefix string) (bool, string, error) {
-	return d.api.QtreeExists(ctx, name, volumePrefix)
+func (d OntapAPIREST) QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error) {
+	return d.api.QtreeExists(ctx, name, volumePattern)
 }
 
 func (d OntapAPIREST) QtreeCreate(

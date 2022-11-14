@@ -220,3 +220,88 @@ func TestNASQtreeStorageDriver_getQuotaDiskLimitSize_Error(t *testing.T) {
 	assert.NotNil(t, err, "Unexpected success")
 	assert.Equal(t, expectedLimit, limit, "Unexpected return value")
 }
+
+func TestCreateQtreeInternalId(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	driver := newNASQtreeStorageDriver(mockAPI)
+	svm := "fakeSVM"
+	flexvol := "fakeFlexVol"
+	qtree := "fakeQtree"
+	testString := fmt.Sprintf("/svm/%s/flexvol/%s/qtree/%s", svm, flexvol, qtree)
+	str := driver.CreateQtreeInternalId(svm, flexvol, qtree)
+	assert.Equal(t, testString, str)
+}
+
+func TestParseInternalId(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	driver := newNASQtreeStorageDriver(mockAPI)
+	testString := "/svm/fakeSVM/flexvol/fakeFlexvol/qtree/fakeQtree"
+	svm, flexvol, qtree, err := driver.ParseQtreeInternalId(testString)
+	assert.NoError(t, err, "unexpected error found while parsing InternalId")
+	assert.Equal(t, svm, "fakeSVM")
+	assert.Equal(t, flexvol, "fakeFlexvol")
+	assert.Equal(t, qtree, "fakeQtree")
+}
+
+func TestParseInternalIdWithMissingSVM(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	driver := newNASQtreeStorageDriver(mockAPI)
+	testString := "/flexvol/fakeFlexvol/qtree/fakeQtree"
+	_, _, _, err := driver.ParseQtreeInternalId(testString)
+	assert.Error(t, err, "expected an error when SVM Name is missing")
+}
+
+func TestSetVolumePatternWithInternalID(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	driver := newNASQtreeStorageDriver(mockAPI)
+	internalID := "/svm/fakeSVM/flexvol/fakeFlexvol/qtree/fakeQtree"
+	internalName := "fakeQtree"
+	volumePrefix := "fakePrefix"
+	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName, volumePrefix)
+	assert.NoError(t, err, "unexpected error found while setting setting volume pattern")
+	assert.Equal(t, volumePattern, "fakeFlexvol")
+	assert.Equal(t, name, "fakeQtree")
+}
+
+func TestSetVolumePatternWithMisformedInternalID(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	driver := newNASQtreeStorageDriver(mockAPI)
+	internalID := "/flexvol/fakeFlexvol/qtree/fakeQtree"
+	internalName := "fakeQtree"
+	volumePrefix := "fakePrefix"
+	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName, volumePrefix)
+	assert.Error(t, err, "expected an error when InternalID is misformed")
+	assert.Equal(t, volumePattern, "")
+	assert.Equal(t, name, "")
+}
+
+func TestSetVolumePatternWithoutInternalID(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	driver := newNASQtreeStorageDriver(mockAPI)
+	internalID := ""
+	internalName := "fakeQtree"
+	volumePrefix := "fakePrefix"
+	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName, volumePrefix)
+	assert.NoError(t, err, "unexpected error found while setting setting volume pattern")
+	assert.Equal(t, volumePattern, "fakePrefix*")
+	assert.Equal(t, name, "fakeQtree")
+}
+
+func TestSetVolumePatternWithNoInternalIDAndNoPrefix(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	driver := newNASQtreeStorageDriver(mockAPI)
+	internalID := ""
+	internalName := "fakeQtree"
+	volumePrefix := ""
+	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName, volumePrefix)
+	assert.NoError(t, err, "unexpected error found while setting setting volume pattern")
+	assert.Equal(t, volumePattern, "*")
+	assert.Equal(t, name, "fakeQtree")
+}

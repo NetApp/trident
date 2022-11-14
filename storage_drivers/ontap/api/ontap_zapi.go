@@ -1784,10 +1784,10 @@ func (c Client) QtreeCount(ctx context.Context, volume string) (int, error) {
 }
 
 // QtreeExists returns true if the named Qtree exists (and is unique in the matching Flexvols)
-func (c Client) QtreeExists(ctx context.Context, name, volumePrefix string) (bool, string, error) {
+func (c Client) QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error) {
 	// Limit the qtrees to those matching the Flexvol and Qtree name prefixes
 	query := &azgo.QtreeListIterRequestQuery{}
-	queryInfo := azgo.NewQtreeInfoType().SetVolume(volumePrefix + "*").SetQtree(name)
+	queryInfo := azgo.NewQtreeInfoType().SetVolume(volumePattern).SetQtree(name)
 	query.SetQtreeInfo(*queryInfo)
 
 	// Limit the returned data to only the Flexvol and Qtree names

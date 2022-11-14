@@ -266,7 +266,7 @@ type RestClientInterface interface {
 	// QtreeCount returns the number of Qtrees in the specified Flexvol, not including the Flexvol itself
 	QtreeCount(ctx context.Context, volumeName string) (int, error)
 	// QtreeExists returns true if the named Qtree exists (and is unique in the matching Flexvols)
-	QtreeExists(ctx context.Context, name, volumePrefix string) (bool, string, error)
+	QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error)
 	// QtreeGet returns all relevant details for a single qtree
 	// equivalent to filer::> volume qtree show
 	QtreeGet(ctx context.Context, name, volumePrefix string) (*models.Qtree, error)

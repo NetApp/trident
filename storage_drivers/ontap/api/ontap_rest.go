@@ -4026,12 +4026,7 @@ func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, err
 }
 
 // QtreeExists returns true if the named Qtree exists (and is unique in the matching Flexvols)
-func (c RestClient) QtreeExists(ctx context.Context, name, volumePrefix string) (bool, string, error) {
-	volumePattern := "*"
-	if volumePrefix != "" {
-		volumePattern = volumePrefix + "*"
-	}
-
+func (c RestClient) QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error) {
 	// Limit the qtrees to those matching the Flexvol and Qtree name prefixes
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
