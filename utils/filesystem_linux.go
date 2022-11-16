@@ -94,7 +94,7 @@ func GetDeviceFilePath(ctx context.Context, path, volumeId string) (string, erro
 }
 
 // GetUnmountPath is a dummy added for compilation
-func GetUnmountPath(ctx context.Context, resourcePath, arg string) (string, error) {
+func GetUnmountPath(ctx context.Context, trackingInfo *VolumeTrackingInfo) (string, error) {
 	Logc(ctx).Debug(">>>> filesystem_linux.GetUnmountPath")
 	defer Logc(ctx).Debug("<<<< filesystem_linux.GetUnmountPath")
 

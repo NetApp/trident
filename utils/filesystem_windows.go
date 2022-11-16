@@ -3,9 +3,7 @@
 package utils
 
 import (
-	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -38,23 +36,10 @@ func GetDeviceFilePath(ctx context.Context, _, volumeId string) (string, error) 
 }
 
 // GetUnmountPath returns unmount path for volume
-func GetUnmountPath(ctx context.Context, resourcePath, arg string) (string, error) {
+func GetUnmountPath(ctx context.Context, trackingInfo *VolumeTrackingInfo) (string, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.GetUnmountPath")
 	defer Logc(ctx).Debug("<<<< osutils_windows.GetUnmountPath")
 
-	publishInfo := &VolumePublishInfo{}
-
-	filename := resourcePath + "\\" + arg
-	contents, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return "", err
-	}
-
-	err = json.Unmarshal([]byte(contents), &publishInfo)
-	if err != nil {
-		return "", err
-	}
-
-	path := "\\" + publishInfo.SMBServer + publishInfo.SMBPath
+	path := "\\" + trackingInfo.SMBServer + trackingInfo.SMBPath
 	return strings.Replace(path, "/", "\\", -1), nil
 }

@@ -822,7 +822,6 @@ func (p *Plugin) nodeStageSMBVolume(
 func (p *Plugin) nodeUnstageSMBVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
 ) (*csi.NodeUnstageVolumeResponse, error) {
-	var deviceFilePath string
 	var mappingPath string
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
@@ -830,17 +829,22 @@ func (p *Plugin) nodeUnstageSMBVolume(
 		return nil, err
 	}
 
-	mappingPath, err = utils.GetUnmountPath(ctx, deviceFilePath, volumePublishInfoFilename)
+	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeId)
+	if err != nil {
+		return &csi.NodeUnstageVolumeResponse{}, err
+	}
+
+	mappingPath, err = utils.GetUnmountPath(ctx, trackingInfo)
 	if err != nil {
 		return nil, err
 	}
+
+	err = utils.UmountSMBPath(ctx, mappingPath, stagingTargetPath)
 
 	// Delete the device info we saved to the volume tracking info path so unstage can succeed.
 	if err := p.nodeHelper.DeleteTrackingInfo(ctx, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-
-	err = utils.UmountSMBPath(ctx, mappingPath, stagingTargetPath)
 
 	return &csi.NodeUnstageVolumeResponse{}, err
 }

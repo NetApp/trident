@@ -20,7 +20,7 @@ func TestGetDeviceFilePath(t *testing.T) {
 func TestGetUnmountPath(t *testing.T) {
 	ctx := context.Background()
 
-	result, err := GetUnmountPath(ctx, "", "")
+	result, err := GetUnmountPath(ctx, &VolumeTrackingInfo{})
 	assert.Equal(t, result, "", "got unmount path")
 	assert.Error(t, err, "no error")
 	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
