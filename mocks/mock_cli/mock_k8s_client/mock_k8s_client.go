@@ -777,6 +777,34 @@ func (mr *MockKubernetesClientMockRecorder) DeleteResourceQuotaByLabel(arg0 inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResourceQuotaByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteResourceQuotaByLabel), arg0)
 }
 
+// DeleteRole mocks base method.
+func (m *MockKubernetesClient) DeleteRole(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRole", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRole indicates an expected call of DeleteRole.
+func (mr *MockKubernetesClientMockRecorder) DeleteRole(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRole", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteRole), arg0)
+}
+
+// DeleteRoleBinding mocks base method.
+func (m *MockKubernetesClient) DeleteRoleBinding(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRoleBinding", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRoleBinding indicates an expected call of DeleteRoleBinding.
+func (mr *MockKubernetesClientMockRecorder) DeleteRoleBinding(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRoleBinding", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteRoleBinding), arg0)
+}
+
 // DeleteSecret mocks base method.
 func (m *MockKubernetesClient) DeleteSecret(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -1396,6 +1424,51 @@ func (mr *MockKubernetesClientMockRecorder) GetResourceQuotasByLabel(arg0 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceQuotasByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetResourceQuotasByLabel), arg0)
 }
 
+// GetRoleBindingByLabelAndName mocks base method.
+func (m *MockKubernetesClient) GetRoleBindingByLabelAndName(arg0, arg1 string) (*v11.RoleBinding, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRoleBindingByLabelAndName", arg0, arg1)
+	ret0, _ := ret[0].(*v11.RoleBinding)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRoleBindingByLabelAndName indicates an expected call of GetRoleBindingByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) GetRoleBindingByLabelAndName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoleBindingByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).GetRoleBindingByLabelAndName), arg0, arg1)
+}
+
+// GetRoleBindingsByLabel mocks base method.
+func (m *MockKubernetesClient) GetRoleBindingsByLabel(arg0 string) ([]v11.RoleBinding, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRoleBindingsByLabel", arg0)
+	ret0, _ := ret[0].([]v11.RoleBinding)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRoleBindingsByLabel indicates an expected call of GetRoleBindingsByLabel.
+func (mr *MockKubernetesClientMockRecorder) GetRoleBindingsByLabel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoleBindingsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetRoleBindingsByLabel), arg0)
+}
+
+// GetRolesByLabel mocks base method.
+func (m *MockKubernetesClient) GetRolesByLabel(arg0 string) ([]v11.Role, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRolesByLabel", arg0)
+	ret0, _ := ret[0].([]v11.Role)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRolesByLabel indicates an expected call of GetRolesByLabel.
+func (mr *MockKubernetesClientMockRecorder) GetRolesByLabel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRolesByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetRolesByLabel), arg0)
+}
+
 // GetSecret mocks base method.
 func (m *MockKubernetesClient) GetSecret(arg0 string) (*v10.Secret, error) {
 	m.ctrl.T.Helper()
@@ -1771,6 +1844,20 @@ func (mr *MockKubernetesClientMockRecorder) PatchPodSecurityPolicyByLabel(arg0, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodSecurityPolicyByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchPodSecurityPolicyByLabel), arg0, arg1, arg2)
 }
 
+// PatchPodSecurityPolicyByLabelAndName mocks base method.
+func (m *MockKubernetesClient) PatchPodSecurityPolicyByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchPodSecurityPolicyByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchPodSecurityPolicyByLabelAndName indicates an expected call of PatchPodSecurityPolicyByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) PatchPodSecurityPolicyByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodSecurityPolicyByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).PatchPodSecurityPolicyByLabelAndName), arg0, arg1, arg2, arg3)
+}
+
 // PatchResourceQuotaByLabel mocks base method.
 func (m *MockKubernetesClient) PatchResourceQuotaByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()
@@ -1783,6 +1870,34 @@ func (m *MockKubernetesClient) PatchResourceQuotaByLabel(arg0 string, arg1 []byt
 func (mr *MockKubernetesClientMockRecorder) PatchResourceQuotaByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchResourceQuotaByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchResourceQuotaByLabel), arg0, arg1, arg2)
+}
+
+// PatchRoleBindingByLabelAndName mocks base method.
+func (m *MockKubernetesClient) PatchRoleBindingByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchRoleBindingByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchRoleBindingByLabelAndName indicates an expected call of PatchRoleBindingByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) PatchRoleBindingByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchRoleBindingByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).PatchRoleBindingByLabelAndName), arg0, arg1, arg2, arg3)
+}
+
+// PatchRoleByLabelAndName mocks base method.
+func (m *MockKubernetesClient) PatchRoleByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchRoleByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchRoleByLabelAndName indicates an expected call of PatchRoleByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) PatchRoleByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchRoleByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).PatchRoleByLabelAndName), arg0, arg1, arg2, arg3)
 }
 
 // PatchSecretByLabel mocks base method.

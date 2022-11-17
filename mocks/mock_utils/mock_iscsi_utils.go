@@ -9,8 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-
-	"github.com/netapp/trident/utils"
+	utils "github.com/netapp/trident/utils"
 )
 
 // MockIscsiReconcileUtils is a mock of IscsiReconcileUtils interface.

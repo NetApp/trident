@@ -462,8 +462,7 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	// Create or patch or update the RBAC PSPs
-	pspRemovedVersion := utils.MustParseMajorMinorVersion(commonconfig.PodSecurityPoliciesRemovedKubernetesVersion)
-	if i.client.ServerVersion().LessThan(pspRemovedVersion) {
+	if i.isPSPSupported() {
 		returnError = i.createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels, shouldUpdate)
 		if returnError != nil {
 			returnError = fmt.Errorf("failed to create the Trident pod security policy; %v", returnError)
@@ -678,7 +677,7 @@ func (i *Installer) createRBACObjects(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) (reuseServiceAccountMap map[string]bool, returnError error) {
 	// Create service account
-	reuseServiceAccountMap, returnError = i.createOrPatchTridentServiceAccount(controllingCRDetails, labels, false)
+	reuseServiceAccountMap, returnError = i.createOrPatchTridentServiceAccounts(controllingCRDetails, labels, false)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident service account; %v", returnError)
 		return
@@ -691,10 +690,24 @@ func (i *Installer) createRBACObjects(
 		return
 	}
 
-	// Create cluster role binding
+	// Create cluster role bindings
 	returnError = i.createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident cluster role binding; %v", returnError)
+		return
+	}
+
+	// Create roles
+	returnError = i.createOrPatchTridentRoles(controllingCRDetails, labels, shouldUpdate)
+	if returnError != nil {
+		returnError = fmt.Errorf("failed to create the Trident role; %v", returnError)
+		return
+	}
+
+	// Create role bindings
+	returnError = i.createOrPatchTridentRoleBindings(controllingCRDetails, labels, shouldUpdate)
+	if returnError != nil {
+		returnError = fmt.Errorf("failed to create the Trident role binding; %v", returnError)
 		return
 	}
 
@@ -749,7 +762,7 @@ func (i *Installer) createOrPatchTridentInstallationNamespace() error {
 	return nil
 }
 
-func (i *Installer) createOrPatchTridentServiceAccount(
+func (i *Installer) createOrPatchTridentServiceAccounts(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) (map[string]bool, error) {
 	serviceAccountNames := getRBACResourceNames()
@@ -758,7 +771,7 @@ func (i *Installer) createOrPatchTridentServiceAccount(
 	currentServiceAccountMap,
 		unwantedServiceAccounts,
 		serviceAccountSecretMap,
-		reuseServiceAccountMap, err := i.client.GetServiceAccountInformation(serviceAccountNames, appLabel, i.namespace, shouldUpdate)
+		reuseServiceAccountMap, err := i.client.GetMultipleServiceAccountInformation(serviceAccountNames, appLabel, i.namespace, shouldUpdate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Trident service accounts with controller label; %v", err)
 	}
@@ -767,7 +780,7 @@ func (i *Installer) createOrPatchTridentServiceAccount(
 	nodeServiceAccountMap,
 		unwantedNodeServiceAccounts,
 		nodeServiceAccountSecretMap,
-		reuseNodeServiceAccountMap, err := i.client.GetServiceAccountInformation(serviceAccountNames, TridentNodeLabel,
+		reuseNodeServiceAccountMap, err := i.client.GetMultipleServiceAccountInformation(serviceAccountNames, TridentNodeLabel,
 		i.namespace, shouldUpdate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Trident service accounts with node label; %v", err)
@@ -810,47 +823,138 @@ func (i *Installer) createOrPatchTridentServiceAccount(
 func (i *Installer) createOrPatchTridentClusterRole(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-	clusterRoleNames := getRBACResourceNames()
+	clusterRoleName := getControllerRBACResourceName(true)
 
-	currentClusterRoleMap, unwantedClusterRoles, reuseClusterRoleMap, err := i.client.GetClusterRoleInformation(
-		clusterRoleNames, appLabel, shouldUpdate)
+	currentClusterRole, unwantedClusterRoles, createClusterRole, err := i.client.GetClusterRoleInformation(
+		clusterRoleName, appLabel, shouldUpdate)
 	if err != nil {
-		return fmt.Errorf("failed to get Trident cluster roles with controller label; %v", err)
+		return fmt.Errorf("failed to get Trident cluster roles; %v", err)
 	}
 
-	// Retrieve cluster roles with node label
-	nodeClusterRoleMap, unwantedNodeClusterRoles, reuseNodeClusterRoleMap, err := i.client.GetClusterRoleInformation(
-		clusterRoleNames, TridentNodeLabel, shouldUpdate)
-	if err != nil {
-		return fmt.Errorf("failed to get Trident cluster roles with node label; %v", err)
-	}
-
-	// Merging the maps together
-	for key, value := range nodeClusterRoleMap {
-		currentClusterRoleMap[key] = value
-	}
-
-	for key, value := range reuseNodeClusterRoleMap {
-		reuseClusterRoleMap[key] = value
-	}
-
-	combinedUnwantedClusterRoles := append(unwantedClusterRoles, unwantedNodeClusterRoles...)
-
-	if err = i.client.RemoveMultipleClusterRoles(combinedUnwantedClusterRoles); err != nil {
+	if err = i.client.RemoveMultipleClusterRoles(unwantedClusterRoles); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident cluster roles; %v", err)
 	}
 
 	k8sFlavor := i.client.Flavor()
+	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(k8sFlavor, clusterRoleName, labels, controllingCRDetails,
+		true)
 
-	for _, clusterRoleName := range clusterRoleNames {
-		labelMap, labelString := getAppLabelForResource(clusterRoleName)
-		newClusterRoleYAML := k8sclient.GetClusterRoleYAML(k8sFlavor, clusterRoleName,
+	err = i.client.PutClusterRole(currentClusterRole, createClusterRole, newClusterRoleYAML, appLabel)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch Trident cluster role; %v", err)
+	}
+
+	return nil
+}
+
+func (i *Installer) createOrPatchTridentRoles(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) error {
+	// Operator should create Role and RoleBinding for node resources only if PSP is supported
+	roleNames := []string{getControllerRBACResourceName(true)}
+	if i.isPSPSupported() {
+		roleNames = append(roleNames, getNodeResourceNames()...)
+	}
+
+	// Retrieve roles with controller label
+	currentRoleMap, unwantedRoles, reuseRoleMap, err := i.client.GetMultipleRoleInformation(
+		roleNames, appLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident roles with controller label; %v", err)
+	}
+
+	combinedUnwantedRoles := unwantedRoles
+
+	if i.isPSPSupported() {
+		// Retrieve roles with node label
+		nodeRoleMap, unwantedNodeRoles, reuseNodeRoleMap, err := i.client.GetMultipleRoleInformation(
+			roleNames, TridentNodeLabel, shouldUpdate)
+		if err != nil {
+			return fmt.Errorf("failed to get Trident roles with node label; %v", err)
+		}
+
+		// Merging the maps together
+		for key, value := range nodeRoleMap {
+			currentRoleMap[key] = value
+		}
+
+		for key, value := range reuseNodeRoleMap {
+			reuseRoleMap[key] = value
+		}
+		combinedUnwantedRoles = append(combinedUnwantedRoles, unwantedNodeRoles...)
+	}
+
+	if err = i.client.RemoveMultipleRoles(combinedUnwantedRoles); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident roles; %v", err)
+	}
+
+	k8sFlavor := i.client.Flavor()
+
+	for _, roleName := range roleNames {
+		labelMap, labelString := getAppLabelForResource(roleName)
+		newRoleYAML := k8sclient.GetRoleYAML(k8sFlavor, i.client.Namespace(), roleName,
 			labelMap, controllingCRDetails, true)
 
-		err = i.client.PutClusterRole(currentClusterRoleMap[clusterRoleName], reuseClusterRoleMap[clusterRoleName],
-			newClusterRoleYAML, labelString)
+		err = i.client.PutRole(currentRoleMap[roleName], reuseRoleMap[roleName],
+			newRoleYAML, labelString)
 		if err != nil {
-			return fmt.Errorf("failed to create or patch Trident cluster role name %v got error; %v", clusterRoleName, err)
+			return fmt.Errorf("failed to create or patch Trident role name %v got error; %v", roleName, err)
+		}
+	}
+
+	return nil
+}
+
+func (i *Installer) createOrPatchTridentRoleBindings(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) error {
+	// Operator should create Role and RoleBinding for node resources only if PSP is supported
+	roleBindingNames := []string{getControllerRBACResourceName(true)}
+	if i.isPSPSupported() {
+		roleBindingNames = append(roleBindingNames, getNodeResourceNames()...)
+	}
+
+	currentRoleBindingMap, unwantedRoleBindings, reuseRoleBindingMap,
+		err := i.client.GetMultipleRoleBindingInformation(roleBindingNames, appLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident role bindings with controller label; %v", err)
+	}
+
+	combinedUnwantedRoleBindings := unwantedRoleBindings
+
+	if i.isPSPSupported() {
+		// Retrieve role bindings with node label
+		nodeRoleBindingMap, unwantedNodeRoleBindings, reuseNodeRoleBindingMap,
+			err := i.client.GetMultipleRoleBindingInformation(roleBindingNames, TridentNodeLabel, shouldUpdate)
+		if err != nil {
+			return fmt.Errorf("failed to get Trident role bindings with node label; %v", err)
+		}
+
+		// Merging the maps together
+		for key, value := range nodeRoleBindingMap {
+			currentRoleBindingMap[key] = value
+		}
+		for key, value := range reuseNodeRoleBindingMap {
+			reuseRoleBindingMap[key] = value
+		}
+
+		combinedUnwantedRoleBindings = append(combinedUnwantedRoleBindings, unwantedNodeRoleBindings...)
+	}
+
+	if err = i.client.RemoveMultipleRoleBindings(combinedUnwantedRoleBindings); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident role bindings; %v", err)
+	}
+
+	for _, roleBindingName := range roleBindingNames {
+		labelMap, labelString := getAppLabelForResource(roleBindingName)
+		newRoleBindingYAML := k8sclient.GetRoleBindingYAML(i.client.Flavor(), i.namespace, roleBindingName,
+			labelMap, controllingCRDetails, true)
+
+		err = i.client.PutRoleBinding(currentRoleBindingMap[roleBindingName],
+			reuseRoleBindingMap[roleBindingName], newRoleBindingYAML, labelString)
+
+		if err != nil {
+			return fmt.Errorf("failed to create or patch Trident role binding; %v", err)
 		}
 	}
 
@@ -860,47 +964,25 @@ func (i *Installer) createOrPatchTridentClusterRole(
 func (i *Installer) createOrPatchTridentClusterRoleBinding(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-	clusterRoleBindingNames := getRBACResourceNames()
+	clusterRoleBindingName := getControllerRBACResourceName(true)
 
-	currentClusterRoleBindingMap, unwantedClusterRoleBindings, reuseClusterRoleBindingMap,
-		err := i.client.GetClusterRoleBindingInformation(clusterRoleBindingNames, appLabel, shouldUpdate)
+	currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding,
+		err := i.client.GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, shouldUpdate)
 	if err != nil {
-		return fmt.Errorf("failed to get Trident cluster role bindings with controller label; %v", err)
+		return fmt.Errorf("failed to get Trident cluster role bindings; %v", err)
 	}
 
-	// Retrieve cluster role bindings with node label
-	nodeClusterRoleBindingMap, unwantedNodeClusterRoleBindings, reuseNodeClusterRoleBindingMap,
-		err := i.client.GetClusterRoleBindingInformation(clusterRoleBindingNames, TridentNodeLabel, shouldUpdate)
-	if err != nil {
-		return fmt.Errorf("failed to get Trident cluster role bindings with node label; %v", err)
-	}
-
-	// Merging the maps together
-	for key, value := range nodeClusterRoleBindingMap {
-		currentClusterRoleBindingMap[key] = value
-	}
-
-	for key, value := range reuseNodeClusterRoleBindingMap {
-		reuseClusterRoleBindingMap[key] = value
-	}
-
-	combinedUnwantedClusterRoleBindings := append(unwantedClusterRoleBindings, unwantedNodeClusterRoleBindings...)
-
-	if err = i.client.RemoveMultipleClusterRoleBindings(combinedUnwantedClusterRoleBindings); err != nil {
+	if err = i.client.RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident cluster role bindings; %v", err)
 	}
 
-	for _, clusterRoleBindingName := range clusterRoleBindingNames {
-		labelMap, labelString := getAppLabelForResource(clusterRoleBindingName)
-		newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, clusterRoleBindingName,
-			i.client.Flavor(), labelMap, controllingCRDetails, true)
+	newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, clusterRoleBindingName,
+		i.client.Flavor(), labels, controllingCRDetails, true)
 
-		err = i.client.PutClusterRoleBinding(currentClusterRoleBindingMap[clusterRoleBindingName],
-			reuseClusterRoleBindingMap[clusterRoleBindingName], newClusterRoleBindingYAML, labelString)
-
-		if err != nil {
-			return fmt.Errorf("failed to create or patch Trident cluster role binding; %v", err)
-		}
+	err = i.client.PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding,
+		newClusterRoleBindingYAML, appLabel)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch Trident cluster role binding; %v", err)
 	}
 
 	return nil
@@ -912,7 +994,7 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 	openShiftSCCUserNames := getRBACResourceNames()
 	openShiftSCCNames := getRBACResourceNames()
 
-	currentOpenShiftSCCJSONMap, reuseOpenShiftSCCMap, removeExistingSCCMap, err := i.client.GetTridentOpenShiftSCCInformation(
+	currentOpenShiftSCCJSONMap, reuseOpenShiftSCCMap, removeExistingSCCMap, err := i.client.GetMultipleTridentOpenShiftSCCInformation(
 		openShiftSCCUserNames, openShiftSCCNames, shouldUpdate)
 	if err != nil {
 		log.WithFields(nil).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
@@ -945,7 +1027,7 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 
 		appLabels, _ := getAppLabelForResource(openShiftSCCNames[idx])
 		newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(openShiftSCCNames[idx], openShiftSCCUserNames[idx], i.namespace,
-			appLabels, controllingCRDetails)
+			appLabels, controllingCRDetails, isLinuxNodeSCCUser(openShiftSCCUserNames[idx]))
 
 		err = i.client.PutOpenShiftSCC(currentOpenShiftSCCJSONMap[openShiftSCCNames[idx]], reuseOpenShiftSCCMap[openShiftSCCNames[idx]],
 			newOpenShiftSCCYAML)
@@ -968,24 +1050,61 @@ func (i *Installer) createAndEnsureCRDs(performOperationOnce bool) (returnError 
 func (i *Installer) createOrPatchTridentPodSecurityPolicy(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-	pspName := getPSPName()
-
-	currentPSP, unwantedPSPs, createPSP, err := i.client.GetPodSecurityPolicyInformation(pspName, appLabel,
-		shouldUpdate)
+	// Creating PodSecurityPolicy for controller
+	currentPSPMap, unwantedPSPs, reusePSPMap, err := i.client.GetMultiplePodSecurityPolicyInformation(
+		[]string{getControllerRBACResourceName(true)}, appLabel, shouldUpdate)
 	if err != nil {
-		return fmt.Errorf("failed to get Trident pod security policies; %v", err)
+		return fmt.Errorf("failed to get Trident controller pod security policies; %v", err)
 	}
 
 	if err = i.client.RemoveMultiplePodSecurityPolicies(unwantedPSPs); err != nil {
-		return fmt.Errorf("failed to remove unwanted Trident pod security policies; %v", err)
+		return fmt.Errorf("failed to remove unwanted Trident controller pod security policies; %v", err)
 	}
 
-	newPSPYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(pspName, labels, controllingCRDetails)
-
-	if err = i.client.PutPodSecurityPolicy(currentPSP, createPSP, newPSPYAML, appLabel); err != nil {
-		return fmt.Errorf("failed to create or patch Trident pod security policy; %v", err)
+	newPSPYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(true), labels,
+		controllingCRDetails)
+	if err = i.client.PutPodSecurityPolicy(
+		currentPSPMap[getControllerRBACResourceName(true)],
+		reusePSPMap[getControllerRBACResourceName(true)],
+		newPSPYAML,
+		appLabel); err != nil {
+		return fmt.Errorf("failed to create or patch Trident controller pod security policy; %v", err)
 	}
 
+	nodeLabels, _ := getAppLabelForResource(getNodeRBACResourceName(false))
+	// Creating PodSecurityPolicy for node
+	nodePSPMap, unwantedNodePSPs, reuseNodePSP, err := i.client.GetMultiplePodSecurityPolicyInformation(
+		[]string{getNodeRBACResourceName(false), getNodeRBACResourceName(true)}, TridentNodeLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident node pod security policies; %v", err)
+	}
+
+	if err = i.client.RemoveMultiplePodSecurityPolicies(unwantedNodePSPs); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident node pod security policies; %v", err)
+	}
+
+	newPSPYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false), nodeLabels,
+		controllingCRDetails)
+	if err = i.client.PutPodSecurityPolicy(
+		nodePSPMap[getNodeRBACResourceName(false)],
+		reuseNodePSP[getNodeRBACResourceName(false)],
+		newPSPYAML,
+		TridentNodeLabel); err != nil {
+		return fmt.Errorf("failed to create or patch Trident linux pod security policy; %v", err)
+	}
+
+	// Creating PodSecurityPolicy for windows node
+	if windows {
+		newPSPYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(true), nodeLabels,
+			controllingCRDetails)
+		if err = i.client.PutPodSecurityPolicy(
+			nodePSPMap[getNodeRBACResourceName(true)],
+			reuseNodePSP[getNodeRBACResourceName(true)],
+			newPSPYAML,
+			TridentNodeLabel); err != nil {
+			return fmt.Errorf("failed to create or patch windows node pod security policy; %v", err)
+		}
+	}
 	return nil
 }
 
@@ -1610,4 +1729,13 @@ func getAppLabelForResource(resourceName string) (map[string]string, string) {
 		label = TridentCSILabel
 	}
 	return labelMap, label
+}
+
+func (i *Installer) isPSPSupported() bool {
+	pspRemovedVersion := utils.MustParseMajorMinorVersion(commonconfig.PodSecurityPoliciesRemovedKubernetesVersion)
+	return i.client.ServerVersion().LessThan(pspRemovedVersion)
+}
+
+func isLinuxNodeSCCUser(user string) bool {
+	return user == TridentNodeLinuxResourceName
 }

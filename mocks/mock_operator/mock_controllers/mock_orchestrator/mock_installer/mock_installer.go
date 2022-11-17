@@ -823,6 +823,62 @@ func (mr *MockExtendedK8sClientMockRecorder) DeleteDeploymentByLabel(arg0 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDeploymentByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteDeploymentByLabel), arg0)
 }
 
+// DeleteMultipleOpenShiftSCC mocks base method.
+func (m *MockExtendedK8sClient) DeleteMultipleOpenShiftSCC(arg0, arg1 []string, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMultipleOpenShiftSCC", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteMultipleOpenShiftSCC indicates an expected call of DeleteMultipleOpenShiftSCC.
+func (mr *MockExtendedK8sClientMockRecorder) DeleteMultipleOpenShiftSCC(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMultipleOpenShiftSCC", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteMultipleOpenShiftSCC), arg0, arg1, arg2)
+}
+
+// DeleteMultipleTridentRoleBindings mocks base method.
+func (m *MockExtendedK8sClient) DeleteMultipleTridentRoleBindings(arg0 []string, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMultipleTridentRoleBindings", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteMultipleTridentRoleBindings indicates an expected call of DeleteMultipleTridentRoleBindings.
+func (mr *MockExtendedK8sClientMockRecorder) DeleteMultipleTridentRoleBindings(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMultipleTridentRoleBindings", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteMultipleTridentRoleBindings), arg0, arg1)
+}
+
+// DeleteMultipleTridentRoles mocks base method.
+func (m *MockExtendedK8sClient) DeleteMultipleTridentRoles(arg0 []string, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMultipleTridentRoles", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteMultipleTridentRoles indicates an expected call of DeleteMultipleTridentRoles.
+func (mr *MockExtendedK8sClientMockRecorder) DeleteMultipleTridentRoles(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMultipleTridentRoles", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteMultipleTridentRoles), arg0, arg1)
+}
+
+// DeleteMultipleTridentServiceAccounts mocks base method.
+func (m *MockExtendedK8sClient) DeleteMultipleTridentServiceAccounts(arg0 []string, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMultipleTridentServiceAccounts", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteMultipleTridentServiceAccounts indicates an expected call of DeleteMultipleTridentServiceAccounts.
+func (mr *MockExtendedK8sClientMockRecorder) DeleteMultipleTridentServiceAccounts(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMultipleTridentServiceAccounts", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteMultipleTridentServiceAccounts), arg0, arg1, arg2)
+}
+
 // DeleteObjectByFile mocks base method.
 func (m *MockExtendedK8sClient) DeleteObjectByFile(arg0 string, arg1 bool) error {
 	m.ctrl.T.Helper()
@@ -849,20 +905,6 @@ func (m *MockExtendedK8sClient) DeleteObjectByYAML(arg0 string, arg1 bool) error
 func (mr *MockExtendedK8sClientMockRecorder) DeleteObjectByYAML(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteObjectByYAML", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteObjectByYAML), arg0, arg1)
-}
-
-// DeleteOpenShiftSCC mocks base method.
-func (m *MockExtendedK8sClient) DeleteOpenShiftSCC(arg0, arg1 []string, arg2 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteOpenShiftSCC", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteOpenShiftSCC indicates an expected call of DeleteOpenShiftSCC.
-func (mr *MockExtendedK8sClientMockRecorder) DeleteOpenShiftSCC(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOpenShiftSCC", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteOpenShiftSCC), arg0, arg1, arg2)
 }
 
 // DeletePVByLabel mocks base method.
@@ -975,6 +1017,34 @@ func (m *MockExtendedK8sClient) DeleteResourceQuotaByLabel(arg0 string) error {
 func (mr *MockExtendedK8sClientMockRecorder) DeleteResourceQuotaByLabel(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResourceQuotaByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteResourceQuotaByLabel), arg0)
+}
+
+// DeleteRole mocks base method.
+func (m *MockExtendedK8sClient) DeleteRole(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRole", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRole indicates an expected call of DeleteRole.
+func (mr *MockExtendedK8sClientMockRecorder) DeleteRole(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRole", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteRole), arg0)
+}
+
+// DeleteRoleBinding mocks base method.
+func (m *MockExtendedK8sClient) DeleteRoleBinding(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRoleBinding", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRoleBinding indicates an expected call of DeleteRoleBinding.
+func (mr *MockExtendedK8sClientMockRecorder) DeleteRoleBinding(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRoleBinding", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteRoleBinding), arg0)
 }
 
 // DeleteSecret mocks base method.
@@ -1118,7 +1188,7 @@ func (mr *MockExtendedK8sClientMockRecorder) DeleteTransientVersionPod(arg0 inte
 }
 
 // DeleteTridentClusterRole mocks base method.
-func (m *MockExtendedK8sClient) DeleteTridentClusterRole(arg0 []string, arg1 string) error {
+func (m *MockExtendedK8sClient) DeleteTridentClusterRole(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTridentClusterRole", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -1132,7 +1202,7 @@ func (mr *MockExtendedK8sClientMockRecorder) DeleteTridentClusterRole(arg0, arg1
 }
 
 // DeleteTridentClusterRoleBinding mocks base method.
-func (m *MockExtendedK8sClient) DeleteTridentClusterRoleBinding(arg0 []string, arg1 string) error {
+func (m *MockExtendedK8sClient) DeleteTridentClusterRoleBinding(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTridentClusterRoleBinding", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -1227,20 +1297,6 @@ func (m *MockExtendedK8sClient) DeleteTridentService(arg0, arg1, arg2 string) er
 func (mr *MockExtendedK8sClientMockRecorder) DeleteTridentService(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTridentService", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteTridentService), arg0, arg1, arg2)
-}
-
-// DeleteTridentServiceAccount mocks base method.
-func (m *MockExtendedK8sClient) DeleteTridentServiceAccount(arg0 []string, arg1, arg2 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteTridentServiceAccount", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteTridentServiceAccount indicates an expected call of DeleteTridentServiceAccount.
-func (mr *MockExtendedK8sClientMockRecorder) DeleteTridentServiceAccount(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTridentServiceAccount", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteTridentServiceAccount), arg0, arg1, arg2)
 }
 
 // DeleteTridentStatefulSet mocks base method.
@@ -1435,12 +1491,12 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleBindingByLabelAndName
 }
 
 // GetClusterRoleBindingInformation mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleBindingInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v12.ClusterRoleBinding, []v12.ClusterRoleBinding, map[string]bool, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleBindingInformation(arg0, arg1 string, arg2 bool) (*v12.ClusterRoleBinding, []v12.ClusterRoleBinding, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleBindingInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(map[string]*v12.ClusterRoleBinding)
+	ret0, _ := ret[0].(*v12.ClusterRoleBinding)
 	ret1, _ := ret[1].([]v12.ClusterRoleBinding)
-	ret2, _ := ret[2].(map[string]bool)
+	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
 }
@@ -1497,12 +1553,12 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleByLabelAndName(arg0, 
 }
 
 // GetClusterRoleInformation mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v12.ClusterRole, []v12.ClusterRole, map[string]bool, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleInformation(arg0, arg1 string, arg2 bool) (*v12.ClusterRole, []v12.ClusterRole, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(map[string]*v12.ClusterRole)
+	ret0, _ := ret[0].(*v12.ClusterRole)
 	ret1, _ := ret[1].([]v12.ClusterRole)
-	ret2, _ := ret[2].(map[string]bool)
+	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
 }
@@ -1667,6 +1723,92 @@ func (mr *MockExtendedK8sClientMockRecorder) GetDeploymentsByLabel(arg0, arg1 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentsByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetDeploymentsByLabel), arg0, arg1)
 }
 
+// GetMultiplePodSecurityPolicyInformation mocks base method.
+func (m *MockExtendedK8sClient) GetMultiplePodSecurityPolicyInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v1beta1.PodSecurityPolicy, []v1beta1.PodSecurityPolicy, map[string]bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMultiplePodSecurityPolicyInformation", arg0, arg1, arg2)
+	ret0, _ := ret[0].(map[string]*v1beta1.PodSecurityPolicy)
+	ret1, _ := ret[1].([]v1beta1.PodSecurityPolicy)
+	ret2, _ := ret[2].(map[string]bool)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// GetMultiplePodSecurityPolicyInformation indicates an expected call of GetMultiplePodSecurityPolicyInformation.
+func (mr *MockExtendedK8sClientMockRecorder) GetMultiplePodSecurityPolicyInformation(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultiplePodSecurityPolicyInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetMultiplePodSecurityPolicyInformation), arg0, arg1, arg2)
+}
+
+// GetMultipleRoleBindingInformation mocks base method.
+func (m *MockExtendedK8sClient) GetMultipleRoleBindingInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v12.RoleBinding, []v12.RoleBinding, map[string]bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMultipleRoleBindingInformation", arg0, arg1, arg2)
+	ret0, _ := ret[0].(map[string]*v12.RoleBinding)
+	ret1, _ := ret[1].([]v12.RoleBinding)
+	ret2, _ := ret[2].(map[string]bool)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// GetMultipleRoleBindingInformation indicates an expected call of GetMultipleRoleBindingInformation.
+func (mr *MockExtendedK8sClientMockRecorder) GetMultipleRoleBindingInformation(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipleRoleBindingInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetMultipleRoleBindingInformation), arg0, arg1, arg2)
+}
+
+// GetMultipleRoleInformation mocks base method.
+func (m *MockExtendedK8sClient) GetMultipleRoleInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v12.Role, []v12.Role, map[string]bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMultipleRoleInformation", arg0, arg1, arg2)
+	ret0, _ := ret[0].(map[string]*v12.Role)
+	ret1, _ := ret[1].([]v12.Role)
+	ret2, _ := ret[2].(map[string]bool)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// GetMultipleRoleInformation indicates an expected call of GetMultipleRoleInformation.
+func (mr *MockExtendedK8sClientMockRecorder) GetMultipleRoleInformation(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipleRoleInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetMultipleRoleInformation), arg0, arg1, arg2)
+}
+
+// GetMultipleServiceAccountInformation mocks base method.
+func (m *MockExtendedK8sClient) GetMultipleServiceAccountInformation(arg0 []string, arg1, arg2 string, arg3 bool) (map[string]*v11.ServiceAccount, []v11.ServiceAccount, map[string][]string, map[string]bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMultipleServiceAccountInformation", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(map[string]*v11.ServiceAccount)
+	ret1, _ := ret[1].([]v11.ServiceAccount)
+	ret2, _ := ret[2].(map[string][]string)
+	ret3, _ := ret[3].(map[string]bool)
+	ret4, _ := ret[4].(error)
+	return ret0, ret1, ret2, ret3, ret4
+}
+
+// GetMultipleServiceAccountInformation indicates an expected call of GetMultipleServiceAccountInformation.
+func (mr *MockExtendedK8sClientMockRecorder) GetMultipleServiceAccountInformation(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipleServiceAccountInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetMultipleServiceAccountInformation), arg0, arg1, arg2, arg3)
+}
+
+// GetMultipleTridentOpenShiftSCCInformation mocks base method.
+func (m *MockExtendedK8sClient) GetMultipleTridentOpenShiftSCCInformation(arg0, arg1 []string, arg2 bool) (map[string][]byte, map[string]bool, map[string]bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMultipleTridentOpenShiftSCCInformation", arg0, arg1, arg2)
+	ret0, _ := ret[0].(map[string][]byte)
+	ret1, _ := ret[1].(map[string]bool)
+	ret2, _ := ret[2].(map[string]bool)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// GetMultipleTridentOpenShiftSCCInformation indicates an expected call of GetMultipleTridentOpenShiftSCCInformation.
+func (mr *MockExtendedK8sClientMockRecorder) GetMultipleTridentOpenShiftSCCInformation(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipleTridentOpenShiftSCCInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetMultipleTridentOpenShiftSCCInformation), arg0, arg1, arg2)
+}
+
 // GetNamespace mocks base method.
 func (m *MockExtendedK8sClient) GetNamespace(arg0 string) (*v11.Namespace, error) {
 	m.ctrl.T.Helper()
@@ -1804,23 +1946,6 @@ func (mr *MockExtendedK8sClientMockRecorder) GetPodSecurityPolicyByLabel(arg0 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodSecurityPolicyByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetPodSecurityPolicyByLabel), arg0)
 }
 
-// GetPodSecurityPolicyInformation mocks base method.
-func (m *MockExtendedK8sClient) GetPodSecurityPolicyInformation(arg0, arg1 string, arg2 bool) (*v1beta1.PodSecurityPolicy, []v1beta1.PodSecurityPolicy, bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPodSecurityPolicyInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v1beta1.PodSecurityPolicy)
-	ret1, _ := ret[1].([]v1beta1.PodSecurityPolicy)
-	ret2, _ := ret[2].(bool)
-	ret3, _ := ret[3].(error)
-	return ret0, ret1, ret2, ret3
-}
-
-// GetPodSecurityPolicyInformation indicates an expected call of GetPodSecurityPolicyInformation.
-func (mr *MockExtendedK8sClientMockRecorder) GetPodSecurityPolicyInformation(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodSecurityPolicyInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetPodSecurityPolicyInformation), arg0, arg1, arg2)
-}
-
 // GetPodsByLabel mocks base method.
 func (m *MockExtendedK8sClient) GetPodsByLabel(arg0 string, arg1 bool) ([]v11.Pod, error) {
 	m.ctrl.T.Helper()
@@ -1896,6 +2021,51 @@ func (m *MockExtendedK8sClient) GetResourceQuotasByLabel(arg0 string) ([]v11.Res
 func (mr *MockExtendedK8sClientMockRecorder) GetResourceQuotasByLabel(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceQuotasByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetResourceQuotasByLabel), arg0)
+}
+
+// GetRoleBindingByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) GetRoleBindingByLabelAndName(arg0, arg1 string) (*v12.RoleBinding, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRoleBindingByLabelAndName", arg0, arg1)
+	ret0, _ := ret[0].(*v12.RoleBinding)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRoleBindingByLabelAndName indicates an expected call of GetRoleBindingByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) GetRoleBindingByLabelAndName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoleBindingByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetRoleBindingByLabelAndName), arg0, arg1)
+}
+
+// GetRoleBindingsByLabel mocks base method.
+func (m *MockExtendedK8sClient) GetRoleBindingsByLabel(arg0 string) ([]v12.RoleBinding, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRoleBindingsByLabel", arg0)
+	ret0, _ := ret[0].([]v12.RoleBinding)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRoleBindingsByLabel indicates an expected call of GetRoleBindingsByLabel.
+func (mr *MockExtendedK8sClientMockRecorder) GetRoleBindingsByLabel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoleBindingsByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetRoleBindingsByLabel), arg0)
+}
+
+// GetRolesByLabel mocks base method.
+func (m *MockExtendedK8sClient) GetRolesByLabel(arg0 string) ([]v12.Role, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRolesByLabel", arg0)
+	ret0, _ := ret[0].([]v12.Role)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRolesByLabel indicates an expected call of GetRolesByLabel.
+func (mr *MockExtendedK8sClientMockRecorder) GetRolesByLabel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRolesByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetRolesByLabel), arg0)
 }
 
 // GetSecret mocks base method.
@@ -1988,24 +2158,6 @@ func (m *MockExtendedK8sClient) GetServiceAccountByLabelAndName(arg0, arg1 strin
 func (mr *MockExtendedK8sClientMockRecorder) GetServiceAccountByLabelAndName(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceAccountByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetServiceAccountByLabelAndName), arg0, arg1, arg2)
-}
-
-// GetServiceAccountInformation mocks base method.
-func (m *MockExtendedK8sClient) GetServiceAccountInformation(arg0 []string, arg1, arg2 string, arg3 bool) (map[string]*v11.ServiceAccount, []v11.ServiceAccount, map[string][]string, map[string]bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetServiceAccountInformation", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(map[string]*v11.ServiceAccount)
-	ret1, _ := ret[1].([]v11.ServiceAccount)
-	ret2, _ := ret[2].(map[string][]string)
-	ret3, _ := ret[3].(map[string]bool)
-	ret4, _ := ret[4].(error)
-	return ret0, ret1, ret2, ret3, ret4
-}
-
-// GetServiceAccountInformation indicates an expected call of GetServiceAccountInformation.
-func (mr *MockExtendedK8sClientMockRecorder) GetServiceAccountInformation(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceAccountInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetServiceAccountInformation), arg0, arg1, arg2, arg3)
 }
 
 // GetServiceAccountsByLabel mocks base method.
@@ -2112,23 +2264,6 @@ func (m *MockExtendedK8sClient) GetStatefulSetsByLabel(arg0 string, arg1 bool) (
 func (mr *MockExtendedK8sClientMockRecorder) GetStatefulSetsByLabel(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatefulSetsByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetStatefulSetsByLabel), arg0, arg1)
-}
-
-// GetTridentOpenShiftSCCInformation mocks base method.
-func (m *MockExtendedK8sClient) GetTridentOpenShiftSCCInformation(arg0, arg1 []string, arg2 bool) (map[string][]byte, map[string]bool, map[string]bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTridentOpenShiftSCCInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(map[string][]byte)
-	ret1, _ := ret[1].(map[string]bool)
-	ret2, _ := ret[2].(map[string]bool)
-	ret3, _ := ret[3].(error)
-	return ret0, ret1, ret2, ret3
-}
-
-// GetTridentOpenShiftSCCInformation indicates an expected call of GetTridentOpenShiftSCCInformation.
-func (mr *MockExtendedK8sClientMockRecorder) GetTridentOpenShiftSCCInformation(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTridentOpenShiftSCCInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetTridentOpenShiftSCCInformation), arg0, arg1, arg2)
 }
 
 // IsTopologyInUse mocks base method.
@@ -2342,6 +2477,20 @@ func (mr *MockExtendedK8sClientMockRecorder) PatchPodSecurityPolicyByLabel(arg0,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodSecurityPolicyByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchPodSecurityPolicyByLabel), arg0, arg1, arg2)
 }
 
+// PatchPodSecurityPolicyByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) PatchPodSecurityPolicyByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchPodSecurityPolicyByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchPodSecurityPolicyByLabelAndName indicates an expected call of PatchPodSecurityPolicyByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) PatchPodSecurityPolicyByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodSecurityPolicyByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchPodSecurityPolicyByLabelAndName), arg0, arg1, arg2, arg3)
+}
+
 // PatchResourceQuotaByLabel mocks base method.
 func (m *MockExtendedK8sClient) PatchResourceQuotaByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()
@@ -2354,6 +2503,34 @@ func (m *MockExtendedK8sClient) PatchResourceQuotaByLabel(arg0 string, arg1 []by
 func (mr *MockExtendedK8sClientMockRecorder) PatchResourceQuotaByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchResourceQuotaByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchResourceQuotaByLabel), arg0, arg1, arg2)
+}
+
+// PatchRoleBindingByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) PatchRoleBindingByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchRoleBindingByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchRoleBindingByLabelAndName indicates an expected call of PatchRoleBindingByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) PatchRoleBindingByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchRoleBindingByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchRoleBindingByLabelAndName), arg0, arg1, arg2, arg3)
+}
+
+// PatchRoleByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) PatchRoleByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchRoleByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchRoleByLabelAndName indicates an expected call of PatchRoleByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) PatchRoleByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchRoleByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchRoleByLabelAndName), arg0, arg1, arg2, arg3)
 }
 
 // PatchSecretByLabel mocks base method.
@@ -2538,6 +2715,34 @@ func (mr *MockExtendedK8sClientMockRecorder) PutResourceQuota(arg0, arg1, arg2, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutResourceQuota", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutResourceQuota), arg0, arg1, arg2, arg3)
 }
 
+// PutRole mocks base method.
+func (m *MockExtendedK8sClient) PutRole(arg0 *v12.Role, arg1 bool, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutRole", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PutRole indicates an expected call of PutRole.
+func (mr *MockExtendedK8sClientMockRecorder) PutRole(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutRole", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutRole), arg0, arg1, arg2, arg3)
+}
+
+// PutRoleBinding mocks base method.
+func (m *MockExtendedK8sClient) PutRoleBinding(arg0 *v12.RoleBinding, arg1 bool, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutRoleBinding", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PutRoleBinding indicates an expected call of PutRoleBinding.
+func (mr *MockExtendedK8sClientMockRecorder) PutRoleBinding(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutRoleBinding", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutRoleBinding), arg0, arg1, arg2, arg3)
+}
+
 // PutSecret mocks base method.
 func (m *MockExtendedK8sClient) PutSecret(arg0 bool, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
@@ -2705,6 +2910,34 @@ func (m *MockExtendedK8sClient) RemoveMultipleResourceQuotas(arg0 []v11.Resource
 func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleResourceQuotas(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipleResourceQuotas", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveMultipleResourceQuotas), arg0)
+}
+
+// RemoveMultipleRoleBindings mocks base method.
+func (m *MockExtendedK8sClient) RemoveMultipleRoleBindings(arg0 []v12.RoleBinding) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveMultipleRoleBindings", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveMultipleRoleBindings indicates an expected call of RemoveMultipleRoleBindings.
+func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleRoleBindings(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipleRoleBindings", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveMultipleRoleBindings), arg0)
+}
+
+// RemoveMultipleRoles mocks base method.
+func (m *MockExtendedK8sClient) RemoveMultipleRoles(arg0 []v12.Role) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveMultipleRoles", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveMultipleRoles indicates an expected call of RemoveMultipleRoles.
+func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleRoles(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipleRoles", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveMultipleRoles), arg0)
 }
 
 // RemoveMultipleSecrets mocks base method.

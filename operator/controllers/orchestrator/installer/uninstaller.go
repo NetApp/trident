@@ -138,43 +138,43 @@ func (i *Installer) removeRBACObjects() error {
 	controllerResourceNames = []string{getControllerRBACResourceName(true)}
 	nodeResourceNames = []string{getNodeRBACResourceName(false), getNodeRBACResourceName(true)}
 
-	// Delete controller cluster role binding
-	if err := i.client.DeleteTridentClusterRoleBinding(controllerResourceNames, TridentCSILabel); err != nil {
-		return err
-	}
-
-	// Delete node cluster role binding
-	if err := i.client.DeleteTridentClusterRoleBinding(nodeResourceNames, TridentNodeLabel); err != nil {
-		return err
-	}
-
 	// Delete controller cluster role
-	if err := i.client.DeleteTridentClusterRole(controllerResourceNames, TridentCSILabel); err != nil {
+	if err := i.client.DeleteTridentClusterRole(controllerResourceNames[0], TridentCSILabel); err != nil {
 		return err
 	}
 
-	// Delete node cluster role
-	if err := i.client.DeleteTridentClusterRole(nodeResourceNames, TridentNodeLabel); err != nil {
+	// Delete controller cluster role binding
+	if err := i.client.DeleteTridentClusterRoleBinding(controllerResourceNames[0], TridentCSILabel); err != nil {
+		return err
+	}
+
+	// Delete node role
+	if err := i.client.DeleteMultipleTridentRoles(nodeResourceNames, TridentNodeLabel); err != nil {
+		return err
+	}
+
+	// Delete node role binding
+	if err := i.client.DeleteMultipleTridentRoleBindings(nodeResourceNames, TridentNodeLabel); err != nil {
 		return err
 	}
 
 	// Delete controller service account
-	if err := i.client.DeleteTridentServiceAccount(controllerResourceNames, TridentCSILabel, i.namespace); err != nil {
+	if err := i.client.DeleteMultipleTridentServiceAccounts(controllerResourceNames, TridentCSILabel, i.namespace); err != nil {
 		return err
 	}
 
 	// Delete node service account
-	if err := i.client.DeleteTridentServiceAccount(nodeResourceNames, TridentNodeLabel, i.namespace); err != nil {
+	if err := i.client.DeleteMultipleTridentServiceAccounts(nodeResourceNames, TridentNodeLabel, i.namespace); err != nil {
 		return err
 	}
 
 	// If OpenShift, delete Trident Security Context Constraint(s)
 	if i.client.Flavor() == k8sclient.FlavorOpenShift {
-		if err := i.client.DeleteOpenShiftSCC(controllerResourceNames, controllerResourceNames,
+		if err := i.client.DeleteMultipleOpenShiftSCC(controllerResourceNames, controllerResourceNames,
 			TridentCSILabel); err != nil {
 			return err
 		}
-		if err := i.client.DeleteOpenShiftSCC(nodeResourceNames, nodeResourceNames,
+		if err := i.client.DeleteMultipleOpenShiftSCC(nodeResourceNames, nodeResourceNames,
 			TridentNodeLabel); err != nil {
 			return err
 		}

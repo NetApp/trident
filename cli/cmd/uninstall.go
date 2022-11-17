@@ -10,7 +10,6 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/utils"
 )
 
 func init() {
@@ -162,7 +161,6 @@ func uninstallTrident() error {
 				"error": err,
 			}).Warn("Trident statefulset not found.")
 		} else {
-
 			// Statefulset found by label, so ensure there isn't a namespace clash
 			if TridentPodNamespace != statefulset.Namespace {
 				return fmt.Errorf("a Trident statefulset was found in namespace '%s', "+
@@ -195,7 +193,6 @@ func uninstallTrident() error {
 				"error": err,
 			}).Warn("Trident deployment not found.")
 		} else {
-
 			// Deployment found by label, so ensure there isn't a namespace clash
 			if TridentPodNamespace != deployment.Namespace {
 				return fmt.Errorf("a Trident deployment was found in namespace '%s', "+
@@ -250,10 +247,10 @@ func uninstallTrident() error {
 					"namespace": daemonsets[i].Namespace,
 					"label":     TridentNodeLabel,
 					"error":     err,
-				}).Warning("Could not delete Trident DaemonSet.")
+				}).Warning("Could not delete Trident daemonset.")
 				anyErrors = true
 			} else {
-				log.Info("Deleted Trident DaemonSet.")
+				log.Info("Deleted Trident daemonset.")
 			}
 		}
 	}
@@ -365,8 +362,7 @@ func uninstallTrident() error {
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
 
 	// Delete pod security policy
-	pspRemovedVersion := utils.MustParseMajorMinorVersion(tridentconfig.PodSecurityPoliciesRemovedKubernetesVersion)
-	if client.ServerVersion().LessThan(pspRemovedVersion) {
+	if isPSPSupported() {
 		podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
 		if !csi {
 			podSecurityPolicyYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
@@ -376,6 +372,37 @@ func uninstallTrident() error {
 			anyErrors = true
 		} else {
 			log.WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
+		}
+
+		labels := make(map[string]string)
+		labels[TridentCSILabelKey] = TridentCSILabelValue
+		daemonSetlabels := make(map[string]string)
+		daemonSetlabels[TridentNodeLabelKey] = TridentNodeLabelValue
+
+		// Delete PodSecurityPolicy for controller, linux & windows nodes
+		pspYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(true), labels, nil)
+		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
+			log.WithField("error", err).Warning("Could not delete controller pod security policy.")
+			anyErrors = true
+		} else {
+			log.WithField("podSecurityPolicy", getControllerRBACResourceName(true)).Info("Deleted controller pod security policy.")
+		}
+		// Deletion of Linux node PSP
+		pspYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)
+		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
+			log.WithField("error", err).Warning("Could not delete linux node pod security policy.")
+			anyErrors = true
+		} else {
+			log.WithField("podSecurityPolicy", getNodeRBACResourceName(false)).Info("Deleted linux node pod security policy.")
+		}
+
+		// Deletion of Windows node PSP
+		pspYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(true), daemonSetlabels, nil)
+		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
+			log.WithField("error", err).Warning("Could not delete windows node pod security policy.")
+			anyErrors = true
+		} else {
+			log.WithField("podSecurityPolicy", getNodeRBACResourceName(true)).Info("Deleted windows node pod security policy.")
 		}
 	}
 

@@ -86,6 +86,7 @@ type KubernetesClient interface {
 	DeletePodSecurityPolicyByLabel(label string) error
 	DeletePodSecurityPolicy(pspName string) error
 	PatchPodSecurityPolicyByLabel(label string, patchBytes []byte, patchType types.PatchType) error
+	PatchPodSecurityPolicyByLabelAndName(label, pspName string, patchBytes []byte, patchType types.PatchType) error
 	GetServiceAccountByLabel(label string, allNamespaces bool) (*v1.ServiceAccount, error)
 	GetServiceAccountByLabelAndName(label, serviceAccountName string, allNamespaces bool) (*v1.ServiceAccount, error)
 	GetServiceAccountsByLabel(label string, allNamespaces bool) ([]v1.ServiceAccount, error)
@@ -97,19 +98,26 @@ type KubernetesClient interface {
 	GetClusterRoleByLabelAndName(label, clusterRoleName string) (*v13.ClusterRole, error)
 	GetClusterRoleByLabel(label string) (*v13.ClusterRole, error)
 	GetClusterRolesByLabel(label string) ([]v13.ClusterRole, error)
+	GetRolesByLabel(label string) ([]v13.Role, error)
 	CheckClusterRoleExistsByLabel(label string) (bool, string, error)
 	DeleteClusterRoleByLabel(label string) error
 	DeleteClusterRole(name string) error
+	DeleteRole(name string) error
 	PatchClusterRoleByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	PatchClusterRoleByLabelAndName(label, clusterRoleName string, patchBytes []byte, patchType types.PatchType) error
+	PatchRoleByLabelAndName(label, roleName string, patchBytes []byte, patchType types.PatchType) error
 	GetClusterRoleBindingByLabelAndName(label, clusterRoleBindingName string) (*v13.ClusterRoleBinding, error)
 	GetClusterRoleBindingByLabel(label string) (*v13.ClusterRoleBinding, error)
 	GetClusterRoleBindingsByLabel(label string) ([]v13.ClusterRoleBinding, error)
+	GetRoleBindingByLabelAndName(label, roleBindingName string) (*v13.RoleBinding, error)
+	GetRoleBindingsByLabel(label string) ([]v13.RoleBinding, error)
 	CheckClusterRoleBindingExistsByLabel(label string) (bool, string, error)
 	DeleteClusterRoleBindingByLabel(label string) error
 	DeleteClusterRoleBinding(name string) error
+	DeleteRoleBinding(name string) error
 	PatchClusterRoleBindingByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	PatchClusterRoleBindingByLabelAndName(label, clusterRoleBindingName string, patchBytes []byte, patchType types.PatchType) error
+	PatchRoleBindingByLabelAndName(label, roleBindingName string, patchBytes []byte, patchType types.PatchType) error
 	GetCSIDriverByLabel(label string) (*storagev1.CSIDriver, error)
 	GetCSIDriversByLabel(label string) ([]storagev1.CSIDriver, error)
 	CheckCSIDriverExistsByLabel(label string) (bool, string, error)

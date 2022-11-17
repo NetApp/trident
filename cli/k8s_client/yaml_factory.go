@@ -20,6 +20,14 @@ func GetNamespaceYAML(namespace string) string {
 	return strings.ReplaceAll(namespaceYAMLTemplate, "{NAMESPACE}", namespace)
 }
 
+func isControllerRBACResource(labels map[string]string) bool {
+	return strings.HasPrefix(labels[TridentAppLabelKey], "controller")
+}
+
+func isNodeRBACResource(labels map[string]string) bool {
+	return strings.HasPrefix(labels[TridentAppLabelKey], "node")
+}
+
 const namespaceYAMLTemplate = `---
 apiVersion: v1
 kind: Namespace
@@ -73,7 +81,7 @@ func GetClusterRoleYAML(
 	var clusterRoleYAML string
 
 	if csi {
-		clusterRoleYAML = clusterRoleCSIYAMLTemplate
+		clusterRoleYAML = controllerClusterRoleCSIYAMLTemplate
 	} else {
 		clusterRoleYAML = clusterRoleYAMLTemplate
 	}
@@ -137,7 +145,10 @@ rules:
       - tridentpods
 `
 
-const clusterRoleCSIYAMLTemplate = `---
+// Specific permissions for sidecars
+// csi-resizer needs 'list' for pods
+// csi-snapshotter needs 'watch' for volumesnapshotclasses
+const controllerClusterRoleCSIYAMLTemplate = `---
 kind: ClusterRole
 apiVersion: {API_VERSION}
 metadata:
@@ -146,11 +157,11 @@ metadata:
   {OWNER_REF}
 rules:
   - apiGroups: [""]
-    resources: ["namespaces"]
-    verbs: ["get", "list"]
-  - apiGroups: [""]
-    resources: ["persistentvolumes", "persistentvolumeclaims"]
+    resources: ["persistentvolumes"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims/status"]
     verbs: ["update", "patch"]
@@ -161,20 +172,14 @@ rules:
     resources: ["events"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
     resources: ["resourcequotas"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+    verbs: ["get", "list", "delete", "patch"]
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["pods/log"]
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["nodes"]
-    verbs: ["get", "list", "watch", "update"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
     verbs: ["get", "list", "watch", "update", "patch"]
@@ -183,19 +188,16 @@ rules:
     verbs: ["update", "patch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshots", "volumesnapshotclasses"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshots/status", "volumesnapshotcontents/status"]
     verbs: ["update", "patch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotcontents"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+    verbs: ["get", "list", "watch", "update", "patch"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["csidrivers", "csinodes"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: ["apiextensions.k8s.io"]
-    resources: ["customresourcedefinitions"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["trident.netapp.io"]
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
 "tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
@@ -206,7 +208,85 @@ rules:
     resources: ["podsecuritypolicies"]
     verbs: ["use"]
     resourceNames:
-      - tridentpods
+      - {CLUSTER_ROLE_NAME}
+`
+
+func GetRoleYAML(flavor OrchestratorFlavor, namespace, roleName string, labels, controllingCRDetails map[string]string,
+	csi bool,
+) string {
+	var roleYAML string
+
+	if isControllerRBACResource(labels) {
+		roleYAML = controllerRoleCSIYAMLTemplate
+	} else {
+		roleYAML = nodeRoleCSIYAMLTemplate
+	}
+
+	roleYAML = strings.ReplaceAll(roleYAML, "{ROLE_NAME}", roleName)
+	roleYAML = strings.ReplaceAll(roleYAML, "{NAMESPACE}", namespace)
+	roleYAML = replaceMultilineYAMLTag(roleYAML, "LABELS", constructLabels(labels))
+	roleYAML = replaceMultilineYAMLTag(roleYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+
+	return roleYAML
+}
+
+const controllerRoleCSIYAMLTemplate = `---
+kind: Role
+apiVersion: "rbac.authorization.k8s.io/v1"
+metadata:
+  namespace: {NAMESPACE}
+  name: {ROLE_NAME}
+  {LABELS}
+  {OWNER_REF}
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+`
+
+const nodeRoleCSIYAMLTemplate = `---
+kind: Role
+apiVersion: "rbac.authorization.k8s.io/v1"
+metadata:
+  namespace: {NAMESPACE}
+  name: {ROLE_NAME}
+  {LABELS}
+  {OWNER_REF}
+rules:
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
+    resourceNames:
+      - {ROLE_NAME}
+`
+
+func GetRoleBindingYAML(flavor OrchestratorFlavor, namespace, name string,
+	labels, controllingCRDetails map[string]string, csi bool,
+) string {
+	rbYAML := roleBindingKubernetesV1YAMLTemplate
+	rbYAML = strings.ReplaceAll(rbYAML, "{NAMESPACE}", namespace)
+	rbYAML = strings.ReplaceAll(rbYAML, "{NAME}", name)
+	rbYAML = replaceMultilineYAMLTag(rbYAML, "LABELS", constructLabels(labels))
+	rbYAML = replaceMultilineYAMLTag(rbYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	return rbYAML
+}
+
+const roleBindingKubernetesV1YAMLTemplate = `---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {NAME}
+  namespace: {NAMESPACE}
+  {LABELS}
+  {OWNER_REF}
+subjects:
+  - kind: ServiceAccount
+    name: {NAME}
+    apiGroup: ""
+roleRef:
+  kind: Role
+  name: {NAME}
+  apiGroup: rbac.authorization.k8s.io
 `
 
 func GetClusterRoleBindingYAML(
@@ -860,6 +940,10 @@ spec:
       labels:
         app: {LABEL_APP}
     spec:
+      securityContext:
+        windowsOptions:
+          hostProcess: false
+          runAsUserName: "ContainerAdministrator"
       priorityClassName: system-node-critical
       serviceAccount: {SERVICE_ACCOUNT}
       containers:
@@ -1088,10 +1172,11 @@ spec:
     beta.kubernetes.io/arch: amd64
 `
 
-func GetOpenShiftSCCYAML(sccName, user, namespace string, labels, controllingCRDetails map[string]string) string {
-	sccYAML := openShiftPrivilegedSCCYAML
-	if !strings.Contains(labels[TridentAppLabelKey], "csi") && user != "trident-installer" {
-		sccYAML = openShiftUnprivilegedSCCYAML
+func GetOpenShiftSCCYAML(sccName, user, namespace string, labels, controllingCRDetails map[string]string, privileged bool) string {
+	sccYAML := openShiftUnprivilegedSCCYAML
+	// Only linux node pod needs an privileged SCC (i.e. privileged set to true)
+	if privileged {
+		sccYAML = openShiftPrivilegedSCCYAML
 	}
 	sccYAML = strings.ReplaceAll(sccYAML, "{SCC}", sccName)
 	sccYAML = strings.ReplaceAll(sccYAML, "{NAMESPACE}", namespace)
@@ -1996,6 +2081,7 @@ metadata:
   {OWNER_REF}
 spec:
   privileged: false
+  allowPrivilegeEscalation: false
   seLinux:
     rule: RunAsAny
   supplementalGroups:

@@ -100,6 +100,10 @@ func TestYAMLFactory(t *testing.T) {
 	yamlsOutputs := []string{
 		GetServiceAccountYAML(Name, nil, nil, nil),
 		GetServiceAccountYAML(Name, Secrets, labels, ownerRef),
+		GetRoleYAML(FlavorK8s, Namespace, Name, labels, ownerRef, false),
+		GetRoleYAML(FlavorOpenshift, Namespace, Name, labels, ownerRef, true),
+		GetRoleBindingYAML(FlavorK8s, Namespace, Name, labels, ownerRef, false),
+		GetRoleBindingYAML(FlavorOpenshift, Namespace, Name, labels, ownerRef, true),
 		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false),
 		GetClusterRoleYAML(FlavorOpenshift, Name, labels, ownerRef, true),
 		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, ownerRef, false),
@@ -120,14 +124,17 @@ func TestYAMLFactory(t *testing.T) {
 // TestAPIVersion validates that we get correct APIVersion value
 func TestAPIVersion(t *testing.T) {
 	yamlsOutputs := map[string]string{
-		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false):                         "rbac.authorization.k8s.io/v1",
-		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, true):                          "rbac.authorization.k8s.io/v1",
-		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, false):                   "authorization.openshift.io/v1",
-		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, true):                    "rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, nil, nil, false):       "rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, nil, nil, true):        "rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, nil, false): "authorization.openshift.io/v1",
-		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, nil, true):  "rbac.authorization.k8s.io/v1",
+		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, true):                         "rbac.authorization.k8s.io/v1",
+		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, true):                   "rbac.authorization.k8s.io/v1",
+		GetRoleYAML(FlavorK8s, Namespace, Name, nil, nil, false):                    "rbac.authorization.k8s.io/v1",
+		GetRoleYAML(FlavorK8s, Namespace, Name, nil, nil, true):                     "rbac.authorization.k8s.io/v1",
+		GetRoleYAML(FlavorOpenshift, Namespace, Name, nil, nil, true):               "rbac.authorization.k8s.io/v1",
+		GetRoleBindingYAML(FlavorK8s, Namespace, Name, nil, nil, false):             "rbac.authorization.k8s.io/v1",
+		GetRoleBindingYAML(FlavorK8s, Namespace, Name, nil, nil, true):              "rbac.authorization.k8s.io/v1",
+		GetRoleBindingYAML(FlavorOpenshift, Namespace, Name, nil, nil, true):        "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, nil, nil, false):      "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, nil, nil, true):       "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, nil, true): "rbac.authorization.k8s.io/v1",
 	}
 
 	for result, value := range yamlsOutputs {
@@ -566,7 +573,7 @@ func TestGetCSIDaemonSetYAMLWindows(t *testing.T) {
 		yamlData := GetCSIDaemonSetYAMLWindows(daemonsetArgs)
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
 		if err != nil {
-			t.Fatalf("expected valid YAML for version %s", versionString)
+			t.Fatalf("expected valid YAML for version %s, error: %v", versionString, err)
 		}
 	}
 }
@@ -678,10 +685,10 @@ func TestGetTridentVersionPodYAML(t *testing.T) {
 }
 
 func TestGetOpenShiftSCCYAML(t *testing.T) {
-	sccName := "trident-scc"
-	user := "trident-installer"
+	sccName := "trident-node-linux"
+	user := "trident-node-linux"
 	namespace := "trident"
-	labels := map[string]string{"app": "controller.csi.trident.netapp.io"}
+	labels := map[string]string{"app": "node.csi.trident.netapp.io"}
 	crdDetails := map[string]string{"kind": "ReplicaSet"}
 	allowPrivilegeEscalation := true
 
@@ -692,12 +699,12 @@ func TestGetOpenShiftSCCYAML(t *testing.T) {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				"kubernetes.io/description": "trident-scc is a clone of the privileged built-in, " +
+				"kubernetes.io/description": "trident-node-linux is a clone of the privileged built-in, " +
 					"and is meant just for use with trident.",
 			},
-			Name: "trident-scc",
+			Name: "trident-node-linux",
 			Labels: map[string]string{
-				"app": "controller.csi.trident.netapp.io",
+				"app": "node.csi.trident.netapp.io",
 			},
 			OwnerReferences: []metav1.OwnerReference{
 				{
@@ -729,20 +736,20 @@ func TestGetOpenShiftSCCYAML(t *testing.T) {
 		SupplementalGroups: scc.SupplementalGroupsStrategyOptions{
 			Type: "RunAsAny",
 		},
-		Users:   []string{"system:serviceaccount:trident:trident-installer"},
+		Users:   []string{"system:serviceaccount:trident:trident-node-linux"},
 		Volumes: []scc.FSType{"hostPath", "downwardAPI", "projected", "emptyDir"},
 	}
 
 	var actual scc.SecurityContextConstraints
 
-	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails)
+	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails, true)
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
 	assert.Equal(t, expected, actual)
 }
 
 func TestGetOpenShiftSCCYAML_UnprivilegedUser(t *testing.T) {
-	sccName := "trident-scc"
-	user := "root"
+	sccName := "trident-controller"
+	user := "trident-controller"
 	namespace := "trident"
 	labels := map[string]string{"app": "controller.trident.netapp.io"}
 	crdDetails := map[string]string{"kind": "ReplicaSet"}
@@ -755,9 +762,9 @@ func TestGetOpenShiftSCCYAML_UnprivilegedUser(t *testing.T) {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				"kubernetes.io/description": "trident-scc is a clone of the anyuid built-in, and is meant just for use with trident.",
+				"kubernetes.io/description": "trident-controller is a clone of the anyuid built-in, and is meant just for use with trident.",
 			},
-			Name: "trident-scc",
+			Name: "trident-controller",
 			Labels: map[string]string{
 				"app": "controller.trident.netapp.io",
 			},
@@ -791,13 +798,13 @@ func TestGetOpenShiftSCCYAML_UnprivilegedUser(t *testing.T) {
 		SupplementalGroups: scc.SupplementalGroupsStrategyOptions{
 			Type: "RunAsAny",
 		},
-		Users:   []string{"system:serviceaccount:trident:root"},
+		Users:   []string{"system:serviceaccount:trident:trident-controller"},
 		Volumes: []scc.FSType{"hostPath", "downwardAPI", "projected", "emptyDir"},
 	}
 
 	var actual scc.SecurityContextConstraints
 
-	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails)
+	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails, false)
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))

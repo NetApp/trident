@@ -272,9 +272,9 @@ rules:
       - update
       - patch
     resourceNames:
+      - trident
       - trident-csi
       - trident-csi-windows
-      - trident
   - apiGroups:
       - ""
     resources:
@@ -315,6 +315,8 @@ rules:
       - authorization.openshift.io
       - rbac.authorization.k8s.io
     resources:
+      - roles
+      - rolebindings
       - clusterroles
       - clusterrolebindings
     verbs:
@@ -324,6 +326,8 @@ rules:
       - authorization.openshift.io
       - rbac.authorization.k8s.io
     resources:
+      - roles
+      - rolebindings
       - clusterroles
       - clusterrolebindings
     verbs:
@@ -381,6 +385,9 @@ rules:
     verbs:
       - use
     resourceNames:
+      - trident-controller
+      - trident-node-linux
+      - trident-node-windows
       - tridentoperatorpods
 ---
 apiVersion: rbac.authorization.k8s.io/v1

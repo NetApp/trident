@@ -10,9 +10,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
-	"github.com/netapp/trident/utils"
+	utils "github.com/netapp/trident/utils"
 )
 
 // MockTridentController is a mock of TridentController interface.

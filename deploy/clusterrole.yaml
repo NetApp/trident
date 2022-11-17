@@ -233,7 +233,9 @@ rules:
     verbs:
       - use
     resourceNames:
-      - tridentpods
+      - trident-csi-controller
+      - trident-csi-linux-node
+      - trident-csi-windows-node
   # Now Operator specific permissions
   - apiGroups:
       - ""
@@ -264,9 +266,9 @@ rules:
       - update
       - patch
     resourceNames:
+      - trident
       - trident-csi
       - trident-csi-windows
-      - trident
   - apiGroups:
       - ""
     resources:
@@ -307,6 +309,8 @@ rules:
       - authorization.openshift.io
       - rbac.authorization.k8s.io
     resources:
+      - roles
+      - rolebindings
       - clusterroles
       - clusterrolebindings
     verbs:
@@ -316,6 +320,8 @@ rules:
       - authorization.openshift.io
       - rbac.authorization.k8s.io
     resources:
+      - roles
+      - rolebindings
       - clusterroles
       - clusterrolebindings
     verbs:
@@ -341,6 +347,9 @@ rules:
       - podsecuritypolicies
     resourceNames:
       - tridentpods
+      - trident-csi-controller
+      - trident-csi-linux-node
+      - trident-csi-windows-node
     verbs:
       - delete
       - update

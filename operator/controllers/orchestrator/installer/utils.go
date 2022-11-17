@@ -21,6 +21,15 @@ func getRBACResourceNames() []string {
 	return names
 }
 
+func getNodeResourceNames() []string {
+	var resourceNames []string
+	resourceNames = append(resourceNames, TridentNodeLinuxResourceName)
+	if windows {
+		resourceNames = append(resourceNames, TridentNodeWindowsResourceName)
+	}
+	return resourceNames
+}
+
 func getClusterRoleName(csi bool) string {
 	if csi {
 		return TridentCSI

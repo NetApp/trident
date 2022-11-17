@@ -10,8 +10,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-
-	"github.com/netapp/trident/utils"
+	utils "github.com/netapp/trident/utils"
 )
 
 // MockNodeHelper is a mock of NodeHelper interface.

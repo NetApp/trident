@@ -1340,6 +1340,36 @@ func (k *KubeClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []by
 	return nil
 }
 
+// PatchPodSecurityPolicyByLabelAndName patches a pod security policy object matching the specified label
+// and name in the namespace of the client.
+func (k *KubeClient) PatchPodSecurityPolicyByLabelAndName(label, pspName string, patchBytes []byte, patchType types.PatchType) error {
+	pspList, err := k.GetPodSecurityPoliciesByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	var psp *v1beta1.PodSecurityPolicy
+
+	for idx := range pspList {
+		if pspList[idx].Name == pspName {
+			psp = &pspList[idx]
+			break
+		}
+	}
+
+	if _, err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Patch(ctx(), psp.Name,
+		patchType, patchBytes, patchOpts); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":      label,
+		"deployment": psp.Name,
+	}).Debug("Patched Kubernetes pod security policy.")
+
+	return nil
+}
+
 // GetServiceAccountByLabelAndName returns a service account object matching the specified label and name
 func (k *KubeClient) GetServiceAccountByLabelAndName(label, serviceAccountName string, allNamespaces bool) (
 	*v1.ServiceAccount, error,
@@ -1581,6 +1611,23 @@ func (k *KubeClient) GetClusterRoleByLabelAndName(label, clusterRoleName string)
 	return clusterRole, nil
 }
 
+// GetRoleByLabelAndName returns a cluster role object matching the specified label and name
+func (k *KubeClient) GetRoleByLabelAndName(label, roleName string) (*v13.Role, error) {
+	roles, err := k.GetRolesByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	var role *v13.Role
+
+	for i := range roles {
+		if roles[i].Name == roleName {
+			role = &roles[i]
+		}
+	}
+	return role, nil
+}
+
 // GetClusterRoleByLabel returns a cluster role object matching the specified label if it is unique
 func (k *KubeClient) GetClusterRoleByLabel(label string) (*v13.ClusterRole, error) {
 	clusterRoles, err := k.GetClusterRolesByLabel(label)
@@ -1610,6 +1657,21 @@ func (k *KubeClient) GetClusterRolesByLabel(label string) ([]v13.ClusterRole, er
 	}
 
 	return clusterRoleList.Items, nil
+}
+
+// GetRolesByLabel returns all cluster role objects matching the specified label
+func (k *KubeClient) GetRolesByLabel(label string) ([]v13.Role, error) {
+	listOptions, err := k.listOptionsFromLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	roleList, err := k.clientset.RbacV1().Roles(k.Namespace()).List(ctx(), listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return roleList.Items, nil
 }
 
 // CheckClusterRoleExistsByLabel returns true if one or more cluster role objects
@@ -1663,6 +1725,19 @@ func (k *KubeClient) DeleteClusterRole(name string) error {
 	return nil
 }
 
+// DeleteRole deletes a cluster role object matching the specified name
+func (k *KubeClient) DeleteRole(name string) error {
+	if err := k.clientset.RbacV1().Roles(k.Namespace()).Delete(ctx(), name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"role": name,
+	}).Debug("Deleted Kubernetes role.")
+
+	return nil
+}
+
 // PatchClusterRoleByLabelAndName patches a Cluster Role object matching the specified label
 // and name in the namespace of the client.
 func (k *KubeClient) PatchClusterRoleByLabelAndName(label, clusterRoleName string, patchBytes []byte,
@@ -1682,6 +1757,33 @@ func (k *KubeClient) PatchClusterRoleByLabelAndName(label, clusterRoleName strin
 		"label":       label,
 		"clusterRole": clusterRole.Name,
 	}).Debug("Patched Kubernetes cluster role.")
+
+	return nil
+}
+
+// PatchRoleByLabelAndName patches a Role object matching the specified label
+// and name in the namespace of the client.
+func (k *KubeClient) PatchRoleByLabelAndName(label, roleName string, patchBytes []byte,
+	patchType types.PatchType,
+) error {
+	role, err := k.GetRoleByLabelAndName(label, roleName)
+	if err != nil {
+		return err
+	}
+
+	if role == nil {
+		return fmt.Errorf("role for name %s and label %s does not exist", roleName, label)
+	}
+
+	if _, err = k.clientset.RbacV1().Roles(k.Namespace()).Patch(ctx(), role.Name,
+		patchType, patchBytes, patchOpts); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label": label,
+		"role":  role.Name,
+	}).Debug("Patched Kubernetes role.")
 
 	return nil
 }
@@ -1726,6 +1828,25 @@ func (k *KubeClient) GetClusterRoleBindingByLabelAndName(label, clusterRoleBindi
 	return clusterRoleBinding, nil
 }
 
+// GetRoleBindingByLabelAndName returns a role binding object matching the specified label and name
+func (k *KubeClient) GetRoleBindingByLabelAndName(label, roleBindingName string) (
+	*v13.RoleBinding, error,
+) {
+	roleBindings, err := k.GetRoleBindingsByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	var roleBinding *v13.RoleBinding
+
+	for i := range roleBindings {
+		if roleBindings[i].Name == roleBindingName {
+			roleBinding = &roleBindings[i]
+		}
+	}
+	return roleBinding, nil
+}
+
 // GetClusterRoleBindingByLabel returns a cluster role binding object matching the specified label if it is unique
 func (k *KubeClient) GetClusterRoleBindingByLabel(label string) (*v13.ClusterRoleBinding, error) {
 	clusterRoleBindings, err := k.GetClusterRoleBindingsByLabel(label)
@@ -1755,6 +1876,21 @@ func (k *KubeClient) GetClusterRoleBindingsByLabel(label string) ([]v13.ClusterR
 	}
 
 	return clusterRoleBindingList.Items, nil
+}
+
+// GetRoleBindingsByLabel returns all role binding objects matching the specified label
+func (k *KubeClient) GetRoleBindingsByLabel(label string) ([]v13.RoleBinding, error) {
+	listOptions, err := k.listOptionsFromLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	roleBindingList, err := k.clientset.RbacV1().RoleBindings(k.Namespace()).List(ctx(), listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return roleBindingList.Items, nil
 }
 
 // CheckClusterRoleBindingExistsByLabel returns true if one or more cluster role binding objects
@@ -1809,6 +1945,19 @@ func (k *KubeClient) DeleteClusterRoleBinding(name string) error {
 	return nil
 }
 
+// DeleteRoleBinding deletes a role binding object matching the specified name
+func (k *KubeClient) DeleteRoleBinding(name string) error {
+	if err := k.clientset.RbacV1().RoleBindings(k.Namespace()).Delete(ctx(), name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"roleBinding": name,
+	}).Debug("Deleted Kubernetes role binding.")
+
+	return nil
+}
+
 // PatchClusterRoleBindingByLabelAndName patches a Cluster Role binding object matching the specified label
 // and name in the namespace of the client.
 func (k *KubeClient) PatchClusterRoleBindingByLabelAndName(label, clusterRoleBindingName string, patchBytes []byte,
@@ -1828,6 +1977,33 @@ func (k *KubeClient) PatchClusterRoleBindingByLabelAndName(label, clusterRoleBin
 		"label":              label,
 		"clusterRoleBinding": clusterRoleBinding.Name,
 	}).Debug("Patched Kubernetes cluster role binding.")
+
+	return nil
+}
+
+// PatchRoleBindingByLabelAndName patches a Role binding object matching the specified label
+// and name in the namespace of the client.
+func (k *KubeClient) PatchRoleBindingByLabelAndName(label, roleBindingName string, patchBytes []byte,
+	patchType types.PatchType,
+) error {
+	roleBinding, err := k.GetRoleBindingByLabelAndName(label, roleBindingName)
+	if err != nil {
+		return err
+	}
+
+	if roleBinding == nil {
+		return fmt.Errorf("roleBinding for name %s and label %s does not exist", roleBindingName, label)
+	}
+
+	if _, err = k.clientset.RbacV1().RoleBindings(k.Namespace()).Patch(ctx(), roleBinding.Name,
+		patchType, patchBytes, patchOpts); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":       label,
+		"roleBinding": roleBinding.Name,
+	}).Debug("Patched Kubernetes role binding.")
 
 	return nil
 }
@@ -2222,7 +2398,7 @@ func (k *KubeClient) DeleteSecret(name, namespace string) error {
 	return nil
 }
 
-// PatchPodSecurityPolicyByLabel patches a pod security policy object matching the specified label
+// PatchSecretByLabel patches a pod security policy object matching the specified label
 // in the namespace of the client.
 func (k *KubeClient) PatchSecretByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
 	secret, err := k.GetSecretByLabel(label, false)

@@ -160,7 +160,10 @@ func (k *K8sClient) GetCSIDriverInformation(csiDriverName, appLabel string, shou
 	var unwantedCSIDrivers []storagev1.CSIDriver
 
 	if csiDrivers, err := k.GetCSIDriversByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of CSI driver custom resources by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of CSI driver custom resources by label.")
 		return nil, nil, true, fmt.Errorf("unable to get list of CSI driver custom resources by label")
 	} else if len(csiDrivers) == 0 {
 		log.Info("CSI driver custom resource not found.")
@@ -247,7 +250,10 @@ func (k *K8sClient) PutCSIDriver(
 // DeleteCSIDriverCR deletes a CSI Driver.
 func (k *K8sClient) DeleteCSIDriverCR(csiDriverName, appLabel string) error {
 	if csiDrivers, err := k.GetCSIDriversByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of CSI driver CRs by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of CSI driver CRs by label.")
 		return fmt.Errorf("unable to get list of CSI driver CRs by label")
 	} else if len(csiDrivers) == 0 {
 		log.WithFields(log.Fields{
@@ -313,146 +319,6 @@ func (k *K8sClient) RemoveMultipleCSIDriverCRs(unwantedCSIDriverCRs []storagev1.
 	return nil
 }
 
-// GetClusterRoleInformation gets the Cluster Role info.
-func (k *K8sClient) GetClusterRoleInformation(clusterRoleNames []string, appLabel string, shouldUpdate bool) (
-	map[string]*rbacv1.ClusterRole, []rbacv1.ClusterRole, map[string]bool, error,
-) {
-	currentClusterRoleMap := make(map[string]*rbacv1.ClusterRole)
-	reuseClusterRoleMap := make(map[string]bool)
-	var currentClusterRole *rbacv1.ClusterRole
-	var unwantedClusterRoles []rbacv1.ClusterRole
-
-	if clusterRoles, err := k.GetClusterRolesByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of cluster roles by label.")
-		return currentClusterRoleMap, unwantedClusterRoles, reuseClusterRoleMap,
-			fmt.Errorf("unable to get list of cluster roles")
-	} else if len(clusterRoles) == 0 {
-		log.Info("Trident cluster role not found.")
-
-		log.Debug("Deleting unlabeled Trident cluster role by name as it can cause issues during installation.")
-		for _, clusterRoleName := range clusterRoleNames {
-			if err = k.DeleteClusterRole(clusterRoleName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
-					log.WithField("error", err).Warning("Could not delete Trident cluster role")
-				}
-			} else {
-				log.WithField("ClusterRole", clusterRoleName).Info(
-					"Deleted unlabeled Trident cluster role; replacing it with a labeled Trident cluster role.")
-			}
-		}
-	} else if shouldUpdate {
-		unwantedClusterRoles = clusterRoles
-	} else {
-		// Rules:
-		// 1. If there is no cluster role with any of the allowed cluster role names and one or many other cluster roles
-		//    exist that matches the label then remove all the cluster roles.
-		// 2. If there is a cluster role with any of the allowed cluster role names and one or many other cluster roles
-		//    exist that matches the label then remove all other cluster roles.
-		for _, clusterRole := range clusterRoles {
-			// Found a cluster role matching one of the allowed names
-			if utils.SliceContainsString(clusterRoleNames, clusterRole.Name) {
-				log.WithField("clusterRole", clusterRole.Name).Infof("A Trident cluster role found by label.")
-
-				// Allocate new memory for currentClusterRole to avoid unintentional reassignments due to reuse of the
-				// clusterRole variable across iterations
-				currentClusterRole = &rbacv1.ClusterRole{}
-				*currentClusterRole = clusterRole
-				currentClusterRoleMap[clusterRole.Name] = currentClusterRole
-				reuseClusterRoleMap[clusterRole.Name] = true
-			} else {
-				log.WithField("clusterRole", clusterRole.Name).Errorf("A cluster role was found by label "+
-					"but does not meet name '%s' requirement, marking it for deletion.", clusterRole.Name)
-
-				unwantedClusterRoles = append(unwantedClusterRoles, clusterRole)
-			}
-		}
-	}
-
-	return currentClusterRoleMap, unwantedClusterRoles, reuseClusterRoleMap, nil
-}
-
-// PutClusterRole creates or updates a Cluster Role associated with Trident.
-func (k *K8sClient) PutClusterRole(
-	currentClusterRole *rbacv1.ClusterRole, reuseClusterRole bool, newClusterRoleYAML, appLabel string,
-) error {
-	var clusterRoleName string
-
-	if !reuseClusterRole {
-		log.Debug("Creating cluster role.")
-
-		if err := k.CreateObjectByYAML(newClusterRoleYAML); err != nil {
-			return fmt.Errorf("could not create cluster role; %v", err)
-		}
-
-		log.Info("Created cluster role.")
-	} else {
-		if currentClusterRole != nil {
-			clusterRoleName = currentClusterRole.Name
-		}
-		logFields := log.Fields{
-			"clusterRole": clusterRoleName,
-		}
-		log.WithFields(logFields).Debug("Patching Trident Cluster role.")
-
-		// Identify the deltas
-		patchBytes, err := k8sclient.GenericPatch(currentClusterRole, []byte(newClusterRoleYAML))
-		if err != nil {
-			return fmt.Errorf("error in creating the two-way merge patch for current cluster role %q: %v",
-				clusterRoleName, err)
-		}
-
-		// Apply the patch to the current Cluster Role
-		patchType := types.MergePatchType
-		if err = k.PatchClusterRoleByLabelAndName(appLabel, clusterRoleName, patchBytes, patchType); err != nil {
-			return fmt.Errorf("could not patch Trident Cluster role; %v", err)
-		}
-
-		log.Debug("Patched Trident Cluster role.")
-	}
-
-	return nil
-}
-
-// DeleteTridentClusterRole deletes Cluster Role(s) associated with Trident.
-func (k *K8sClient) DeleteTridentClusterRole(clusterRoleNames []string, appLabel string) error {
-	// Delete cluster role
-	if clusterRoles, err := k.GetClusterRolesByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of cluster roles by label.")
-		return fmt.Errorf("unable to get list of cluster roles")
-	} else if len(clusterRoles) == 0 {
-		log.WithFields(log.Fields{
-			"label": appLabel,
-			"error": err,
-		}).Warning("Trident cluster role not found.")
-
-		log.Debug("Deleting unlabeled Trident cluster role by name as it may have been created outside of the Trident" +
-			" Operator.")
-		for _, clusterRoleName := range clusterRoleNames {
-			if err = k.DeleteClusterRole(clusterRoleName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
-					log.WithField("error", err).Warning("Could not delete Trident cluster role.")
-				}
-			} else {
-				log.WithField("Cluster Role", clusterRoleName).Info(
-					"Deleted unlabeled Trident cluster role.")
-			}
-		}
-	} else {
-		for idx := range clusterRoles {
-			log.WithFields(log.Fields{
-				"clusterRole": clusterRoles[idx].Name,
-				"namespace":   clusterRoles[idx].Namespace,
-			}).Debug("Trident Cluster role found by label.")
-		}
-
-		if err = k.RemoveMultipleClusterRoles(clusterRoles); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // RemoveMultipleClusterRoles removes a list of unwanted cluster roles in a cluster.
 func (k *K8sClient) RemoveMultipleClusterRoles(unwantedClusterRoles []rbacv1.ClusterRole) error {
 	var err error
@@ -483,77 +349,355 @@ func (k *K8sClient) RemoveMultipleClusterRoles(unwantedClusterRoles []rbacv1.Clu
 	return nil
 }
 
-// GetClusterRoleBindingInformation gets the info on a Cluster Role Binding associated with Trident.
-func (k *K8sClient) GetClusterRoleBindingInformation(
-	clusterRoleBindingNames []string, appLabel string, shouldUpdate bool,
-) (map[string]*rbacv1.ClusterRoleBinding,
-	[]rbacv1.ClusterRoleBinding, map[string]bool, error,
+// GetClusterRoleInformation gets the Cluster Role info.
+func (k *K8sClient) GetClusterRoleInformation(clusterRoleName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRole,
+	[]rbacv1.ClusterRole, bool, error,
 ) {
-	reuseClusterRoleBindingMap := make(map[string]bool)
-	currentClusterRoleBindingMap := make(map[string]*rbacv1.ClusterRoleBinding)
+	createClusterRole := true
+	var currentClusterRole *rbacv1.ClusterRole
+	var unwantedClusterRoles []rbacv1.ClusterRole
+
+	if clusterRoles, err := k.GetClusterRolesByLabel(appLabel); err != nil {
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of cluster roles by label.")
+		return nil, nil, true, fmt.Errorf("unable to get list of cluster roles")
+	} else if len(clusterRoles) == 0 {
+		log.Info("Trident cluster role not found.")
+
+		log.Debug("Deleting unlabeled Trident cluster role by name as it can cause issues during installation.")
+		if err = k.DeleteClusterRole(clusterRoleName); err != nil {
+			if !utils.IsResourceNotFoundError(err) {
+				log.WithField("error", err).Warning("Could not delete Trident cluster role")
+			}
+		} else {
+			log.WithField("ClusterRole", clusterRoleName).Info(
+				"Deleted unlabeled Trident cluster role; replacing it with a labeled Trident cluster role.")
+		}
+	} else if shouldUpdate {
+		unwantedClusterRoles = clusterRoles
+	} else {
+		// Rules:
+		// 1. If there is no cluster role matching the allowed name and one or many other cluster roles
+		//    exist that matches the label then remove all the cluster roles.
+		// 2. If there is a cluster role named matching the allowed name and one or many other cluster roles
+		//    exist that matches the label then remove all other cluster roles.
+		for _, clusterRole := range clusterRoles {
+			if clusterRole.Name == clusterRoleName {
+				// Found a cluster role matching the allowed name
+				log.WithField("clusterRole", clusterRoleName).Infof("A Trident cluster role found by label.")
+
+				// allocate new memory for currentClusterRole to avoid unintentional reassignments due to reuse of the
+				// clusterRole variable across iterations
+				currentClusterRole = &rbacv1.ClusterRole{}
+				*currentClusterRole = clusterRole
+				createClusterRole = false
+			} else {
+				log.WithField("clusterRole", clusterRole.Name).Errorf("A cluster role was found by label "+
+					"but does not meet name '%s' requirement, marking it for deletion.", clusterRoleName)
+
+				unwantedClusterRoles = append(unwantedClusterRoles, clusterRole)
+			}
+		}
+	}
+
+	return currentClusterRole, unwantedClusterRoles, createClusterRole, nil
+}
+
+// GetMultipleRoleInformation gets the  Role info.
+func (k *K8sClient) GetMultipleRoleInformation(roleNames []string, appLabel string, shouldUpdate bool) (
+	map[string]*rbacv1.Role, []rbacv1.Role, map[string]bool, error,
+) {
+	currentRoleMap := make(map[string]*rbacv1.Role)
+	reuseRoleMap := make(map[string]bool)
+	var currentRole *rbacv1.Role
+	var unwantedRoles []rbacv1.Role
+
+	if roles, err := k.GetRolesByLabel(appLabel); err != nil {
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of roles by label.")
+		return currentRoleMap, unwantedRoles, reuseRoleMap,
+			fmt.Errorf("unable to get list of roles")
+	} else if len(roles) == 0 {
+		log.Info("Trident role not found.")
+
+		log.Debug("Deleting unlabeled Trident role by name as it can cause issues during installation.")
+		for _, roleName := range roleNames {
+			if err = k.DeleteRole(roleName); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident role")
+				}
+			} else {
+				log.WithField("role", roleName).Info(
+					"Deleted unlabeled Trident role; replacing it with a labeled Trident role.")
+			}
+		}
+	} else if shouldUpdate {
+		unwantedRoles = roles
+	} else {
+		// Rules:
+		// 1. If there is no role with any of the allowed role names and one or many other roles
+		//    exist that matches the label then remove all the roles.
+		// 2. If there is a role with any of the allowed role names and one or many other roles
+		//    exist that matches the label then remove all other roles.
+		for _, role := range roles {
+			// Found a role matching one of the allowed names
+			if utils.SliceContainsString(roleNames, role.Name) {
+				log.WithField("role", role.Name).Infof("A Trident role found by label.")
+
+				// Allocate new memory for currentRole to avoid unintentional reassignments due to reuse of the
+				// Role variable across iterations
+				currentRole = &rbacv1.Role{}
+				*currentRole = role
+				currentRoleMap[role.Name] = currentRole
+				reuseRoleMap[role.Name] = true
+			} else {
+				log.WithField("Role", role.Name).Errorf("A role was found by label "+
+					"but does not meet name '%s' requirement, marking it for deletion.", role.Name)
+
+				unwantedRoles = append(unwantedRoles, role)
+			}
+		}
+	}
+
+	return currentRoleMap, unwantedRoles, reuseRoleMap, nil
+}
+
+// PutRole creates or updates a Role associated with Trident.
+func (k *K8sClient) PutRole(
+	currentRole *rbacv1.Role, reuseRole bool, newRoleYAML, appLabel string,
+) error {
+	var roleName string
+
+	if !reuseRole {
+		log.Debug("Creating role.")
+
+		if err := k.CreateObjectByYAML(newRoleYAML); err != nil {
+			return fmt.Errorf("could not create role; %v", err)
+		}
+
+		log.Info("Created role.")
+	} else {
+		if currentRole != nil {
+			roleName = currentRole.Name
+		}
+		logFields := log.Fields{
+			"role": roleName,
+		}
+		log.WithFields(logFields).Debug("Patching Trident role.")
+
+		// Identify the deltas
+		patchBytes, err := k8sclient.GenericPatch(currentRole, []byte(newRoleYAML))
+		if err != nil {
+			return fmt.Errorf("error in creating the two-way merge patch for current role %q: %v",
+				roleName, err)
+		}
+
+		// Apply the patch to the current Role
+		patchType := types.MergePatchType
+		if err = k.PatchRoleByLabelAndName(appLabel, roleName, patchBytes, patchType); err != nil {
+			return fmt.Errorf("could not patch Trident role; %v", err)
+		}
+
+		log.Debug("Patched Trident role.")
+	}
+
+	return nil
+}
+
+// PutClusterRole creates or updates a Cluster Role associated with Trident.
+func (k *K8sClient) PutClusterRole(currentClusterRole *rbacv1.ClusterRole, createClusterRole bool, newClusterRoleYAML, appLabel string) error {
+	clusterRoleName := getClusterRoleName(true)
+	logFields := log.Fields{
+		"clusterRole": clusterRoleName,
+	}
+
+	if createClusterRole {
+		log.WithFields(logFields).Debug("Creating cluster role.")
+
+		if err := k.CreateObjectByYAML(newClusterRoleYAML); err != nil {
+			return fmt.Errorf("could not create cluster role; %v", err)
+		}
+
+		log.Info("Created cluster role.")
+	} else {
+		log.WithFields(logFields).Debug("Patching Trident Cluster role.")
+
+		// Identify the deltas
+		patchBytes, err := k8sclient.GenericPatch(currentClusterRole, []byte(newClusterRoleYAML))
+		if err != nil {
+			return fmt.Errorf("error in creating the two-way merge patch for current cluster role %q: %v",
+				clusterRoleName, err)
+		}
+
+		// Apply the patch to the current Cluster Role
+		patchType := types.MergePatchType
+		if err = k.PatchClusterRoleByLabel(appLabel, patchBytes, patchType); err != nil {
+			return fmt.Errorf("could not patch Trident Cluster role; %v", err)
+		}
+
+		log.Debug("Patched Trident Cluster role.")
+	}
+
+	return nil
+}
+
+// DeleteTridentClusterRole deletes a Cluster Role associated with Trident.
+func (k *K8sClient) DeleteTridentClusterRole(clusterRoleName, appLabel string) error {
+	// Delete cluster role
+	if clusterRoles, err := k.GetClusterRolesByLabel(appLabel); err != nil {
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of cluster roles by label.")
+		return fmt.Errorf("unable to get list of cluster roles")
+	} else if len(clusterRoles) == 0 {
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Warning("Trident cluster role not found.")
+
+		log.Debug("Deleting unlabeled Trident cluster role by name as it may have been created outside of the Trident" +
+			" Operator.")
+		if err = k.DeleteClusterRole(clusterRoleName); err != nil {
+			if !utils.IsResourceNotFoundError(err) {
+				log.WithField("error", err).Warning("Could not delete Trident cluster role.")
+			}
+		} else {
+			log.WithField("Cluster Role", clusterRoleName).Info(
+				"Deleted unlabeled Trident cluster role.")
+		}
+	} else {
+		if len(clusterRoles) == 1 {
+			log.WithFields(log.Fields{
+				"clusterRole": clusterRoles[0].Name,
+				"namespace":   clusterRoles[0].Namespace,
+			}).Info("Trident Cluster role found by label.")
+		} else {
+			log.WithField("label", appLabel).Warnf("Multiple Cluster roles found matching label; removing all.")
+		}
+
+		if err = k.RemoveMultipleClusterRoles(clusterRoles); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DeleteMultipleTridentRoles deletes Role(s) associated with Trident.
+func (k *K8sClient) DeleteMultipleTridentRoles(roleNames []string, appLabel string) error {
+	// Delete  role
+	if roles, err := k.GetRolesByLabel(appLabel); err != nil {
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of roles by label.")
+		return fmt.Errorf("unable to get list of roles")
+	} else if len(roles) == 0 {
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Warning("Trident role not found.")
+
+		log.Debug("Deleting unlabeled Trident role by name as it may have been created outside of the Trident" +
+			" Operator.")
+		for _, roleName := range roleNames {
+			if err = k.DeleteRole(roleName); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident role.")
+				}
+			} else {
+				log.WithField("role", roleName).Info(
+					"Deleted unlabeled Trident role.")
+			}
+		}
+	} else {
+		for idx := range roles {
+			log.WithFields(log.Fields{
+				"role":      roles[idx].Name,
+				"namespace": roles[idx].Namespace,
+			}).Debug("Trident role found by label.")
+		}
+
+		if err = k.RemoveMultipleRoles(roles); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// GetClusterRoleBindingInformation gets the info on a Cluster Role Binding associated with Trident.
+func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRoleBinding,
+	[]rbacv1.ClusterRoleBinding, bool, error,
+) {
+	createClusterRoleBinding := true
 	var currentClusterRoleBinding *rbacv1.ClusterRoleBinding
 	var unwantedClusterRoleBindings []rbacv1.ClusterRoleBinding
 
 	if clusterRoleBindings, err := k.GetClusterRoleBindingsByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of cluster role bindings by label.")
-		return currentClusterRoleBindingMap, unwantedClusterRoleBindings, reuseClusterRoleBindingMap,
-			fmt.Errorf("unable to get list of cluster role bindings")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of cluster role bindings by label.")
+		return nil, nil, true, fmt.Errorf("unable to get list of cluster role bindings")
 	} else if len(clusterRoleBindings) == 0 {
 		log.Info("Trident cluster role binding not found.")
 
 		log.Debug("Deleting unlabeled Trident cluster role binding by name as it can cause issues during installation.")
-		for _, clusterRoleBindingName := range clusterRoleBindingNames {
-			if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
-					log.WithField("error", err).Warning("Could not delete Trident cluster role binding.")
-				}
-			} else {
-				log.WithField("Cluster Role Binding", clusterRoleBindingName).Info(
-					"Deleted unlabeled Trident cluster role binding; replacing it with a labeled Trident cluster role" +
-						" binding.")
+		if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
+			if !utils.IsResourceNotFoundError(err) {
+				log.WithField("error", err).Warning("Could not delete Trident cluster role binding.")
 			}
+		} else {
+			log.WithField("Cluster Role Binding", clusterRoleBindingName).Info(
+				"Deleted unlabeled Trident cluster role binding; replacing it with a labeled Trident cluster role" +
+					" binding.")
 		}
 	} else if shouldUpdate {
 		unwantedClusterRoleBindings = clusterRoleBindings
 	} else {
 		// Rules:
-		// 1. If there is no cluster role binding with any of the allowed names and one or many other cluster role bindings
+		// 1. If there is no cluster role binding matching the allowed name and one or many other cluster role bindings
 		//    exist that matches the label then remove all the cluster role bindings.
-		// 2. If there is a cluster role binding with any of the allowed names and one or many other cluster role bindings
+		// 2. If there is a cluster role binding matching the allowed name and one or many other cluster role bindings
 		//    exist that matches the label then remove all other cluster role bindings.
 		for _, clusterRoleBinding := range clusterRoleBindings {
-			if utils.SliceContainsString(clusterRoleBindingNames, clusterRoleBinding.Name) {
-				// Found a cluster role binding matching one of the allowed names
-				log.WithField("clusterRoleBinding", clusterRoleBinding.Name).Infof(
+			if clusterRoleBinding.Name == clusterRoleBindingName {
+				// Found a cluster role binding matching the allowed name
+				log.WithField("clusterRoleBinding", clusterRoleBindingName).Infof(
 					"A Trident Cluster role binding was found by label.")
 
-				// Allocate new memory for currentClusterRoleBinding to avoid unintentional reassignments due to reuse of the
+				// allocate new memory for currentClusterRoleBinding to avoid unintentional reassignments due to reuse of the
 				// clusterRoleBinding variable across iterations
 				currentClusterRoleBinding = &rbacv1.ClusterRoleBinding{}
 				*currentClusterRoleBinding = clusterRoleBinding
-				currentClusterRoleBindingMap[clusterRoleBinding.Name] = currentClusterRoleBinding
-				reuseClusterRoleBindingMap[clusterRoleBinding.Name] = true
+				createClusterRoleBinding = false
 			} else {
 				log.WithField("clusterRoleBinding", clusterRoleBinding.Name).Errorf(
 					"A cluster role binding was found by label "+
-						"but does not meet name '%s' requirement, marking it for deletion.", clusterRoleBinding.Name)
+						"but does not meet name '%s' requirement, marking it for deletion.", clusterRoleBindingName)
 
 				unwantedClusterRoleBindings = append(unwantedClusterRoleBindings, clusterRoleBinding)
 			}
 		}
 	}
-	return currentClusterRoleBindingMap, unwantedClusterRoleBindings, reuseClusterRoleBindingMap, nil
+	return currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding, nil
 }
 
 // PutClusterRoleBinding creates or updates a Cluster Role Binding associated with Trident.
-func (k *K8sClient) PutClusterRoleBinding(
-	currentClusterRoleBinding *rbacv1.ClusterRoleBinding, reuseClusterRoleBinding bool,
-	newClusterRoleBindingYAML, appLabel string,
-) error {
-	var clusterRoleBindingName string
+func (k *K8sClient) PutClusterRoleBinding(currentClusterRoleBinding *rbacv1.ClusterRoleBinding, createClusterRoleBinding bool, newClusterRoleBindingYAML, appLabel string) error {
+	clusterRoleBindingName := getClusterRoleBindingName(true)
+	logFields := log.Fields{
+		"clusterRoleBinding": clusterRoleBindingName,
+	}
 
-	if !reuseClusterRoleBinding {
-		log.Debug("Creating cluster role binding.")
+	if createClusterRoleBinding {
+		log.WithFields(logFields).Debug("Creating cluster role binding.")
 
 		if err := k.CreateObjectByYAML(newClusterRoleBindingYAML); err != nil {
 			return fmt.Errorf("could not create cluster role binding; %v", err)
@@ -561,13 +705,6 @@ func (k *K8sClient) PutClusterRoleBinding(
 
 		log.Info("Created cluster role binding.")
 	} else {
-		if currentClusterRoleBinding != nil {
-			clusterRoleBindingName = currentClusterRoleBinding.Name
-		}
-
-		logFields := log.Fields{
-			"clusterRoleBinding": clusterRoleBindingName,
-		}
 		log.WithFields(logFields).Debug("Patching Trident Cluster role binding.")
 
 		// Identify the deltas
@@ -579,7 +716,7 @@ func (k *K8sClient) PutClusterRoleBinding(
 
 		// Apply the patch to the current Cluster Role Binding
 		patchType := types.MergePatchType
-		if err = k.PatchClusterRoleBindingByLabelAndName(appLabel, clusterRoleBindingName, patchBytes, patchType); err != nil {
+		if err = k.PatchClusterRoleBindingByLabel(appLabel, patchBytes, patchType); err != nil {
 			return fmt.Errorf("could not patch cluster role binding; %v", err)
 		}
 
@@ -589,11 +726,14 @@ func (k *K8sClient) PutClusterRoleBinding(
 	return nil
 }
 
-// DeleteTridentClusterRoleBinding deletes Cluster Role Binding(s) associated with Trident.
-func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingNames []string, appLabel string) error {
+// DeleteTridentClusterRoleBinding deletes a Cluster Role Binding associated with Trident.
+func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingName, appLabel string) error {
 	// Delete cluster role binding
 	if clusterRoleBindings, err := k.GetClusterRoleBindingsByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of cluster role bindings by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of cluster role bindings by label.")
 		return fmt.Errorf("unable to get list of cluster role bindings")
 	} else if len(clusterRoleBindings) == 0 {
 		log.WithFields(log.Fields{
@@ -603,22 +743,23 @@ func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingNames []st
 
 		log.Debug("Deleting unlabeled Trident cluster role binding by name as it may have been created outside of the" +
 			" Trident Operator.")
-		for _, clusterRoleBindingName := range clusterRoleBindingNames {
-			if err := k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
-					log.WithField("error", err).Warning("Could not delete Trident cluster role binding.")
-				}
-			} else {
-				log.WithField("Cluster Role Binding", clusterRoleBindingName).Info(
-					"Deleted unlabeled Trident cluster role binding.")
+		if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
+			if !utils.IsResourceNotFoundError(err) {
+				log.WithField("error", err).Warning("Could not delete Trident cluster role binding.")
 			}
+		} else {
+			log.WithField("Cluster Role Binding", clusterRoleBindingName).Info(
+				"Deleted unlabeled Trident cluster role binding.")
 		}
 	} else {
-		for idx := range clusterRoleBindings {
+		if len(clusterRoleBindings) == 1 {
 			log.WithFields(log.Fields{
-				"clusterRoleBinding": clusterRoleBindings[idx].Name,
-				"namespace":          clusterRoleBindings[idx].Namespace,
-			}).Debug("Trident Cluster role binding found by label.")
+				"clusterRoleBinding": clusterRoleBindings[0].Name,
+				"namespace":          clusterRoleBindings[0].Namespace,
+			}).Info("Trident Cluster role binding found by label.")
+		} else {
+			log.WithField("label", appLabel).Warnf("Multiple Cluster role bindings found matching label; removing" +
+				" all.")
 		}
 
 		if err = k.RemoveMultipleClusterRoleBindings(clusterRoleBindings); err != nil {
@@ -661,6 +802,220 @@ func (k *K8sClient) RemoveMultipleClusterRoleBindings(unwantedClusterRoleBinding
 	return nil
 }
 
+// RemoveMultipleRoles removes a list of unwanted roles in a .
+func (k *K8sClient) RemoveMultipleRoles(unwantedRoles []rbacv1.Role) error {
+	var err error
+	var anyError bool
+	var undeletedRoles []string
+
+	if len(unwantedRoles) > 0 {
+		// Delete the  roles
+		for _, roleToRemove := range unwantedRoles {
+			if err = k.DeleteRole(roleToRemove.Name); err != nil {
+				log.WithFields(log.Fields{
+					"role":  roleToRemove.Name,
+					"error": err,
+				}).Warning("Could not delete  role.")
+
+				anyError = true
+				undeletedRoles = append(undeletedRoles, fmt.Sprintf("%v", roleToRemove.Name))
+			} else {
+				log.WithField("role", roleToRemove.Name).Infof("Deleted role.")
+			}
+		}
+	}
+
+	if anyError {
+		return fmt.Errorf("unable to delete role(s): %v", undeletedRoles)
+	}
+
+	return nil
+}
+
+// GetMultipleRoleBindingInformation gets the info on a Role Binding associated with Trident.
+func (k *K8sClient) GetMultipleRoleBindingInformation(
+	roleBindingNames []string, appLabel string, shouldUpdate bool,
+) (map[string]*rbacv1.RoleBinding,
+	[]rbacv1.RoleBinding, map[string]bool, error,
+) {
+	reuseRoleBindingMap := make(map[string]bool)
+	currentRoleBindingMap := make(map[string]*rbacv1.RoleBinding)
+	var currentRoleBinding *rbacv1.RoleBinding
+	var unwantedRoleBindings []rbacv1.RoleBinding
+
+	if roleBindings, err := k.GetRoleBindingsByLabel(appLabel); err != nil {
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of role bindings by label.")
+		return currentRoleBindingMap, unwantedRoleBindings, reuseRoleBindingMap,
+			fmt.Errorf("unable to get list of role bindings")
+	} else if len(roleBindings) == 0 {
+		log.Info("Trident role binding not found.")
+
+		log.Debug("Deleting unlabeled Trident role binding by name as it can cause issues during installation.")
+		for _, roleBindingName := range roleBindingNames {
+			if err = k.DeleteRoleBinding(roleBindingName); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident role binding.")
+				}
+			} else {
+				log.WithField("roleBinding", roleBindingName).Info(
+					"Deleted unlabeled Trident role binding; replacing it with a labeled Trident role" +
+						" binding.")
+			}
+		}
+	} else if shouldUpdate {
+		unwantedRoleBindings = roleBindings
+	} else {
+		// Rules:
+		// 1. If there is no role binding with any of the allowed names and one or many other  role bindings
+		//    exist that matches the label then remove all the  role bindings.
+		// 2. If there is a role binding with any of the allowed names and one or many other  role bindings
+		//    exist that matches the label then remove all other  role bindings.
+		for _, roleBinding := range roleBindings {
+			if utils.SliceContainsString(roleBindingNames, roleBinding.Name) {
+				// Found a  role binding matching one of the allowed names
+				log.WithField("roleBinding", roleBinding.Name).Infof(
+					"A Trident role binding was found by label.")
+
+				// Allocate new memory for currentRoleBinding to avoid unintentional reassignments due to reuse of the
+				// RoleBinding variable across iterations
+				currentRoleBinding = &rbacv1.RoleBinding{}
+				*currentRoleBinding = roleBinding
+				currentRoleBindingMap[roleBinding.Name] = currentRoleBinding
+				reuseRoleBindingMap[roleBinding.Name] = true
+			} else {
+				log.WithField("roleBinding", roleBinding.Name).Errorf(
+					"A role binding was found by label "+
+						"but does not meet name '%s' requirement, marking it for deletion.", roleBinding.Name)
+
+				unwantedRoleBindings = append(unwantedRoleBindings, roleBinding)
+			}
+		}
+	}
+	return currentRoleBindingMap, unwantedRoleBindings, reuseRoleBindingMap, nil
+}
+
+// PutRoleBinding creates or updates a Role Binding associated with Trident.
+func (k *K8sClient) PutRoleBinding(
+	currentRoleBinding *rbacv1.RoleBinding, reuseRoleBinding bool,
+	newRoleBindingYAML, appLabel string,
+) error {
+	var roleBindingName string
+
+	if !reuseRoleBinding {
+		log.Debug("Creating role binding.")
+
+		if err := k.CreateObjectByYAML(newRoleBindingYAML); err != nil {
+			return fmt.Errorf("could not create role binding; %v", err)
+		}
+
+		log.Info("Created role binding.")
+	} else {
+		if currentRoleBinding != nil {
+			roleBindingName = currentRoleBinding.Name
+		}
+
+		logFields := log.Fields{
+			"roleBinding": roleBindingName,
+		}
+		log.WithFields(logFields).Debug("Patching Trident role binding.")
+
+		// Identify the deltas
+		patchBytes, err := k8sclient.GenericPatch(currentRoleBinding, []byte(newRoleBindingYAML))
+		if err != nil {
+			return fmt.Errorf("error in creating the two-way merge patch for current role binding %q: %v",
+				roleBindingName, err)
+		}
+
+		// Apply the patch to the current  Role Binding
+		patchType := types.MergePatchType
+		if err = k.PatchRoleBindingByLabelAndName(appLabel, roleBindingName, patchBytes, patchType); err != nil {
+			return fmt.Errorf("could not patch role binding; %v", err)
+		}
+
+		log.Debug("Patched Trident role binding.")
+	}
+
+	return nil
+}
+
+// DeleteMultipleTridentRoleBindings deletes Role Binding(s) associated with Trident.
+func (k *K8sClient) DeleteMultipleTridentRoleBindings(roleBindingNames []string, appLabel string) error {
+	// Delete  role binding
+	if roleBindings, err := k.GetRoleBindingsByLabel(appLabel); err != nil {
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of role bindings by label.")
+		return fmt.Errorf("unable to get list of role bindings")
+	} else if len(roleBindings) == 0 {
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Warning("Trident role binding not found.")
+
+		log.Debug("Deleting unlabeled Trident role binding by name as it may have been created outside of the" +
+			" Trident Operator.")
+		for _, roleBindingName := range roleBindingNames {
+			if err := k.DeleteRoleBinding(roleBindingName); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident role binding.")
+				}
+			} else {
+				log.WithField("roleBinding", roleBindingName).Info(
+					"Deleted unlabeled Trident role binding.")
+			}
+		}
+	} else {
+		for idx := range roleBindings {
+			log.WithFields(log.Fields{
+				"roleBinding": roleBindings[idx].Name,
+				"namespace":   roleBindings[idx].Namespace,
+			}).Debug("Trident role binding found by label.")
+		}
+
+		if err = k.RemoveMultipleRoleBindings(roleBindings); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// RemoveMultipleRoleBindings removes a list of unwanted  role bindings in a .
+func (k *K8sClient) RemoveMultipleRoleBindings(unwantedRoleBindings []rbacv1.RoleBinding) error {
+	var err error
+	var anyError bool
+	var undeletedRoleBindings []string
+
+	if len(unwantedRoleBindings) > 0 {
+		// Delete the roles bindings
+		for _, roleBindingToRemove := range unwantedRoleBindings {
+			if err = k.DeleteRoleBinding(roleBindingToRemove.Name); err != nil {
+				log.WithFields(log.Fields{
+					"roleBinding": roleBindingToRemove.Name,
+					"error":       err,
+				}).Warning("Could not delete role binding.")
+
+				anyError = true
+				undeletedRoleBindings = append(undeletedRoleBindings,
+					fmt.Sprintf("%v", roleBindingToRemove.Name))
+			} else {
+				log.WithField("roleBinding", roleBindingToRemove.Name).Infof(
+					"Deleted role binding.")
+			}
+		}
+	}
+
+	if anyError {
+		return fmt.Errorf("unable to delete role binding(s): %v", undeletedRoleBindings)
+	}
+
+	return nil
+}
+
 // GetResourceQuotaInformation identifies the Operator-based Trident resource quota information and any unwanted
 // resource quotas
 func (k *K8sClient) GetResourceQuotaInformation(
@@ -671,7 +1026,10 @@ func (k *K8sClient) GetResourceQuotaInformation(
 	var unwantedResourceQuotas []corev1.ResourceQuota
 
 	if resourceQuotas, err := k.GetResourceQuotasByLabel(label); err != nil {
-		log.WithField("label", label).Errorf("Unable to get list of resource quotas by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of resource quotas by label.")
 		return nil, nil, true, fmt.Errorf("unable to get list of resource quotas")
 	} else if len(resourceQuotas) == 0 {
 		log.WithFields(log.Fields{
@@ -756,8 +1114,10 @@ func (k *K8sClient) PutResourceQuota(
 func (k *K8sClient) DeleteTridentResourceQuota(nodeLabel string) error {
 	// Delete Trident resourceQuotas
 	if resourceQuotas, err := k.GetResourceQuotasByLabel(nodeLabel); err != nil {
-
-		log.WithField("label", nodeLabel).Errorf("Unable to get list of resource quotas by label.")
+		log.WithFields(log.Fields{
+			"label": nodeLabel,
+			"error": err,
+		}).Errorf("Unable to get list of resource quotas by label.")
 		return fmt.Errorf("unable to get list of resource quotas")
 
 	} else if len(resourceQuotas) == 0 {
@@ -831,7 +1191,10 @@ func (k *K8sClient) GetDaemonSetInformation(nodeLabel, namespace string, isWindo
 
 	daemonSets, err := k.GetDaemonSetsByLabel(nodeLabel, true)
 	if err != nil {
-		log.WithField("label", nodeLabel).Errorf("Unable to get list of daemonset by label.")
+		log.WithFields(log.Fields{
+			"label": nodeLabel,
+			"error": err,
+		}).Errorf("Unable to get list of daemonset by label.")
 		return nil, nil, true, fmt.Errorf("unable to get list of daemonset")
 	} else if len(daemonSets) == 0 {
 		log.WithFields(log.Fields{
@@ -840,9 +1203,9 @@ func (k *K8sClient) GetDaemonSetInformation(nodeLabel, namespace string, isWindo
 		}).Info("No Trident daemonsets found by label.")
 	} else {
 		// Rules
-		// 1. If no daemonSet(s) named trident-csi/trident-csi-windows exists in CR namespace and one or many other daemonSets
+		// 1. If no daemonSet(s) for Windows/Linux node exists in CR namespace and one or many other daemonSets
 		//    exist that matches the label then remove all the daemonSet.
-		// 2. If daemonSet named trident-csi/trident-csi-windows exists in CR namespace and one or many other daemonSets
+		// 2. If daemonSet named Windows/Linux node exists in CR namespace and one or many other daemonSets
 		//    exist that matches the label then remove all other daemonSets.
 		for _, daemonSet := range daemonSets {
 			if daemonSet.Namespace == namespace && (daemonSet.Name == linuxDS || daemonSet.Name == windowsDS) {
@@ -883,7 +1246,6 @@ func (k *K8sClient) PutDaemonSet(
 
 	if createDaemonSet {
 		log.WithFields(logFields).Debug("Creating Trident daemonset.")
-
 		if err := k.CreateObjectByYAML(newDaemonSetYAML); err != nil {
 			return fmt.Errorf("could not create Trident daemonset; %v", err)
 		}
@@ -915,10 +1277,11 @@ func (k *K8sClient) PutDaemonSet(
 func (k *K8sClient) DeleteTridentDaemonSet(nodeLabel string) error {
 	// Delete Trident daemonSets
 	if daemonSets, err := k.GetDaemonSetsByLabel(nodeLabel, true); err != nil {
-
-		log.WithField("label", nodeLabel).Errorf("Unable to get list of daemonset by label.")
+		log.WithFields(log.Fields{
+			"label": nodeLabel,
+			"error": err,
+		}).Errorf("Unable to get list of daemonset by label.")
 		return fmt.Errorf("unable to get list of daemonset")
-
 	} else if len(daemonSets) == 0 {
 		log.WithFields(log.Fields{
 			"label": nodeLabel,
@@ -987,7 +1350,10 @@ func (k *K8sClient) GetDeploymentInformation(deploymentName, appLabel, namespace
 	var unwantedDeployments []appsv1.Deployment
 
 	if deployments, err := k.GetDeploymentsByLabel(appLabel, true); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of deployments by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of deployments by label.")
 		return nil, nil, true, fmt.Errorf("unable to get list of deployments")
 	} else if len(deployments) == 0 {
 		log.WithFields(log.Fields{
@@ -1073,10 +1439,11 @@ func (k *K8sClient) PutDeployment(
 func (k *K8sClient) DeleteTridentDeployment(appLabel string) error {
 	// Delete Trident deployments
 	if deployments, err := k.GetDeploymentsByLabel(appLabel, true); err != nil {
-
-		log.WithField("label", appLabel).Errorf("Unable to get list of deployments by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of deployments by label.")
 		return fmt.Errorf("unable to get list of deployments")
-
 	} else if len(deployments) == 0 {
 		log.WithFields(log.Fields{
 			"label": appLabel,
@@ -1137,31 +1504,37 @@ func (k *K8sClient) RemoveMultipleDeployments(unwantedDeployments []appsv1.Deplo
 	return nil
 }
 
-// GetPodSecurityPolicyInformation identifies the Operator-based Trident PSP information and any unwanted
+// GetMultiplePodSecurityPolicyInformation identifies the Operator-based Trident PSP information and any unwanted
 // PSPs.
-func (k *K8sClient) GetPodSecurityPolicyInformation(
-	pspName, appLabel string, shouldUpdate bool,
-) (*policyv1beta1.PodSecurityPolicy,
-	[]policyv1beta1.PodSecurityPolicy, bool, error,
+func (k *K8sClient) GetMultiplePodSecurityPolicyInformation(
+	pspNames []string, appLabel string, shouldUpdate bool,
+) (map[string]*policyv1beta1.PodSecurityPolicy,
+	[]policyv1beta1.PodSecurityPolicy, map[string]bool, error,
 ) {
-	createPSP := true
+	reusePSPMap := make(map[string]bool)
+	currentPSPMap := make(map[string]*policyv1beta1.PodSecurityPolicy)
 	var currentPSP *policyv1beta1.PodSecurityPolicy
 	var unwantedPSPs []policyv1beta1.PodSecurityPolicy
 
 	if podSecurityPolicies, err := k.GetPodSecurityPoliciesByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of pod security policies by label.")
-		return nil, nil, true, fmt.Errorf("unable to get list of pod security policies")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of pod security policies by label.")
+		return currentPSPMap, unwantedPSPs, reusePSPMap, fmt.Errorf("unable to get list of pod security policies")
 	} else if len(podSecurityPolicies) == 0 {
 		log.Info("Trident pod security policy not found.")
 
 		log.Debug("Deleting unlabeled Trident pod security policy by name as it can cause issues during installation.")
-		if err = k.DeletePodSecurityPolicy(pspName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident pod security policy.")
+		for _, pspName := range pspNames {
+			if err = k.DeletePodSecurityPolicy(pspName); err != nil {
+				if !utils.IsResourceNotFoundError(err) {
+					log.WithField("error", err).Warning("Could not delete Trident pod security policy.")
+				}
+			} else {
+				log.WithField("Pod Security Policy", pspName).Info(
+					"Deleted Trident pod security policy; replacing it with a labeled Trident pod security policy.")
 			}
-		} else {
-			log.WithField("Pod Security Policy", pspName).Info(
-				"Deleted Trident pod security policy; replacing it with a labeled Trident pod security policy.")
 		}
 	} else if shouldUpdate {
 		unwantedPSPs = podSecurityPolicies
@@ -1172,37 +1545,43 @@ func (k *K8sClient) GetPodSecurityPolicyInformation(
 		// 2. If there is a psp named tridentpods and one or many other pod security policies
 		//    exist that matches the label then remove all other pod security policies.
 		for _, psp := range podSecurityPolicies {
-			if psp.Name == pspName {
+			if utils.SliceContainsString(pspNames, psp.Name) {
 				// Found a pod security policy named tridentpods
-				log.WithField("podSecurityPolicy", pspName).Infof("A Trident Pod security policy was found by label.")
+				log.WithField("podSecurityPolicy", psp.Name).Infof("A Trident Pod security policy was found by label.")
 
 				// allocate new memory for currentPSP to avoid unintentional reassignments due to reuse of the
 				// psp variable across iterations
 				currentPSP = &policyv1beta1.PodSecurityPolicy{}
 				*currentPSP = psp
-				createPSP = false
+				currentPSPMap[psp.Name] = currentPSP
+				reusePSPMap[psp.Name] = true
 			} else {
 				log.WithField("podSecurityPolicy", psp.Name).Errorf("A pod security policy was found by label "+
-					"but does not meet name '%s' requirement, marking it for deletion.", pspName)
+					"but does not meet name '%s' requirement, marking it for deletion.", psp.Name)
 
 				unwantedPSPs = append(unwantedPSPs, psp)
 			}
 		}
 	}
 
-	return currentPSP, unwantedPSPs, createPSP, nil
+	return currentPSPMap, unwantedPSPs, reusePSPMap, nil
 }
 
 // PutPodSecurityPolicy creates or updates a PSP.
 func (k *K8sClient) PutPodSecurityPolicy(
-	currentPSP *policyv1beta1.PodSecurityPolicy, createPSP bool, newPSPYAML, appLabel string,
+	currentPSP *policyv1beta1.PodSecurityPolicy, reusePSP bool, newPSPYAML, appLabel string,
 ) error {
-	pspName := getPSPName()
+	var pspName string
+
+	if currentPSP != nil {
+		pspName = currentPSP.Name
+	}
+
 	logFields := log.Fields{
 		"podSecurityPolicy": pspName,
 	}
 
-	if createPSP {
+	if !reusePSP {
 		log.WithFields(logFields).Debug("Creating Trident Pod security policy.")
 
 		// Create pod security policy
@@ -1223,7 +1602,7 @@ func (k *K8sClient) PutPodSecurityPolicy(
 
 		// Apply the patch to the current Pod Security Policy
 		patchType := types.MergePatchType
-		if err = k.PatchPodSecurityPolicyByLabel(appLabel, patchBytes, patchType); err != nil {
+		if err = k.PatchPodSecurityPolicyByLabelAndName(appLabel, pspName, patchBytes, patchType); err != nil {
 			return fmt.Errorf("could not patch Trident Pod security policy; %v", err)
 		}
 
@@ -1236,7 +1615,10 @@ func (k *K8sClient) PutPodSecurityPolicy(
 // DeleteTridentPodSecurityPolicy deletes a PSP.
 func (k *K8sClient) DeleteTridentPodSecurityPolicy(pspName, appLabel string) error {
 	if podSecurityPolicies, err := k.GetPodSecurityPoliciesByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of Pod security policies by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of Pod security policies by label.")
 		return fmt.Errorf("unable to get list of Pod security policies")
 	} else if len(podSecurityPolicies) == 0 {
 
@@ -1312,7 +1694,10 @@ func (k *K8sClient) GetSecretInformation(secretName, appLabel, namespace string,
 	var unwantedSecrets []corev1.Secret
 
 	if secrets, err := k.GetSecretsByLabel(appLabel, false); err != nil {
-		log.Errorf("Unable to get list of secrets by label %v", appLabel)
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of secrets by label.")
 		return nil, nil, true, fmt.Errorf("unable to get list of secrets by label")
 	} else if len(secrets) == 0 {
 		log.Info("Trident secret not found.")
@@ -1393,7 +1778,10 @@ func (k *K8sClient) PutSecret(createSecret bool, newSecretYAML, secretName strin
 // DeleteTridentSecret deletes a Secret associated with Trident.
 func (k *K8sClient) DeleteTridentSecret(secretName, appLabel, namespace string) error {
 	if secrets, err := k.GetSecretsByLabel(appLabel, false); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of Secrets by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of secrets by label.")
 		return fmt.Errorf("unable to get list of secrets")
 	} else if len(secrets) == 0 {
 		log.WithFields(log.Fields{
@@ -1484,7 +1872,10 @@ func (k *K8sClient) GetServiceInformation(serviceName, appLabel, namespace strin
 	var unwantedServices []corev1.Service
 
 	if services, err := k.GetServicesByLabel(appLabel, true); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of services by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of services by label.")
 		return nil, nil, true, fmt.Errorf("unable to get list of services")
 	} else if len(services) == 0 {
 		log.Info("Trident service not found.")
@@ -1578,7 +1969,10 @@ func (k *K8sClient) PutService(
 func (k *K8sClient) DeleteTridentService(serviceName, appLabel, namespace string) error {
 	// Delete Trident services
 	if services, err := k.GetServicesByLabel(appLabel, true); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of services by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of services by label.")
 		return fmt.Errorf("unable to get list of services")
 	} else if len(services) == 0 {
 		log.WithFields(log.Fields{
@@ -1647,9 +2041,9 @@ func (k *K8sClient) RemoveMultipleServices(unwantedServices []corev1.Service) er
 	return nil
 }
 
-// GetServiceAccountInformation identifies the Operator-based Trident Service Account info and any unwanted
+// GetMultipleServiceAccountInformation identifies the Operator-based Trident Service Account info and any unwanted
 // Service Accounts.
-func (k *K8sClient) GetServiceAccountInformation(
+func (k *K8sClient) GetMultipleServiceAccountInformation(
 	serviceAccountNames []string, appLabel, namespace string, shouldUpdate bool,
 ) (map[string]*corev1.ServiceAccount,
 	[]corev1.ServiceAccount, map[string][]string, map[string]bool, error,
@@ -1661,7 +2055,10 @@ func (k *K8sClient) GetServiceAccountInformation(
 	var unwantedServiceAccounts []corev1.ServiceAccount
 
 	if serviceAccounts, err := k.GetServiceAccountsByLabel(appLabel, false); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of service accounts by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of service accounts by label.")
 		return currentServiceAccountMap, unwantedServiceAccounts, secretsMap, reuseServiceAccountMap,
 			fmt.Errorf("unable to get list of service accounts")
 	} else if len(serviceAccounts) == 0 {
@@ -1682,12 +2079,10 @@ func (k *K8sClient) GetServiceAccountInformation(
 		unwantedServiceAccounts = serviceAccounts
 	} else {
 		// Rules:
-		// 1. If there are no service accounts named trident-controller/trident-node-linux
-		//    or trident-node-windows and one or many other service accounts exist that matches
-		//    the label then remove all the service accounts.
-		// 2. If there is a service accounts named trident-controller/trident-node-linux
-		//    and one or many other service account exist that matches the label then remove all
-		// other service accounts.
+		// 1. If there are no service accounts matching the allowed name and one or many other
+		//    service accounts exist that matches the label then remove all the service accounts.
+		// 2. If there are service accounts matching the allowed name and one or many other service
+		//    account exist that matches the label then remove all other service accounts.
 		for _, serviceAccount := range serviceAccounts {
 			if utils.SliceContainsString(serviceAccountNames, serviceAccount.Name) {
 				// Found a service account matching one of the valid names in the same namespace
@@ -1768,11 +2163,14 @@ func (k *K8sClient) PutServiceAccount(
 	return newServiceAccount, nil
 }
 
-// DeleteTridentServiceAccount deletes an Operator-based Service Account associated with Trident.
-func (k *K8sClient) DeleteTridentServiceAccount(serviceAccountNames []string, appLabel, namespace string) error {
+// DeleteMultipleTridentServiceAccounts deletes an Operator-based Service Account associated with Trident.
+func (k *K8sClient) DeleteMultipleTridentServiceAccounts(serviceAccountNames []string, appLabel, namespace string) error {
 	// Delete service account
 	if serviceAccounts, err := k.GetServiceAccountsByLabel(appLabel, false); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of Service accounts by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of service accounts by label.")
 		return fmt.Errorf("unable to get list of service accounts")
 	} else if len(serviceAccounts) == 0 {
 		log.WithFields(log.Fields{
@@ -1846,9 +2244,9 @@ func (k *K8sClient) RemoveMultipleServiceAccounts(unwantedServiceAccounts []core
 	return nil
 }
 
-// GetTridentOpenShiftSCCInformation gets OpenShiftSCC info with a supplied name,
+// GetMultipleTridentOpenShiftSCCInformation gets OpenShiftSCC info with a supplied name,
 // username and determines if new OpenShiftSCC should be created
-func (k *K8sClient) GetTridentOpenShiftSCCInformation(
+func (k *K8sClient) GetMultipleTridentOpenShiftSCCInformation(
 	openShiftSCCNames, openShiftSCCUserNames []string, shouldUpdate bool,
 ) (map[string][]byte,
 	map[string]bool, map[string]bool, error,
@@ -1926,8 +2324,8 @@ func (k *K8sClient) PutOpenShiftSCC(
 	return nil
 }
 
-// DeleteOpenShiftSCC deletes an Operator-based OpenShiftSCC associated with Trident.
-func (k *K8sClient) DeleteOpenShiftSCC(
+// DeleteMultipleOpenShiftSCC deletes an Operator-based OpenShiftSCC associated with Trident.
+func (k *K8sClient) DeleteMultipleOpenShiftSCC(
 	openShiftSCCUserNames, openShiftSCCNames []string,
 	appLabelValue string,
 ) error {
@@ -1985,7 +2383,10 @@ func (k *K8sClient) DeleteOpenShiftSCC(
 func (k *K8sClient) DeleteTridentStatefulSet(appLabel string) error {
 	// Delete Trident statefulSet
 	if statefulSets, err := k.GetStatefulSetsByLabel(appLabel, true); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of statefulsets by label.")
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Errorf("Unable to get list of statefulsets by label.")
 		return fmt.Errorf("unable to get list of statefulsets")
 	} else if len(statefulSets) == 0 {
 		log.WithFields(log.Fields{
@@ -2089,6 +2490,7 @@ func (k *K8sClient) DeleteTransientVersionPod(versionPodLabel string) error {
 		log.WithFields(log.Fields{
 			"label":    appLabel,
 			"podLabel": versionPodLabel,
+			"error":    err,
 		}).Errorf("Unable to get list of version pods by label.")
 		return fmt.Errorf("unable to get list of version pods")
 	} else if len(pods) == 0 {
