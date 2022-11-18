@@ -55,7 +55,7 @@ func createTestLabels() map[string]string {
 	labels := make(map[string]string)
 	labels[appLabelKey] = appLabelValue
 	labels[K8sVersionLabelKey] = "v1.21.8"
-	labels[TridentVersionLabelKey] = "v22.10.0"
+	labels[TridentVersionLabelKey] = "v23.01.0"
 
 	return labels
 }

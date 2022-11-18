@@ -437,7 +437,7 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: trident-operator
-          image: docker.io/netapp/trident-operator:22.10.0
+          image: docker.io/netapp/trident-operator:23.01.0
           imagePullPolicy: IfNotPresent
           name: trident-operator
       nodeSelector:
