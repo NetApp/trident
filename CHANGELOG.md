@@ -2,6 +2,11 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
+## Changes since v22.10.0
+
+**Enhancements**
+- Improved performance for ontap-nas-economy storage drivers managing multiple FlexVols.
+
 ## Changes since v22.07.0
 
 - **IMPORTANT**: Kubernetes 1.25 is now supported in Trident. Please upgrade Trident prior to upgrading Kubernetes.

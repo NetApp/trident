@@ -221,7 +221,7 @@ func TestNASQtreeStorageDriver_getQuotaDiskLimitSize_Error(t *testing.T) {
 	assert.Equal(t, expectedLimit, limit, "Unexpected return value")
 }
 
-func TestCreateQtreeInternalId(t *testing.T) {
+func TestCreateQtreeInternalID(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	driver := newNASQtreeStorageDriver(mockAPI)
@@ -229,16 +229,16 @@ func TestCreateQtreeInternalId(t *testing.T) {
 	flexvol := "fakeFlexVol"
 	qtree := "fakeQtree"
 	testString := fmt.Sprintf("/svm/%s/flexvol/%s/qtree/%s", svm, flexvol, qtree)
-	str := driver.CreateQtreeInternalId(svm, flexvol, qtree)
+	str := driver.CreateQtreeInternalID(svm, flexvol, qtree)
 	assert.Equal(t, testString, str)
 }
 
-func TestParseInternalId(t *testing.T) {
+func TestParseInternalID(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	driver := newNASQtreeStorageDriver(mockAPI)
 	testString := "/svm/fakeSVM/flexvol/fakeFlexvol/qtree/fakeQtree"
-	svm, flexvol, qtree, err := driver.ParseQtreeInternalId(testString)
+	svm, flexvol, qtree, err := driver.ParseQtreeInternalID(testString)
 	assert.NoError(t, err, "unexpected error found while parsing InternalId")
 	assert.Equal(t, svm, "fakeSVM")
 	assert.Equal(t, flexvol, "fakeFlexvol")
@@ -250,7 +250,7 @@ func TestParseInternalIdWithMissingSVM(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	driver := newNASQtreeStorageDriver(mockAPI)
 	testString := "/flexvol/fakeFlexvol/qtree/fakeQtree"
-	_, _, _, err := driver.ParseQtreeInternalId(testString)
+	_, _, _, err := driver.ParseQtreeInternalID(testString)
 	assert.Error(t, err, "expected an error when SVM Name is missing")
 }
 
