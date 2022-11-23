@@ -195,19 +195,22 @@ func init() {
 		"The name of the legacy PVC used by Trident, will ensure this does not exist.")
 	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName,
 		"The name of the legacy PV used by Trident, will ensure this does not exist.")
-	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to install.")
+	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "Trident container image. When installing Trident "+
+		"from a private image registry, this flag must be set to the path of the container image.")
 	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
 	installCmd.Flags().Int64Var(&probePort, "probe-port", 17546,
 		"The port used by the node pods for liveness/readiness probes. Must not already be in use on the worker hosts.")
 	installCmd.Flags().StringVar(&kubeletDir, "kubelet-dir", "/var/lib/kubelet",
 		"The host location of kubelet's internal state.")
 	installCmd.Flags().StringVar(&imageRegistry, "image-registry", "",
-		"The address/port of an internal image registry.")
+		"The address/port of an internal image registry location. For more information on specifying image locations, "+
+			"consult the Trident documentation.")
 	installCmd.Flags().StringVar(&autosupportProxy, "autosupport-proxy", "",
 		"The address/port of a proxy for sending Autosupport Telemetry")
 	installCmd.Flags().StringVar(&autosupportCustomURL, "autosupport-custom-url", "", "Custom Autosupport endpoint")
-	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", "",
-		"The container image for Autosupport Telemetry")
+	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", "", "Trident Autosupport container image. When "+
+		"installing Trident from a private image registry, this flag must be set to the path of the Trident "+
+		"Autosupport container image.")
 	installCmd.Flags().StringVar(&autosupportSerialNumber, "autosupport-serial-number", "",
 		"The value to set for the serial number field in Autosupport payloads")
 	installCmd.Flags().StringVar(&autosupportHostname, "autosupport-hostname", "",
