@@ -460,7 +460,7 @@ func GetMountedISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 	}
 
 	// Get all known iSCSI devices
-	iscsiDevices, err := GetISCSIDevices(ctx)
+	iscsiDevices, err := GetISCSIDevices(ctx, false)
 	if err != nil {
 		return nil, err
 	}
@@ -503,7 +503,7 @@ func GetMountedISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 }
 
 // GetISCSIDevices returns a list of iSCSI devices that are attached to (but not necessarily mounted on) this host.
-func GetISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
+func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInfo, error) {
 	Logc(ctx).Debug(">>>> devices.GetISCSIDevices")
 	defer Logc(ctx).Debug("<<<< devices.GetISCSIDevices")
 
@@ -521,27 +521,63 @@ func GetISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 	// Loop through each of the iSCSI sessions
 	for _, sessionDir := range sessionDirs {
 
+		var sessionNumber int
+		var iscsiChapInfo IscsiChapInfo
 		sessionName := sessionDir.Name()
+
 		if !strings.HasPrefix(sessionName, "session") {
 			continue
-		} else if _, err = strconv.Atoi(strings.TrimPrefix(sessionName, "session")); err != nil {
+		} else if sessionNumber, err = strconv.Atoi(strings.TrimPrefix(sessionName, "session")); err != nil {
 			Logc(ctx).WithField("session", sessionName).Error("Could not parse session number")
 			return nil, err
 		}
 
-		// Find the target IQN from the session at /sys/class/iscsi_session/sessionXXX/targetname
+		// Find the target IQN and Credentials from the session at /sys/class/iscsi_session/sessionXXX/targetname
 		sessionPath := sysPath + sessionName
-		targetNamePath := sessionPath + "/targetname"
-		targetNameBytes, err := ioutil.ReadFile(targetNamePath)
-		if err != nil {
-			Logc(ctx).WithFields(log.Fields{
-				"path":  targetNamePath,
-				"error": err,
-			}).Error("Could not read targetname file")
-			return nil, err
+		sessionFiles := map[string]string{"targetname": "targetIQN"}
+		if getCredentials {
+			sessionFiles["username"] = "IscsiUsername"
+			sessionFiles["username_in"] = "IscsiTargetUsername"
+			sessionFiles["password"] = "IscsiInitiatorSecret"
+			sessionFiles["password_in"] = "IscsiTargetSecret"
 		}
 
-		targetIQN := strings.TrimSpace(string(targetNameBytes))
+		sessionValues := make(map[string]string, len(sessionFiles))
+		for file, value := range sessionFiles {
+			path := sessionPath + "/" + file
+			fileBytes, err := ioutil.ReadFile(path)
+			if err != nil {
+				Logc(ctx).WithFields(log.Fields{
+					"path":  path,
+					"error": err,
+				}).Errorf("Could not read %v file", file)
+				return nil, err
+			}
+
+			// When CHAP not in use instead of empty
+			// credentials they are "(null)" in sysfs
+			fileContent := strings.TrimSpace(string(fileBytes))
+			if fileContent == "(null)" {
+				fileContent = ""
+			}
+
+			sessionValues[value] = fileContent
+		}
+
+		targetIQN := sessionValues["targetIQN"]
+
+		if getCredentials {
+			iscsiChapInfo = IscsiChapInfo{
+				IscsiUsername:        sessionValues["IscsiUsername"],
+				IscsiInitiatorSecret: sessionValues["IscsiInitiatorSecret"],
+				IscsiTargetUsername:  sessionValues["IscsiTargetUsername"],
+				IscsiTargetSecret:    sessionValues["IscsiTargetSecret"],
+			}
+
+			if iscsiChapInfo != (IscsiChapInfo{}) {
+				iscsiChapInfo.UseCHAP = true
+			}
+		}
 
 		Logc(ctx).WithFields(log.Fields{
 			"targetIQN":   targetIQN,
@@ -650,6 +686,8 @@ func GetISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 					"devices":         slaveDevices,
 					"multipathDevice": multipathDevice,
 					"iqn":             targetIQN,
+					"sessionNumber":   sessionNumber,
+					"CHAPInUse":       iscsiChapInfo.UseCHAP,
 					"hostSessionMap":  hostSessionMap,
 				}).Debug("Found iSCSI device.")
 
@@ -661,6 +699,8 @@ func GetISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 					Devices:         slaveDevices,
 					MultipathDevice: multipathDevice,
 					IQN:             targetIQN,
+					SessionNumber:   sessionNumber,
+					CHAPInfo:        iscsiChapInfo,
 					HostSessionMap:  hostSessionMap,
 				}
 
@@ -851,7 +891,9 @@ type ScsiDeviceInfo struct {
 	MultipathDevice string
 	Filesystem      string
 	IQN             string
+	SessionNumber   int
 	HostSessionMap  map[int]int
+	CHAPInfo        IscsiChapInfo
 }
 
 // getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be

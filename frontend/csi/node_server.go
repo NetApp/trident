@@ -28,13 +28,14 @@ const (
 	AttachISCSIVolumeTimeoutShort = 20 * time.Second
 	iSCSINodeUnstageMaxDuration   = 15 * time.Second
 	iSCSISelfHealingLockContext   = "ISCSISelfHealingThread"
-	iSCSISelfHealingExcludeBE     = "solidfire"
 )
 
 var (
 	topologyLabels = make(map[string]string)
 	iscsiUtils     = utils.IscsiUtils
 	bofUtils       = utils.BofUtils
+
+	publishedISCSISessions, currentISCSISessions utils.ISCSISessions
 )
 
 func (p *Plugin) NodeStageVolume(
@@ -917,7 +918,7 @@ func unstashIscsiTargetPortals(publishInfo *utils.VolumePublishInfo, reqPublishI
 	return nil
 }
 
-func (p *Plugin) populatePortalLUNMapping(ctx context.Context) {
+func (p *Plugin) populatePublishedISCSISessions(ctx context.Context) {
 	volumeIDs := utils.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
 	for _, volumeID := range volumeIDs {
 		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeID)
@@ -931,14 +932,8 @@ func (p *Plugin) populatePortalLUNMapping(ctx context.Context) {
 		}
 
 		publishInfo := &trackingInfo.VolumePublishInfo
-		iscsiTarget := publishInfo.VolumeAccessInfo.IscsiTargetIQN
-		// Exclude solidfire backend for now. Solidfire maintains a different handle 'Current Portal'
-		// which is not published or captured in VolumePublishInfo, current self-healing logic does not
-		// work for logout, login or scan as it is designed to work with published portal information.
-		iqnToExclude := iSCSISelfHealingExcludeBE
-		if iscsiTarget != "" && !strings.Contains(iscsiTarget, iqnToExclude) {
-			utils.AddToPortalLUNMapping(ctx, publishInfo, volumeID)
-		}
+
+		utils.AddISCSISession(ctx, &publishedISCSISessions, publishInfo, volumeID, "", utils.NotInvalid)
 	}
 }
 
@@ -1035,9 +1030,6 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 	}
 
-	// update in-mem map used for self healing tracking
-	utils.AddToPortalLUNMapping(ctx, publishInfo, req.GetVolumeId())
-
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
 	if err := utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(),
 		AttachISCSIVolumeTimeoutShort); err != nil {
@@ -1048,6 +1040,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
+
 			if err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo,
 				req.GetSecrets(),
 				AttachISCSIVolumeTimeoutShort); err != nil {
@@ -1074,6 +1067,11 @@ func (p *Plugin) nodeStageISCSIVolume(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	// Update in-mem map used for self-healing; do it after a volume has been staged.
+	// Beyond here if there is a problem with the session or there are missing LUNs
+	// then self-healing should be able to fix those issues.
+	utils.AddISCSISession(ctx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", utils.NotInvalid)
+
 	return &csi.NodeStageVolumeResponse{}, nil
 }
 
@@ -1097,6 +1095,10 @@ func (p *Plugin) updateChapInfoFromController(
 func (p *Plugin) nodeUnstageISCSIVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
 ) error {
+
+	// Remove Portal/LUN entries in self-healing map.
+	utils.RemoveLUNFromSessions(ctx, publishInfo, &publishedISCSISessions)
+
 	if publishInfo.LUKSEncryption != "" {
 		isLUKS, err := strconv.ParseBool(publishInfo.LUKSEncryption)
 		if err != nil {
@@ -1109,8 +1111,6 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 			}
 		}
 	}
-	// remove entries in self-healing map.
-	utils.RemoveFromPortalLUNMapping(ctx, publishInfo, utils.PublishedPortalLUNs)
 
 	// Delete the device from the host.
 	err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN,
@@ -1143,6 +1143,9 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 
 	if logout {
 		Logc(ctx).Debug("Safe to log out")
+
+		// Remove portal entries from the self-healing map.
+		utils.RemovePortalsFromSession(ctx, publishInfo, &publishedISCSISessions)
 
 		if err := utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal); err != nil {
 			Logc(ctx).Error(err)
@@ -1282,7 +1285,8 @@ func (p *Plugin) nodeStageNFSBlockVolume(
 	// path on the Node.
 	// NOTE: Store this value in the publishInfo so that other CSI plugin functions do not have to guess this value
 	//       in case location of the NFS mountpoint changes in the future.
-	publishInfo.NFSMountpoint = path.Join(tridentconfig.VolumeTrackingInfoPath, publishInfo.NfsUniqueID, publishInfo.NfsPath)
+	publishInfo.NFSMountpoint = path.Join(tridentconfig.VolumeTrackingInfoPath, publishInfo.NfsUniqueID,
+		publishInfo.NfsPath)
 
 	loopFile := path.Join(publishInfo.NFSMountpoint, publishInfo.SubvolumeName)
 	loopDeviceName, stagingMountpoint, err := utils.AttachBlockOnFileVolume(ctx, stagingTargetPath, publishInfo)
@@ -1485,17 +1489,17 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 
 // selfHealingRectifySession to rectify a session which has been identified as ghost session.
 // If it is determined that re-login is required, perform re login to the sessions and then scan for all the LUNs.
-func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, luns []int32, action int) error {
+/*func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, luns []int32, action int) error {
 	var err error
 	var volID string
 	var publishInfo *utils.VolumePublishInfo
-	publishedPortalLUNs := *utils.PublishedPortalLUNs
+	publishedISCSISessions := *utils.PublishedPortalLUNs
 
 	if len(portal) == 0 {
 		return fmt.Errorf("portal is invalid")
 	}
 
-	if publishInfo, err = publishedPortalLUNs.CreatePublishInfo(portal); err != nil {
+	if publishInfo, err = publishedISCSISessions.CreatePublishInfo(portal); err != nil {
 		return err
 	}
 
@@ -1513,7 +1517,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, l
 			// If there is an authentication error, update CHAP info from controller and re-try login.
 			if publishInfo.UseCHAP {
 				if utils.IsAuthError(err) {
-					if volID, err = publishedPortalLUNs.GetVolumeIDForPortal(portal); err != nil {
+					if volID, err = publishedISCSISessions.GetVolumeIDForPortal(portal); err != nil {
 						return err
 					}
 					req := &csi.NodeStageVolumeRequest{VolumeId: volID}
@@ -1521,7 +1525,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, l
 						return fmt.Errorf("could not update CHAP info for target %s", publishInfo.IscsiTargetIQN)
 					} else {
 						// Update the portal-LUN map with the latest CHAP info
-						if err = publishedPortalLUNs.UpdateChapInfoForPortal(portal, publishInfo); err != nil {
+						if err = publishedISCSISessions.UpdateChapInfoForPortal(portal, publishInfo); err != nil {
 							Logc(ctx).Debugf("Error while updating the CHAP info into portal-LUN map: %v", err)
 						}
 						// Try login with the updated CHAP info
@@ -1550,7 +1554,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, l
 	}
 
 	return nil
-}
+}*/
 
 // iSCSISelfHealing  implements iSCSI self-healing functionality which would correct sessions
 // those are in faulty state. This function is invoked periodically.
@@ -1558,13 +1562,50 @@ func (p *Plugin) iSCSISelfHealing(ctx context.Context) {
 	utils.Lock(ctx, iSCSISelfHealingLockContext, lockID)
 	defer utils.Unlock(ctx, iSCSISelfHealingLockContext, lockID)
 
-	if portal, listLUNs, action, err := utils.ISCSISelfHealSession(ctx); err != nil {
+	// If there are not iSCSI volumes expected on the host skip self-healing
+	if publishedISCSISessions.IsEmpty() {
+		Logc(ctx).Debugf("Skipping iSCSI self-heal cycle; no iSCSI volumes published on the host; ")
+		return
+	}
+
+	if err := utils.ISCSIPreChecks(ctx); err != nil {
+		Logc(ctx).Errorf("Skipping iSCSI self-heal cycle; pre-checks failed: %v", err)
+	}
+
+	// Reset current sessions
+	currentISCSISessions = utils.ISCSISessions{}
+
+	if err := utils.PopulateCurrentSessions(ctx, &currentISCSISessions); err != nil {
+		Logc(ctx).WithField("error",
+			err).Errorf("Failed to get current state of iSCSI Sessions LUN mappings; skipping iSCSI self-heal cycle.")
+		return
+	}
+
+	if currentISCSISessions.IsEmpty() {
+		Logc(ctx).Debug("No iSCSI sessions LUN mappings found.")
+	}
+
+	Logc(ctx).Debugf("\nPublished iSCSI Sessions: %v", publishedISCSISessions)
+	Logc(ctx).Debugf("\n\nCurrent iSCSI Sessions: %v", currentISCSISessions)
+
+	// TODO (arorar):
+	// SELF-HEAL STEP 1: Identify candidate stale sessions and create a sorted list (least to highest)
+	// of candidate non-stale sessions.
+	// Note: Sorting is on the basis of the last access time (least to highest).
+	// staleIscsiSessions, sortedNonStaleIscsiSessions, err := utils.IscsiSessionInspection(
+	//	ctx, publishedISCSISessions, currentISCSISessions)
+
+	// SELF-HEAL STEP 2: Iterate through the candidate non-stale sessions and the candidate
+	// stale sessions list. As Trident iterates it will identify what kind of fix may be required
+	// for non-stale iSCSI session, and for the stale iSCSI session it needs to re-login to them.
+
+	/*if portal, listLUNs, action, err := utils.ISCSISelfHealSession(ctx); err != nil {
 		Logc(ctx).WithField("Error", err).Debug("Skipping self heal cycle.")
 	} else {
 		if err := p.selfHealingRectifySession(ctx, portal, listLUNs, action); err != nil {
 			Logc(ctx).WithField("error", err).Debug("Error while healing attempt")
 		}
-	}
+	}*/
 
 	return
 }

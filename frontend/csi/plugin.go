@@ -394,7 +394,7 @@ func (p *Plugin) startISCSISelfHealingThread(ctx context.Context) {
 	p.iscsiSelfHealingTicker = time.NewTicker(p.iscsiSelfHealingInterval)
 	p.iscsiSelfHealingChannel = make(chan struct{})
 
-	p.populatePortalLUNMapping(ctx)
+	p.populatePublishedISCSISessions(ctx)
 
 	go func() {
 		for {
