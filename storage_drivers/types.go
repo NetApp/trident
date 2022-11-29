@@ -135,6 +135,7 @@ type OntapStorageDriverConfig struct {
 	TrustedCACertificate      string                   `json:"trustedCACertificate"`
 	ReplicationPolicy         string                   `json:"replicationPolicy"`
 	ReplicationSchedule       string                   `json:"replicationSchedule"`
+	FlexGroupAggregateList    []string                 `json:"flexgroupAggregateList"`
 }
 
 type OntapStorageDriverPool struct {

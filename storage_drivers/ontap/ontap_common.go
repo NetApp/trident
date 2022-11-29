@@ -1241,28 +1241,33 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.AutoExportCIDRs = []string{"0.0.0.0/0", "::/0"}
 	}
 
+	if len(config.FlexGroupAggregateList) == 0 {
+		config.FlexGroupAggregateList = []string{}
+	}
+
 	Logc(ctx).WithFields(log.Fields{
-		"StoragePrefix":       *config.StoragePrefix,
-		"SpaceAllocation":     config.SpaceAllocation,
-		"SpaceReserve":        config.SpaceReserve,
-		"SnapshotPolicy":      config.SnapshotPolicy,
-		"SnapshotReserve":     config.SnapshotReserve,
-		"UnixPermissions":     config.UnixPermissions,
-		"SnapshotDir":         config.SnapshotDir,
-		"ExportPolicy":        config.ExportPolicy,
-		"SecurityStyle":       config.SecurityStyle,
-		"NfsMountOptions":     config.NfsMountOptions,
-		"SplitOnClone":        config.SplitOnClone,
-		"FileSystemType":      config.FileSystemType,
-		"Encryption":          config.Encryption,
-		"LUKSEncryption":      config.LUKSEncryption,
-		"Mirroring":           config.Mirroring,
-		"LimitAggregateUsage": config.LimitAggregateUsage,
-		"LimitVolumeSize":     config.LimitVolumeSize,
-		"Size":                config.Size,
-		"TieringPolicy":       config.TieringPolicy,
-		"AutoExportPolicy":    config.AutoExportPolicy,
-		"AutoExportCIDRs":     config.AutoExportCIDRs,
+		"StoragePrefix":          *config.StoragePrefix,
+		"SpaceAllocation":        config.SpaceAllocation,
+		"SpaceReserve":           config.SpaceReserve,
+		"SnapshotPolicy":         config.SnapshotPolicy,
+		"SnapshotReserve":        config.SnapshotReserve,
+		"UnixPermissions":        config.UnixPermissions,
+		"SnapshotDir":            config.SnapshotDir,
+		"ExportPolicy":           config.ExportPolicy,
+		"SecurityStyle":          config.SecurityStyle,
+		"NfsMountOptions":        config.NfsMountOptions,
+		"SplitOnClone":           config.SplitOnClone,
+		"FileSystemType":         config.FileSystemType,
+		"Encryption":             config.Encryption,
+		"LUKSEncryption":         config.LUKSEncryption,
+		"Mirroring":              config.Mirroring,
+		"LimitAggregateUsage":    config.LimitAggregateUsage,
+		"LimitVolumeSize":        config.LimitVolumeSize,
+		"Size":                   config.Size,
+		"TieringPolicy":          config.TieringPolicy,
+		"AutoExportPolicy":       config.AutoExportPolicy,
+		"AutoExportCIDRs":        config.AutoExportCIDRs,
+		"FlexgroupAggregateList": config.FlexGroupAggregateList,
 	}).Debugf("Configuration defaults")
 
 	return nil

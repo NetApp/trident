@@ -417,6 +417,24 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
+	// Get the aggregates assigned to the SVM.  There must be at least one!
+	vserverAggrs, err := d.API.GetSVMAggregateNames(ctx)
+	if err != nil {
+		return err
+	}
+
+	if len(vserverAggrs) == 0 {
+		return fmt.Errorf("no assigned aggregates found")
+	}
+
+	if len(d.Config.FlexGroupAggregateList) > 0 {
+		containsAll, _ := utils.SliceContainsElements(vserverAggrs, d.Config.FlexGroupAggregateList)
+		if !containsAll {
+			return fmt.Errorf("not all aggregates specified in the flexgroupAggregateList are assigned to the SVM;  flexgroupAggregateList: %v assigned aggregates: %v",
+				d.Config.FlexGroupAggregateList, vserverAggrs)
+		}
+	}
+
 	return nil
 }
 
@@ -457,8 +475,16 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return err
 	}
 
-	vserverAggrNames := make([]azgo.AggrNameType, 0)
-	vserverAggrNames = append(vserverAggrNames, vserverAggrs...)
+	var flexGroupAggregateList []string
+	if len(d.Config.FlexGroupAggregateList) == 0 {
+		// by default, the list of aggregates to use when creating the FlexGroup is derived from those assigned to the SVM
+		vserverAggrNames := make([]azgo.AggrNameType, 0)
+		vserverAggrNames = append(vserverAggrNames, vserverAggrs...)
+		flexGroupAggregateList = vserverAggrNames
+	} else {
+		// allow the user to override the list of aggregates to use when creating the FlexGroup
+		flexGroupAggregateList = d.Config.FlexGroupAggregateList
+	}
 
 	Logc(ctx).WithFields(log.Fields{
 		"aggregates": vserverAggrs,
@@ -547,7 +573,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		"unixPermissions": unixPermissions,
 		"snapshotDir":     enableSnapshotDir,
 		"exportPolicy":    exportPolicy,
-		"aggregates":      vserverAggrNames,
+		"aggregates":      flexGroupAggregateList,
 		"securityStyle":   securityStyle,
 		"encryption":      utils.GetPrintableBoolPtrValue(enableEncryption),
 		"qosPolicy":       qosPolicy,
@@ -567,7 +593,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		// Create the FlexGroup
 		err = d.API.FlexgroupCreate(
 			ctx, api.Volume{
-				Aggregates:      vserverAggrNames,
+				Aggregates:      flexGroupAggregateList,
 				Comment:         labels,
 				Encrypt:         enableEncryption,
 				ExportPolicy:    exportPolicy,
