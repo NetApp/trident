@@ -14,31 +14,31 @@ import (
 
 // NewRouter is used to set up HTTP and HTTPS endpoints for the controller
 func NewRouter(https bool) *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
-	for _, route := range controllerRoutes {
-		var handler http.Handler = route.HandlerFunc
-		if https {
-			handler = secureheader.Handler(handler)
-		}
-		handler = Logger(handler, route.Name, log.DebugLevel)
-
-		router.
-			Methods(route.Method).
-			Path(route.Pattern).
-			Name(route.Name).
-			Handler(handler)
-	}
-
-	return router
+	return newRouter(controllerRoutes, https, log.DebugLevel)
 }
 
 // NewNodeRouter is used to set up HTTPS liveness and readiness endpoints for the node
 func NewNodeRouter(plugin *csi.Plugin) *mux.Router {
+	return newRouter(nodeRoutes(plugin), true, log.TraceLevel)
+}
+
+func newRouter(routes Routes, https bool, logLevel log.Level) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
-	for _, route := range nodeRoutes(plugin) {
-		var handler http.Handler = route.HandlerFunc
-		handler = secureheader.Handler(handler)
-		handler = Logger(handler, route.Name, log.TraceLevel)
+	for _, route := range routes {
+		handler := http.Handler(route.HandlerFunc)
+
+		// Apply per-route middleware
+		for i := len(route.Middleware) - 1; i >= 0; i-- {
+			handler = route.Middleware[i](handler)
+		}
+
+		// Apply secure header middleware
+		if https {
+			handler = secureheader.Handler(handler)
+		}
+
+		// Apply logging middleware
+		handler = Logger(handler, route.Name, logLevel)
 
 		router.
 			Methods(route.Method).

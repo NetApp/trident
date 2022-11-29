@@ -12,12 +12,14 @@ func nodeRoutes(plugin *csi.Plugin) []Route {
 			"LivenessProbe",
 			"GET",
 			"/liveness",
+			nil,
 			NodeLivenessCheck,
 		},
 		Route{
 			"ReadinessProbe",
 			"GET",
 			"/readiness",
+			nil,
 			NodeReadinessCheck(plugin),
 		},
 	}
