@@ -171,6 +171,10 @@ var (
 		VolumeCRDName,
 		VolumePublicationCRDName,
 	}
+
+	TridentDeploymentName       = TridentControllerResourceName
+	TridentLinuxDaemonsetName   = TridentNodeLinuxResourceName
+	TridentWindowsDaemonsetName = TridentNodeWindowsResourceName
 )
 
 func init() {
@@ -914,12 +918,14 @@ func installTrident() (returnError error) {
 		// that it can be deleted and new YAML can be deployed
 		installPSP := func(filePath, fileContentsYAML string) error {
 			if useYAML && fileExists(filePath) {
+				logFields = log.Fields{"path": filePath}
 				// Delete the object in case it already exists and we need to update it
 				if err := client.DeleteObjectByFile(filePath, true); err != nil {
 					return err
 				}
 				returnError = client.CreateObjectByFile(filePath)
 			} else {
+				logFields = log.Fields{}
 				// Delete the object in case it already exists and we need to update it
 				if err := client.DeleteObjectByYAML(fileContentsYAML, true); err != nil {
 					return err
@@ -930,7 +936,6 @@ func installTrident() (returnError error) {
 		}
 
 		// Check and install controller PSP
-		logFields = log.Fields{"path": controllerPodSecurityPolicyPath}
 		pspYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(true), labels, nil)
 		if err := installPSP(controllerPodSecurityPolicyPath, pspYAML); err != nil {
 			returnError = fmt.Errorf("could not create Trident controller pod security policy; %v", err)
@@ -939,7 +944,6 @@ func installTrident() (returnError error) {
 		log.WithFields(logFields).Info("Created Trident controller pod security policy.")
 
 		// Check and install node linux PSP
-		logFields = log.Fields{"path": nodeLinuxPodSecurityPolicyPath}
 		pspYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false), nodeLabels, nil)
 		if err := installPSP(nodeLinuxPodSecurityPolicyPath, pspYAML); err != nil {
 			returnError = fmt.Errorf("could not create Trident node linux pod security policy; %v", err)
@@ -948,7 +952,6 @@ func installTrident() (returnError error) {
 		log.WithFields(logFields).Info("Created Trident node linux pod security policy.")
 
 		if windows {
-			logFields = log.Fields{"path": nodeWindowsPodSecurityPolicyPath}
 			pspYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(true), nodeLabels, nil)
 			if err := installPSP(nodeWindowsPodSecurityPolicyPath, pspYAML); err != nil {
 				returnError = fmt.Errorf("could not create Trident node windows pod security policy; %v", err)
@@ -2384,7 +2387,7 @@ func getResourceQuotaName() string {
 
 func getDeploymentName(csi bool) string {
 	if csi {
-		return TridentCSI
+		return TridentDeploymentName
 	} else {
 		return TridentLegacy
 	}
@@ -2392,9 +2395,9 @@ func getDeploymentName(csi bool) string {
 
 func getDaemonSetName(windows bool) string {
 	if windows {
-		return TridentCSIWindows
+		return TridentWindowsDaemonsetName
 	} else {
-		return TridentCSI
+		return TridentLinuxDaemonsetName
 	}
 }
 

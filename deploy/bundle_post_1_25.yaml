@@ -265,7 +265,6 @@ rules:
       - apps
     resources:
       - deployments
-      - daemonsets
       - statefulsets
     verbs:
       - delete
@@ -274,7 +273,21 @@ rules:
     resourceNames:
       - trident
       - trident-csi
+      - trident-controller
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets
+    verbs:
+      - delete
+      - update
+      - patch
+    resourceNames:
+      - trident
+      - trident-csi
       - trident-csi-windows
+      - trident-node-linux
+      - trident-node-windows
   - apiGroups:
       - ""
     resources:
