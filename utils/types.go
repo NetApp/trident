@@ -731,6 +731,27 @@ func (p ISCSISessions) GoString() string {
 	return p.String()
 }
 
+// GetVolumeIDForPortal to get any valid volume ID behind a given portal.
+func (p *ISCSISessions) GetVolumeIDForPortal(portal string) (string, error) {
+	if p.IsEmpty() {
+		return "", fmt.Errorf("portal entry not found")
+	}
+	if portal != "" {
+		if lunInfoValue, err := p.LUNInfo(portal); err != nil {
+			return "", fmt.Errorf("portal is invalid")
+		} else {
+			for _, lun := range lunInfoValue.AllLUNs() {
+				if lunInfoValue.Info[lun] != "" {
+					return lunInfoValue.Info[lun], nil
+				}
+			}
+			return "", fmt.Errorf("no valid volume id is found")
+		}
+	} else {
+		return "", fmt.Errorf("portal is invalid")
+	}
+}
+
 // PortalInvalid is a data structure for iSCSI self-healing capturing Portal's invalid non-recoverable state
 type PortalInvalid int8
 

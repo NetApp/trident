@@ -1030,26 +1030,9 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 	}
 
-	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
-	if err := utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(),
+	if err = p.EnsureAttachISCSIVolume(ctx, req, "", publishInfo,
 		AttachISCSIVolumeTimeoutShort); err != nil {
-		// Did we fail to log in?
-		if utils.IsAuthError(err) {
-			// Update CHAP info from the controller and try one more time.
-			Logc(ctx).Warn("iSCSI login failed; will retrieve CHAP credentials from Trident controller and try again.")
-			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
-				return nil, status.Error(codes.Internal, err.Error())
-			}
-
-			if err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo,
-				req.GetSecrets(),
-				AttachISCSIVolumeTimeoutShort); err != nil {
-				// Bail out no matter what as we've now tried with updated credentials
-				return nil, status.Error(codes.Internal, err.Error())
-			}
-		} else {
-			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %v", err))
-		}
+		return nil, err
 	}
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
@@ -1073,6 +1056,34 @@ func (p *Plugin) nodeStageISCSIVolume(
 	utils.AddISCSISession(ctx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", utils.NotInvalid)
 
 	return &csi.NodeStageVolumeResponse{}, nil
+}
+
+// EnsureAttachISCSIVolume to ensure that iSCSI volume attachment is through.
+func (p *Plugin) EnsureAttachISCSIVolume(
+	ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
+	publishInfo *utils.VolumePublishInfo, timeout time.Duration,
+) error {
+	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
+	if err := utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint, publishInfo,
+		req.GetSecrets(), timeout); err != nil {
+		// Did we fail to log in?
+		if utils.IsAuthError(err) {
+			// Update CHAP info from the controller and try one more time.
+			Logc(ctx).Warn("iSCSI login failed; will retrieve CHAP credentials from Trident controller and try again.")
+			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
+				return status.Error(codes.Internal, err.Error())
+			}
+			if err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint, publishInfo,
+				req.GetSecrets(), AttachISCSIVolumeTimeoutShort); err != nil {
+				// Bail out no matter what as we've now tried with updated credentials
+				return status.Error(codes.Internal, err.Error())
+			}
+		} else {
+			return status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %v", err))
+		}
+	}
+
+	return nil
 }
 
 func (p *Plugin) updateChapInfoFromController(
@@ -1489,17 +1500,22 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 
 // selfHealingRectifySession to rectify a session which has been identified as ghost session.
 // If it is determined that re-login is required, perform re login to the sessions and then scan for all the LUNs.
-/*func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, luns []int32, action int) error {
+func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, action int) error {
 	var err error
-	var volID string
-	var publishInfo *utils.VolumePublishInfo
-	publishedISCSISessions := *utils.PublishedPortalLUNs
+	var volumeId string
+	var publishInfo utils.VolumePublishInfo
+	attachISCSIVolumeTimeoutOneRun := 1 * time.Second
+	// var publishedISCSISessions utils.ISCSISessions
 
-	if len(portal) == 0 {
-		return fmt.Errorf("portal is invalid")
+	if portal == "" {
+		return fmt.Errorf("portal value is empty")
 	}
+	Logc(ctx).WithFields(log.Fields{
+		"portal": portal,
+		"action": action,
+	}).Debug("ISCSI self-healing rectify session is invoked.")
 
-	if publishInfo, err = publishedISCSISessions.CreatePublishInfo(portal); err != nil {
+	if publishInfo, err = publishedISCSISessions.GeneratePublishInfo(portal); err != nil {
 		return err
 	}
 
@@ -1508,53 +1524,39 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 		if err = utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
 			return fmt.Errorf("error while logging out of target %s", publishInfo.IscsiTargetIQN)
 		} else {
-			Logc(ctx).Info("Logout is successful.")
+			Logc(ctx).Debug("Logout is successful.")
 		}
 		// Logout is successful, fallthrough to perform login.
 		fallthrough
 	case utils.ISCSIActionLoginScan:
-		if err = utils.LoginISCSITarget(ctx, publishInfo, portal); err != nil {
-			// If there is an authentication error, update CHAP info from controller and re-try login.
-			if publishInfo.UseCHAP {
-				if utils.IsAuthError(err) {
-					if volID, err = publishedISCSISessions.GetVolumeIDForPortal(portal); err != nil {
-						return err
-					}
-					req := &csi.NodeStageVolumeRequest{VolumeId: volID}
-					if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
-						return fmt.Errorf("could not update CHAP info for target %s", publishInfo.IscsiTargetIQN)
-					} else {
-						// Update the portal-LUN map with the latest CHAP info
-						if err = publishedISCSISessions.UpdateChapInfoForPortal(portal, publishInfo); err != nil {
-							Logc(ctx).Debugf("Error while updating the CHAP info into portal-LUN map: %v", err)
-						}
-						// Try login with the updated CHAP info
-						if err = utils.LoginISCSITarget(ctx, publishInfo, portal); err != nil {
-							return fmt.Errorf("error while logging in with the updated CHAP info  %s",
-								publishInfo.IscsiTargetIQN)
-						}
-					}
-				} else {
-					return fmt.Errorf("error while logging in to target %s", publishInfo.IscsiTargetIQN)
-				}
-			} else {
-				return fmt.Errorf("error while logging in to target %s", publishInfo.IscsiTargetIQN)
-			}
+		// Set FilesystemType to "raw" so that we only heal the session connectivity and not perform the mount and
+		// filesystem related operations.
+		publishInfo.FilesystemType = tridentconfig.FsRaw
+
+		if volumeId, err = publishedISCSISessions.GetVolumeIDForPortal(portal); err != nil {
+			return err
+		}
+		volContext := map[string]string{"internalName": volumeId}
+
+		req := &csi.NodeStageVolumeRequest{VolumeId: volumeId, VolumeContext: volContext, Secrets: map[string]string{}}
+		if err = p.EnsureAttachISCSIVolume(ctx, req, "", &publishInfo, attachISCSIVolumeTimeoutOneRun); err != nil {
+			return fmt.Errorf("failed to login to the target")
 		} else {
-			Logc(ctx).Info("Login to target is successful.")
+			Logc(ctx).Debug("Login to target is successful.")
 		}
 		// Login is successful, fallthrough to perform scan
 		fallthrough
 	case utils.ISCSIActionScan:
-		if err = utils.InitiateScanForLuns(ctx, luns, publishInfo.IscsiTargetIQN); err != nil {
+		if err = utils.InitiateScanForAllLUNs(ctx, publishInfo.IscsiTargetIQN); err != nil {
 			Logc(ctx).Debug("Error while rescanning of LUNs.")
 		}
+
 	default:
 		Logc(ctx).Debug("No valid action to be taken in iSCSI self-healing.")
 	}
 
 	return nil
-}*/
+}
 
 // iSCSISelfHealing  implements iSCSI self-healing functionality which would correct sessions
 // those are in faulty state. This function is invoked periodically.
@@ -1602,7 +1604,7 @@ func (p *Plugin) iSCSISelfHealing(ctx context.Context) {
 	/*if portal, listLUNs, action, err := utils.ISCSISelfHealSession(ctx); err != nil {
 		Logc(ctx).WithField("Error", err).Debug("Skipping self heal cycle.")
 	} else {
-		if err := p.selfHealingRectifySession(ctx, portal, listLUNs, action); err != nil {
+		if err := p.selfHealingRectifySession(ctx, portal, action); err != nil {
 			Logc(ctx).WithField("error", err).Debug("Error while healing attempt")
 		}
 	}*/

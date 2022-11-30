@@ -623,3 +623,52 @@ func TestPortalLUNMapping_UpdateChapInfoForPortal(t *testing.T) {
 		assert.True(t, err != nil)
 	})
 }
+
+func TestPortalLUNMapping_GetVolumeIDForPortal(t *testing.T) {
+	var err error
+	var p ISCSISessions
+	portal := "10.191.21.163:3260"
+
+	unknownPortal := "10.10.10.10:3260"
+	credentials := IscsiChapInfo{
+		UseCHAP:              true,
+		IscsiUsername:        "username",
+		IscsiInitiatorSecret: "password",
+		IscsiTargetUsername:  "username_1",
+		IscsiTargetSecret:    "password_1",
+	}
+	portalInfo := PortalInfo{
+		ISCSITargetIQN:         "IQN:2022 com.netapp-123-456",
+		Credentials:            credentials,
+		FirstIdentifiedStaleAt: time.Time{},
+		LastAccessTime:         time.Time{},
+	}
+
+	err = p.AddPortal(portal, portalInfo)
+	assert.True(t, err == nil)
+
+	p.AddLUNToPortal(portal, LUNData{100, "pvc-1111111-2222-3333-4444-55555555555555"})
+
+	t.Run("Verifying get LUN info", func(t *testing.T) {
+		volID, err := p.GetVolumeIDForPortal(portal)
+		assert.True(t, err == nil)
+		assert.True(t, err == nil)
+		assert.Equal(t, volID, "pvc-1111111-2222-3333-4444-55555555555555")
+	})
+
+	t.Run("Verifying invalid portal case", func(t *testing.T) {
+		_, err := p.GetVolumeIDForPortal("")
+		assert.True(t, err != nil)
+	})
+
+	t.Run("Verifying unknown portal case", func(t *testing.T) {
+		_, err := p.GetVolumeIDForPortal(unknownPortal)
+		assert.True(t, err != nil)
+	})
+
+	t.Run("Verifying empty portal LUN mapping case", func(t *testing.T) {
+		pe := &ISCSISessions{Info: make(map[string]*ISCSISessionData)}
+		_, err := pe.GetVolumeIDForPortal(unknownPortal)
+		assert.True(t, err != nil)
+	})
+}

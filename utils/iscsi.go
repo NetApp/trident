@@ -719,7 +719,8 @@ func formatPortal(portal string) string {
 	}
 }
 
-// iSCSIScanTargetLUN scans a single LUN on an iSCSI target to discover it.
+// iSCSIScanTargetLUN scans a single LUN or all the LUNs on an iSCSI target to discover it.
+// If all the LUNs are to be scanned please pass -1 for lunID.
 func iSCSIScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
 	fields := log.Fields{"hosts": hosts, "lunID": lunID}
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.iSCSIScanTargetLUN")
@@ -730,6 +731,12 @@ func iSCSIScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
 		err error
 	)
 
+	// By default, scan for all the LUNs
+	var scanCmd = "0 0 -"
+	if lunID >= 0 {
+		scanCmd = fmt.Sprintf("0 0 %d", lunID)
+	}
+
 	listAllISCSIDevices(ctx)
 	for _, hostNumber := range hosts {
 
@@ -739,7 +746,6 @@ func iSCSIScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
 			return err
 		}
 
-		scanCmd := fmt.Sprintf("0 0 %d", lunID)
 		if written, err := f.WriteString(scanCmd); err != nil {
 			Logc(ctx).WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
 			f.Close()
@@ -1925,6 +1931,35 @@ func PopulateCurrentSessions(ctx context.Context, currentMapping *ISCSISessions)
 		}
 
 		AddISCSISession(ctx, currentMapping, &publishInfo, "", sessionNumber, reasonInvalid)
+	}
+
+	return nil
+}
+
+// InitiateScanForAllLUNs scans all paths to each of the LUNs passed.
+func InitiateScanForAllLUNs(ctx context.Context, iSCSINodeName string) error {
+	fields := log.Fields{
+		"iSCSINodeName": iSCSINodeName,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.InitiateScanForAllLUNs")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.InitiateScanForAllLUNs")
+
+	// Setting lunID to -1 so that all the LUNs are scanned.
+	lunID := -1
+
+	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
+	if len(hostSessionMap) == 0 {
+		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
+	}
+
+	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
+	hosts := make([]int, 0)
+	for hostNumber := range hostSessionMap {
+		hosts = append(hosts, hostNumber)
+	}
+
+	if err := iSCSIScanTargetLUN(ctx, lunID, hosts); err != nil {
+		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
 	}
 
 	return nil
