@@ -2244,7 +2244,7 @@ func (c Client) SVMGetAggregateNames() ([]string, error) {
 // equivalent to filer::> vserver show-aggregates
 func (c Client) VserverShowAggrGetIterRequest() (*azgo.VserverShowAggrGetIterResponse, error) {
 	response, err := azgo.NewVserverShowAggrGetIterRequest().
-		SetMaxRecords(DefaultZapiRecords).
+		SetMaxRecords(MaxZapiRecords).
 		ExecuteUsing(c.zr)
 	return response, err
 }
