@@ -115,6 +115,20 @@ type VolumePublicationExternal struct {
 	NotSafeToAttach *bool `json:"notSafeToAttach,omitempty"`
 }
 
+// Copy returns a new copy of the VolumePublication.
+func (v *VolumePublication) Copy() *VolumePublication {
+	return &VolumePublication{
+		Name:            v.Name,
+		NodeName:        v.NodeName,
+		VolumeName:      v.VolumeName,
+		ReadOnly:        v.ReadOnly,
+		AccessMode:      v.AccessMode,
+		NotSafeToAttach: v.NotSafeToAttach,
+		Unpublished:     v.Unpublished,
+	}
+}
+
+// ConstructExternal returns an externally facing representation of the VolumePublication.
 func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
 	return &VolumePublicationExternal{
 		Name:            v.Name,

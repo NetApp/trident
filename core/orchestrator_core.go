@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -21,6 +20,7 @@ import (
 	"go.uber.org/multierr"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/core/cache"
 	"github.com/netapp/trident/frontend"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logger"
@@ -84,7 +84,7 @@ type TridentOrchestrator struct {
 	mutex                    *sync.Mutex
 	storageClasses           map[string]*storageclass.StorageClass
 	nodes                    map[string]*utils.Node
-	volumePublications       map[string]map[string]*utils.VolumePublication
+	volumePublications       *cache.VolumePublicationCache
 	snapshots                map[string]*storage.Snapshot
 	storeClient              persistentstore.Client
 	bootstrapped             bool
@@ -108,7 +108,7 @@ func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator 
 		frontends:          make(map[string]frontend.Plugin),
 		storageClasses:     make(map[string]*storageclass.StorageClass),
 		nodes:              make(map[string]*utils.Node),
-		volumePublications: make(map[string]map[string]*utils.VolumePublication),
+		volumePublications: cache.NewVolumePublicationCache(),
 		snapshots:          make(map[string]*storage.Snapshot), // key is ID, not name
 		mutex:              &sync.Mutex{},
 		storeClient:        client,
@@ -439,19 +439,28 @@ func (o *TridentOrchestrator) bootstrapVolumePublications(ctx context.Context) e
 		return nil
 	}
 
+	bootstrapErrors := make([]error, 0)
 	volumePublications, err := o.storeClient.GetVolumePublications(ctx)
 	if err != nil {
 		return err
 	}
 	for _, vp := range volumePublications {
-		Logc(ctx).WithFields(log.Fields{
+		fields := log.Fields{
 			"volume":  vp.VolumeName,
 			"node":    vp.NodeName,
 			"handler": "Bootstrap",
-		}).Info("Added an existing volume publication.")
-		o.addVolumePublicationToCache(vp)
+		}
+
+		Logc(ctx).WithFields(fields).Debug("Added an existing volume publication.")
+		err = o.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
+		if err != nil {
+			bootstrapErr := fmt.Errorf("unable to bootstrap volume publication %s; %v", vp.Name, err)
+			bootstrapErrors = append(bootstrapErrors, bootstrapErr)
+			Logc(ctx).WithFields(fields).WithError(bootstrapErr).Error("Unable to add an existing volume publication.")
+		}
 	}
-	return nil
+
+	return multierr.Combine(bootstrapErrors...)
 }
 
 // bootstrapSubordinateVolumes updates the source volumes to point to their subordinates.  Updating the
@@ -479,14 +488,6 @@ func (o *TridentOrchestrator) bootstrapSubordinateVolumes(ctx context.Context) e
 	}
 
 	return nil
-}
-
-func (o *TridentOrchestrator) addVolumePublicationToCache(vp *utils.VolumePublication) {
-	// If the volume has no entry we need to initialize the inner map
-	if o.volumePublications[vp.VolumeName] == nil {
-		o.volumePublications[vp.VolumeName] = map[string]*utils.VolumePublication{}
-	}
-	o.volumePublications[vp.VolumeName][vp.NodeName] = vp
 }
 
 func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
@@ -2757,7 +2758,7 @@ func (o *TridentOrchestrator) ListVolumes(context.Context) (volumes []*storage.V
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
-	volumes = make([]*storage.VolumeExternal, 0, (len(o.volumes) + len(o.subordinateVolumes)))
+	volumes = make([]*storage.VolumeExternal, 0, len(o.volumes)+len(o.subordinateVolumes))
 	for _, v := range o.volumes {
 		volumes = append(volumes, v.ConstructExternal())
 	}
@@ -3004,39 +3005,38 @@ func (o *TridentOrchestrator) publishVolume(
 		return utils.VolumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
-	// Validate the volume publication
-	if volPub, err := o.getVolumePublication(volumeName, publishInfo.HostName); err != nil {
-		if !utils.IsNotFoundError(err) { // Unknown error
-			msg := "error checking for volume publication record"
-			Logc(ctx).WithError(err).WithFields(fields).Error(msg)
-			return fmt.Errorf(msg)
-		}
-		// Publication not found; make one
-		volPub = generateVolumePublication(volumeName, publishInfo)
-		if err = o.addVolumePublication(ctx, volPub); err != nil {
+	// Check if the publication already exists.
+	publication, found := o.volumePublications.TryGet(volumeName, publishInfo.HostName)
+
+	// Publication not found, attempt to create a new one.
+	if !found {
+		Logc(ctx).WithFields(fields).Debug("Volume publication record not found; generating a new one.")
+		publication = generateVolumePublication(volumeName, publishInfo)
+
+		// Bail out if the publication is nil at this point, or we fail to add the publication to the store and cache.
+		if err := o.addVolumePublication(ctx, publication); err != nil || publication == nil {
 			msg := "error saving volume publication record"
 			Logc(ctx).WithError(err).Error(msg)
 			return fmt.Errorf(msg)
 		}
-	} else { // Publication found
-		if volPub == nil {
-			return fmt.Errorf("unknown error getting volume publication record")
-		}
-		if volPub.NotSafeToAttach { // Publication found, but not safe to attach to this node
-			return fmt.Errorf("it is not currently safe to publish volume %s to node %s", volumeName,
-				publishInfo.HostName)
-		}
-		// Check if new request matches old publication
-		if publishInfo.ReadOnly != volPub.ReadOnly || publishInfo.AccessMode != volPub.AccessMode {
-			msg := "this volume is already published to this node with different options"
-			Logc(ctx).WithFields(log.Fields{
-				"OldReadOnly":   volPub.ReadOnly,
-				"OldAccessMode": volPub.AccessMode,
-				"NewReadOnly":   publishInfo.ReadOnly,
-				"NewAccessMode": publishInfo.AccessMode,
-			}).Errorf(msg)
-			return utils.FoundError(msg)
-		}
+	}
+
+	// Publication found, but not safe to attach to this node
+	if publication.NotSafeToAttach {
+		return fmt.Errorf("it is not currently safe to publish volume %s to node %s", volumeName,
+			publishInfo.HostName)
+	}
+
+	// Check if new request matches old publication
+	if publishInfo.ReadOnly != publication.ReadOnly || publishInfo.AccessMode != publication.AccessMode {
+		msg := "this volume is already published to this node with different options"
+		Logc(ctx).WithFields(log.Fields{
+			"OldReadOnly":   publication.ReadOnly,
+			"OldAccessMode": publication.AccessMode,
+			"NewReadOnly":   publishInfo.ReadOnly,
+			"NewAccessMode": publishInfo.AccessMode,
+		}).Errorf(msg)
+		return utils.FoundError(msg)
 	}
 
 	publishInfo.TridentUUID = o.uuid
@@ -3116,23 +3116,6 @@ func (o *TridentOrchestrator) publishVolume(
 	return nil
 }
 
-func (o *TridentOrchestrator) isVolumePublicationNew(vp *utils.VolumePublication) (bool, error) {
-	existingPub, err := o.getVolumePublication(vp.VolumeName, vp.NodeName)
-	if err != nil {
-		if !utils.IsNotFoundError(err) {
-			return false, err
-		}
-		return true, nil
-	}
-	if reflect.DeepEqual(existingPub, vp) {
-		// Volume publication already exists with the current values
-		return false, nil
-	} else {
-		// Volume publication already exists with different values
-		return false, utils.FoundError("this volume is already published to this node with different options")
-	}
-}
-
 func generateVolumePublication(volName string, publishInfo *utils.VolumePublishInfo) *utils.VolumePublication {
 	vp := &utils.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volName, publishInfo.HostName),
@@ -3198,42 +3181,50 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 	Logc(ctx).WithFields(fields).Debug(">>>>>> Orchestrator#unpublishVolume")
 	defer Logc(ctx).Debug("<<<<<< Orchestrator#unpublishVolume")
 
-	volPub, err := o.getVolumePublication(volumeName, nodeName)
-	if err != nil {
-		if utils.IsNotFoundError(err) {
-			// It is ok for the publication to not exist at this point in docker mode.
-			if config.CurrentDriverContext != config.ContextDocker {
-				Logc(ctx).WithError(err).WithFields(fields).Warn("Volume is not published to node; doing nothing.")
-				return nil
-			}
-		} else {
-			// TODO(sphadnis): Check if this else block is dead code
-			msg := "unable to get volume publication record"
-			Logc(ctx).WithError(err).WithFields(fields).Error(msg)
-			return fmt.Errorf(msg)
+	publication, found := o.volumePublications.TryGet(volumeName, nodeName)
+	if !found {
+		// If the publication couldn't be found and Trident isn't in docker mode, bail out.
+		// Otherwise, continue un-publishing. It is ok for the publication to not exist at this point for docker.
+		if config.CurrentDriverContext != config.ContextDocker {
+			Logc(ctx).WithError(utils.NotFoundError("unable to get volume publication record")).WithFields(fields).Warn("Volume is not published to node; doing nothing.")
+			return nil
 		}
-	} else if volPub == nil {
+	} else if publication == nil {
 		msg := "volumePublication is nil"
 		Logc(ctx).WithFields(fields).Errorf(msg)
 		return fmt.Errorf(msg)
 	}
 
-	if config.CurrentDriverContext != config.ContextDocker && volPub.NotSafeToAttach {
-		// Volume publication is "dirty" and so we do not want to actually perform the unpublish call again,
-		// but we should record that the orchestrator thinks it should be unpublished
+	if config.CurrentDriverContext != config.ContextDocker && publication.NotSafeToAttach {
+		// Volume publication is "dirty" so we do not want to actually perform unpublish,
+		// but we should record that the orchestrator thinks it should be unpublished.
 		Logc(ctx).WithFields(fields).Warn(
 			"Volume publication already force-unpublished; recording unpublishVolume request.")
-		if !volPub.Unpublished {
-			volPub.Unpublished = true
-			err := o.storeClient.UpdateVolumePublication(ctx, volPub)
-			if err != nil {
-				volPub.Unpublished = false
-				msg := "could not update volume publication"
-				Logc(ctx).WithFields(fields).WithError(err).Error(msg)
-				return fmt.Errorf(msg)
+
+		// Updates need to happen in both the store and cache layer to keep our cache fresh;
+		// Capture any errors that may occur during this process and return the result.
+		unpublishErrors := make([]error, 0)
+		if !publication.Unpublished {
+			publication.Unpublished = true
+
+			if err := o.storeClient.UpdateVolumePublication(ctx, publication); err != nil {
+				// Persistence store update failed; Reset unpublished and add an error to the list of errors.
+				publication.Unpublished = false
+				storeErr := fmt.Errorf("failed to update volume publication: [%s]; %v", publication.Name, err)
+				unpublishErrors = append(unpublishErrors, storeErr)
+				Logc(ctx).WithFields(fields).WithError(storeErr).Error("Unable to update volume publication.")
+			}
+
+			if err := o.volumePublications.Set(volumeName, nodeName, publication); err != nil {
+				// Cache update also failed; unset the value and add an error to the list of errors.
+				cacheErr := fmt.Errorf("failed to update publication in cache: [%s]; %v", publication.Name, err)
+				unpublishErrors = append(unpublishErrors, cacheErr)
+				Logc(ctx).WithFields(fields).WithError(cacheErr).Error("Unable to update volume publication in cache.")
 			}
 		}
-		return nil
+
+		// Return any errors that may have occurred. If no errors occurred, this will return nil.
+		return multierr.Combine(unpublishErrors...)
 	}
 
 	publishInfo := &utils.VolumePublishInfo{
@@ -3287,7 +3278,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		return err
 	}
 
-	// Delete the publication, if it's not a dirty unpublish
+	// Delete the publication if it's not a dirty unpublish.
 	if !dirty {
 		if err := o.deleteVolumePublication(ctx, volumeName, nodeName); err != nil {
 			msg := "error deleting volume publication record"
@@ -4751,7 +4742,8 @@ func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nodeName string) (
 		return utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
 	}
 
-	publicationCount := len(o.listVolumePublicationsForNode(ctx, nodeName))
+	// Only retrieves the number of publications for this node.
+	publicationCount := len(o.volumePublications.ListPublicationsForVolume(nodeName))
 	logFields := log.Fields{
 		"name":         nodeName,
 		"publications": publicationCount,
@@ -4810,16 +4802,21 @@ func (o *TridentOrchestrator) AddVolumePublication(
 	return o.addVolumePublication(ctx, publication)
 }
 
+// addVolumePublication adds a volume publication to the persistent store and sets the value on the cache.
 func (o *TridentOrchestrator) addVolumePublication(
 	ctx context.Context, publication *utils.VolumePublication,
-) (err error) {
+) error {
+	Logc(ctx).WithFields(log.Fields{
+		"volumeName": publication.VolumeName,
+		"nodeName":   publication.NodeName,
+	}).Debug(">>>>>> Orchestrator#addVolumePublication")
+	defer Logc(ctx).Debug("<<<<<< Orchestrator#addVolumePublication")
+
 	if err := o.storeClient.AddVolumePublication(ctx, publication); err != nil {
 		return err
 	}
 
-	o.addVolumePublicationToCache(publication)
-
-	return nil
+	return o.volumePublications.Set(publication.VolumeName, publication.NodeName, publication)
 }
 
 // UpdateVolumePublication allows changing the notSafeToAttach flag which will initiate force detach when set from
@@ -4845,24 +4842,51 @@ func (o *TridentOrchestrator) UpdateVolumePublication(
 func (o *TridentOrchestrator) updateVolumePublication(
 	ctx context.Context, volumeName, nodeName string, notSafeToAttach *bool,
 ) error {
-	vPub, err := o.getVolumePublication(volumeName, nodeName)
-	if err != nil {
-		return err
+	fields := log.Fields{
+		"volumeName":      volumeName,
+		"nodeName":        nodeName,
+		"notSafeToAttach": notSafeToAttach,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>>>> Orchestrator#updateVolumePublication")
+	defer Logc(ctx).Debug("<<<<<< Orchestrator#updateVolumePublication")
+
+	publication, found := o.volumePublications.TryGet(volumeName, nodeName)
+	if !found {
+		return utils.NotFoundError("unable to find volume publication record")
 	}
 
 	if notSafeToAttach != nil {
-		if !vPub.NotSafeToAttach && *notSafeToAttach {
-			// If updating from false to true,
-			// we're initiating the force detach and should unpublish the volume without deleting the publication
-			if err := o.unpublishVolume(ctx, volumeName, nodeName, true); err != nil {
+		if !publication.NotSafeToAttach && *notSafeToAttach {
+			// Updating from false to true, initiates the force detach behavior;
+			// This should unpublish the volume without deleting the publication.
+			err := o.unpublishVolume(ctx, volumeName, nodeName, true)
+			if err != nil {
 				return err
 			}
-			vPub.NotSafeToAttach = *notSafeToAttach
-			if err := o.storeClient.UpdateVolumePublication(ctx, vPub); err != nil {
-				vPub.NotSafeToAttach = !*notSafeToAttach // Unset the value
-				return err
+
+			// Updates need to happen in both the store and cache layer to keep our cache fresh;
+			// Capture any errors that may occur during this process and return the result.
+			updateErrors := make([]error, 0)
+
+			publication.NotSafeToAttach = *notSafeToAttach // Set NotSafeToAttach on the publication.
+			if err := o.storeClient.UpdateVolumePublication(ctx, publication); err != nil {
+				// Persistence store update failed; unset the value and add an error to the list of errors.
+				publication.NotSafeToAttach = !*notSafeToAttach
+				storeErr := fmt.Errorf("failed to update volume publication: [%s]; %v", publication.Name, err)
+				updateErrors = append(updateErrors, storeErr)
+				Logc(ctx).WithFields(fields).WithError(storeErr).Error("Unable to update volume publication.")
 			}
-		} else if vPub.NotSafeToAttach && !*notSafeToAttach {
+
+			if err := o.volumePublications.Set(volumeName, nodeName, publication); err != nil {
+				// Cache update also failed; unset the value and add an error to the list of errors.
+				cacheErr := fmt.Errorf("failed to update publication in cache: [%s]; %v", publication.Name, err)
+				updateErrors = append(updateErrors, cacheErr)
+				Logc(ctx).WithFields(fields).WithError(cacheErr).Error("Unable to update volume publication in cache.")
+			}
+
+			// Return any errors that may have occurred. If no errors occurred, this will return nil.
+			return multierr.Combine(updateErrors...)
+		} else if publication.NotSafeToAttach && !*notSafeToAttach {
 			// If updating from true to false, we've finished cleaning up the force detached volume on the node,
 			// so we can delete the publication
 			if err := o.deleteVolumePublication(ctx, volumeName, nodeName); err != nil {
@@ -4884,65 +4908,54 @@ func (o *TridentOrchestrator) GetVolumePublication(
 
 	defer recordTiming("vol_pub_get", &err)()
 
-	o.mutex.Lock()
-	defer o.mutex.Unlock()
-
-	volumePublication, err := o.getVolumePublication(volumeName, nodeName)
-	if err != nil {
-		return nil, err
-	}
-	return volumePublication, nil
-}
-
-func (o *TridentOrchestrator) getVolumePublication(
-	volumeName, nodeName string,
-) (*utils.VolumePublication, error) {
-	publication, found := o.volumePublications[volumeName][nodeName]
+	volumePublication, found := o.volumePublications.TryGet(volumeName, nodeName)
 	if !found {
 		return nil, utils.NotFoundError(fmt.Sprintf("volume publication %v was not found",
 			utils.GenerateVolumePublishName(volumeName, nodeName)))
 	}
-	return publication, nil
+	return volumePublication, nil
 }
 
-// ListVolumePublications returns a list of all volume publications
+// ListVolumePublications returns a list of all volume publications.
 func (o *TridentOrchestrator) ListVolumePublications(
 	ctx context.Context, notSafeToAttach *bool,
 ) (publications []*utils.VolumePublicationExternal, err error) {
+	Logc(ctx).Debug(">>>>>> ListVolumePublications")
+	defer Logc(ctx).Debug("<<<<<< ListVolumePublications")
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
 
 	defer recordTiming("vol_pub_list", &err)()
 
-	o.mutex.Lock()
-	defer o.mutex.Unlock()
-
-	publications = []*utils.VolumePublicationExternal{}
-	for _, pubs := range o.volumePublications {
-		for _, pub := range pubs {
-			if notSafeToAttach == nil || *notSafeToAttach == pub.NotSafeToAttach {
-				publications = append(publications, pub.ConstructExternal())
-			}
+	// Get all publications as a list.
+	internalPubs := o.volumePublications.ListPublications()
+	publications = make([]*utils.VolumePublicationExternal, 0, len(internalPubs))
+	for _, pub := range internalPubs {
+		if notSafeToAttach == nil || *notSafeToAttach == pub.NotSafeToAttach {
+			publications = append(publications, pub.ConstructExternal())
 		}
 	}
 	return publications, nil
 }
 
-// ListVolumePublicationsForVolume returns a list of all volume publications for a given volume
+// ListVolumePublicationsForVolume returns a list of all volume publications for a given volume.
 func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 	ctx context.Context, volumeName string, notSafeToAttach *bool,
 ) (publications []*utils.VolumePublicationExternal, err error) {
+	fields := log.Fields{"volumeName": volumeName}
+	Logc(ctx).WithFields(fields).Debug(">>>>>> ListVolumePublicationsForVolume")
+	defer Logc(ctx).Debug("<<<<<< ListVolumePublicationsForVolume")
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
 
 	defer recordTiming("vol_pub_list_for_vol", &err)()
 
-	o.mutex.Lock()
-	defer o.mutex.Unlock()
-
-	internalPubs := o.listVolumePublicationsForVolume(ctx, volumeName)
+	// Get all publications for a volume as a list.
+	internalPubs := o.volumePublications.ListPublicationsForVolume(volumeName)
 	publications = make([]*utils.VolumePublicationExternal, 0, len(internalPubs))
 	for _, pub := range internalPubs {
 		if notSafeToAttach == nil || *notSafeToAttach == pub.NotSafeToAttach {
@@ -4952,17 +4965,7 @@ func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 	return
 }
 
-func (o *TridentOrchestrator) listVolumePublicationsForVolume(
-	_ context.Context, volumeName string,
-) (publications []*utils.VolumePublication) {
-	publications = []*utils.VolumePublication{}
-	for _, pub := range o.volumePublications[volumeName] {
-		publications = append(publications, pub)
-	}
-	return publications
-}
-
-// Change the signature of the func here to return error
+// Change the signature of the func here to return error.
 func (o *TridentOrchestrator) listVolumePublicationsForVolumeAndSubordinates(
 	_ context.Context, volumeName string,
 ) (publications []*utils.VolumePublication) {
@@ -4991,22 +4994,24 @@ func (o *TridentOrchestrator) listVolumePublicationsForVolumeAndSubordinates(
 		}
 	}
 
-	// Build slice of all publications for the volume and all of its subordinates
+	volumePublications := o.volumePublications.Map()
 	for _, v := range allVolumes {
-		for _, pub := range o.volumePublications[v.Config.Name] {
-			publications = append(publications, pub)
+		if nodeToPublications, found := volumePublications[v.Config.Name]; found {
+			for _, pub := range nodeToPublications {
+				publications = append(publications, pub)
+			}
 		}
 	}
 	return publications
 }
 
-// ListVolumePublicationsForNode returns a list of all volume publications for a given node
+// ListVolumePublicationsForNode returns a list of all volume publications for a given node.
 func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 	ctx context.Context, nodeName string, notSafeToAttach *bool,
 ) (publications []*utils.VolumePublicationExternal, err error) {
-	fields := log.Fields{"NodeName": nodeName}
-	Logc(ctx).WithFields(fields).Debug(">>>>>> GetVolumePublications")
-	defer Logc(ctx).Debug("<<<<<< GetVolumePublications")
+	fields := log.Fields{"nodeName": nodeName}
+	Logc(ctx).WithFields(fields).Debug(">>>>>> ListVolumePublicationsForNode")
+	defer Logc(ctx).Debug("<<<<<< ListVolumePublicationsForNode")
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -5014,26 +5019,12 @@ func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 
 	defer recordTiming("vol_pub_list_for_node", &err)()
 
-	o.mutex.Lock()
-	defer o.mutex.Unlock()
-
-	internalPubs := o.listVolumePublicationsForNode(ctx, nodeName)
+	// Retrieve only publications on the node.
+	internalPubs := o.volumePublications.ListPublicationsForNode(nodeName)
 	publications = make([]*utils.VolumePublicationExternal, 0, len(internalPubs))
 	for _, pub := range internalPubs {
 		if notSafeToAttach == nil || *notSafeToAttach == pub.NotSafeToAttach {
 			publications = append(publications, pub.ConstructExternal())
-		}
-	}
-	return
-}
-
-func (o *TridentOrchestrator) listVolumePublicationsForNode(
-	_ context.Context, nodeName string,
-) (publications []*utils.VolumePublication) {
-	publications = []*utils.VolumePublication{}
-	for _, pubs := range o.volumePublications {
-		if pubs[nodeName] != nil {
-			publications = append(publications, pubs[nodeName])
 		}
 	}
 	return
@@ -5055,41 +5046,43 @@ func (o *TridentOrchestrator) DeleteVolumePublication(ctx context.Context, volum
 }
 
 func (o *TridentOrchestrator) deleteVolumePublication(ctx context.Context, volumeName, nodeName string) (err error) {
-	publication, err := o.getVolumePublication(volumeName, nodeName)
-	if err != nil {
-		if utils.IsNotFoundError(err) {
-			// No publication to delete, done.
-			return nil
-		}
-		return err
+	fields := log.Fields{
+		"volumeName": volumeName,
+		"nodeName":   nodeName,
 	}
+	Logc(ctx).WithFields(fields).Debug(">>>>>> Orchestrator#deleteVolumePublication")
+	defer Logc(ctx).Debug("<<<<<< Orchestrator#deleteVolumePublication")
+
+	publication, found := o.volumePublications.TryGet(volumeName, nodeName)
+	if !found {
+		Logc(ctx).WithFields(fields).Debug("No volume publication found in the cache.")
+		return nil
+	}
+
+	// DeleteVolumePublication is idempotent.
 	if err = o.storeClient.DeleteVolumePublication(ctx, publication); err != nil {
 		if !utils.IsNotFoundError(err) {
 			return err
 		}
 	}
-	o.removeVolumePublicationFromCache(volumeName, nodeName)
+
+	if err = o.volumePublications.Delete(volumeName, nodeName); err != nil {
+		return fmt.Errorf("unable to remove publication from cache; %v", err)
+	}
 
 	node, ok := o.nodes[nodeName]
 	if !ok {
 		return utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
 	}
-	// Check for publications remaining on the node
-	nodePubFound := len(o.listVolumePublicationsForNode(ctx, nodeName)) > 0
+
+	// Check for publications remaining for just the node.
+	nodePubFound := len(o.volumePublications.ListPublicationsForNode(nodeName)) > 0
 
 	// If the node is known to be gone, and if we just unpublished the last volume on that node, delete the node.
 	if !nodePubFound && node.Deleted {
 		return o.deleteNode(ctx, nodeName)
 	}
 	return nil
-}
-
-func (o *TridentOrchestrator) removeVolumePublicationFromCache(volumeID, nodeID string) {
-	delete(o.volumePublications[volumeID], nodeID)
-	// If there are no more nodes for this volume, remove the volume's entry
-	if len(o.volumePublications[volumeID]) == 0 {
-		delete(o.volumePublications, volumeID)
-	}
 }
 
 func (o *TridentOrchestrator) updateBackendOnPersistentStore(

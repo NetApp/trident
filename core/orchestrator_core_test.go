@@ -9,7 +9,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -1155,7 +1155,7 @@ func addBackendStorageClass(
 func captureOutput(f func()) string {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
-	defer log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(io.Discard)
 	f()
 	return buf.String()
 }
@@ -2705,11 +2705,11 @@ func TestAddVolumePublication(t *testing.T) {
 
 	err := orchestrator.AddVolumePublication(context.Background(), fakePub)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error adding volume publication: %v", err))
-	assert.Contains(t, orchestrator.volumePublications, fakePub.VolumeName,
+	assert.Contains(t, orchestrator.volumePublications.Map(), fakePub.VolumeName,
 		"volume publication missing from orchestrator's cache")
-	assert.Contains(t, orchestrator.volumePublications[fakePub.VolumeName], fakePub.NodeName,
+	assert.NotNil(t, orchestrator.volumePublications.Get(fakePub.VolumeName, fakePub.NodeName),
 		"volume publication missing from orchestrator's cache")
-	assert.Equal(t, fakePub, orchestrator.volumePublications[fakePub.VolumeName][fakePub.NodeName],
+	assert.Equal(t, fakePub, orchestrator.volumePublications.Get(fakePub.VolumeName, fakePub.NodeName),
 		"volume publication was not correctly added")
 }
 
@@ -2737,154 +2737,294 @@ func TestAddVolumePublicationError(t *testing.T) {
 
 	err := orchestrator.AddVolumePublication(context.Background(), fakePub)
 	assert.NotNilf(t, err, "add volume publication did not return an error")
-	assert.NotContains(t, orchestrator.volumePublications, fakePub.VolumeName,
+	assert.NotContains(t, orchestrator.volumePublications.Map(), fakePub.VolumeName,
 		"volume publication was added orchestrator's cache")
 }
 
-func TestUpdateVolumePublication(t *testing.T) {
-	type updateArgs struct {
-		name       string
-		startDirty bool
-		setDirty   *bool
-		setup      func(*mockpersistentstore.MockStoreClient, *mockstorage.MockBackend, *storage.Volume,
-			*utils.VolumePublication)
-		wantErr     assert.ErrorAssertionFunc
-		wantDirty   assert.BoolAssertionFunc
-		wantInCache assert.BoolAssertionFunc
+func TestUpdateVolumePublication_FailsWithNoCacheEntry(t *testing.T) {
+	// Set up mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	// Set up test variables.
+	var notSafeToAttach *bool
+	volumeName := "foo"
+	nodeName := "bar"
+
+	// BackendUUID may be calls a number of times, mock it out.
+	mockBackend.EXPECT().BackendUUID().Return("12345").AnyTimes() // Always return the right UUID
+
+	// Initialize the orchestrator.
+	orchestrator := getOrchestrator(t, false)
+
+	// Make the update publication call.
+	err := orchestrator.UpdateVolumePublication(context.Background(), volumeName, nodeName, notSafeToAttach)
+
+	// Try to get the cached publication from the publications map.
+	cachedPub, found := orchestrator.volumePublications.TryGet(volumeName, nodeName)
+
+	assert.Error(t, err, "expected error")
+	assert.False(t, found, "expected false value")
+	assert.Nil(t, cachedPub, "expected non-nil value")
+}
+
+func TestUpdateVolumePublication_NoUpdate(t *testing.T) {
+	// Set up mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	// Set up test variables.
+	var notSafeToAttach *bool
+	volumeName := "foo"
+	nodeName := "bar"
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: volumeName},
+		BackendUUID: "12345",
+	}
+	pub := &utils.VolumePublication{
+		Name:       utils.GenerateVolumePublishName(volumeName, nodeName),
+		VolumeName: volumeName,
+		NodeName:   nodeName,
 	}
 
-	var (
-		truth  = true
-		untrue = false
-	)
+	// BackendUUID may be calls a number of times, mock it out.
+	mockBackend.EXPECT().BackendUUID().Return(vol.BackendUUID).AnyTimes() // Always return the right UUID
 
-	tt := []updateArgs{
-		{
-			"nil is no update", false, nil,
-			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
-				vol *storage.Volume, pub *utils.VolumePublication,
-			) {
-				// Nil should cause no update to occur
-			},
-			assert.NoError, assert.False, assert.True,
-		},
-		{
-			"clean to dirty", false, &truth,
-			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
-				vol *storage.Volume, pub *utils.VolumePublication,
-			) {
-				// Volume should be unpublished and the publication updated
-				backend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(nil)
-				storeClient.EXPECT().UpdateVolumePublication(gomock.Any(), pub).Return(nil)
-			},
-			assert.NoError, assert.True, assert.True,
-		},
-		{
-			"dirty to clean", true, &untrue,
-			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
-				vol *storage.Volume, pub *utils.VolumePublication,
-			) {
-				// Publication should be deleted
-				storeClient.EXPECT().DeleteVolumePublication(gomock.Any(), pub).Return(nil)
-			},
-			assert.NoError, assert.True, assert.False,
-		},
-		{
-			"clean stays clean", false, &untrue,
-			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
-				vol *storage.Volume, pub *utils.VolumePublication,
-			) {
-				// Nothing should happen
-			},
-			assert.NoError, assert.False, assert.True,
-		},
-		{
-			"dirty stays dirty", true, &truth,
-			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
-				vol *storage.Volume, pub *utils.VolumePublication,
-			) {
-				// Nothing should happen
-			},
-			assert.NoError, assert.True, assert.True,
-		},
-		{
-			"unpublish fails", false, &truth,
-			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
-				vol *storage.Volume, pub *utils.VolumePublication,
-			) {
-				// Throw error during unpublish, expect values to not change
-				backend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(fmt.Errorf("error"))
-			},
-			assert.Error, assert.False, assert.True,
-		},
-		{
-			"update fails", false, &truth,
-			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
-				vol *storage.Volume, pub *utils.VolumePublication,
-			) {
-				// Throw error when updating the publication, expect values to not change
-				backend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(nil)
-				storeClient.EXPECT().UpdateVolumePublication(gomock.Any(), pub).Return(fmt.Errorf("error"))
-			},
-			assert.Error, assert.False, assert.True,
-		},
-		{
-			"delete fails", true, &untrue,
-			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
-				vol *storage.Volume, pub *utils.VolumePublication,
-			) {
-				// Throw error during delete, expect publication is still in cache and values are unchanged
-				storeClient.EXPECT().DeleteVolumePublication(gomock.Any(), pub).Return(fmt.Errorf("error"))
-			},
-			assert.Error, assert.True, assert.True,
-		},
+	// Initialize the orchestrator.
+	orchestrator := getOrchestrator(t, false)
+
+	// The publication must exist prior to calling update, add it to the rw cache.
+	if err := orchestrator.volumePublications.Set(volumeName, nodeName, pub); err != nil {
+		t.Fatal("unable to set cache value")
 	}
 
-	for _, tr := range tt {
-		t.Run(tr.name, func(t *testing.T) {
-			mockCtrl := gomock.NewController(t)
-			orchestrator := getOrchestrator(t, false)
-			// Create a mocked persistent store client
-			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	// Get the publication from the cache before calling update.
+	oldPub := orchestrator.volumePublications.Get(volumeName, nodeName)
 
-			vol := &storage.Volume{
-				Config:      &storage.VolumeConfig{Name: "bar"},
-				BackendUUID: "12345",
-			}
+	// Make the update publication call.
+	err := orchestrator.UpdateVolumePublication(context.Background(), volumeName, nodeName, notSafeToAttach)
 
-			mockBackend.EXPECT().BackendUUID().Return(vol.BackendUUID).AnyTimes() // Always return the right UUID
+	// Get the cached publication from the publications map.
+	cachedPub := orchestrator.volumePublications.Get(volumeName, nodeName)
 
-			volPub := &utils.VolumePublication{
-				Name:            "foobar",
-				NodeName:        "foo",
-				VolumeName:      vol.Config.Name,
-				NotSafeToAttach: tr.startDirty,
-			}
+	assert.NoError(t, err, "expected no error")
+	assert.NotNil(t, cachedPub, "expected non-nil value")
+	assert.Equal(t, oldPub.NotSafeToAttach, cachedPub.NotSafeToAttach, "expected equal values")
+}
 
-			node := &utils.Node{Name: volPub.NodeName}
+func TestUpdateVolumePublication_UnpublishFails(t *testing.T) {
+	// Set up mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 
-			tr.setup(mockStoreClient, mockBackend, vol, volPub)
-
-			orchestrator.storeClient = mockStoreClient
-			orchestrator.backends[vol.BackendUUID] = mockBackend
-			orchestrator.volumes[vol.Config.Name] = vol
-			orchestrator.nodes[node.Name] = node
-			orchestrator.addVolumePublicationToCache(volPub)
-
-			err := orchestrator.updateVolumePublication(context.Background(), vol.Config.Name, node.Name, tr.setDirty)
-			if !tr.wantErr(t, err, "unexpected result") {
-				return
-			}
-			if !tr.wantDirty(t, volPub.NotSafeToAttach, "publication dirty flag is incorrect") {
-				return
-			}
-			_, ok := orchestrator.volumePublications[vol.Config.Name][node.Name]
-			if !tr.wantInCache(t, ok, "publication cache is incorrect") {
-				return
-			}
-		})
+	// Set up test variables.
+	notSafeToAttach := new(bool)
+	*notSafeToAttach = true
+	volumeName := "foo"
+	nodeName := "bar"
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: volumeName},
+		BackendUUID: "12345",
 	}
+	node := &utils.Node{Name: nodeName}
+	pub := &utils.VolumePublication{
+		Name:            utils.GenerateVolumePublishName(volumeName, nodeName),
+		VolumeName:      volumeName,
+		NodeName:        nodeName,
+		NotSafeToAttach: !*notSafeToAttach, // make the publication false on the pub.
+		Unpublished:     true,
+	}
+
+	// BackendUUID may be calls a number of times, mock it out.
+	mockBackend.EXPECT().BackendUUID().Return(vol.BackendUUID).AnyTimes() // Always return the right UUID
+
+	// Initialize the orchestrator and its caches.
+	orchestrator := getOrchestrator(t, false)
+	orchestrator.storeClient = mockStoreClient
+	orchestrator.backends[vol.BackendUUID] = mockBackend
+	orchestrator.volumes[volumeName] = vol
+	orchestrator.nodes[nodeName] = node
+	// The publication must exist prior to calling update, add it to the rw cache.
+	if err := orchestrator.volumePublications.Set(volumeName, nodeName, pub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
+
+	mockBackend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(fmt.Errorf("error"))
+	err := orchestrator.updateVolumePublication(context.Background(), volumeName, nodeName, notSafeToAttach)
+
+	// Try to get the cached publication from the publications map. It should still exist because the delete call failed.
+	cachedPub, found := orchestrator.volumePublications.TryGet(volumeName, nodeName)
+
+	assert.Error(t, err, "expected error")
+	assert.True(t, found, "expected true value")          // True indicates the publication still exists.
+	assert.NotNil(t, cachedPub, "expected non-nil value") // Non-nil indicates the publication still exists.
+	assert.EqualValues(t, pub, cachedPub, "expected equal values")
+}
+
+func TestUpdateVolumePublication_CleanToDirty(t *testing.T) {
+	// Set up mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	// Set up test variables.
+	notSafeToAttach := new(bool)
+	*notSafeToAttach = true
+	volumeName := "foo"
+	nodeName := "bar"
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: volumeName},
+		BackendUUID: "12345",
+	}
+	node := &utils.Node{Name: nodeName}
+	pub := &utils.VolumePublication{
+		Name:            utils.GenerateVolumePublishName(volumeName, nodeName),
+		VolumeName:      volumeName,
+		NodeName:        nodeName,
+		NotSafeToAttach: !*notSafeToAttach, // make the publication false on the pub.
+		Unpublished:     true,
+	}
+
+	// BackendUUID may be calls a number of times, mock it out.
+	mockBackend.EXPECT().BackendUUID().Return(vol.BackendUUID).AnyTimes() // Always return the right UUID
+
+	// Initialize the orchestrator and its caches.
+	orchestrator := getOrchestrator(t, false)
+	orchestrator.storeClient = mockStoreClient
+	orchestrator.backends[vol.BackendUUID] = mockBackend
+	orchestrator.volumes[volumeName] = vol
+	orchestrator.nodes[nodeName] = node
+	// The publication must exist prior to calling update, add it to the rw cache.
+	if err := orchestrator.volumePublications.Set(volumeName, nodeName, pub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
+
+	// Get the cached publication before update to ensure NotSafeToAttach changes.
+	oldPub := orchestrator.volumePublications.Get(volumeName, nodeName)
+
+	// Mock out any clients and make the update publication call.
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockBackend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(nil).Times(1)
+	err := orchestrator.updateVolumePublication(context.Background(), volumeName, nodeName, notSafeToAttach)
+	cachedPub := orchestrator.volumePublications.Get(volumeName, nodeName)
+
+	assert.NoError(t, err, "expected no error")
+	assert.Equal(t, cachedPub.NotSafeToAttach, *notSafeToAttach, "expected equal values")
+	assert.False(t, oldPub.NotSafeToAttach, "expected false value")
+	assert.NotEqual(t, cachedPub.NotSafeToAttach, oldPub.NotSafeToAttach, "expected unequal values")
+}
+
+func TestUpdateVolumePublication_CleanToDirtyFails(t *testing.T) {
+	// Set up mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	// Set up test variables.
+	notSafeToAttach := new(bool)
+	*notSafeToAttach = true
+	volumeName := "foo"
+	nodeName := "bar"
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: volumeName},
+		BackendUUID: "12345",
+	}
+	node := &utils.Node{Name: nodeName}
+	pub := &utils.VolumePublication{
+		Name:            utils.GenerateVolumePublishName(volumeName, nodeName),
+		VolumeName:      volumeName,
+		NodeName:        nodeName,
+		NotSafeToAttach: !*notSafeToAttach, // make the publication false on the pub.
+		Unpublished:     true,
+	}
+
+	// BackendUUID may be calls a number of times, mock it out.
+	mockBackend.EXPECT().BackendUUID().Return(vol.BackendUUID).AnyTimes() // Always return the right UUID
+
+	// Initialize the orchestrator and its caches.
+	orchestrator := getOrchestrator(t, false)
+	orchestrator.storeClient = mockStoreClient
+	orchestrator.backends[vol.BackendUUID] = mockBackend
+	orchestrator.volumes[volumeName] = vol
+	orchestrator.nodes[nodeName] = node
+	// The publication must exist prior to calling update, add it to the rw cache.
+	if err := orchestrator.volumePublications.Set(volumeName, nodeName, pub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
+
+	mockBackend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(errors.New("update publication failed"))
+	err := orchestrator.updateVolumePublication(context.Background(), volumeName, nodeName, notSafeToAttach)
+
+	// Try to get the cached publication from the publications map. It should still exist because the update call failed.
+	cachedPub, found := orchestrator.volumePublications.TryGet(volumeName, nodeName)
+
+	assert.Error(t, err, "expected error")
+	assert.True(t, found, "expected true value")          // True indicates the publication still exists.
+	assert.NotNil(t, cachedPub, "expected non-nil value") // Non-nil indicates the publication still exists.
+	assert.EqualValues(t, pub, cachedPub, "expected equal values")
+}
+
+func TestUpdateVolumePublication_DirtyToClean(t *testing.T) {
+	// Set up mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	// Set up test variables.
+	notSafeToAttach := new(bool)
+	volumeName := "foo"
+	nodeName := "bar"
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: volumeName},
+		BackendUUID: "12345",
+	}
+	node := &utils.Node{Name: nodeName}
+	pub := &utils.VolumePublication{
+		Name:            utils.GenerateVolumePublishName(volumeName, nodeName),
+		VolumeName:      volumeName,
+		NodeName:        nodeName,
+		NotSafeToAttach: !*notSafeToAttach, // make the publication false on the pub.
+		Unpublished:     true,
+	}
+
+	// BackendUUID may be calls a number of times, mock it out.
+	mockBackend.EXPECT().BackendUUID().Return(vol.BackendUUID).AnyTimes() // Always return the right UUID
+
+	// Initialize the orchestrator and its caches.
+	orchestrator := getOrchestrator(t, false)
+	orchestrator.storeClient = mockStoreClient
+	orchestrator.backends[vol.BackendUUID] = mockBackend
+	orchestrator.volumes[volumeName] = vol
+	orchestrator.nodes[nodeName] = node
+	// The publication must exist prior to calling update, add it to the rw cache.
+	if err := orchestrator.volumePublications.Set(volumeName, nodeName, pub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
+
+	// Test if DeleteVolumePublication fails, that the entire operation fails.
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(errors.New("pub not found")).Times(1)
+	err := orchestrator.updateVolumePublication(context.Background(), volumeName, nodeName, notSafeToAttach)
+
+	// Try to get the cached publication from the publications map. It should still exist because the delete call failed.
+	cachedPub, found := orchestrator.volumePublications.TryGet(volumeName, nodeName)
+
+	assert.Error(t, err, "expected error")
+	assert.True(t, found, "expected true value")          // True indicates the publication still exists.
+	assert.NotNil(t, cachedPub, "expected non-nil value") // Non-nil indicates the publication still exists.
+	assert.EqualValues(t, pub, cachedPub, "expected equal values")
+
+	// Test the happy path for cleaning a publication works and the publication is deleted.
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	err = orchestrator.updateVolumePublication(context.Background(), volumeName, nodeName, notSafeToAttach)
+
+	// Try to get the cached publication from the publications map.
+	cachedPub, found = orchestrator.volumePublications.TryGet(volumeName, nodeName)
+
+	assert.NoError(t, err, "expected no error")
+	assert.False(t, found, "expected false value") // False indicates the publication was removed.
+	assert.Nil(t, cachedPub, "expected nil value") // Nil indicates the publication was removed.
 }
 
 func TestGetVolumePublication(t *testing.T) {
@@ -2905,7 +3045,9 @@ func TestGetVolumePublication(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
-	orchestrator.addVolumePublicationToCache(fakePub)
+	if err := orchestrator.volumePublications.Set(fakePub.VolumeName, fakePub.NodeName, fakePub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	actualPub, err := orchestrator.GetVolumePublication(context.Background(), fakePub.VolumeName, fakePub.NodeName)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error getting volume publication: %v", err))
@@ -2947,7 +3089,9 @@ func TestGetVolumePublicationError(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
-	orchestrator.addVolumePublicationToCache(fakePub)
+	if err := orchestrator.volumePublications.Set(fakePub.VolumeName, fakePub.NodeName, fakePub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	// Simulate a bootstrap error
 	orchestrator.bootstrapError = fmt.Errorf("some error")
@@ -2994,9 +3138,12 @@ func TestListVolumePublications(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub1)
-	orchestrator.addVolumePublicationToCache(fakePub2)
-	orchestrator.addVolumePublicationToCache(fakePub3)
+	err := orchestrator.volumePublications.Set(fakePub1.VolumeName, fakePub1.NodeName, fakePub1)
+	err = orchestrator.volumePublications.Set(fakePub2.VolumeName, fakePub2.NodeName, fakePub2)
+	err = orchestrator.volumePublications.Set(fakePub3.VolumeName, fakePub3.NodeName, fakePub3)
+	if err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	expectedAllPubs := []*utils.VolumePublicationExternal{
 		fakePub1.ConstructExternal(),
@@ -3059,7 +3206,9 @@ func TestListVolumePublicationsError(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	if err := orchestrator.volumePublications.Set(fakePub.VolumeName, fakePub.NodeName, fakePub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	// Simulate a bootstrap error
 	orchestrator.bootstrapError = fmt.Errorf("some error")
@@ -3105,9 +3254,12 @@ func TestListVolumePublicationsForVolume(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub1)
-	orchestrator.addVolumePublicationToCache(fakePub2)
-	orchestrator.addVolumePublicationToCache(fakePub3)
+	err := orchestrator.volumePublications.Set(fakePub1.VolumeName, fakePub1.NodeName, fakePub1)
+	err = orchestrator.volumePublications.Set(fakePub2.VolumeName, fakePub2.NodeName, fakePub2)
+	err = orchestrator.volumePublications.Set(fakePub3.VolumeName, fakePub3.NodeName, fakePub3)
+	if err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	expectedAllPubs := []*utils.VolumePublicationExternal{fakePub1.ConstructExternal(), fakePub3.ConstructExternal()}
 	expectedCleanPubs := []*utils.VolumePublicationExternal{fakePub1.ConstructExternal()}
@@ -3148,7 +3300,9 @@ func TestListVolumePublicationsForVolumeNotFound(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	if err := orchestrator.volumePublications.Set(fakePub.VolumeName, fakePub.NodeName, fakePub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), "NotFound", nil)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
@@ -3174,7 +3328,9 @@ func TestListVolumePublicationsForVolumeError(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	if err := orchestrator.volumePublications.Set(fakePub.VolumeName, fakePub.NodeName, fakePub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	// Simulate a bootstrap error
 	orchestrator.bootstrapError = fmt.Errorf("some error")
@@ -3220,9 +3376,12 @@ func TestListVolumePublicationsForNode(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub1)
-	orchestrator.addVolumePublicationToCache(fakePub2)
-	orchestrator.addVolumePublicationToCache(fakePub3)
+	err := orchestrator.volumePublications.Set(fakePub1.VolumeName, fakePub1.NodeName, fakePub1)
+	err = orchestrator.volumePublications.Set(fakePub2.VolumeName, fakePub2.NodeName, fakePub2)
+	err = orchestrator.volumePublications.Set(fakePub3.VolumeName, fakePub3.NodeName, fakePub3)
+	if err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	expectedAllPubs := []*utils.VolumePublicationExternal{fakePub2.ConstructExternal()}
 	expectedCleanPubs := []*utils.VolumePublicationExternal{fakePub2.ConstructExternal()}
@@ -3262,7 +3421,9 @@ func TestListVolumePublicationsForNodeNotFound(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	if err := orchestrator.volumePublications.Set(fakePub.VolumeName, fakePub.NodeName, fakePub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	actualPubs, err := orchestrator.ListVolumePublicationsForNode(context.Background(), "NotFound", nil)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
@@ -3288,7 +3449,9 @@ func TestListVolumePublicationsForNodeError(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	if err := orchestrator.volumePublications.Set(fakePub.VolumeName, fakePub.NodeName, fakePub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	// Simulate a bootstrap error
 	orchestrator.bootstrapError = fmt.Errorf("some error")
@@ -3303,7 +3466,7 @@ func TestDeleteVolumePublication(t *testing.T) {
 	// Create a mocked persistent store client
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 	// Create a fake VolumePublication
-	fakePub := &utils.VolumePublication{
+	fakePub1 := &utils.VolumePublication{
 		Name:       "foo/bar",
 		NodeName:   "bar",
 		VolumeName: "foo",
@@ -3318,9 +3481,9 @@ func TestDeleteVolumePublication(t *testing.T) {
 		AccessMode: 1,
 	}
 	fakePub3 := &utils.VolumePublication{
-		Name:       fmt.Sprintf("%s/buz", fakePub.VolumeName),
+		Name:       fmt.Sprintf("%s/buz", fakePub1.VolumeName),
 		NodeName:   "buz",
-		VolumeName: fakePub.VolumeName,
+		VolumeName: fakePub1.VolumeName,
 		ReadOnly:   true,
 		AccessMode: 1,
 	}
@@ -3331,37 +3494,45 @@ func TestDeleteVolumePublication(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
-	orchestrator.addVolumePublicationToCache(fakePub2)
-	orchestrator.addVolumePublicationToCache(fakePub3)
+	err := orchestrator.volumePublications.Set(fakePub1.VolumeName, fakePub1.NodeName, fakePub1)
+	err = orchestrator.volumePublications.Set(fakePub2.VolumeName, fakePub2.NodeName, fakePub2)
+	err = orchestrator.volumePublications.Set(fakePub3.VolumeName, fakePub3.NodeName, fakePub3)
+	if err != nil {
+		t.Fatal("unable to set cache value")
+	}
+
 	orchestrator.nodes = map[string]*utils.Node{fakeNode.Name: fakeNode, fakeNode2.Name: fakeNode2}
 
 	// Verify if this is the last nodeID for a given volume the volume entry is completely removed from the cache
 	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub2).Return(nil)
-	err := orchestrator.DeleteVolumePublication(context.Background(), fakePub2.VolumeName, fakePub2.NodeName)
+	err = orchestrator.DeleteVolumePublication(context.Background(), fakePub2.VolumeName, fakePub2.NodeName)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error deleting volume publication: %v", err))
-	assert.NotContains(t, orchestrator.volumePublications, fakePub2.VolumeName,
-		"publication not properly removed from cache")
+
+	cachedPub, ok := orchestrator.volumePublications.TryGet(fakePub2.VolumeName, fakePub2.NodeName)
+	assert.False(t, ok, "publication not removed from the cache")
+	assert.Nil(t, cachedPub, "publication not removed from the cache")
 
 	// Verify if this is not the last nodeID for a given volume the volume entry is not removed from the cache
 	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub3).Return(nil)
 	err = orchestrator.DeleteVolumePublication(context.Background(), fakePub3.VolumeName, fakePub3.NodeName)
-	assert.Nilf(t, err, fmt.Sprintf("unexpected error deleting volume publication: %v", err))
-	assert.NotNil(t, orchestrator.volumePublications[fakePub3.VolumeName],
-		"publication not properly removed from cache")
-	assert.NotContains(t, orchestrator.volumePublications[fakePub3.VolumeName], fakePub3.NodeName,
-		"publication not properly removed from cache")
-	assert.Contains(t, orchestrator.volumePublications[fakePub.VolumeName], fakePub.NodeName,
-		"publication not properly removed from cache")
+	assert.NoError(t, err, fmt.Sprintf("unexpected error deleting volume publication: %v", err))
+
+	cachedPub, ok = orchestrator.volumePublications.TryGet(fakePub3.VolumeName, fakePub3.NodeName)
+	assert.False(t, ok, "publication not removed from the cache")
+	assert.Nil(t, cachedPub, "publication not removed from the cache")
+
+	cachedPub, ok = orchestrator.volumePublications.TryGet(fakePub1.VolumeName, fakePub1.NodeName)
+	assert.True(t, ok, "publication improperly removed from the cache")
+	assert.NotNil(t, cachedPub, "publication improperly removed from the cache")
 }
 
 func TestDeleteVolumePublicationNotFound(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	// Create a mocked persistent store client
+	// Create a mocked persistent store client.
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	// Set the store client behavior we don't care about for this testcase
+	// Set the store client behavior we don't care about for this testcase.
 	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
-	// Create a fake VolumePublication
+	// Create a fake VolumePublication.
 	fakePub := &utils.VolumePublication{
 		Name:       "foo/bar",
 		NodeName:   "bar",
@@ -3369,15 +3540,24 @@ func TestDeleteVolumePublicationNotFound(t *testing.T) {
 		ReadOnly:   true,
 		AccessMode: 1,
 	}
-	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t, false)
-	// Add the mocked objects to the orchestrator
-	orchestrator.storeClient = mockStoreClient
-	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	fakeNode := &utils.Node{Name: fakePub.NodeName}
 
-	err := orchestrator.DeleteVolumePublication(context.Background(), "NotFound", "NotFound")
-	assert.Nil(t, err, fmt.Sprintf("unexpected error deleting volume publication"))
+	// Create an instance of the orchestrator for this test.
+	orchestrator := getOrchestrator(t, false)
+	orchestrator.nodes = map[string]*utils.Node{fakePub.NodeName: fakeNode}
+	// Add the mocked objects to the orchestrator.
+	orchestrator.storeClient = mockStoreClient
+	if err := orchestrator.volumePublications.Set(fakePub.VolumeName, fakePub.NodeName, fakePub); err != nil {
+		t.Fatal("unable to set publication in the cache.")
+	}
+
+	// When Trident can't find the publication in the cache, it should ask the persistent store.
+	ctx := context.Background()
+	mockStoreClient.EXPECT().DeleteVolumePublication(ctx, fakePub).Return(nil).Times(1)
+	err := orchestrator.DeleteVolumePublication(ctx, fakePub.VolumeName, fakePub.NodeName)
+	cachedPubs := orchestrator.volumePublications.Map()
+	assert.NoError(t, err, fmt.Sprintf("unexpected error deleting volume publication"))
+	assert.Nil(t, cachedPubs[fakePub.VolumeName][fakePub.NodeName], "expected no cache entry")
 }
 
 func TestDeleteVolumePublicationNotFoundPersistence(t *testing.T) {
@@ -3395,19 +3575,22 @@ func TestDeleteVolumePublicationNotFoundPersistence(t *testing.T) {
 		AccessMode: 1,
 	}
 	fakeNode := &utils.Node{Name: fakePub.NodeName}
-	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub).Return(utils.NotFoundError("not found"))
+
 	// Create an instance of the orchestrator for this test
 	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	if err := orchestrator.volumePublications.Set(fakePub.VolumeName, fakePub.NodeName, fakePub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
 	orchestrator.nodes = map[string]*utils.Node{fakeNode.Name: fakeNode}
 
 	// Verify delete is idempotent when the persistence object is missing
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub).Return(utils.NotFoundError("not found"))
 	err := orchestrator.DeleteVolumePublication(context.Background(), fakePub.VolumeName, fakePub.NodeName)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error deleting volume publication: %v", err))
-	assert.NotContains(t, orchestrator.volumePublications, fakePub.VolumeName,
+	assert.NotContains(t, orchestrator.volumePublications.Map(), fakePub.VolumeName,
 		"publication not properly removed from cache")
 }
 
@@ -3430,14 +3613,16 @@ func TestDeleteVolumePublicationError(t *testing.T) {
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
-	orchestrator.addVolumePublicationToCache(fakePub)
+	if err := orchestrator.volumePublications.Set(fakePub.VolumeName, fakePub.NodeName, fakePub); err != nil {
+		t.Fatal("unable to set cache value")
+	}
 
 	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub).Return(fmt.Errorf("some error"))
 
 	err := orchestrator.DeleteVolumePublication(context.Background(), fakePub.VolumeName, fakePub.NodeName)
 	assert.NotNil(t, err, fmt.Sprintf("unexpected success deleting volume publication"))
 	assert.False(t, utils.IsNotFoundError(err), "incorrect error type returned")
-	assert.Equal(t, fakePub, orchestrator.volumePublications[fakePub.VolumeName][fakePub.NodeName],
+	assert.Equal(t, fakePub, orchestrator.volumePublications.Get(fakePub.VolumeName, fakePub.NodeName),
 		"publication improperly removed/updated in cache")
 }
 
@@ -4556,7 +4741,7 @@ func TestPublishVolume(t *testing.T) {
 			tr.mocks(mockBackend, mockStoreClient, volume)
 
 			// Run the test
-			err := o.publishVolume(ctx(), tr.volumeName, &utils.VolumePublishInfo{})
+			err := o.publishVolume(ctx(), tr.volumeName, &utils.VolumePublishInfo{HostName: nodeName})
 			if !tr.wantErr(t, err, "Unexpected Result") {
 				return
 			}
@@ -4601,7 +4786,7 @@ func TestPublishVolume_DirtyPublication(t *testing.T) {
 	o.backends = map[string]storage.Backend{backendUUID: mockBackend}
 	o.nodes = map[string]*utils.Node{node.Name: node}
 	o.volumes = map[string]*storage.Volume{volumeName: vol}
-	o.addVolumePublicationToCache(pub)
+	_ = o.volumePublications.Set(pub.VolumeName, pub.NodeName, pub)
 
 	err := o.publishVolume(ctx(), volumeName, &utils.VolumePublishInfo{HostName: nodeName})
 	assert.Error(t, err, "Unexpected success publishing dirty publication")
@@ -4699,7 +4884,7 @@ func TestUnpublishVolume(t *testing.T) {
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				// We've already unpublished so make sure we don't call it again
 				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil).Times(0)
-				mockStoreClient.EXPECT().UpdateVolumePublication(ctx(), dirtyPublication).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolumePublication(ctx(), gomock.Any()).Return(nil)
 			},
 			wantErr:         assert.NoError,
 			wantUnpublished: assert.True,
@@ -4820,19 +5005,6 @@ func TestUnpublishVolume(t *testing.T) {
 			wantUnpublished: assert.False,
 		},
 		{
-			name:          "NilVolumePublicationError",
-			volumeName:    volumeName,
-			nodeName:      nodeName,
-			driverContext: config.ContextCSI,
-			volumes:       map[string]*storage.Volume{volumeName: volume},
-			nodes:         map[string]*utils.Node{nodeName: node},
-			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: nil}},
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
-			},
-			wantErr:         assert.Error,
-			wantUnpublished: assert.False,
-		},
-		{
 			name:          "UpdatePublishedVolumeError",
 			volumeName:    volumeName,
 			nodeName:      nodeName,
@@ -4895,7 +5067,9 @@ func TestUnpublishVolume(t *testing.T) {
 
 			o.volumes = tr.volumes
 			o.nodes = tr.nodes
-			o.volumePublications = tr.publications
+			if len(tr.publications) != 0 {
+				o.volumePublications.SetMap(tr.publications)
+			}
 			o.subordinateVolumes["dummy"] = subordinateVol
 			if tr.name == "SubordinateVolumeParentNotFound" {
 				o.subordinateVolumes[tr.volumeName] = subordinateVol
@@ -4911,7 +5085,7 @@ func TestUnpublishVolume(t *testing.T) {
 			if !tr.wantErr(t, err, "Unexpected Result") {
 				return
 			}
-			pub, ok := o.volumePublications[volumeName][nodeName]
+			pub, ok := o.volumePublications.TryGet(volumeName, nodeName)
 			if ok {
 				if pub != nil && !tr.wantUnpublished(t, pub.Unpublished, "Unpublished flag is incorrect") {
 					return
@@ -5581,8 +5755,10 @@ func TestListVolumePublicationsForVolumeAndSubordinates(t *testing.T) {
 
 			// add the fake publications to orchestrator
 			if len(tt.wantVolumePublications) > 0 {
-				o.addVolumePublicationToCache(tt.wantVolumePublications[0])
-				o.addVolumePublicationToCache(tt.wantVolumePublications[1])
+				_ = o.volumePublications.Set(tt.wantVolumePublications[0].VolumeName,
+					tt.wantVolumePublications[0].NodeName, tt.wantVolumePublications[0])
+				_ = o.volumePublications.Set(tt.wantVolumePublications[1].VolumeName,
+					tt.wantVolumePublications[1].NodeName, tt.wantVolumePublications[1])
 			}
 
 			gotVolumesPublications := o.listVolumePublicationsForVolumeAndSubordinates(ctx(), tt.listVolName)
