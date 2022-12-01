@@ -148,6 +148,7 @@ rules:
 // Specific permissions for sidecars
 // csi-resizer needs 'list' for pods
 // csi-snapshotter needs 'watch' for volumesnapshotclasses
+// trident-autosupport needs 'get' for namespace resource cluster-wide
 const controllerClusterRoleCSIYAMLTemplate = `---
 kind: ClusterRole
 apiVersion: {API_VERSION}
@@ -156,6 +157,9 @@ metadata:
   {LABELS}
   {OWNER_REF}
 rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
   - apiGroups: [""]
     resources: ["persistentvolumes"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
@@ -230,6 +234,7 @@ func GetRoleYAML(flavor OrchestratorFlavor, namespace, roleName string, labels, 
 	return roleYAML
 }
 
+// trident-autosupport needs 'get' for pod/log resources in the 'trident' namespace
 const controllerRoleCSIYAMLTemplate = `---
 kind: Role
 apiVersion: "rbac.authorization.k8s.io/v1"
@@ -239,6 +244,9 @@ metadata:
   {LABELS}
   {OWNER_REF}
 rules:
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
