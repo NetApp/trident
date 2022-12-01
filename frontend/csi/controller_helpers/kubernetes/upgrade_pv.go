@@ -19,11 +19,11 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 //
 // This file contains the code to convert NFS/iSCSI PVs to CSI PVs.
 //
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
 func (h *helper) UpgradeVolume(
 	ctx context.Context, request *storage.UpgradeVolumeRequest,
@@ -202,6 +202,9 @@ func (h *helper) UpgradeVolume(
 		oldTxn, getErr := h.orchestrator.GetVolumeTransaction(ctx, volTxn)
 		if getErr != nil {
 			return nil, fmt.Errorf("PV upgrade: error gathering old upgrade transaction; %v", getErr)
+		}
+		if oldTxn == nil {
+			return nil, fmt.Errorf("PV upgrade: volume transaction was not found")
 		}
 		if oldTxn.Op == storage.UpgradeVolume {
 			if cleanupErr := h.rollBackPVUpgrade(ctx, oldTxn); cleanupErr != nil {
@@ -905,7 +908,8 @@ func (h *helper) waitForDeletedOrNonRunningPod(
 			return fmt.Errorf("pod %s/%s phase is %s", namespace, name, pod.Status.Phase)
 		} else {
 			// Any phase but Running is a terminal success condition
-			Logc(ctx).WithField("pod", fmt.Sprintf("%s/%s", namespace, name)).Infof("Pod phase is %s.", pod.Status.Phase)
+			Logc(ctx).WithField("pod", fmt.Sprintf("%s/%s", namespace, name)).Infof("Pod phase is %s.",
+				pod.Status.Phase)
 			return nil
 		}
 	}
@@ -945,6 +949,9 @@ func (h *helper) handleFailedPVUpgrades(ctx context.Context) error {
 			volTxn, err = h.orchestrator.GetVolumeTransaction(ctx, volTxn)
 			if err != nil {
 				return fmt.Errorf("could not get volume upgrade transaction; %v", err)
+			}
+			if volTxn == nil {
+				return fmt.Errorf("PV upgrade: volume transaction was not found")
 			}
 			if volTxn.Op == storage.UpgradeVolume {
 				if err = h.rollBackPVUpgrade(ctx, volTxn); err != nil {
