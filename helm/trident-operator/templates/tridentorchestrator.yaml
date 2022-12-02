@@ -51,4 +51,5 @@ spec:
       {{- end}}
     {{- end}}
   {{- end }}
+  imagePullPolicy: {{ include "imagePullPolicy" $ }}
   windows: {{ .Values.windows }}

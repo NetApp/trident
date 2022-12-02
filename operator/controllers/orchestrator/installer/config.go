@@ -3,6 +3,8 @@
 package installer
 
 import (
+	v1 "k8s.io/api/core/v1"
+
 	"github.com/netapp/trident/config"
 )
 
@@ -86,4 +88,7 @@ const (
 	CRKind          = "kind"
 	CRName          = "name"
 	CRUID           = "uid"
+
+	// DefaultImagePullPolicy is the trident image pull policy.
+	DefaultImagePullPolicy = string(v1.PullIfNotPresent)
 )

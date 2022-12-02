@@ -481,6 +481,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{PROVISIONER_FEATURE_GATES}", provisionerFeatureGates)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "LABELS", constructLabels(args.Labels))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "IMAGE_PULL_SECRETS",
@@ -514,6 +515,7 @@ spec:
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
+        imagePullPolicy: {IMAGE_PULL_POLICY}
         ports:
         - containerPort: 8443
         - containerPort: 8001
@@ -561,6 +563,7 @@ spec:
           readOnly: true
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: {IMAGE_PULL_POLICY}
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -580,6 +583,7 @@ spec:
           mountPath: /asup
       - name: csi-provisioner
         image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.3.0
+        imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -595,6 +599,7 @@ spec:
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
         image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.0.0
+        imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -608,6 +613,7 @@ spec:
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
         image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.6.0
+        imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -620,6 +626,7 @@ spec:
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
         image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:{CSI_SNAPSHOTTER_VERSION}
+        imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=300s"
@@ -700,6 +707,7 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
@@ -753,6 +761,7 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
@@ -791,6 +800,7 @@ spec:
           privileged: true
           allowPrivilegeEscalation: true
         image: {TRIDENT_IMAGE}
+        imagePullPolicy: {IMAGE_PULL_POLICY}
         command:
         - /trident_orchestrator
         args:
@@ -866,6 +876,7 @@ spec:
           readOnly: true
       - name: driver-registrar
         image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.5.1
+        imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
@@ -956,6 +967,7 @@ spec:
       serviceAccount: {SERVICE_ACCOUNT}
       containers:
       - name: trident-main
+        imagePullPolicy: {IMAGE_PULL_POLICY}
         image: {TRIDENT_IMAGE}
         command:
         - trident_orchestrator.exe
@@ -1042,6 +1054,7 @@ spec:
             memory: 20Mi
       - name: node-driver-registrar
         image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.5.1
+        imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - --v=2
         - --csi-address=$(CSI_ENDPOINT)
@@ -1144,7 +1157,7 @@ spec:
 `
 
 func GetTridentVersionPodYAML(
-	name, tridentImage, serviceAccountName string, imagePullSecrets []string, labels,
+	name, tridentImage, serviceAccountName, imagePullPolicy string, imagePullSecrets []string, labels,
 	controllingCRDetails map[string]string,
 ) string {
 	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", name)
@@ -1154,6 +1167,7 @@ func GetTridentVersionPodYAML(
 	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "IMAGE_PULL_SECRETS",
 		constructImagePullSecrets(imagePullSecrets))
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{IMAGE_PULL_POLICY}", imagePullPolicy)
 
 	return versionPodYAML
 }
@@ -1170,7 +1184,7 @@ spec:
   restartPolicy: Never
   containers:
   - name: trident-main
-    imagePullPolicy: IfNotPresent
+    imagePullPolicy: {IMAGE_PULL_POLICY}
     image: {TRIDENT_IMAGE}
     command: ["tridentctl"]
     args: ["pause"]

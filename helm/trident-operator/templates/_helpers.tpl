@@ -165,3 +165,14 @@ Trident image
 {{- "" }}docker.io/netapp/trident:{{ .Values.tridentImageTag | default .Chart.AppVersion }}
 {{- end }}
 {{- end }}
+
+{{/*
+Trident image pull policy
+*/}}
+{{- define "imagePullPolicy" -}}
+{{- if .Values.imagePullPolicy }}
+{{- .Values.imagePullPolicy }}
+{{- else }}
+{{- "IfNotPresent" }}
+{{- end }}
+{{- end }}

@@ -56,11 +56,12 @@ var (
 	silenceAutosupport bool
 	windows            bool
 
-	logFormat     string
-	probePort     string
-	tridentImage  string
-	imageRegistry string
-	kubeletDir    string
+	logFormat       string
+	probePort       string
+	tridentImage    string
+	imageRegistry   string
+	kubeletDir      string
+	imagePullPolicy string
 
 	autosupportImage        string
 	autosupportProxy        string
@@ -146,6 +147,17 @@ func (i *Installer) logFormatPrechecks() (returnError error) {
 		return
 	}
 
+	return nil
+}
+
+func (i *Installer) imagePullPolicyPrechecks() error {
+	switch v1.PullPolicy(imagePullPolicy) {
+	// If the value of imagePullPolicy is either of PullIfNotPresent, PullAlways or PullNever then the imagePullPolicy
+	// is valid and no action is required.
+	case v1.PullIfNotPresent, v1.PullAlways, v1.PullNever:
+	default:
+		return fmt.Errorf("'%s' is not a valid trident image pull policy format", imagePullPolicy)
+	}
 	return nil
 }
 
@@ -269,6 +281,7 @@ func (i *Installer) setInstallationParams(
 	kubeletDir = DefaultKubeletDir
 	autosupportImage = commonconfig.DefaultAutosupportImage
 	httpTimeout = commonconfig.HTTPTimeoutString
+	imagePullPolicy = DefaultImagePullPolicy
 
 	imagePullSecrets = []string{}
 
@@ -354,6 +367,9 @@ func (i *Installer) setInstallationParams(
 	if cr.Spec.NodePluginTolerations != nil {
 		nodePluginTolerations = cr.Spec.NodePluginTolerations
 	}
+	if cr.Spec.ImagePullPolicy != "" {
+		imagePullPolicy = cr.Spec.ImagePullPolicy
+	}
 
 	// Owner Reference details set on each of the Trident object created by the operator
 	controllingCRDetails := make(map[string]string)
@@ -402,6 +418,11 @@ func (i *Installer) setInstallationParams(
 	}
 	// Perform log prechecks
 	if returnError = i.logFormatPrechecks(); returnError != nil {
+		return nil, nil, false, returnError
+	}
+
+	// Preform image pull policy prechecks
+	if returnError = i.imagePullPolicyPrechecks(); returnError != nil {
 		return nil, nil, false, returnError
 	}
 
@@ -564,6 +585,7 @@ func (i *Installer) InstallOrPatchTrident(
 		ImagePullSecrets:        imagePullSecrets,
 		NodePluginNodeSelector:  nodePluginNodeSelector,
 		NodePluginTolerations:   nodePluginTolerations,
+		ImagePullPolicy:         imagePullPolicy,
 	}
 
 	log.WithFields(log.Fields{
@@ -1326,6 +1348,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		NodeSelector:            controllerPluginNodeSelector,
 		Tolerations:             tolerations,
 		ServiceAccountName:      serviceAccName,
+		ImagePullPolicy:         imagePullPolicy,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
@@ -1398,6 +1421,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		NodeSelector:         nodePluginNodeSelector,
 		Tolerations:          tolerations,
 		ServiceAccountName:   serviceAccountName,
+		ImagePullPolicy:      imagePullPolicy,
 	}
 
 	var newDaemonSetYAML string
@@ -1701,7 +1725,7 @@ func (i *Installer) createTridentVersionPod(
 	serviceAccountName := getNodeRBACResourceName(false)
 
 	newTridentVersionPodYAML := k8sclient.GetTridentVersionPodYAML(
-		podName, imageName, serviceAccountName, imagePullSecrets, podLabels, controllingCRDetails,
+		podName, imageName, serviceAccountName, imagePullPolicy, imagePullSecrets, podLabels, controllingCRDetails,
 	)
 
 	err = i.client.CreateObjectByYAML(newTridentVersionPodYAML)

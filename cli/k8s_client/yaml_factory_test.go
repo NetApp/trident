@@ -358,6 +358,54 @@ func TestGetCSIDeploymentYAMLTolerations(t *testing.T) {
 		fmt.Sprintf("expected default tolerations to not appear in final YAML: %s", yamlData))
 }
 
+func TestGetCSIDeploymentYAMLImagePullPolicy(t *testing.T) {
+	versions := []string{"1.20.0"}
+	expectedStr := `imagePullPolicy: %s`
+
+	expectedIfNotPresent := fmt.Sprintf(expectedStr, v1.PullIfNotPresent)
+	expectedAlways := fmt.Sprintf(expectedStr, v1.PullAlways)
+	expectedNever := fmt.Sprintf(expectedStr, v1.PullNever)
+
+	type Args struct {
+		imagePullPolicy string
+		Expected        string
+		FailStr         string
+	}
+
+	testArgs := []*Args{
+		{
+			imagePullPolicy: string(v1.PullIfNotPresent),
+			Expected:        expectedIfNotPresent,
+			FailStr:         string(v1.PullIfNotPresent),
+		},
+		{
+			imagePullPolicy: string(v1.PullAlways),
+			Expected:        expectedAlways,
+			FailStr:         string(v1.PullAlways),
+		},
+		{
+			imagePullPolicy: string(v1.PullNever),
+			Expected:        expectedNever,
+			FailStr:         string(v1.PullNever),
+		},
+	}
+
+	for _, args := range testArgs {
+		for _, versionString := range versions {
+			version := utils.MustParseSemantic(versionString)
+			daemonsetArgs := &DeploymentYAMLArguments{Version: version, ImagePullPolicy: args.imagePullPolicy}
+
+			yamlData := GetCSIDeploymentYAML(daemonsetArgs)
+			_, err := yaml.YAMLToJSON([]byte(yamlData))
+			if err != nil {
+				t.Fatalf("expected valid YAML for version %s", versionString)
+			}
+			failMsg := fmt.Sprintf("expected imagPullPolicy to be %s in final YAML: %s", args.FailStr, yamlData)
+			assert.Contains(t, yamlData, args.Expected, failMsg)
+		}
+	}
+}
+
 func TestGetCSIDaemonSetYAMLLinux(t *testing.T) {
 	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
@@ -435,6 +483,54 @@ func TestGetCSIDaemonSetYAMLLinux_ForceDetach(t *testing.T) {
 			assert.Contains(t, yamlData, args.Expected, failMsg)
 			failMsg2 := fmt.Sprintf("did not expect enableForceDetach to be %s in final YAML: %s", args.FailStr2, yamlData)
 			assert.NotContains(t, yamlData, args.Unexpected, failMsg2)
+		}
+	}
+}
+
+func TestGetCSIDaemonSetYAMLLinuxImagePullPolicy(t *testing.T) {
+	versions := []string{"1.20.0"}
+	expectedStr := `imagePullPolicy: %s`
+
+	expectedIfNotPresent := fmt.Sprintf(expectedStr, v1.PullIfNotPresent)
+	expectedAlways := fmt.Sprintf(expectedStr, v1.PullAlways)
+	expectedNever := fmt.Sprintf(expectedStr, v1.PullNever)
+
+	type Args struct {
+		imagePullPolicy string
+		Expected        string
+		FailStr         string
+	}
+
+	testArgs := []*Args{
+		{
+			imagePullPolicy: string(v1.PullIfNotPresent),
+			Expected:        expectedIfNotPresent,
+			FailStr:         string(v1.PullIfNotPresent),
+		},
+		{
+			imagePullPolicy: string(v1.PullAlways),
+			Expected:        expectedAlways,
+			FailStr:         string(v1.PullAlways),
+		},
+		{
+			imagePullPolicy: string(v1.PullNever),
+			Expected:        expectedNever,
+			FailStr:         string(v1.PullNever),
+		},
+	}
+
+	for _, args := range testArgs {
+		for _, versionString := range versions {
+			version := utils.MustParseSemantic(versionString)
+			daemonsetArgs := &DaemonsetYAMLArguments{Version: version, ImagePullPolicy: args.imagePullPolicy}
+
+			yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
+			_, err := yaml.YAMLToJSON([]byte(yamlData))
+			if err != nil {
+				t.Fatalf("expected valid YAML for version %s", versionString)
+			}
+			failMsg := fmt.Sprintf("expected imagPullPolicy to be %s in final YAML: %s", args.FailStr, yamlData)
+			assert.Contains(t, yamlData, args.Expected, failMsg)
 		}
 	}
 }
@@ -593,6 +689,54 @@ func TestGetCSIDaemonSetYAMLWindows_DebugIsFalse(t *testing.T) {
 	}
 }
 
+func TestGetCSIDaemonSetYAMLWindowsImagePullPolicy(t *testing.T) {
+	versions := []string{"1.20.0"}
+	expectedStr := `imagePullPolicy: %s`
+
+	expectedIfNotPresent := fmt.Sprintf(expectedStr, string(v1.PullIfNotPresent))
+	expectedAlways := fmt.Sprintf(expectedStr, string(v1.PullAlways))
+	expectedNever := fmt.Sprintf(expectedStr, string(v1.PullNever))
+
+	type Args struct {
+		imagePullPolicy string
+		Expected        string
+		FailStr         string
+	}
+
+	testArgs := []*Args{
+		{
+			imagePullPolicy: string(v1.PullIfNotPresent),
+			Expected:        expectedIfNotPresent,
+			FailStr:         string(v1.PullIfNotPresent),
+		},
+		{
+			imagePullPolicy: string(v1.PullAlways),
+			Expected:        expectedAlways,
+			FailStr:         string(v1.PullAlways),
+		},
+		{
+			imagePullPolicy: string(v1.PullNever),
+			Expected:        expectedNever,
+			FailStr:         string(v1.PullNever),
+		},
+	}
+
+	for _, args := range testArgs {
+		for _, versionString := range versions {
+			version := utils.MustParseSemantic(versionString)
+			daemonsetArgs := &DaemonsetYAMLArguments{Version: version, ImagePullPolicy: args.imagePullPolicy}
+
+			yamlData := GetCSIDaemonSetYAMLWindows(daemonsetArgs)
+			_, err := yaml.YAMLToJSON([]byte(yamlData))
+			if err != nil {
+				t.Fatalf("expected valid YAML for version %s", versionString)
+			}
+			failMsg := fmt.Sprintf("expected imagPullPolicy to be %s in final YAML: %s", args.FailStr, yamlData)
+			assert.Contains(t, yamlData, args.Expected, failMsg)
+		}
+	}
+}
+
 func TestConstructNodeSelector(t *testing.T) {
 	nodeSelMap := map[string]string{"worker": "true", "master": "20"}
 	expectedNodeSelString := []string{"worker: 'true'\nmaster: '20'\n", "master: '20'\nworker: 'true'\n"}
@@ -677,7 +821,7 @@ func TestGetTridentVersionPodYAML(t *testing.T) {
 	}
 
 	var actual v1.Pod
-	actualYAML := GetTridentVersionPodYAML(name, image, "service", secrets, labels, crdDetails)
+	actualYAML := GetTridentVersionPodYAML(name, image, "service", "IfNotPresent", secrets, labels, crdDetails)
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))

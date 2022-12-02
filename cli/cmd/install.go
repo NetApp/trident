@@ -114,6 +114,7 @@ var (
 	kubeletDir              string
 	imageRegistry           string
 	logFormat               string
+	imagePullPolicy         string
 	probePort               int64
 	k8sTimeout              time.Duration
 	httpRequestTimeout      time.Duration
@@ -219,6 +220,8 @@ func init() {
 		"The value to set for the serial number field in Autosupport payloads")
 	installCmd.Flags().StringVar(&autosupportHostname, "autosupport-hostname", "",
 		"The value to set for the hostname field in Autosupport payloads")
+	installCmd.Flags().StringVar(&imagePullPolicy, "image-pull-policy", "IfNotPresent",
+		"The image pull policy for the Trident.")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second,
 		"The timeout for all Kubernetes operations.")
@@ -416,6 +419,14 @@ func validateInstallationArguments() error {
 		return fmt.Errorf("'%s' is not a valid log format", logFormat)
 	}
 
+	switch v1.PullPolicy(imagePullPolicy) {
+	// If the value of imagePullPolicy is either of PullIfNotPresent, PullAlways or PullNever then the imagePullPolicy
+	// is valid and no action is required.
+	case v1.PullIfNotPresent, v1.PullAlways, v1.PullNever:
+	default:
+		return fmt.Errorf("'%s' is not a valid trident image pull policy", imagePullPolicy)
+	}
+
 	return nil
 }
 
@@ -594,6 +605,7 @@ func prepareYAMLFiles() error {
 		TopologyEnabled:         topologyEnabled,
 		HTTPRequestTimeout:      httpRequestTimeout.String(),
 		ServiceAccountName:      getControllerRBACResourceName(true),
+		ImagePullPolicy:         imagePullPolicy,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -615,6 +627,7 @@ func prepareYAMLFiles() error {
 		Version:              client.ServerVersion(),
 		HTTPRequestTimeout:   httpRequestTimeout.String(),
 		ServiceAccountName:   getNodeRBACResourceName(false),
+		ImagePullPolicy:      imagePullPolicy,
 	}
 	daemonSetYAML := k8sclient.GetCSIDaemonSetYAMLLinux(daemonArgs)
 	if err = writeFile(daemonsetPath, daemonSetYAML); err != nil {
@@ -668,6 +681,7 @@ func prepareYAMLFiles() error {
 			Version:              client.ServerVersion(),
 			HTTPRequestTimeout:   httpRequestTimeout.String(),
 			ServiceAccountName:   getNodeRBACResourceName(true),
+			ImagePullPolicy:      imagePullPolicy,
 		}
 		windowsDaemonSetYAML := k8sclient.GetCSIDaemonSetYAMLWindows(daemonArgs)
 		if err = writeFile(windowsDaemonSetPath, windowsDaemonSetYAML); err != nil {
@@ -1100,6 +1114,7 @@ func installTrident() (returnError error) {
 			TopologyEnabled:         topologyEnabled,
 			HTTPRequestTimeout:      httpRequestTimeout.String(),
 			ServiceAccountName:      getControllerRBACResourceName(true),
+			ImagePullPolicy:         imagePullPolicy,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))
@@ -1143,6 +1158,7 @@ func installTrident() (returnError error) {
 				Version:              client.ServerVersion(),
 				HTTPRequestTimeout:   httpRequestTimeout.String(),
 				ServiceAccountName:   getNodeRBACResourceName(true),
+				ImagePullPolicy:      imagePullPolicy,
 			}
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDaemonSetYAMLWindows(daemonSetArgs))
@@ -1190,6 +1206,7 @@ func installTrident() (returnError error) {
 			Version:              client.ServerVersion(),
 			HTTPRequestTimeout:   httpRequestTimeout.String(),
 			ServiceAccountName:   getNodeRBACResourceName(false),
+			ImagePullPolicy:      imagePullPolicy,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDaemonSetYAMLLinux(daemonSetArgs))

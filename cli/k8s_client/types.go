@@ -184,6 +184,7 @@ type DeploymentYAMLArguments struct {
 	NodeSelector            map[string]string   `json:"nodeSelector"`
 	Tolerations             []map[string]string `json:"tolerations"`
 	ServiceAccountName      string              `json:"serviceAccountName"`
+	ImagePullPolicy         string              `json:"imagePullPolicy"`
 }
 
 type DaemonsetYAMLArguments struct {
@@ -203,4 +204,5 @@ type DaemonsetYAMLArguments struct {
 	NodeSelector         map[string]string   `json:"nodeSelector"`
 	Tolerations          []map[string]string `json:"tolerations"`
 	ServiceAccountName   string              `json:"serviceAccountName"`
+	ImagePullPolicy      string              `json:"imagePullPolicy"`
 }

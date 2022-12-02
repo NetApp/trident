@@ -57,6 +57,7 @@ type TridentOrchestratorSpec struct {
 	NodePluginNodeSelector       map[string]string `json:"nodePluginNodeSelector,omitempty"`
 	NodePluginTolerations        []Toleration      `json:"nodePluginTolerations,omitempty"`
 	Windows                      bool              `json:"windows,omitempty"`
+	ImagePullPolicy              string            `json:"imagePullPolicy,omitempty"`
 }
 
 // Toleration
@@ -122,4 +123,5 @@ type TridentOrchestratorSpecValues struct {
 	ImagePullSecrets        []string          `json:"imagePullSecrets"`
 	NodePluginNodeSelector  map[string]string `json:"nodePluginNodeSelector,omitempty"`
 	NodePluginTolerations   []Toleration      `json:"nodePluginTolerations,omitempty"`
+	ImagePullPolicy         string            `json:"imagePullPolicy"`
 }
