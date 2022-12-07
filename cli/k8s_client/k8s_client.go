@@ -2838,7 +2838,6 @@ func (k *KubeClient) getDynamicResourceNoRefresh(
 // apps/v1                 deployments  Deployment
 // apps/v1                 daemonsets   DaemonSet
 // events.k8s.io/v1beta1   events       Event
-//
 func (k *KubeClient) getDynamicResourceFromResourceList(
 	gvk *schema.GroupVersionKind, resources *metav1.APIResourceList,
 ) (*schema.GroupVersionResource, bool, error) {

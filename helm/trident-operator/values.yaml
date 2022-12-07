@@ -84,6 +84,9 @@ tridentAutosupportProxy: ""
 # tridentLogFormat sets the Trident logging format (text or json).
 tridentLogFormat: "text"
 
+# tridentDisableAuditLog disables Trident's audit logger.
+tridentDisableAuditLog: true
+
 # tridentImage allows the complete override of the image for Trident.
 tridentImage: ""
 

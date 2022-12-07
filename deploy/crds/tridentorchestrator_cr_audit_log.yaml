@@ -3,7 +3,7 @@ kind: TridentOrchestrator
 metadata:
   name: trident
 spec:
-  debug: false
-  namespace: default
-  silenceAutosupport: false
-  disableAuditLog: true
+  debug: true
+  namespace: trident
+  windows: false
+  disableAuditLog: false

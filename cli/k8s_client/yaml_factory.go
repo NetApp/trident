@@ -470,6 +470,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_LEVEL}", logLevel)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", args.LogFormat)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DISABLE_AUDIT_LOG}", strconv.FormatBool(args.DisableAuditLog))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IP_LOCALHOST}", ipLocalhost)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_IMAGE}", args.AutosupportImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_PROXY}", autosupportProxyLine)
@@ -530,6 +531,7 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=controller"
         - "--log_format={LOG_FORMAT}"
+        - "--disable_audit_log={DISABLE_AUDIT_LOG}"
         - "--address={IP_LOCALHOST}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--metrics"
@@ -704,6 +706,7 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DISABLE_AUDIT_LOG}", strconv.FormatBool(args.DisableAuditLog))
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
@@ -758,6 +761,7 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DISABLE_AUDIT_LOG}", strconv.FormatBool(args.DisableAuditLog))
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
@@ -811,6 +815,7 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
+        - "--disable_audit_log={DISABLE_AUDIT_LOG}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
         - "--https_port={PROBE_PORT}"
@@ -979,6 +984,7 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
+        - "--disable_audit_log={DISABLE_AUDIT_LOG}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
         - "--https_port={PROBE_PORT}"

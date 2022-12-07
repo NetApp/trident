@@ -51,6 +51,7 @@ var (
 	// CR inputs
 	csi                bool
 	enableForceDetach  bool
+	disableAuditLog    bool
 	debug              bool
 	useIPv6            bool
 	silenceAutosupport bool
@@ -288,6 +289,12 @@ func (i *Installer) setInstallationParams(
 	// Get values from CR
 	csi = true
 	enableForceDetach = cr.Spec.EnableForceDetach
+	if cr.Spec.DisableAuditLog == nil {
+		disableAuditLog = true
+	} else {
+		disableAuditLog = *cr.Spec.DisableAuditLog
+	}
+
 	debug = cr.Spec.Debug
 	useIPv6 = cr.Spec.IPv6
 	windows = cr.Spec.Windows
@@ -568,6 +575,7 @@ func (i *Installer) InstallOrPatchTrident(
 
 	identifiedSpecValues := netappv1.TridentOrchestratorSpecValues{
 		EnableForceDetach:       strconv.FormatBool(enableForceDetach),
+		DisableAuditLog:         strconv.FormatBool(disableAuditLog),
 		Debug:                   strconv.FormatBool(debug),
 		LogFormat:               logFormat,
 		TridentImage:            tridentImage,
@@ -1335,6 +1343,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		AutosupportHostname:     autosupportHostname,
 		ImageRegistry:           imageRegistry,
 		LogFormat:               logFormat,
+		DisableAuditLog:         disableAuditLog,
 		SnapshotCRDVersion:      snapshotCRDVersion,
 		ImagePullSecrets:        imagePullSecrets,
 		Labels:                  labels,
@@ -1410,6 +1419,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		ImageRegistry:        imageRegistry,
 		KubeletDir:           kubeletDir,
 		LogFormat:            logFormat,
+		DisableAuditLog:      disableAuditLog,
 		ProbePort:            probePort,
 		ImagePullSecrets:     imagePullSecrets,
 		Labels:               labels,

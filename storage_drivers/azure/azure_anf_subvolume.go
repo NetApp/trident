@@ -1211,7 +1211,8 @@ func (d *NASBlockStorageDriver) GetSnapshots(
 
 // CreateSnapshot creates a snapshot for the given volume
 // NOTE: In ANF Subvolumes there is not concept of snapshots, therefore any new snapshot is another
-//       subvolume copy of the source subvolume.
+//
+//	subvolume copy of the source subvolume.
 func (d *NASBlockStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {

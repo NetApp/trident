@@ -259,6 +259,7 @@ func GetVersion(w http.ResponseWriter, r *http.Request) {
 				response.Error = err.Error()
 			}
 			response.Version = version
+			Audit().Logln(r.Context(), AuditRESTAccess, getRequestFields(r), "GetVersion endpoint called.")
 			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
@@ -275,6 +276,7 @@ func AddBackend(w http.ResponseWriter, r *http.Request) {
 			if backend != nil {
 				response.BackendID = backend.Name
 			}
+			Audit().Logln(r.Context(), AuditRESTAccess, getRequestFields(r), "AddBackend endpoint called.")
 			return httpStatusCodeForAdd(err)
 		},
 	)
@@ -318,6 +320,7 @@ func UpdateBackend(w http.ResponseWriter, r *http.Request) {
 			if backend != nil {
 				response.BackendID = backend.Name
 			}
+			Audit().Logln(r.Context(), AuditRESTAccess, getRequestFields(r), "UpdateBackend endpoint called.")
 			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
@@ -820,12 +823,16 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 		TopologyLabels: make(map[string]string),
 		Error:          "",
 	}
+
+	const auditMsg = "AddNode endpoint called."
+
 	UpdateGeneric(w, r, response,
 		func(_ map[string]string, body []byte) int {
 			node := new(utils.Node)
 			err := json.Unmarshal(body, node)
 			if err != nil {
 				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				Audit().Logln(r.Context(), AuditRESTAccess, getRequestFields(r), auditMsg)
 				return httpStatusCodeForAdd(err)
 			}
 
@@ -837,6 +844,7 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				err = fmt.Errorf("could not get CSI helper frontend")
 				response.setError(err)
+				Audit().Logln(r.Context(), AuditRESTAccess, getRequestFields(r), auditMsg)
 				return httpStatusCodeForAdd(err)
 			}
 
@@ -844,11 +852,13 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 			if !ok {
 				err = fmt.Errorf("could not get CSI hybrid frontend")
 				response.setError(err)
+				Audit().Logln(r.Context(), AuditRESTAccess, getRequestFields(r), auditMsg)
 				return httpStatusCodeForAdd(err)
 			}
 			topologyLabels, err := helper.GetNodeTopologyLabels(r.Context(), node.Name)
 			if err != nil {
 				response.setError(err)
+				Audit().Logln(r.Context(), AuditRESTAccess, getRequestFields(r), auditMsg)
 				return httpStatusCodeForAdd(err)
 			}
 			node.TopologyLabels = topologyLabels
@@ -865,6 +875,7 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 				response.setError(err)
 			}
 			response.Name = node.Name
+			Audit().Logln(r.Context(), AuditRESTAccess, getRequestFields(r), auditMsg)
 			return httpStatusCodeForAdd(err)
 		},
 	)
@@ -1230,4 +1241,22 @@ func GetCHAP(w http.ResponseWriter, r *http.Request) {
 			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
+}
+
+func getRequestFields(r *http.Request) log.Fields {
+	subjects := []string{}
+	if r.TLS != nil {
+		for _, certs := range r.TLS.PeerCertificates {
+			subjects = append(subjects, certs.Subject.String())
+		}
+	}
+
+	return log.Fields{
+		"ClientCertSubjects": subjects,
+		"SourceIP":           r.RemoteAddr,
+		"Referer":            r.Referer(),
+		"UserAgent":          r.UserAgent(),
+		"Host":               r.Host,
+		"RequestURI":         r.RequestURI,
+	}
 }

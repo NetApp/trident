@@ -8,10 +8,13 @@ import (
 	"net"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+
+	"github.com/netapp/trident/config"
 )
 
 // NonBlockingGRPCServer Defines Non blocking GRPC server interfaces
@@ -69,13 +72,22 @@ func (s *nonBlockingGRPCServer) serve(
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
+	addrString := listener.Addr().String()
+
 	log.WithFields(log.Fields{
-		"name": listener.Addr().String(),
+		"name": addrString,
 		"net":  listener.Addr().Network(),
 	}).Info("Listening for GRPC connections.")
 
 	if listener.Addr().Network() == "unix" {
-		if err := os.Chmod(listener.Addr().String(), 0o777); err != nil {
+		pluginDir := strings.ReplaceAll(addrString, "csi.sock", "")
+		// Plugins directory only needs to be accessed by Container Orchestrator components or Trident, so set to 600.
+		if err := os.Chmod(pluginDir, config.CSISocketDirPermissions); err != nil {
+			log.Fatal(err)
+		}
+
+		// CSI socket file only needs read+write access to Container Orchestrator components or Trident, so set to 600.
+		if err := os.Chmod(addrString, config.CSIUnixSocketPermissions); err != nil {
 			log.Fatal(err)
 		}
 	}

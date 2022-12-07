@@ -180,6 +180,7 @@ type DeploymentYAMLArguments struct {
 	SilenceAutosupport      bool                `json:"silenceAutosupport"`
 	Version                 *utils.Version      `json:"version"`
 	TopologyEnabled         bool                `json:"topologyEnabled"`
+	DisableAuditLog         bool                `json:"disableAuditLog"`
 	HTTPRequestTimeout      string              `json:"httpRequestTimeout"`
 	NodeSelector            map[string]string   `json:"nodeSelector"`
 	Tolerations             []map[string]string `json:"tolerations"`
@@ -198,6 +199,7 @@ type DaemonsetYAMLArguments struct {
 	Labels               map[string]string   `json:"labels"`
 	ControllingCRDetails map[string]string   `json:"controllingCRDetails"`
 	EnableForceDetach    bool                `json:"enableForceDetach"`
+	DisableAuditLog      bool                `json:"disableAuditLog"`
 	Debug                bool                `json:"debug"`
 	Version              *utils.Version      `json:"version"`
 	HTTPRequestTimeout   string              `json:"httpRequestTimeout"`

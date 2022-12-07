@@ -645,11 +645,11 @@ func (h *helper) deletePVForUpgrade(ctx context.Context, pv *v1.PersistentVolume
 }
 
 // waitForDeletedPV waits for a PV to be deleted.  The function can return multiple combinations:
-//    (nil, nil)   --> the PV disappeared from the cache
-//    (PV, nil)    --> the PV's deletedTimestamp is set (it may have finalizers set)
-//    (nil, error) --> an error occurred checking for the PV in the cache
-//    (PV, error)  --> the PV was not deleted before the retry loop timed out
 //
+//	(nil, nil)   --> the PV disappeared from the cache
+//	(PV, nil)    --> the PV's deletedTimestamp is set (it may have finalizers set)
+//	(nil, error) --> an error occurred checking for the PV in the cache
+//	(PV, error)  --> the PV was not deleted before the retry loop timed out
 func (h *helper) waitForDeletedPV(
 	ctx context.Context, name string, maxElapsedTime time.Duration,
 ) (*v1.PersistentVolume, error) {

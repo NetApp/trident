@@ -46,6 +46,8 @@ const (
 	PersistentStoreTimeout           = 10 * time.Second
 	DockerCreateTimeout              = 115 * time.Second
 	DockerDefaultTimeout             = 55 * time.Second
+	CSIUnixSocketPermissions         = 0o600
+	CSISocketDirPermissions          = 0o600
 
 	/* REST/HTTP constants */
 	HTTPTimeout       = 90 * time.Second

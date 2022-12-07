@@ -143,6 +143,17 @@ Trident log format
 {{- end }}
 
 {{/*
+Trident audit log
+*/}}
+{{- define "trident.disableAuditLog" -}}
+{{- if .Values.tridentDisableAuditLog | printf "%v" | eq "true" }}
+{{- "true" }}
+{{- else }}
+{{- "false" }}
+{{- end }}
+{{- end }}
+
+{{/*
 Trident probe port
 */}}
 {{- define "trident.probePort" -}}

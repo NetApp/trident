@@ -13,6 +13,7 @@ spec:
   autosupportImage: {{ include "trident.autosupportImage" $ }}
   autosupportProxy: {{ .Values.tridentAutosupportProxy }}
   logFormat: {{ include "trident.logFormat" $ }}
+  disableAuditLog: {{ include "trident.disableAuditLog" $ }}
   probePort: {{ include "trident.probePort" $ }}
   tridentImage: {{ include "trident.image" $ }}
   {{- if .Values.imageRegistry }}

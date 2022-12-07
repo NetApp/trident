@@ -8,12 +8,16 @@ import "github.com/netapp/trident/config"
 const ConfigVersion = 1
 
 // Default storage prefix
-const DefaultDockerStoragePrefix = "netappdvp_"
-const DefaultTridentStoragePrefix = "trident_"
+const (
+	DefaultDockerStoragePrefix  = "netappdvp_"
+	DefaultTridentStoragePrefix = "trident_"
+)
 
 // Default SAN igroup / host group names
-const DefaultDockerIgroupName = "netappdvp"
-const DefaultTridentIgroupName = "trident"
+const (
+	DefaultDockerIgroupName  = "netappdvp"
+	DefaultTridentIgroupName = "trident"
+)
 
 // Storage driver names specified in the config file, etc.
 const (

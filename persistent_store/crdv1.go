@@ -23,8 +23,10 @@ import (
 )
 
 // Compile time checks to ensure CRDClientV1 implements Client & CRDClient
-var _ Client = &CRDClientV1{}
-var _ CRDClient = &CRDClientV1{}
+var (
+	_ Client    = &CRDClientV1{}
+	_ CRDClient = &CRDClientV1{}
+)
 
 const (
 	BackendSecretSource = "tridentbackends.trident.netapp.io"

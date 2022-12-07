@@ -103,6 +103,7 @@ var (
 	skipK8sVersionCheck     bool
 	windows                 bool
 	enableForceDetach       bool
+	disableAuditLog         bool
 	pvName                  string
 	pvcName                 string
 	tridentImage            string
@@ -195,6 +196,7 @@ func init() {
 		"(Deprecated) Attempt to automatically install required packages on nodes.")
 	installCmd.Flags().BoolVar(&enableForceDetach, "enable-force-detach", false,
 		"Enable the force detach feature.")
+	installCmd.Flags().BoolVar(&disableAuditLog, "disable-audit-log", true, "Disable the audit logger.")
 
 	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName,
 		"The name of the legacy PVC used by Trident, will ensure this does not exist.")
@@ -594,6 +596,7 @@ func prepareYAMLFiles() error {
 		AutosupportHostname:     autosupportHostname,
 		ImageRegistry:           imageRegistry,
 		LogFormat:               logFormat,
+		DisableAuditLog:         disableAuditLog,
 		SnapshotCRDVersion:      snapshotCRDVersion,
 		ImagePullSecrets:        []string{},
 		Labels:                  labels,
@@ -618,6 +621,7 @@ func prepareYAMLFiles() error {
 		ImageRegistry:        imageRegistry,
 		KubeletDir:           kubeletDir,
 		LogFormat:            logFormat,
+		DisableAuditLog:      disableAuditLog,
 		ProbePort:            strconv.FormatInt(probePort, 10),
 		ImagePullSecrets:     []string{},
 		Labels:               daemonSetlabels,
@@ -673,6 +677,7 @@ func prepareYAMLFiles() error {
 			ImageRegistry:        imageRegistry,
 			KubeletDir:           kubeletDir,
 			LogFormat:            logFormat,
+			DisableAuditLog:      disableAuditLog,
 			ProbePort:            strconv.FormatInt(probePort, 10),
 			ImagePullSecrets:     []string{},
 			Labels:               daemonSetlabels,
@@ -1103,6 +1108,7 @@ func installTrident() (returnError error) {
 			AutosupportHostname:     autosupportHostname,
 			ImageRegistry:           imageRegistry,
 			LogFormat:               logFormat,
+			DisableAuditLog:         disableAuditLog,
 			SnapshotCRDVersion:      snapshotCRDVersion,
 			ImagePullSecrets:        []string{},
 			Labels:                  labels,
@@ -1150,6 +1156,7 @@ func installTrident() (returnError error) {
 				ImageRegistry:        imageRegistry,
 				KubeletDir:           kubeletDir,
 				LogFormat:            logFormat,
+				DisableAuditLog:      disableAuditLog,
 				ProbePort:            strconv.FormatInt(probePort, 10),
 				ImagePullSecrets:     []string{},
 				Labels:               nodeLabels,
@@ -1197,6 +1204,7 @@ func installTrident() (returnError error) {
 			ImageRegistry:        imageRegistry,
 			KubeletDir:           kubeletDir,
 			LogFormat:            logFormat,
+			DisableAuditLog:      disableAuditLog,
 			ProbePort:            strconv.FormatInt(probePort, 10),
 			ImagePullSecrets:     []string{},
 			Labels:               daemonSetlabels,

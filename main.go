@@ -31,6 +31,7 @@ import (
 	"github.com/netapp/trident/frontend/docker"
 	"github.com/netapp/trident/frontend/metrics"
 	"github.com/netapp/trident/frontend/rest"
+	"github.com/netapp/trident/logger"
 	"github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/utils"
@@ -41,6 +42,7 @@ var (
 	debug     = flag.Bool("debug", false, "Enable debugging output")
 	logLevel  = flag.String("log_level", "info", "Logging level (debug, info, warn, error, fatal)")
 	logFormat = flag.String("log_format", "text", "Logging format (text, json)")
+	auditLog  = flag.Bool("disable_audit_log", true, "Disable the audit logger")
 
 	// Kubernetes
 	k8sAPIServer = flag.String("k8s_api_server", "", "Kubernetes API server "+
@@ -268,6 +270,9 @@ func main() {
 		_, _ = fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}
+
+	// Initialize the audit logger.
+	logger.InitAuditLogger(*auditLog)
 
 	// Print all env variables
 	for _, element := range os.Environ() {
