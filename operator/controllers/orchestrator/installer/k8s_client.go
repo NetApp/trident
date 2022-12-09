@@ -337,7 +337,7 @@ func (k *K8sClient) RemoveMultipleClusterRoles(unwantedClusterRoles []rbacv1.Clu
 				anyError = true
 				undeletedClusterRoles = append(undeletedClusterRoles, fmt.Sprintf("%v", clusterRoleToRemove.Name))
 			} else {
-				log.WithField("clusterRole", clusterRoleToRemove.Name).Infof("Deleted Cluster role.")
+				log.WithField("clusterRole", clusterRoleToRemove.Name).Infof("Deleted cluster role.")
 			}
 		}
 	}
@@ -472,6 +472,14 @@ func (k *K8sClient) PutRole(
 ) error {
 	var roleName string
 
+	if currentRole != nil {
+		roleName = currentRole.Name
+	}
+
+	logFields := log.Fields{
+		"role": roleName,
+	}
+
 	if !reuseRole {
 		log.Debug("Creating role.")
 
@@ -481,12 +489,6 @@ func (k *K8sClient) PutRole(
 
 		log.Info("Created role.")
 	} else {
-		if currentRole != nil {
-			roleName = currentRole.Name
-		}
-		logFields := log.Fields{
-			"role": roleName,
-		}
 		log.WithFields(logFields).Debug("Patching Trident role.")
 
 		// Identify the deltas
@@ -510,7 +512,12 @@ func (k *K8sClient) PutRole(
 
 // PutClusterRole creates or updates a Cluster Role associated with Trident.
 func (k *K8sClient) PutClusterRole(currentClusterRole *rbacv1.ClusterRole, createClusterRole bool, newClusterRoleYAML, appLabel string) error {
-	clusterRoleName := getClusterRoleName(true)
+	var clusterRoleName string
+
+	if currentClusterRole != nil {
+		clusterRoleName = currentClusterRole.Name
+	}
+
 	logFields := log.Fields{
 		"clusterRole": clusterRoleName,
 	}
@@ -571,15 +578,13 @@ func (k *K8sClient) DeleteTridentClusterRole(clusterRoleName, appLabel string) e
 				"Deleted unlabeled Trident cluster role.")
 		}
 	} else {
-		if len(clusterRoles) == 1 {
+		for idx := range clusterRoles {
 			log.WithFields(log.Fields{
-				"clusterRole": clusterRoles[0].Name,
-				"namespace":   clusterRoles[0].Namespace,
+				"clusterRole": clusterRoles[idx].Name,
 			}).Info("Trident Cluster role found by label.")
-		} else {
-			log.WithField("label", appLabel).Warnf("Multiple Cluster roles found matching label; removing all.")
 		}
 
+		log.WithField("label", appLabel).Warnf("Multiple Cluster roles found matching label; removing all.")
 		if err = k.RemoveMultipleClusterRoles(clusterRoles); err != nil {
 			return err
 		}
@@ -670,7 +675,7 @@ func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, app
 			if clusterRoleBinding.Name == clusterRoleBindingName {
 				// Found a cluster role binding matching the allowed name
 				log.WithField("clusterRoleBinding", clusterRoleBindingName).Infof(
-					"A Trident Cluster role binding was found by label.")
+					"A Trident cluster role binding was found by label.")
 
 				// allocate new memory for currentClusterRoleBinding to avoid unintentional reassignments due to reuse of the
 				// clusterRoleBinding variable across iterations
@@ -691,7 +696,12 @@ func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, app
 
 // PutClusterRoleBinding creates or updates a Cluster Role Binding associated with Trident.
 func (k *K8sClient) PutClusterRoleBinding(currentClusterRoleBinding *rbacv1.ClusterRoleBinding, createClusterRoleBinding bool, newClusterRoleBindingYAML, appLabel string) error {
-	clusterRoleBindingName := getClusterRoleBindingName(true)
+	var clusterRoleBindingName string
+
+	if currentClusterRoleBinding != nil {
+		clusterRoleBindingName = currentClusterRoleBinding.Name
+	}
+
 	logFields := log.Fields{
 		"clusterRoleBinding": clusterRoleBindingName,
 	}
@@ -728,7 +738,7 @@ func (k *K8sClient) PutClusterRoleBinding(currentClusterRoleBinding *rbacv1.Clus
 
 // DeleteTridentClusterRoleBinding deletes a Cluster Role Binding associated with Trident.
 func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingName, appLabel string) error {
-	// Delete cluster role binding
+	// Fetch cluster role bindings by label
 	if clusterRoleBindings, err := k.GetClusterRoleBindingsByLabel(appLabel); err != nil {
 		log.WithFields(log.Fields{
 			"label": appLabel,
@@ -752,15 +762,14 @@ func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingName, appL
 				"Deleted unlabeled Trident cluster role binding.")
 		}
 	} else {
-		if len(clusterRoleBindings) == 1 {
+		for idx := range clusterRoleBindings {
 			log.WithFields(log.Fields{
-				"clusterRoleBinding": clusterRoleBindings[0].Name,
-				"namespace":          clusterRoleBindings[0].Namespace,
+				"clusterRoleBinding": clusterRoleBindings[idx].Name,
 			}).Info("Trident Cluster role binding found by label.")
-		} else {
-			log.WithField("label", appLabel).Warnf("Multiple Cluster role bindings found matching label; removing" +
-				" all.")
 		}
+
+		log.WithField("label", appLabel).Warnf("Multiple Cluster role bindings found matching label; removing" +
+			" all.")
 
 		if err = k.RemoveMultipleClusterRoleBindings(clusterRoleBindings); err != nil {
 			return err
@@ -790,7 +799,7 @@ func (k *K8sClient) RemoveMultipleClusterRoleBindings(unwantedClusterRoleBinding
 					fmt.Sprintf("%v", clusterRoleBindingToRemove.Name))
 			} else {
 				log.WithField("clusterRoleBinding", clusterRoleBindingToRemove.Name).Infof(
-					"Deleted Cluster role binding.")
+					"Deleted cluster role binding.")
 			}
 		}
 	}
@@ -904,6 +913,14 @@ func (k *K8sClient) PutRoleBinding(
 ) error {
 	var roleBindingName string
 
+	if currentRoleBinding != nil {
+		roleBindingName = currentRoleBinding.Name
+	}
+
+	logFields := log.Fields{
+		"roleBinding": roleBindingName,
+	}
+
 	if !reuseRoleBinding {
 		log.Debug("Creating role binding.")
 
@@ -913,13 +930,6 @@ func (k *K8sClient) PutRoleBinding(
 
 		log.Info("Created role binding.")
 	} else {
-		if currentRoleBinding != nil {
-			roleBindingName = currentRoleBinding.Name
-		}
-
-		logFields := log.Fields{
-			"roleBinding": roleBindingName,
-		}
 		log.WithFields(logFields).Debug("Patching Trident role binding.")
 
 		// Identify the deltas
@@ -1547,7 +1557,7 @@ func (k *K8sClient) GetMultiplePodSecurityPolicyInformation(
 		for _, psp := range podSecurityPolicies {
 			if utils.SliceContainsString(pspNames, psp.Name) {
 				// Found a pod security policy named tridentpods
-				log.WithField("podSecurityPolicy", psp.Name).Infof("A Trident Pod security policy was found by label.")
+				log.WithField("podSecurityPolicy", psp.Name).Infof("A Trident pod security policy was found by label.")
 
 				// allocate new memory for currentPSP to avoid unintentional reassignments due to reuse of the
 				// psp variable across iterations
@@ -2089,7 +2099,7 @@ func (k *K8sClient) GetMultipleServiceAccountInformation(
 				log.WithFields(log.Fields{
 					"serviceAccount": serviceAccount.Name,
 					"namespace":      serviceAccount.Namespace,
-				}).Infof("A Trident Service account found by label.")
+				}).Infof("A Trident service account found by label.")
 
 				// allocate new memory for currentServiceAccount to avoid unintentional reassignments due to reuse of the
 				// serviceAccount variable across iterations

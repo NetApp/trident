@@ -861,6 +861,14 @@ func (i *Installer) createOrPatchTridentClusterRole(
 		return fmt.Errorf("failed to get Trident cluster roles; %v", err)
 	}
 
+	// Retrieve cluster roles with node label
+	// This needs to happen to identify the cluster roles defined for node pods, prior to 23.xx so that
+	// they can be removed
+	nodeClusterRoles, err := i.client.GetClusterRolesByLabel(TridentNodeLabel)
+	if err == nil && len(nodeClusterRoles) > 0 {
+		unwantedClusterRoles = append(unwantedClusterRoles, nodeClusterRoles...)
+	}
+
 	if err = i.client.RemoveMultipleClusterRoles(unwantedClusterRoles); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident cluster roles; %v", err)
 	}
@@ -1000,6 +1008,14 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(
 		err := i.client.GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, shouldUpdate)
 	if err != nil {
 		return fmt.Errorf("failed to get Trident cluster role bindings; %v", err)
+	}
+
+	// Retrieve cluster role bindings with node label
+	// This needs to happen to identify the cluster role bindings defined for node pods, prior to 23.xx so that
+	// they can be removed
+	nodeClusterRoleBindings, err := i.client.GetClusterRoleBindingsByLabel(TridentNodeLabel)
+	if err == nil && len(nodeClusterRoleBindings) > 0 {
+		unwantedClusterRoleBindings = append(unwantedClusterRoleBindings, nodeClusterRoleBindings...)
 	}
 
 	if err = i.client.RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings); err != nil {

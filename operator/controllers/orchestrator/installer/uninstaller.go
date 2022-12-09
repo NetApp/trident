@@ -148,6 +148,17 @@ func (i *Installer) removeRBACObjects() error {
 		return err
 	}
 
+	// Delete node cluster roles
+	// Delete node cluster role bindings
+	for _, nodeResourceName := range nodeResourceNames {
+		if err := i.client.DeleteTridentClusterRole(nodeResourceName, TridentNodeLabel); err != nil {
+			return err
+		}
+		if err := i.client.DeleteTridentClusterRoleBinding(nodeResourceName, TridentNodeLabel); err != nil {
+			return err
+		}
+	}
+
 	// Delete node role
 	if err := i.client.DeleteMultipleTridentRoles(nodeResourceNames, TridentNodeLabel); err != nil {
 		return err

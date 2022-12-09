@@ -1348,7 +1348,7 @@ func TestDeleteTridentClusterRole(t *testing.T) {
 				mockK8sClient.EXPECT().DeleteClusterRole(clusterRoleName).Return(nil)
 			},
 		},
-		"expect to fail when GetClusterRolesByLabel succeeds but RemoveMultipleClusterRoles fails": {
+		"expect to fail when GetClusterRolesByLabel succeeds but DeleteClusterRole fails": {
 			input: input{
 				clusterRoleName: clusterRoleName,
 				appLabel:        appLabel,
@@ -1360,7 +1360,7 @@ func TestDeleteTridentClusterRole(t *testing.T) {
 					MaxTimes(len(unwantedClusterRoles))
 			},
 		},
-		"expect to pass when GetClusterRolesByLabel succeeds and RemoveMultipleClusterRoles succeeds": {
+		"expect to pass when GetClusterRolesByLabel succeeds and DeleteClusterRole succeeds": {
 			input: input{
 				clusterRoleName: clusterRoleName,
 				appLabel:        appLabel,
@@ -1808,7 +1808,7 @@ func TestDeleteTridentClusterRoleBinding(t *testing.T) {
 				mockK8sClient.EXPECT().DeleteClusterRoleBinding(clusterRoleBindingName).Return(nil)
 			},
 		},
-		"expect to fail when GetClusterRoleBindingsByLabel succeeds but RemoveMultipleClusterRoleBindings fails": {
+		"expect to fail when GetClusterRoleBindingsByLabel succeeds but DeleteClusterRoleBinding fails": {
 			input: input{
 				clusterRoleBindingName: clusterRoleBindingName,
 				appLabel:               appLabel,
@@ -1820,7 +1820,7 @@ func TestDeleteTridentClusterRoleBinding(t *testing.T) {
 					MaxTimes(len(unwantedClusterRoleBindings))
 			},
 		},
-		"expect to pass when GetClusterRoleBindingsByLabel succeeds and RemoveMultipleClusterRoleBindings succeeds": {
+		"expect to pass when GetClusterRoleBindingsByLabel succeeds and DeleteClusterRoleBinding succeeds": {
 			input: input{
 				clusterRoleBindingName: clusterRoleBindingName,
 				appLabel:               appLabel,
