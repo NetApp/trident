@@ -1891,7 +1891,7 @@ func (d *SANStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage
 	}
 
 	if d.Config.SVIP != dOrig.Config.SVIP {
-		bitmap.Add(storage.VolumeAccessInfoChange)
+		bitmap.Add(storage.InvalidVolumeAccessInfoChange)
 	}
 
 	origUsername, origPassword, parseError1 := d.getEndpointCredentials(ctx, dOrig.Config)

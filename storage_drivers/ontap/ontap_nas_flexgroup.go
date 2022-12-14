@@ -1428,10 +1428,6 @@ func (d *NASFlexGroupStorageDriver) GetUpdateType(_ context.Context, driverOrig 
 		return bitmap
 	}
 
-	if d.Config.DataLIF != dOrig.Config.DataLIF {
-		bitmap.Add(storage.VolumeAccessInfoChange)
-	}
-
 	if d.Config.Password != dOrig.Config.Password {
 		bitmap.Add(storage.PasswordChange)
 	}

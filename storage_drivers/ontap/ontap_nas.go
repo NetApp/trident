@@ -1034,10 +1034,6 @@ func (d *NASStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage
 		return bitmap
 	}
 
-	if d.Config.DataLIF != dOrig.Config.DataLIF {
-		bitmap.Add(storage.VolumeAccessInfoChange)
-	}
-
 	if d.Config.Password != dOrig.Config.Password {
 		bitmap.Add(storage.PasswordChange)
 	}

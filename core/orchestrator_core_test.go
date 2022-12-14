@@ -23,6 +23,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logger"
 	mockpersistentstore "github.com/netapp/trident/mocks/mock_persistent_store"
 	mockstorage "github.com/netapp/trident/mocks/mock_storage"
 	persistentstore "github.com/netapp/trident/persistent_store"
@@ -6770,4 +6771,211 @@ func TestHandleFailedSnapshot(t *testing.T) {
 	mockStoreClient.EXPECT().DeleteVolumeTransaction(ctx(), gomock.Any()).Return(errors.New("failed to delete transaction"))
 	err = o.handleFailedTransaction(ctx(), vt)
 	assert.Error(t, err, "Delete volume transaction error")
+}
+
+func TestUpdateBackendByBackendUUID(t *testing.T) {
+	bName := "fake-backend"
+	bConfig := map[string]interface{}{
+		"version":           1,
+		"storageDriverName": "fake",
+		"backendName":       bName,
+		"protocol":          config.File,
+	}
+
+	tests := []struct {
+		name             string
+		bootstrapErr     error
+		backendName      string
+		newBackendConfig map[string]interface{}
+		contextValue     string
+		callingConfigRef string
+		mocks            func(mockStoreClient *mockpersistentstore.MockStoreClient)
+		wantErr          assert.ErrorAssertionFunc
+	}{
+		{
+			name:             "BootstrapError",
+			bootstrapErr:     errors.New("bootstrap error"),
+			backendName:      bName,
+			newBackendConfig: bConfig,
+			mocks:            func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "BackendNotFound",
+			backendName:      bName,
+			newBackendConfig: bConfig,
+			mocks:            func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "BackendCRError",
+			backendName:      bName,
+			newBackendConfig: bConfig,
+			mocks:            func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
+			wantErr:          assert.Error,
+		},
+		{
+			name:             "InvalidCallingConfig",
+			backendName:      bName,
+			newBackendConfig: bConfig,
+			callingConfigRef: "test",
+			mocks:            func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
+			wantErr:          assert.Error,
+		},
+		{
+			name:        "BadCredentials",
+			backendName: bName,
+			newBackendConfig: map[string]interface{}{
+				"version": 1, "storageDriverName": "fake", "backendName": bName,
+				"username": "", "protocol": config.File,
+			},
+			contextValue:     ContextSourceCRD,
+			callingConfigRef: "test",
+			mocks:            func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
+			wantErr:          assert.Error,
+		},
+		{
+			name:        "UpdateStoragePrefixError",
+			backendName: bName,
+			newBackendConfig: map[string]interface{}{
+				"version": 1, "storageDriverName": "fake", "backendName": bName,
+				"storagePrefix": "new", "protocol": config.File,
+			},
+			mocks:   func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
+			wantErr: assert.Error,
+		},
+		{
+			name:        "BackendRenameWithExistingNameError",
+			backendName: bName,
+			newBackendConfig: map[string]interface{}{
+				"version": 1, "storageDriverName": "fake",
+				"backendName": "new", "protocol": config.File,
+			},
+			mocks:   func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
+			wantErr: assert.Error,
+		},
+		{
+			name:        "BackendRenameError",
+			backendName: bName,
+			newBackendConfig: map[string]interface{}{
+				"version": 1, "storageDriverName": "fake",
+				"backendName": "new", "protocol": config.File,
+			},
+			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().ReplaceBackendAndUpdateVolumes(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(errors.New("rename error"))
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name:        "InvalidUpdateError",
+			backendName: bName,
+			newBackendConfig: map[string]interface{}{
+				"version": 1, "storageDriverName": "fake",
+				"backendName": bName, "protocol": config.Block,
+			},
+			mocks:   func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
+			wantErr: assert.Error,
+		},
+		{
+			name:             "DefaultUpdateError",
+			backendName:      bName,
+			newBackendConfig: bConfig,
+			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).
+					Return(errors.New("error updating backend"))
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name:        "UpdateVolumeAccessError",
+			backendName: bName,
+			newBackendConfig: map[string]interface{}{
+				"version": 1, "storageDriverName": "fake",
+				"backendName": bName, "volumeAccess": "1.1.1.1", "protocol": config.File,
+			},
+			mocks:   func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
+			wantErr: assert.Error,
+		},
+		{
+			name:             "UpdateNonOrphanVolumeError",
+			backendName:      bName,
+			newBackendConfig: bConfig,
+			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(errors.New("error updating non-orphan volume"))
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name:             "BackendUpdateSuccess",
+			backendName:      bName,
+			newBackendConfig: bConfig,
+			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var oldBackend storage.Backend
+			var oldBackendExt *storage.BackendExternal
+			var configJSON []byte
+			var backendUUID string
+			var err error
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			mockStoreClient.EXPECT().AddBackend(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+			configJSON, err = json.Marshal(bConfig)
+			if err != nil {
+				t.Fatal("failed to unmarshal", err)
+			}
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			if tt.name != "BackendNotFound" {
+				if oldBackendExt, err = o.AddBackend(ctx(), string(configJSON), ""); err != nil {
+					t.Fatal("unable to create mock backend: ", err)
+				}
+				backendUUID = oldBackendExt.BackendUUID
+				if tt.name == "UpdateNonOrphanVolumeError" {
+					o.volumes["vol1"] = &storage.Volume{
+						Config:      &storage.VolumeConfig{InternalName: "vol1"},
+						BackendUUID: backendUUID, Orphaned: false,
+					}
+				}
+			}
+
+			o.bootstrapError = tt.bootstrapErr
+			if tt.name == "BackendCRError" {
+				// Use case where Backend ConfigRef is non-empty
+				oldBackend, _ = o.getBackendByBackendUUID(backendUUID)
+				oldBackend.SetConfigRef("test")
+			}
+
+			configJSON, err = json.Marshal(tt.newBackendConfig)
+			if err != nil {
+				t.Fatal("failed to unmarshal newBackendConfig", err)
+			}
+
+			if tt.name == "BackendRenameWithExistingNameError" || tt.name == "UpdateVolumeAccessWithExistingNameError" {
+				// Adding backend with the same name as newBackendConfig to get this error
+				if _, err = o.AddBackend(ctx(), string(configJSON), ""); err != nil {
+					t.Fatal("unable to create mock backend: ", err)
+				}
+			}
+
+			tt.mocks(mockStoreClient)
+			c := context.WithValue(ctx(), ContextKeyRequestSource, tt.contextValue)
+
+			_, err = o.UpdateBackendByBackendUUID(c, bName, string(configJSON), backendUUID, tt.callingConfigRef)
+			tt.wantErr(t, err, "Unexpected result")
+		})
+	}
 }

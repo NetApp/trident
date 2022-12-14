@@ -1250,8 +1250,12 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 		err := errors.New("invalid backend update")
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
-	case updateCode.Contains(storage.VolumeAccessInfoChange):
+	case updateCode.Contains(storage.InvalidVolumeAccessInfoChange):
 		err := errors.New("updating the data plane IP address isn't currently supported")
+		Logc(ctx).WithField("error", err).Error("Backend update failed.")
+		return nil, err
+	case updateCode.Contains(storage.PrefixChange):
+		err := utils.UnsupportedConfigError(errors.New("updating the storage prefix isn't currently supported"))
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
 	case updateCode.Contains(storage.BackendRename):
@@ -1261,24 +1265,14 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 			err := fmt.Errorf("backend name %v is already in use by %v", backend.Name(), checkingBackend.BackendUUID())
 			Logc(ctx).WithField("error", err).Error("Backend update failed.")
 			return nil, err
-		} else if utils.IsNotFoundError(lookupErr) {
-			// We couldn't find it so it's not in use, let's rename
-			if err := o.replaceBackendAndUpdateVolumesOnPersistentStore(ctx, originalBackend, backend); err != nil {
-				Logc(ctx).WithField("error", err).Errorf(
-					"Could not rename backend from %v to %v", originalBackend.Name(), backend.Name())
-				return nil, err
-			}
-		} else {
-			// Unexpected error while checking if the backend is already in use
-			err := fmt.Errorf("unexpected problem while renaming backend from %v to %v; %v",
-				originalBackend.Name(), backend.Name(), lookupErr)
-			Logc(ctx).WithField("error", err).Error("Backend update failed.")
+		}
+		// getBackendByBackendName always returns NotFoundError if lookupErr is not nil
+		// We couldn't find it, so it's not in use, let's rename
+		if err := o.replaceBackendAndUpdateVolumesOnPersistentStore(ctx, originalBackend, backend); err != nil {
+			Logc(ctx).WithField("error", err).Errorf(
+				"Could not rename backend from %v to %v", originalBackend.Name(), backend.Name())
 			return nil, err
 		}
-	case updateCode.Contains(storage.PrefixChange):
-		err := utils.UnsupportedConfigError(errors.New("updating the storage prefix isn't currently supported"))
-		Logc(ctx).WithField("error", err).Error("Backend update failed.")
-		return nil, err
 	default:
 		// Update backend information
 		if err = o.updateBackendOnPersistentStore(ctx, backend, false); err != nil {

@@ -845,7 +845,7 @@ func (b *StorageBackend) DeleteSnapshot(
 
 const (
 	BackendRename = iota
-	VolumeAccessInfoChange
+	InvalidVolumeAccessInfoChange
 	InvalidUpdate
 	UsernameChange
 	PasswordChange

@@ -6,6 +6,7 @@
 
 **Enhancements**
 - Improved performance for ontap-nas-economy storage drivers managing multiple FlexVols.
+- Enabled dataLIF updates for all ONTAP NAS storage drivers.
 
 ## Changes since v22.07.0
 

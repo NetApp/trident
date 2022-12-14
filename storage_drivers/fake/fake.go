@@ -384,6 +384,10 @@ func (d *StorageDriver) populateConfigurationDefaults(
 		config.LimitVolumeSize = defaultLimitVolumeSize
 	}
 
+	if config.VolumeAccess == "" {
+		config.VolumeAccess = "192.0.2.1"
+	}
+
 	Logc(ctx).WithFields(log.Fields{
 		"Size": config.Size,
 	}).Debugf("Configuration defaults")
@@ -1218,7 +1222,16 @@ func (d *StorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driv
 		bitmap.Add(storage.CredentialsChange)
 	}
 
-	return roaring.New()
+	if d.Config.Protocol != dOrig.Config.Protocol {
+		bitmap.Add(storage.InvalidUpdate)
+	}
+
+	// Added for Unit test coverage
+	if d.Config.VolumeAccess != dOrig.Config.VolumeAccess {
+		bitmap.Add(storage.InvalidVolumeAccessInfoChange)
+	}
+
+	return bitmap
 }
 
 // CopyVolumes copies Volumes into this instance; there is no "storage system of truth" to use
