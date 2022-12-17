@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -89,7 +90,7 @@ func (p *Plugin) nodeUnstageVolume(
 
 	// Empty strings for either of these arguments are required by CSI Sanity to return an error.
 	if req.VolumeId == "" {
-		msg := "nodeUnstageVolume was called, but no VolumeId was provided in the request"
+		msg := "nodeUnstageVolume was called, but no VolumeID was provided in the request"
 		return nil, status.Error(codes.InvalidArgument, msg)
 	}
 
@@ -569,7 +570,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 	iscsiWWN := ""
 	iscsiWWNs, err := utils.GetInitiatorIqns(ctx)
 	if err != nil {
-		Logc(ctx).WithField("error", err).Warn("Problem getting iSCSI initiator name.")
+		Logc(ctx).WithError(err).Warn("Problem getting iSCSI initiator name.")
 	} else if len(iscsiWWNs) == 0 {
 		Logc(ctx).Warn("Could not find iSCSI initiator name.")
 	} else {
@@ -933,7 +934,8 @@ func (p *Plugin) populatePublishedISCSISessions(ctx context.Context) {
 
 		publishInfo := &trackingInfo.VolumePublishInfo
 
-		utils.AddISCSISession(ctx, &publishedISCSISessions, publishInfo, volumeID, "", utils.NotInvalid)
+		newCtx := context.WithValue(ctx, utils.SessionInfoSource, utils.SessionSourceTrackingInfo)
+		utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, volumeID, "", utils.NotInvalid)
 	}
 }
 
@@ -1030,8 +1032,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 	}
 
-	if err = p.EnsureAttachISCSIVolume(ctx, req, "", publishInfo,
-		AttachISCSIVolumeTimeoutShort); err != nil {
+	if err = p.EnsureAttachISCSIVolume(ctx, req, "", publishInfo, AttachISCSIVolumeTimeoutShort); err != nil {
 		return nil, err
 	}
 
@@ -1053,19 +1054,19 @@ func (p *Plugin) nodeStageISCSIVolume(
 	// Update in-mem map used for self-healing; do it after a volume has been staged.
 	// Beyond here if there is a problem with the session or there are missing LUNs
 	// then self-healing should be able to fix those issues.
-	utils.AddISCSISession(ctx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", utils.NotInvalid)
+	newCtx := context.WithValue(ctx, utils.SessionInfoSource, utils.SessionSourceNodeStage)
+	utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", utils.NotInvalid)
 
 	return &csi.NodeStageVolumeResponse{}, nil
 }
 
 // EnsureAttachISCSIVolume to ensure that iSCSI volume attachment is through.
-func (p *Plugin) EnsureAttachISCSIVolume(
-	ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
-	publishInfo *utils.VolumePublishInfo, timeout time.Duration,
+func (p *Plugin) EnsureAttachISCSIVolume(ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
+	publishInfo *utils.VolumePublishInfo, attachTimeout time.Duration,
 ) error {
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
 	if err := utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint, publishInfo,
-		req.GetSecrets(), timeout); err != nil {
+		req.GetSecrets(), attachTimeout); err != nil {
 		// Did we fail to log in?
 		if utils.IsAuthError(err) {
 			// Update CHAP info from the controller and try one more time.
@@ -1074,7 +1075,7 @@ func (p *Plugin) EnsureAttachISCSIVolume(
 				return status.Error(codes.Internal, err.Error())
 			}
 			if err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint, publishInfo,
-				req.GetSecrets(), AttachISCSIVolumeTimeoutShort); err != nil {
+				req.GetSecrets(), attachTimeout); err != nil {
 				// Bail out no matter what as we've now tried with updated credentials
 				return status.Error(codes.Internal, err.Error())
 			}
@@ -1106,7 +1107,6 @@ func (p *Plugin) updateChapInfoFromController(
 func (p *Plugin) nodeUnstageISCSIVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
 ) error {
-
 	// Remove Portal/LUN entries in self-healing map.
 	utils.RemoveLUNFromSessions(ctx, publishInfo, &publishedISCSISessions)
 
@@ -1498,14 +1498,13 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 	return volumeId, stagingTargetPath, nil
 }
 
-// selfHealingRectifySession to rectify a session which has been identified as ghost session.
+// selfHealingRectifySession rectifies a session which has been identified as ghost session.
 // If it is determined that re-login is required, perform re login to the sessions and then scan for all the LUNs.
-func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, action int) error {
+func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, action utils.ISCSIAction) error {
 	var err error
-	var volumeId string
+	var volumeID string
 	var publishInfo utils.VolumePublishInfo
-	attachISCSIVolumeTimeoutOneRun := 1 * time.Second
-	// var publishedISCSISessions utils.ISCSISessions
+	iSCSILoginTimeout := 10 * time.Second
 
 	if portal == "" {
 		return fmt.Errorf("portal value is empty")
@@ -1520,7 +1519,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 	}
 
 	switch action {
-	case utils.ISCSIActionLogoutLoginScan:
+	case utils.LogoutLoginScan:
 		if err = utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
 			return fmt.Errorf("error while logging out of target %s", publishInfo.IscsiTargetIQN)
 		} else {
@@ -1528,29 +1527,34 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		}
 		// Logout is successful, fallthrough to perform login.
 		fallthrough
-	case utils.ISCSIActionLoginScan:
+	case utils.LoginScan:
 		// Set FilesystemType to "raw" so that we only heal the session connectivity and not perform the mount and
 		// filesystem related operations.
 		publishInfo.FilesystemType = tridentconfig.FsRaw
 
-		if volumeId, err = publishedISCSISessions.GetVolumeIDForPortal(portal); err != nil {
+		if volumeID, err = publishedISCSISessions.VolumeIDForPortal(portal); err != nil {
 			return err
 		}
-		volContext := map[string]string{"internalName": volumeId}
+		volContext := map[string]string{"internalName": volumeID}
 
-		req := &csi.NodeStageVolumeRequest{VolumeId: volumeId, VolumeContext: volContext, Secrets: map[string]string{}}
-		if err = p.EnsureAttachISCSIVolume(ctx, req, "", &publishInfo, attachISCSIVolumeTimeoutOneRun); err != nil {
-			return fmt.Errorf("failed to login to the target")
-		} else {
-			Logc(ctx).Debug("Login to target is successful.")
+		req := &csi.NodeStageVolumeRequest{
+			VolumeId:      volumeID,
+			VolumeContext: volContext,
+			Secrets:       map[string]string{},
 		}
+		if err = p.EnsureAttachISCSIVolume(ctx, req, "", &publishInfo, iSCSILoginTimeout); err != nil {
+			return fmt.Errorf("failed to login to the target")
+		}
+
+		Logc(ctx).Debug("Login to target is successful.")
 		// Login is successful, fallthrough to perform scan
 		fallthrough
-	case utils.ISCSIActionScan:
+	case utils.Scan:
 		if err = utils.InitiateScanForAllLUNs(ctx, publishInfo.IscsiTargetIQN); err != nil {
 			Logc(ctx).Debug("Error while rescanning of LUNs.")
 		}
 
+		Logc(ctx).Debug("Scanning of LUNs is successful.")
 	default:
 		Logc(ctx).Debug("No valid action to be taken in iSCSI self-healing.")
 	}
@@ -1558,28 +1562,42 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 	return nil
 }
 
-// iSCSISelfHealing  implements iSCSI self-healing functionality which would correct sessions
-// those are in faulty state. This function is invoked periodically.
-func (p *Plugin) iSCSISelfHealing(ctx context.Context) {
+// performISCSISelfHealing inspects the desired state of the iSCSI sessions with the current state and accordingly
+// identifies candidate sessions that require remediation. This function is invoked periodically.
+func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 	utils.Lock(ctx, iSCSISelfHealingLockContext, lockID)
 	defer utils.Unlock(ctx, iSCSISelfHealingLockContext, lockID)
 
+	defer func() {
+		if r := recover(); r != nil {
+			Logc(ctx).Errorf("Panic in iSCSISelfHealing. \nStack Trace: %v", string(debug.Stack()))
+			return
+		}
+	}()
+
+	// After this time self-healing may be stopped
+	stopSelfHealingAt := time.Now().Add(60 * time.Second)
+
 	// If there are not iSCSI volumes expected on the host skip self-healing
 	if publishedISCSISessions.IsEmpty() {
-		Logc(ctx).Debugf("Skipping iSCSI self-heal cycle; no iSCSI volumes published on the host; ")
+		Logc(ctx).Debug("Skipping iSCSI self-heal cycle; no iSCSI volumes published on the host.")
 		return
 	}
 
 	if err := utils.ISCSIPreChecks(ctx); err != nil {
-		Logc(ctx).Errorf("Skipping iSCSI self-heal cycle; pre-checks failed: %v", err)
+		Logc(ctx).Errorf("Skipping iSCSI self-heal cycle; pre-checks failed: %v.", err)
 	}
 
 	// Reset current sessions
 	currentISCSISessions = utils.ISCSISessions{}
 
+	// Reset published iSCSI session remediation information
+	if err := publishedISCSISessions.ResetAllRemediationValues(); err != nil {
+		Logc(ctx).WithError(err).Error("Failed to reset remediation value(s) for published iSCSI sessions. ")
+	}
+
 	if err := utils.PopulateCurrentSessions(ctx, &currentISCSISessions); err != nil {
-		Logc(ctx).WithField("error",
-			err).Errorf("Failed to get current state of iSCSI Sessions LUN mappings; skipping iSCSI self-heal cycle.")
+		Logc(ctx).WithError(err).Error("Failed to get current state of iSCSI Sessions LUN mappings; skipping iSCSI self-heal cycle.")
 		return
 	}
 
@@ -1590,24 +1608,69 @@ func (p *Plugin) iSCSISelfHealing(ctx context.Context) {
 	Logc(ctx).Debugf("\nPublished iSCSI Sessions: %v", publishedISCSISessions)
 	Logc(ctx).Debugf("\n\nCurrent iSCSI Sessions: %v", currentISCSISessions)
 
-	// TODO (arorar):
-	// SELF-HEAL STEP 1: Identify candidate stale sessions and create a sorted list (least to highest)
-	// of candidate non-stale sessions.
-	// Note: Sorting is on the basis of the last access time (least to highest).
-	// staleIscsiSessions, sortedNonStaleIscsiSessions, err := utils.IscsiSessionInspection(
-	//	ctx, publishedISCSISessions, currentISCSISessions)
+	// The problems self-heal aims to resolve can be divided into two buckets. A stale portal bucket
+	// and a non-stale portal bucket. Stale portals are the sessions that were healthy at some point
+	// in time, then due to temporary network connectivity issue along with CHAP rotation made them
+	// un-recoverable by themselves and thus require intervention.
+	// Issues in non-stale portal bucket would include sessions that were never established due
+	// to temporary networking issue or logged-out sessions or LUNs that were never scanned for some sessions.
 
-	// SELF-HEAL STEP 2: Iterate through the candidate non-stale sessions and the candidate
-	// stale sessions list. As Trident iterates it will identify what kind of fix may be required
-	// for non-stale iSCSI session, and for the stale iSCSI session it needs to re-login to them.
+	// SELF-HEAL STEP 1: Identify all sorted candidate stale portals and sorted candidate non-stale portals.
+	staleISCSIPortals, nonStaleISCSIPortals := utils.InspectAllISCSISessions(ctx, &publishedISCSISessions,
+		&currentISCSISessions, p.iSCSISelfHealingWaitTime)
 
-	/*if portal, listLUNs, action, err := utils.ISCSISelfHealSession(ctx); err != nil {
-		Logc(ctx).WithField("Error", err).Debug("Skipping self heal cycle.")
-	} else {
-		if err := p.selfHealingRectifySession(ctx, portal, action); err != nil {
-			Logc(ctx).WithField("error", err).Debug("Error while healing attempt")
-		}
-	}*/
+	// SELF-HEAL STEP 2: Attempt to fix all the stale portals.
+	p.fixISCSISessions(ctx, staleISCSIPortals, "stale", stopSelfHealingAt)
+
+	// SELF-HEAL STEP 3: Attempt to fix at-least one of the non-stale portals.
+	p.fixISCSISessions(ctx, nonStaleISCSIPortals, "non-stale", stopSelfHealingAt)
 
 	return
+}
+
+// fixISCSISessions iterates through all the portal inputs, identifies their respective remediation
+// and calls another function to actually fix the issues.
+func (p *Plugin) fixISCSISessions(ctx context.Context, portals []string, portalType string, stopAt time.Time) {
+	if len(portals) == 0 {
+		Logc(ctx).Debugf("No %s iSCSI portal found.", portalType)
+		return
+	}
+
+	Logc(ctx).Debugf("Found %s portal(s) that require remediation.", portalType)
+
+	for idx, portal := range portals {
+
+		// First get the fix action
+		fixAction := publishedISCSISessions.Info[portal].Remediation
+		isNonStaleSessionFix := fixAction != utils.LogoutLoginScan
+
+		// Check if there is a need to stop the loop from running
+		// NOTE: The loop should run at least once for all portal types.
+		if idx > 0 && utils.WaitQueueSize(lockID) > 0 {
+			// Check to see if some other operation(s) requires node lock, if not then continue to resolve
+			// non-stale iSCSI portal issues else break out of this loop.
+			if isNonStaleSessionFix {
+				Logc(ctx).Debug("Identified other node operations waiting for the node lock; preempting non-stale" +
+					" iSCSI session self-healing.")
+				break
+			} else if time.Now().After(stopAt) {
+				Logc(ctx).Debug("Self-healing has exceeded maximum runtime; preempting iSCSI session self-healing.")
+				break
+			}
+		}
+
+		Logc(ctx).Debugf("Attempting to fix iSCSI portal %v it requires %s", portal, fixAction)
+
+		// First thing to do is to update the lastAccessTime
+		publishedISCSISessions.Info[portal].PortalInfo.LastAccessTime = time.Now()
+
+		if err := p.selfHealingRectifySession(ctx, portal, fixAction); err != nil {
+			Logc(ctx).WithError(err).Errorf("Encountered error while attempting to fix portal %v.", portal)
+		} else {
+			Logc(ctx).Debugf("Fixed portal %v it required %s", portal, fixAction)
+
+			// On success ensure portal's FirstIdentifiedStaleAt value is reset
+			publishedISCSISessions.Info[portal].PortalInfo.ResetFirstIdentifiedStaleAt()
+		}
+	}
 }

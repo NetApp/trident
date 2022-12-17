@@ -62,10 +62,10 @@ type Plugin struct {
 
 	nodeIsRegistered bool
 
-	iscsiSelfHealingTicker   *time.Ticker
-	iscsiSelfHealingChannel  chan struct{}
-	iscsiSelfHealingInterval time.Duration
-	iscsiSelfHealingWaitTime time.Duration
+	iSCSISelfHealingTicker   *time.Ticker
+	iSCSISelfHealingChannel  chan struct{}
+	iSCSISelfHealingInterval time.Duration
+	iSCSISelfHealingWaitTime time.Duration
 }
 
 func NewControllerPlugin(
@@ -117,7 +117,7 @@ func NewControllerPlugin(
 func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
 	unsafeDetach bool, helper *nodehelpers.NodeHelper, enableForceDetach bool,
-	iscsiSelfHealingInterval, iscsiStaleSessionWaitTime time.Duration,
+	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime time.Duration,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
@@ -140,8 +140,8 @@ func NewNodePlugin(
 		enableForceDetach:        enableForceDetach,
 		unsafeDetach:             unsafeDetach,
 		opCache:                  sync.Map{},
-		iscsiSelfHealingInterval: iscsiSelfHealingInterval,
-		iscsiSelfHealingWaitTime: iscsiStaleSessionWaitTime,
+		iSCSISelfHealingInterval: iSCSISelfHealingInterval,
+		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
 	}
 
 	if runtime.GOOS == "windows" {
@@ -202,7 +202,7 @@ func NewNodePlugin(
 func NewAllInOnePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
 	controllerHelper *controllerhelpers.ControllerHelper, nodeHelper *nodehelpers.NodeHelper, unsafeDetach bool,
-	iscsiSelfHealingInterval, iscsiStaleSessionWaitTime time.Duration,
+	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime time.Duration,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
@@ -217,8 +217,8 @@ func NewAllInOnePlugin(
 		controllerHelper:         *controllerHelper,
 		nodeHelper:               *nodeHelper,
 		opCache:                  sync.Map{},
-		iscsiSelfHealingInterval: iscsiSelfHealingInterval,
-		iscsiSelfHealingWaitTime: iscsiStaleSessionWaitTime,
+		iSCSISelfHealingInterval: iSCSISelfHealingInterval,
+		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
 	}
 
 	// Define controller capabilities
@@ -380,30 +380,33 @@ func (p *Plugin) IsReady() bool {
 // startISCSISelfHealingThread starts the iSCSI self-healing thread to heal faulty sessions.
 func (p *Plugin) startISCSISelfHealingThread(ctx context.Context) {
 	// provision to disable the iSCSI self-healing feature
-	if p.iscsiSelfHealingInterval <= 0 {
+	if p.iSCSISelfHealingInterval <= 0 {
 		Logc(ctx).Debugf("Iscsi self-healing is disabled.")
 		return
 	}
-	if p.iscsiSelfHealingWaitTime < p.iscsiSelfHealingInterval {
+	if p.iSCSISelfHealingWaitTime < p.iSCSISelfHealingInterval {
 		// Stale session wait time is not advised to be smaller than self-heal interval
-		p.iscsiSelfHealingWaitTime = time.Duration(1.5 * float64(p.iscsiSelfHealingInterval))
+		p.iSCSISelfHealingWaitTime = time.Duration(1.5 * float64(p.iSCSISelfHealingInterval))
 	}
 
-	Logc(ctx).WithField("iSCSI self-healing interval:", p.iscsiSelfHealingInterval).Debugf(
+	Logc(ctx).WithFields(log.Fields{
+		"iSCSISelfHealingInterval": p.iSCSISelfHealingInterval,
+		"iSCSISelfHealingWaitTime": p.iSCSISelfHealingWaitTime,
+	}).Debugf(
 		"iSCSI self-healing is enabled.")
-	p.iscsiSelfHealingTicker = time.NewTicker(p.iscsiSelfHealingInterval)
-	p.iscsiSelfHealingChannel = make(chan struct{})
+	p.iSCSISelfHealingTicker = time.NewTicker(p.iSCSISelfHealingInterval)
+	p.iSCSISelfHealingChannel = make(chan struct{})
 
 	p.populatePublishedISCSISessions(ctx)
 
 	go func() {
 		for {
 			select {
-			case tick := <-p.iscsiSelfHealingTicker.C:
+			case tick := <-p.iSCSISelfHealingTicker.C:
 				Logc(ctx).WithField("tick", tick).Debug("ISCSI self-healing is running.")
 				// perform self healing here
-				p.iSCSISelfHealing(ctx)
-			case <-p.iscsiSelfHealingChannel:
+				p.performISCSISelfHealing(ctx)
+			case <-p.iSCSISelfHealingChannel:
 				Logc(ctx).Debugf("ISCSI self-healing stopped.")
 				return
 			}
@@ -415,12 +418,12 @@ func (p *Plugin) startISCSISelfHealingThread(ctx context.Context) {
 
 // stopISCSISelfHealingThread stops the iSCSI self-healing thread.
 func (p *Plugin) stopISCSISelfHealingThread(ctx context.Context) {
-	if p.iscsiSelfHealingTicker != nil {
-		p.iscsiSelfHealingTicker.Stop()
+	if p.iSCSISelfHealingTicker != nil {
+		p.iSCSISelfHealingTicker.Stop()
 	}
 
-	if p.iscsiSelfHealingChannel != nil {
-		close(p.iscsiSelfHealingChannel)
+	if p.iSCSISelfHealingChannel != nil {
+		close(p.iSCSISelfHealingChannel)
 	}
 
 	return

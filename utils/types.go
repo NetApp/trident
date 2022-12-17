@@ -203,11 +203,63 @@ type LUKSDevice struct {
 }
 
 // Data structure and related interfaces to help iSCSI self-healing
+
+// PortalInvalid is a data structure for iSCSI self-healing capturing Portal's invalid non-recoverable state
+type PortalInvalid int8
+
+const (
+	NotInvalid PortalInvalid = iota
+	MissingTargetIQN
+	MissingMpathDevice
+	DuplicatePortals
+)
+
+func (a PortalInvalid) String() string {
+	switch a {
+	case NotInvalid:
+		return "not invalid"
+	case MissingTargetIQN:
+		return "missing target IQN"
+	case MissingMpathDevice:
+		return "missing multipath device"
+	case DuplicatePortals:
+		return "duplicate portals found"
+	}
+
+	return "unknown"
+}
+
+// ISCSIAction is a data structure for iSCSI self-healing actions
+type ISCSIAction int8
+
+const (
+	NoAction ISCSIAction = iota
+	Scan
+	LoginScan
+	LogoutLoginScan
+)
+
+func (a ISCSIAction) String() string {
+	switch a {
+	case NoAction:
+		return "no action"
+	case Scan:
+		return "LUN scanning"
+	case LoginScan:
+		return "login and LUN scanning"
+	case LogoutLoginScan:
+		return "re-login and LUN scanning"
+	}
+
+	return "unknown"
+}
+
 /*
 	Sessions {
 		Info (map)
 			Key: Portal (string)
-			Value: <PortalInfo, LUNs>
+			Value: <PortalInfo, LUNs, Remediation (ISCSIAction)>
+
 	}
 
 	PortalInfo {
@@ -223,6 +275,7 @@ type LUKSDevice struct {
 		ReasonInvalid (PortalInvalid)
 		LastAccessTime (time.Time)
 		FirstIdentifiedStaleAt (time.Time)
+		Source (string)
 	}
 
 	LUNs {
@@ -244,21 +297,12 @@ e.g.
 */
 
 type LUNData struct {
-	LUN      int32
-	VolumeId string
+	LUN   int32
+	VolID string
 }
 
 type LUNs struct {
 	Info map[int32]string
-}
-
-// BuildLUNData builds a list of LUNData with empty volume ID for given LUN Numbers.
-func BuildLUNData(luns []int32) []LUNData {
-	lunData := make([]LUNData, len(luns))
-	for i, lunId := range luns {
-		lunData[i] = LUNData{LUN: lunId}
-	}
-	return lunData
 }
 
 // AddLUN adds a LUN to LUNs map
@@ -267,18 +311,7 @@ func (l *LUNs) AddLUN(m LUNData) {
 		l.Info = make(map[int32]string)
 	}
 
-	l.Info[m.LUN] = m.VolumeId
-}
-
-// AddLUNs adds a list of LUNs to LUNs map
-func (l *LUNs) AddLUNs(s []LUNData) {
-	if l.Info == nil {
-		l.Info = make(map[int32]string)
-	}
-
-	for _, k := range s {
-		l.Info[k.LUN] = k.VolumeId
-	}
+	l.Info[m.LUN] = m.VolID
 }
 
 // RemoveLUN removes a given LUN from LUNs map
@@ -333,8 +366,8 @@ func (l *LUNs) IdentifyMissingLUNs(m LUNs) []int32 {
 	return luns
 }
 
-// VolumeId returns volume ID associated with LUN
-func (l *LUNs) VolumeId(x int32) (string, error) {
+// VolumeID returns volume ID associated with LUN
+func (l *LUNs) VolumeID(x int32) (string, error) {
 	if volId, ok := l.Info[x]; ok {
 		return volId, nil
 	}
@@ -353,6 +386,7 @@ type PortalInfo struct {
 	ReasonInvalid          PortalInvalid // A portal may be in an invalid state, if so then why?
 	LastAccessTime         time.Time     // Time at which there was an attempt to self-heal session
 	FirstIdentifiedStaleAt time.Time     // Time at which session was first identified to be stale
+	Source                 string        // Source of the portal Info
 }
 
 // IsValid verifies if PortalInfo is valid or not
@@ -381,6 +415,16 @@ func (p *PortalInfo) UpdateCHAPCredentials(credentials IscsiChapInfo) {
 	p.Credentials = credentials
 }
 
+// IsFirstIdentifiedStaleAtSet identifies if FirstIdentifiedStaleAt time is set or not
+func (p *PortalInfo) IsFirstIdentifiedStaleAtSet() bool {
+	return p.FirstIdentifiedStaleAt != time.Time{}
+}
+
+// ResetFirstIdentifiedStaleAt reset FirstIdentifiedStaleAt time to its zero value
+func (p *PortalInfo) ResetFirstIdentifiedStaleAt() {
+	p.FirstIdentifiedStaleAt = time.Time{}
+}
+
 // RecordChanges compares a given portal info with another portal info and record changes
 func (p *PortalInfo) RecordChanges(m PortalInfo) string {
 	var sb strings.Builder
@@ -390,7 +434,7 @@ func (p *PortalInfo) RecordChanges(m PortalInfo) string {
 	}
 
 	if p.SessionNumber != m.SessionNumber {
-		sb.WriteString(fmt.Sprintf("Session nuumber changed from '%v' to '%v'.\n", p.SessionNumber, m.SessionNumber))
+		sb.WriteString(fmt.Sprintf("Session number changed from '%v' to '%v'.\n", p.SessionNumber, m.SessionNumber))
 	}
 
 	if p.ReasonInvalid != m.ReasonInvalid {
@@ -414,13 +458,14 @@ func (p *PortalInfo) RecordChanges(m PortalInfo) string {
 
 func (p *PortalInfo) String() string {
 	return fmt.Sprintf("iSCSITargetIQN: %v, useCHAP: %v, lastAccessTime: %v, firstIdentifiedStaleAt: %v, "+
-		"sessionNumber: %v, reasonInvalid: %v", p.ISCSITargetIQN, p.Credentials.UseCHAP, p.LastAccessTime,
-		p.FirstIdentifiedStaleAt, p.SessionNumber, p.ReasonInvalid)
+		"sessionNumber: %v, reasonInvalid: %v, source: %v", p.ISCSITargetIQN, p.Credentials.UseCHAP, p.LastAccessTime,
+		p.FirstIdentifiedStaleAt, p.SessionNumber, p.ReasonInvalid, p.Source)
 }
 
 type ISCSISessionData struct {
-	PortalInfo PortalInfo
-	LUNs       LUNs
+	PortalInfo  PortalInfo
+	LUNs        LUNs
+	Remediation ISCSIAction
 }
 
 type ISCSISessions struct {
@@ -438,6 +483,10 @@ func (p *ISCSISessions) ISCSISessionData(portal string) (*ISCSISessionData, erro
 		return nil, fmt.Errorf("no iSCSI sessions exist")
 	}
 
+	if strings.TrimSpace(portal) == "" {
+		return nil, fmt.Errorf("portal value cannot be empty")
+	}
+
 	if iSCSISessionData, found := p.Info[parseHostportIP(portal)]; found {
 		return iSCSISessionData, nil
 	}
@@ -447,6 +496,13 @@ func (p *ISCSISessions) ISCSISessionData(portal string) (*ISCSISessionData, erro
 
 // AddPortal creates a portal entry along with PortalInfo but without any LUNInfo
 func (p *ISCSISessions) AddPortal(portal string, portalInfo PortalInfo) error {
+	if p == nil {
+		return fmt.Errorf("ISCSISession has not been initialized")
+	}
+
+	if strings.TrimSpace(portal) == "" {
+		return fmt.Errorf("portal value cannot be empty")
+	}
 
 	if !portalInfo.HasTargetIQN() {
 		return fmt.Errorf("portal info is missing target IQN")
@@ -475,7 +531,6 @@ func (p *ISCSISessions) AddPortal(portal string, portalInfo PortalInfo) error {
 // UpdateAndRecordPortalInfoChanges updates the portal information associated with the portal
 // and identifies changes to the portal info (if any)
 func (p *ISCSISessions) UpdateAndRecordPortalInfoChanges(portal string, portalInfo PortalInfo) (string, error) {
-
 	var portalInfoChanges string
 
 	if !portalInfo.HasTargetIQN() {
@@ -484,7 +539,7 @@ func (p *ISCSISessions) UpdateAndRecordPortalInfoChanges(portal string, portalIn
 
 	iSCSISessionData, err := p.ISCSISessionData(portal)
 	if err != nil {
-		return portalInfoChanges, fmt.Errorf("unable to update portal '%v' info in the mapping; %v", portal, err)
+		return portalInfoChanges, fmt.Errorf("unable to update portal '%v' info in the mapping; %w", portal, err)
 	} else if iSCSISessionData == nil {
 		// Initialize current Portal LUN data to an empty value so that it can be updated.
 		iSCSISessionData = &ISCSISessionData{}
@@ -506,7 +561,6 @@ func (p *ISCSISessions) UpdateAndRecordPortalInfoChanges(portal string, portalIn
 
 // UpdateCHAPForPortal updates the CHAP information associated with the portal
 func (p *ISCSISessions) UpdateCHAPForPortal(portal string, newCHAP IscsiChapInfo) error {
-
 	iSCSISessionData, err := p.ISCSISessionData(portal)
 	if err != nil {
 		return fmt.Errorf("failed to update CHAP; unable to get portal info for '%v'; %v", portal, err)
@@ -545,25 +599,6 @@ func (p *ISCSISessions) AddLUNToPortal(portal string, lData LUNData) error {
 	return nil
 }
 
-// AddLUNsToPortal adds multiple LUNInfos to a pre-existing portal entry in the map
-func (p *ISCSISessions) AddLUNsToPortal(portal string, luns []LUNData) error {
-	iSCSISessionData, err := p.ISCSISessionData(portal)
-	if err != nil {
-		return fmt.Errorf("unable to add LUNs '%v' to the portal '%v' in mapping; %v", luns, portal, err)
-	} else if iSCSISessionData == nil {
-		return fmt.Errorf("failed to add LUNs; portal info not set for portal '%v'", portal)
-	}
-
-	// Ensure current portal information has target IQN
-	if !iSCSISessionData.PortalInfo.HasTargetIQN() {
-		return fmt.Errorf("failed to add LUNs; portal '%v' is missing Target IQN", portal)
-	}
-
-	iSCSISessionData.LUNs.AddLUNs(luns)
-
-	return nil
-}
-
 // RemoveLUNFromPortal removes a LUNInfo from the given portal mapping
 // If it is the last LUNInfo corresponding to a portal, then portal is
 // removed from the map as well
@@ -580,17 +615,8 @@ func (p *ISCSISessions) RemoveLUNFromPortal(portal string, l int32) {
 
 // RemovePortal removes portal (along with its PortalInfo and LUNInfo) from the map
 func (p *ISCSISessions) RemovePortal(portal string) {
-	delete(p.Info, parseHostportIP(portal))
-}
-
-// RemoveAllPortals clears all the contents of the map (along with their PortalInfo and LUNInfo)
-func (p *ISCSISessions) RemoveAllPortals() {
-	if p.IsEmpty() {
-		return
-	}
-
-	for k := range p.Info {
-		delete(p.Info, k)
+	if p != nil {
+		delete(p.Info, parseHostportIP(portal))
 	}
 }
 
@@ -621,10 +647,75 @@ func (p *ISCSISessions) LUNInfo(portal string) (*LUNs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to get LUN info for portal '%v' in mapping; %v", portal, err)
 	} else if iSCSISessionData == nil {
-		return nil, fmt.Errorf("failed to get LUN info; portal & LUN info info not set for portal '%v'", portal)
+		return nil, fmt.Errorf("failed to get LUN info; portal & LUN info not set for portal '%v'", portal)
 	}
 
 	return &iSCSISessionData.LUNs, nil
+}
+
+// LUNsForPortal returns the list of LUNs associated with this portal
+func (p *ISCSISessions) LUNsForPortal(portal string) ([]int32, error) {
+	iSCSISessionData, err := p.ISCSISessionData(portal)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get LUNs for portal '%v' in mapping; %v", portal, err)
+	} else if iSCSISessionData == nil {
+		return nil, fmt.Errorf("failed to get LUNs; portal & LUN info not set for portal '%v'", portal)
+	}
+
+	return iSCSISessionData.LUNs.AllLUNs(), nil
+}
+
+// VolumeIDForPortal to get any valid volume ID behind a given portal.
+func (p *ISCSISessions) VolumeIDForPortal(portal string) (string, error) {
+	iSCSISessionData, err := p.ISCSISessionData(portal)
+	if err != nil {
+		return "", fmt.Errorf("unable to get volume ID for portal '%v' in mapping; %v", portal, err)
+	} else if iSCSISessionData == nil {
+		return "", fmt.Errorf("failed to get volume ID; portal & LUN info not set for portal '%v'", portal)
+	}
+
+	for _, volID := range iSCSISessionData.LUNs.Info {
+		if volID != "" {
+			return volID, nil
+		}
+	}
+
+	return "", fmt.Errorf("no volume ID found for the portal: %v", portal)
+}
+
+// ResetPortalRemediationValue resets remediation information associated with the portal
+func (p *ISCSISessions) ResetPortalRemediationValue(portal string) error {
+	iSCSISessionData, err := p.ISCSISessionData(portal)
+	if err != nil {
+		return fmt.Errorf("failed to update remediation value; unable to get portal info for '%v'; %v", portal, err)
+	} else if iSCSISessionData == nil {
+		return fmt.Errorf("failed to update remediation value; portal info not set for portal '%v'", portal)
+	}
+
+	iSCSISessionData.Remediation = NoAction
+
+	return nil
+}
+
+// ResetAllRemediationValues resets remediation information associated with all the portals
+func (p *ISCSISessions) ResetAllRemediationValues() error {
+	if p.IsEmpty() {
+		return nil
+	}
+
+	var sb strings.Builder
+	for portal := range p.Info {
+		if err := p.ResetPortalRemediationValue(portal); err != nil {
+			sb.WriteString(fmt.Sprintf("\n%v", err))
+		}
+	}
+
+	errVal := sb.String()
+	if errVal != "" {
+		return fmt.Errorf(errVal)
+	}
+
+	return nil
 }
 
 func (p *ISCSISessions) GeneratePublishInfo(portal string) (VolumePublishInfo, error) {
@@ -634,7 +725,7 @@ func (p *ISCSISessions) GeneratePublishInfo(portal string) (VolumePublishInfo, e
 	if err != nil {
 		return publishInfo, fmt.Errorf("unable to generate publish info for portal '%v' in mapping; %v", portal, err)
 	} else if iSCSISessionData == nil {
-		return publishInfo, fmt.Errorf("failed to generate publish info; portal & LUN info info not set for portal '%v'",
+		return publishInfo, fmt.Errorf("failed to generate publish info; portal & LUN info not set for portal '%v'",
 			portal)
 	}
 
@@ -656,61 +747,6 @@ func (p *ISCSISessions) GeneratePublishInfo(portal string) (VolumePublishInfo, e
 	return publishInfo, nil
 }
 
-// LUNsForPortal returns the list of LUNs associated with this portal
-func (p *ISCSISessions) LUNsForPortal(portal string) ([]int32, error) {
-	iSCSISessionData, err := p.ISCSISessionData(portal)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get LUNs for portal '%v' in mapping; %v", portal, err)
-	} else if iSCSISessionData == nil {
-		return nil, fmt.Errorf("failed to get LUNs; portal & LUN info info not set for portal '%v'", portal)
-	}
-
-	return iSCSISessionData.LUNs.AllLUNs(), nil
-}
-
-// FirstIdentifiedStaleTimeForPortal returns the time at which portal was first identified to be stale.
-// If session is not stale time.Time{} is returned with nil error.
-func (p *ISCSISessions) FirstIdentifiedStaleTimeForPortal(portal string) (time.Time, error) {
-	iSCSISessionData, err := p.ISCSISessionData(portal)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("unable to get stale timestamp for portal '%v' in mapping; %v", portal,
-			err)
-	} else if iSCSISessionData == nil {
-		return time.Time{}, fmt.Errorf("failed to get stale timestamp; portal info info not set for portal '%v'",
-			portal)
-	}
-
-	return iSCSISessionData.PortalInfo.FirstIdentifiedStaleAt, nil
-}
-
-// SetFirstIdentifiedStaleTimeForPortal sets the time at which portal was first identified to be stale.
-func (p *ISCSISessions) SetFirstIdentifiedStaleTimeForPortal(portal string, time time.Time) error {
-	iSCSISessionData, err := p.ISCSISessionData(portal)
-	if err != nil {
-		return fmt.Errorf("unable to set stale timestamp for portal '%v' in mapping; %v", portal, err)
-	} else if iSCSISessionData == nil {
-		return fmt.Errorf("failed to set stale timestamp; portal info info not set for portal '%v'", portal)
-	}
-
-	iSCSISessionData.PortalInfo.FirstIdentifiedStaleAt = time
-
-	return nil
-}
-
-// ResetFirstIdentifiedStaleTimeForPortal resets the time at which portal was first identified to be stale.
-func (p *ISCSISessions) ResetFirstIdentifiedStaleTimeForPortal(portal string) error {
-	iSCSISessionData, err := p.ISCSISessionData(portal)
-	if err != nil {
-		return fmt.Errorf("unable to reset stale timestamp for portal '%v' in mapping; %v", portal, err)
-	} else if iSCSISessionData == nil {
-		return fmt.Errorf("failed to reset stale timestamp; portal info info not set for portal '%v'", portal)
-	}
-
-	iSCSISessionData.PortalInfo.FirstIdentifiedStaleAt = time.Time{}
-
-	return nil
-}
-
 // String prints values of the map
 func (p ISCSISessions) String() string {
 	if p.IsEmpty() {
@@ -719,8 +755,19 @@ func (p ISCSISessions) String() string {
 
 	var sb strings.Builder
 	for portal, iSCSISessionData := range p.Info {
-		sb.WriteString(fmt.Sprintf("\n[Portal: %v]: \n\tPortalInfo: %+v \n\tLUNInfo: %+v",
-			portal, iSCSISessionData.PortalInfo, iSCSISessionData.LUNs))
+		if strings.TrimSpace(portal) == "" {
+			sb.WriteString("\n[Portal: portal value missing]:")
+
+			if iSCSISessionData != nil {
+				sb.WriteString(fmt.Sprintf("\n\tPortalInfo: %+v \n\tLUNInfo: %+v",
+					iSCSISessionData.PortalInfo, iSCSISessionData.LUNs))
+			}
+		} else if iSCSISessionData == nil {
+			sb.WriteString(fmt.Sprintf("\n[Portal: %v]: session information is missing", portal))
+		} else {
+			sb.WriteString(fmt.Sprintf("\n[Portal: %v]: \n\tPortalInfo: %+v \n\tLUNInfo: %+v",
+				portal, iSCSISessionData.PortalInfo, iSCSISessionData.LUNs))
+		}
 	}
 
 	return sb.String()
@@ -729,50 +776,4 @@ func (p ISCSISessions) String() string {
 // GoString prints Go-syntax representation of the map
 func (p ISCSISessions) GoString() string {
 	return p.String()
-}
-
-// GetVolumeIDForPortal to get any valid volume ID behind a given portal.
-func (p *ISCSISessions) GetVolumeIDForPortal(portal string) (string, error) {
-	if p.IsEmpty() {
-		return "", fmt.Errorf("portal entry not found")
-	}
-	if portal != "" {
-		if lunInfoValue, err := p.LUNInfo(portal); err != nil {
-			return "", fmt.Errorf("portal is invalid")
-		} else {
-			for _, lun := range lunInfoValue.AllLUNs() {
-				if lunInfoValue.Info[lun] != "" {
-					return lunInfoValue.Info[lun], nil
-				}
-			}
-			return "", fmt.Errorf("no valid volume id is found")
-		}
-	} else {
-		return "", fmt.Errorf("portal is invalid")
-	}
-}
-
-// PortalInvalid is a data structure for iSCSI self-healing capturing Portal's invalid non-recoverable state
-type PortalInvalid int8
-
-const (
-	NotInvalid PortalInvalid = iota
-	MissingTargetIQN
-	MissingMpathDevice
-	DuplicatePortals
-)
-
-func (a PortalInvalid) String() string {
-	switch a {
-	case NotInvalid:
-		return "not invalid"
-	case MissingTargetIQN:
-		return "missing target IQN"
-	case MissingMpathDevice:
-		return "missing multipath device"
-	case DuplicatePortals:
-		return "duplicate portals found"
-	}
-
-	return "unknown"
 }
