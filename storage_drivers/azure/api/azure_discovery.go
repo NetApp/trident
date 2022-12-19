@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 // Package api provides a high-level interface to the Azure NetApp Files SDK
 package api
@@ -7,11 +7,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-10-01/netapp"
-	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2021-03-01/resourcegraph"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-07-01/features"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v3"
+	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
+	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/multierr"
@@ -438,7 +440,13 @@ func (c Client) enableAzureFeature(
 ) (returnError error) {
 	logFields := log.Fields{"feature": feature}
 
-	result, err := c.sdkClient.FeaturesClient.Get(ctx, provider, feature)
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	result, err := c.sdkClient.FeaturesClient.Get(responseCtx, provider, feature, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
 		if IsANFNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).WithError(err).Debug("Feature not found, assuming it is available.")
@@ -466,7 +474,12 @@ func (c Client) enableAzureFeature(
 	// If feature is known to exist and not be registered, register it now.
 	if featureState == features.SubscriptionFeatureRegistrationStateNotRegistered ||
 		featureState == features.SubscriptionFeatureRegistrationStateUnregistered {
-		if _, returnError = c.sdkClient.FeaturesClient.Register(ctx, provider, feature); returnError != nil {
+
+		_, registerError := c.sdkClient.FeaturesClient.Register(responseCtx, provider, feature, nil)
+
+		logFields["correlationID"] = GetCorrelationID(rawResponse)
+
+		if registerError != nil {
 			Logc(ctx).WithFields(logFields).WithError(returnError).Warning("Could not register feature.")
 		} else {
 			Logc(ctx).WithFields(logFields).Debug("Registered feature.")
@@ -525,47 +538,48 @@ func (c Client) discoverCapacityPoolsWithRetry(ctx context.Context) (pools *[]*C
 
 // discoverCapacityPools queries the Azure Resource Graph for all ANF capacity pools in the current location.
 func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, error) {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
-
-	var cpools []*CapacityPool
+	logFields := log.Fields{
+		"API": "GraphClient.Resources",
+	}
 
 	subscriptions := []string{c.config.SubscriptionID}
 	query := fmt.Sprintf(`
     Resources
     | where type =~ 'Microsoft.NetApp/netAppAccounts/capacityPools' and location =~ '%s'`, c.config.Location)
-	requestOptions := resourcegraph.QueryRequestOptions{ResultFormat: "objectArray"}
+	resultFormat := resourcegraph.ResultFormat("objectArray")
+	requestOptions := resourcegraph.QueryRequestOptions{ResultFormat: &resultFormat}
 
 	request := resourcegraph.QueryRequest{
-		Subscriptions: &subscriptions,
+		Subscriptions: CreateStringPtrArray(subscriptions),
 		Query:         &query,
 		Options:       &requestOptions,
 	}
 
-	var data []interface{}
-	var ok bool
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
 
-	resourceList, err := c.sdkClient.GraphClient.Resources(sdkCtx, request)
+	response, err := c.sdkClient.GraphClient.Resources(responseCtx, request, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
-
-		Logc(ctx).WithFields(log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "GraphClient.Resources",
-		}).WithError(err).Error("Capacity pool query failed.")
-
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Capacity pool query failed.")
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(resourceList.Response.Response),
-		"API":           "GraphClient.Resources",
-	}).Debug("Read capacity pools from resource graph.")
+	resourceList := response.QueryResponse
+
+	Logc(ctx).WithFields(logFields).Debug("Read capacity pools from resource graph.")
+
+	var cpools []*CapacityPool
+	var data []interface{}
+	var ok bool
 
 	if resourceList.Data == nil || resourceList.Count == nil || *resourceList.Count == 0 {
-		Logc(ctx).Error("Capacity pool query returned no data.")
+		Logc(ctx).WithFields(logFields).Error("Capacity pool query returned no data.")
 		return nil, errors.New("capacity pool query returned no data")
 	} else if data, ok = resourceList.Data.([]interface{}); !ok {
-		Logc(ctx).Error("Capacity pool query returned invalid data.")
+		Logc(ctx).WithFields(logFields).Error("Capacity pool query returned invalid data.")
 		return nil, errors.New("capacity pool query returned invalid data")
 	}
 
@@ -575,50 +589,51 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 		var id, resourceGroup, netappAccount, cPoolName, poolID, serviceLevel, provisioningState, qosType string
 
 		if rawPoolMap, ok = rawPoolInterface.(map[string]interface{}); !ok {
-			Logc(ctx).Error("Capacity pool query returned non-map data.")
+			Logc(ctx).WithFields(logFields).Error("Capacity pool query returned non-map data.")
 			continue
 		}
 
 		if id, ok = rawPoolMap["id"].(string); !ok {
-			Logc(ctx).Error("Capacity pool query returned non-string ID.")
+			Logc(ctx).WithFields(logFields).Error("Capacity pool query returned non-string ID.")
 			continue
 		}
 
 		_, resourceGroup, _, netappAccount, cPoolName, err = ParseCapacityPoolID(id)
 		if err != nil {
-			Logc(ctx).Error("Capacity pool query returned invalid ID.")
+			Logc(ctx).WithFields(logFields).Error("Capacity pool query returned invalid ID.")
 			continue
 		}
 
 		cPoolFullName := CreateCapacityPoolFullName(resourceGroup, netappAccount, cPoolName)
 
 		if rawProperties, ok = rawPoolMap["properties"].(map[string]interface{}); !ok {
-			Logc(ctx).Error("Capacity pool query returned non-map properties.")
+			Logc(ctx).WithFields(logFields).Error("Capacity pool query returned non-map properties.")
 			continue
 		}
 
 		if qosType, ok = rawProperties["qosType"].(string); !ok {
-			Logc(ctx).Error("Capacity pool query returned invalid qosType.")
+			Logc(ctx).WithFields(logFields).Error("Capacity pool query returned invalid qosType.")
 			continue
 		}
 
 		if qosType == string(netapp.QosTypeManual) {
-			Logc(ctx).Warningf("Ignoring discovered capacity pool %s because it uses manual QoS.", cPoolFullName)
+			Logc(ctx).WithFields(logFields).Warningf("Ignoring capacity pool %s because it uses manual QoS.",
+				cPoolFullName)
 			continue
 		}
 
 		if poolID, ok = rawProperties["poolId"].(string); !ok {
-			Logc(ctx).Error("Capacity pool query returned invalid poolId.")
+			Logc(ctx).WithFields(logFields).Error("Capacity pool query returned invalid poolId.")
 			continue
 		}
 
 		if serviceLevel, ok = rawProperties["serviceLevel"].(string); !ok {
-			Logc(ctx).Error("Capacity pool query returned invalid serviceLevel.")
+			Logc(ctx).WithFields(logFields).Error("Capacity pool query returned invalid serviceLevel.")
 			continue
 		}
 
 		if provisioningState, ok = rawProperties["provisioningState"].(string); !ok {
-			Logc(ctx).Error("Capacity pool query returned invalid provisioningState.")
+			Logc(ctx).WithFields(logFields).Error("Capacity pool query returned invalid provisioningState.")
 			continue
 		}
 
@@ -671,10 +686,9 @@ func (c Client) discoverSubnetsWithRetry(ctx context.Context) (subnets *[]*Subne
 
 // discoverSubnets queries the Azure Resource Graph for all ANF-delegated subnets in the current location.
 func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
-
-	var subnets []*Subnet
+	logFields := log.Fields{
+		"API": "GraphClient.Resources",
+	}
 
 	subscriptions := []string{c.config.SubscriptionID}
 	query := fmt.Sprintf(`
@@ -686,38 +700,40 @@ func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
 	| mv-expand delegations
 	| project subnetID, serviceName = (delegations.properties.serviceName)
 	| where serviceName =~ 'Microsoft.NetApp/volumes'`, c.config.Location)
-	requestOptions := resourcegraph.QueryRequestOptions{ResultFormat: "objectArray"}
+	resultFormat := resourcegraph.ResultFormat("objectArray")
+	requestOptions := resourcegraph.QueryRequestOptions{ResultFormat: &resultFormat}
 
 	request := resourcegraph.QueryRequest{
-		Subscriptions: &subscriptions,
+		Subscriptions: CreateStringPtrArray(subscriptions),
 		Query:         &query,
 		Options:       &requestOptions,
 	}
 
-	var data []interface{}
-	var ok bool
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
 
-	resourceList, err := c.sdkClient.GraphClient.Resources(sdkCtx, request)
+	response, err := c.sdkClient.GraphClient.Resources(responseCtx, request, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
-
-		Logc(ctx).WithFields(log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "GraphClient.Resources",
-		}).WithError(err).Error("Subnet query failed.")
-
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Subnet query failed.")
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(resourceList.Response.Response),
-		"API":           "GraphClient.Resources",
-	}).Debug("Read subnets from resource graph.")
+	resourceList := response.QueryResponse
+
+	Logc(ctx).WithFields(logFields).Debug("Read subnets from resource graph.")
+
+	var subnets []*Subnet
+	var data []interface{}
+	var ok bool
 
 	if resourceList.Data == nil || resourceList.Count == nil || *resourceList.Count == 0 {
-		Logc(ctx).Error("Subnet query returned no data.")
+		Logc(ctx).WithFields(logFields).Error("Subnet query returned no data.")
 		return nil, errors.New("subnet query returned no data")
 	} else if data, ok = resourceList.Data.([]interface{}); !ok {
-		Logc(ctx).Error("Subnet query returned invalid data.")
+		Logc(ctx).WithFields(logFields).Error("Subnet query returned invalid data.")
 		return nil, errors.New("subnet pool query returned invalid data")
 	}
 
@@ -727,18 +743,18 @@ func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
 		var id, resourceGroup, virtualNetwork, subnet string
 
 		if rawSubnetMap, ok = rawSubnetInterface.(map[string]interface{}); !ok {
-			Logc(ctx).Error("Subnet query returned non-map data.")
+			Logc(ctx).WithFields(logFields).Error("Subnet query returned non-map data.")
 			continue
 		}
 
 		if id, ok = rawSubnetMap["subnetID"].(string); !ok {
-			Logc(ctx).Error("Subnet query returned non-string ID.")
+			Logc(ctx).WithFields(logFields).Error("Subnet query returned non-string ID.")
 			continue
 		}
 
 		_, resourceGroup, _, virtualNetwork, subnet, err = ParseSubnetID(id)
 		if err != nil {
-			Logc(ctx).Error("Subnet query returned invalid ID.")
+			Logc(ctx).WithFields(logFields).Error("Subnet query returned invalid ID.")
 			continue
 		}
 

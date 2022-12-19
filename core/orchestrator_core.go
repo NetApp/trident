@@ -2996,7 +2996,7 @@ func (o *TridentOrchestrator) publishVolume(
 	}
 
 	if volume.State.IsDeleting() {
-		return utils.VolumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
+		return utils.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	// Check if the publication already exists.
@@ -3310,7 +3310,7 @@ func (o *TridentOrchestrator) AttachVolume(
 		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 	if volume.State.IsDeleting() {
-		return utils.VolumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
+		return utils.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	hostMountpoint := mountpoint
@@ -3392,7 +3392,7 @@ func (o *TridentOrchestrator) DetachVolume(ctx context.Context, volumeName, moun
 		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 	if volume.State.IsDeleting() {
-		return utils.VolumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
+		return utils.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	hostMountpoint := mountpoint
@@ -3758,7 +3758,7 @@ func (o *TridentOrchestrator) CreateSnapshot(
 		return nil, utils.NotFoundError(fmt.Sprintf("source volume %s not found", snapshotConfig.VolumeName))
 	}
 	if volume.State.IsDeleting() {
-		return nil, utils.VolumeDeletingError(fmt.Sprintf("source volume %s is deleting", snapshotConfig.VolumeName))
+		return nil, utils.VolumeStateError(fmt.Sprintf("source volume %s is deleting", snapshotConfig.VolumeName))
 	}
 
 	// Get the backend
@@ -4266,7 +4266,7 @@ func (o *TridentOrchestrator) ResizeVolume(ctx context.Context, volumeName, newS
 		}).Warnf("Resize operation is likely to fail with an orphaned volume.")
 	}
 	if volume.State.IsDeleting() {
-		return utils.VolumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
+		return utils.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	// Create a new config for the volume transaction

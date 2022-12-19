@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -534,11 +534,11 @@ func TestExportPolicyExportImport(t *testing.T) {
 
 	exportResult := exportPolicyExport(policy)
 
-	assert.Equal(t, 2, len(*exportResult.Rules))
-	assert.Equal(t, int32(1), *(*(*exportResult).Rules)[0].RuleIndex)
-	assert.Equal(t, "10.10.10.0/24", *(*(*exportResult).Rules)[0].AllowedClients)
-	assert.Equal(t, int32(2), *(*(*exportResult).Rules)[1].RuleIndex)
-	assert.Equal(t, "10.10.20.0/24", *(*(*exportResult).Rules)[1].AllowedClients)
+	assert.Equal(t, 2, len(exportResult.Rules))
+	assert.Equal(t, int32(1), *((*exportResult).Rules)[0].RuleIndex)
+	assert.Equal(t, "10.10.10.0/24", *((*exportResult).Rules)[0].AllowedClients)
+	assert.Equal(t, int32(2), *((*exportResult).Rules)[1].RuleIndex)
+	assert.Equal(t, "10.10.20.0/24", *((*exportResult).Rules)[1].AllowedClients)
 
 	importResult := exportPolicyImport(exportResult)
 
@@ -552,8 +552,8 @@ func TestIsANFNotFoundError_Nil(t *testing.T) {
 }
 
 func TestIsANFNotFoundError_NotFound(t *testing.T) {
-	err := autorest.DetailedError{
-		Response: &http.Response{
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
 			StatusCode: http.StatusNotFound,
 		},
 	}
@@ -564,8 +564,8 @@ func TestIsANFNotFoundError_NotFound(t *testing.T) {
 }
 
 func TestIsANFNotFoundError_OtherAutorestError(t *testing.T) {
-	err := autorest.DetailedError{
-		Response: &http.Response{
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
 			StatusCode: http.StatusBadRequest,
 		},
 	}
@@ -590,8 +590,8 @@ func TestGetCorrelationIDFromError_Nil(t *testing.T) {
 }
 
 func TestGetCorrelationIDFromError_NoHeaders(t *testing.T) {
-	err := autorest.DetailedError{
-		Response: &http.Response{
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
 			StatusCode: http.StatusNotFound,
 		},
 	}
@@ -602,8 +602,8 @@ func TestGetCorrelationIDFromError_NoHeaders(t *testing.T) {
 }
 
 func TestGetCorrelationIDFromError_NoCorrelationIDHeader(t *testing.T) {
-	err := autorest.DetailedError{
-		Response: &http.Response{
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
 			StatusCode: http.StatusNotFound,
 			Header:     make(map[string][]string),
 		},
@@ -615,13 +615,13 @@ func TestGetCorrelationIDFromError_NoCorrelationIDHeader(t *testing.T) {
 }
 
 func TestGetCorrelationIDFromError_CorrelationIDHeaderEmpty(t *testing.T) {
-	err := autorest.DetailedError{
-		Response: &http.Response{
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
 			StatusCode: http.StatusNotFound,
 			Header:     make(map[string][]string),
 		},
 	}
-	err.Response.Header[CorrelationIDHeader] = []string{}
+	err.RawResponse.Header[CorrelationIDHeader] = []string{}
 
 	result := GetCorrelationIDFromError(err)
 
@@ -629,13 +629,13 @@ func TestGetCorrelationIDFromError_CorrelationIDHeaderEmpty(t *testing.T) {
 }
 
 func TestGetCorrelationIDFromError_CorrelationIDHeaderPresent(t *testing.T) {
-	err := autorest.DetailedError{
-		Response: &http.Response{
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
 			StatusCode: http.StatusNotFound,
 			Header:     make(map[string][]string),
 		},
 	}
-	err.Response.Header[CorrelationIDHeader] = []string{"correlationID"}
+	err.RawResponse.Header[CorrelationIDHeader] = []string{"correlationID"}
 
 	result := GetCorrelationIDFromError(err)
 

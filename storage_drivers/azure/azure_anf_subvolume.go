@@ -1210,9 +1210,8 @@ func (d *NASBlockStorageDriver) GetSnapshots(
 }
 
 // CreateSnapshot creates a snapshot for the given volume
-// NOTE: In ANF Subvolumes there is not concept of snapshots, therefore any new snapshot is another
-//
-//	subvolume copy of the source subvolume.
+// NOTE: In ANF Subvolumes there is no concept of snapshots, therefore any new snapshot is another
+// subvolume copy of the source subvolume.
 func (d *NASBlockStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
@@ -1445,13 +1444,6 @@ func (d *NASBlockStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 	// Resize the subvolume
 	if err = d.SDK.ResizeSubvolume(ctx, subvolumeWithMetadata, int64(sizeBytes)); err != nil {
 		return err
-	}
-
-	// Wait for resize operation to complete
-	_, err = d.SDK.WaitForSubvolumeState(ctx, subvolumeWithMetadata, api.StateAvailable, []string{api.StateError},
-		d.defaultTimeout())
-	if err != nil {
-		return fmt.Errorf("could not resize subvolume %s; %v", name, err)
 	}
 
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)

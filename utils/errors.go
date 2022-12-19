@@ -180,6 +180,28 @@ func IsVolumeDeletingError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// volumeStateError
+// ///////////////////////////////////////////////////////////////////////////
+
+type volumeStateError struct {
+	message string
+}
+
+func (e *volumeStateError) Error() string { return e.message }
+
+func VolumeStateError(message string) error {
+	return &volumeStateError{message}
+}
+
+func IsVolumeStateError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*volumeStateError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // timeoutError
 // ///////////////////////////////////////////////////////////////////////////
 

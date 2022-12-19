@@ -1730,12 +1730,6 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 		return err
 	}
 
-	// Wait for resize operation to complete
-	_, err = d.SDK.WaitForVolumeState(ctx, volume, api.StateAvailable, []string{api.StateError}, d.defaultTimeout())
-	if err != nil {
-		return fmt.Errorf("could not resize volume %s; %v", name, err)
-	}
-
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	return nil
 }
@@ -1839,7 +1833,7 @@ func (d *NASStorageDriver) StoreConfig(_ context.Context, b *storage.PersistentS
 	b.AzureConfig = &d.Config
 }
 
-// GetExternalConfig returns returns a clone of this backend's config, sanitized for external consumption.
+// GetExternalConfig returns a clone of this backend's config, sanitized for external consumption.
 func (d *NASStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.AzureNASStorageDriverConfig
@@ -1945,12 +1939,12 @@ func (d *NASStorageDriver) getVolumeExternal(volumeAttrs *api.FileSystem) *stora
 }
 
 // String implements stringer interface for the NASStorageDriver driver.
-func (d NASStorageDriver) String() string {
-	return utils.ToStringRedacted(&d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
+func (d *NASStorageDriver) String() string {
+	return utils.ToStringRedacted(d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
 }
 
 // GoString implements GoStringer interface for the NASStorageDriver driver.
-func (d NASStorageDriver) GoString() string {
+func (d *NASStorageDriver) GoString() string {
 	return d.String()
 }
 
@@ -1998,6 +1992,6 @@ func validateStoragePrefix(storagePrefix string) error {
 }
 
 // GetCommonConfig returns driver's CommonConfig
-func (d NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+func (d *NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
 }

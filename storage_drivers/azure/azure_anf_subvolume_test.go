@@ -2954,11 +2954,7 @@ func TestSubvolumeResize_SubvolumeFound(t *testing.T) {
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 
 	mockAPI.EXPECT().Subvolume(ctx, volConfig, true).Return(subVolume, nil).Times(1)
-
 	mockAPI.EXPECT().ResizeSubvolume(ctx, subVolume, newSize).Return(nil).Times(1)
-
-	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Resize(ctx, volConfig, uint64(newSize))
 
@@ -3046,26 +3042,6 @@ func TestSubvolumeResize_Error(t *testing.T) {
 
 	mockAPI.EXPECT().Subvolume(ctx, volConfig, true).Return(subVolume, nil).Times(1)
 	mockAPI.EXPECT().ResizeSubvolume(ctx, subVolume, newSize).Return(errFailed).Times(1)
-
-	result := driver.Resize(ctx, volConfig, uint64(newSize))
-
-	assert.Error(t, result, "resized subvolume")
-}
-
-func TestSubvolumeResize_SubvolumeStateError(t *testing.T) {
-	config, volConfig, subVolume := getStructsForSubvolumeDestroy()
-
-	mockAPI, driver := newMockANFSubvolumeDriver(t)
-	driver.Config = *config
-	newSize := SubvolumeSizeI64 + 10
-	subVolume.ProvisioningState = api.StateAvailable
-
-	driver.populateConfigurationDefaults(ctx, &driver.Config)
-
-	mockAPI.EXPECT().Subvolume(ctx, volConfig, true).Return(subVolume, nil).Times(1)
-	mockAPI.EXPECT().ResizeSubvolume(ctx, subVolume, newSize).Return(nil).Times(1)
-	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return("", errFailed).Times(1)
 
 	result := driver.Resize(ctx, volConfig, uint64(newSize))
 

@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 // Package api provides a high-level interface to the Azure NetApp Files SDK
 package api
@@ -11,12 +11,14 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-10-01/netapp"
-	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2021-03-01/resourcegraph"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-07-01/features"
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure"
-	azauth "github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v3"
+	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
+	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
@@ -31,7 +33,9 @@ const (
 	DefaultTimeout             = 120 * time.Second
 	MaxLabelLength             = 256
 	DefaultSDKTimeout          = 30 * time.Second
-	DefaultSubvolumeSDKTimeout = 7 * time.Second // TODO: Replace custom retries with Autorest's built-in retries
+	DefaultSubvolumeSDKTimeout = 15 * time.Second
+	SDKRetryDelay              = 2 * time.Second
+	SDKMaxRetryDelay           = 15 * time.Second
 	CorrelationIDHeader        = "X-Ms-Correlation-Request-Id"
 	SubvolumeNameSeparator     = "-file-"
 )
@@ -39,7 +43,7 @@ const (
 var (
 	capacityPoolIDRegex = regexp.MustCompile(`^/subscriptions/(?P<subscriptionID>[^/]+)/resourceGroups/(?P<resourceGroup>[^/]+)/providers/(?P<provider>[^/]+)/netAppAccounts/(?P<netappAccount>[^/]+)/capacityPools/(?P<capacityPool>[^/]+)$`)
 	volumeIDRegex       = regexp.MustCompile(`^/subscriptions/(?P<subscriptionID>[^/]+)/resourceGroups/(?P<resourceGroup>[^/]+)/providers/(?P<provider>[^/]+)/netAppAccounts/(?P<netappAccount>[^/]+)/capacityPools/(?P<capacityPool>[^/]+)/volumes/(?P<volume>[^/]+)$`)
-	volumeNameRegex     = regexp.MustCompile(`[/]?(?P<resourceGroup>[^/]+)/(?P<netappAccount>[^/]+)/(?P<capacityPool>[^/]+)/(?P<volume>[^/]+)?[/]?$`)
+	volumeNameRegex     = regexp.MustCompile(`/?(?P<resourceGroup>[^/]+)/(?P<netappAccount>[^/]+)/(?P<capacityPool>[^/]+)/(?P<volume>[^/]+)?/?$`)
 	snapshotIDRegex     = regexp.MustCompile(`^/subscriptions/(?P<subscriptionID>[^/]+)/resourceGroups/(?P<resourceGroup>[^/]+)/providers/(?P<provider>[^/]+)/netAppAccounts/(?P<netappAccount>[^/]+)/capacityPools/(?P<capacityPool>[^/]+)/volumes/(?P<volume>[^/]+)/snapshots/(?P<snapshot>[^/]+)$`)
 	subvolumeIDRegex    = regexp.MustCompile(`^/subscriptions/(?P<subscriptionID>[^/]+)/resourceGroups/(?P<resourceGroup>[^/]+)/providers/(?P<provider>[^/]+)/netAppAccounts/(?P<netappAccount>[^/]+)/capacityPools/(?P<capacityPool>[^/]+)/volumes/(?P<volume>[^/]+)/subvolumes/(?P<subvolume>[^/]+)$`)
 	subnetIDRegex       = regexp.MustCompile(`^/subscriptions/(?P<subscriptionID>[^/]+)/resourceGroups/(?P<resourceGroup>[^/]+)/providers/(?P<provider>[^/]+)/virtualNetworks/(?P<virtualNetwork>[^/]+)/subnets/(?P<subnet>[^/]+)$`)
@@ -62,12 +66,12 @@ type ClientConfig struct {
 
 // AzureClient holds operational Azure SDK objects.
 type AzureClient struct {
-	AuthConfig       azauth.ClientCredentialsConfig
-	FeaturesClient   features.Client
-	GraphClient      resourcegraph.BaseClient
-	VolumesClient    netapp.VolumesClient
-	SnapshotsClient  netapp.SnapshotsClient
-	SubvolumesClient netapp.SubvolumesClient
+	Credential       *azidentity.ClientSecretCredential
+	FeaturesClient   *features.Client
+	GraphClient      *resourcegraph.Client
+	VolumesClient    *netapp.VolumesClient
+	SnapshotsClient  *netapp.SnapshotsClient
+	SubvolumesClient *netapp.SubvolumesClient
 	AzureResources
 }
 
@@ -86,34 +90,60 @@ func NewDriver(config ClientConfig) (Azure, error) {
 		return nil, errors.New("location must be specified in the config")
 	}
 
+	credential, err := azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	clientOptions := &arm.ClientOptions{
+		ClientOptions: policy.ClientOptions{
+			Retry: policy.RetryOptions{
+				TryTimeout:    config.SDKTimeout,
+				RetryDelay:    SDKRetryDelay,
+				MaxRetryDelay: SDKMaxRetryDelay,
+			},
+		},
+	}
+
+	subvolumeClientOptions := &arm.ClientOptions{
+		ClientOptions: policy.ClientOptions{
+			Retry: policy.RetryOptions{
+				MaxRetries:    6, // 30 seconds, assuming hardcoded Retry-After value of 5 seconds
+				TryTimeout:    DefaultSubvolumeSDKTimeout,
+				RetryDelay:    SDKRetryDelay,
+				MaxRetryDelay: SDKMaxRetryDelay,
+			},
+		},
+	}
+
+	featuresClient, err := features.NewClient(config.SubscriptionID, credential, clientOptions)
+	if err != nil {
+		return nil, err
+	}
+	graphClient, err := resourcegraph.NewClient(credential, clientOptions)
+	if err != nil {
+		return nil, err
+	}
+	volumesClient, err := netapp.NewVolumesClient(config.SubscriptionID, credential, clientOptions)
+	if err != nil {
+		return nil, err
+	}
+	snapshotsClient, err := netapp.NewSnapshotsClient(config.SubscriptionID, credential, clientOptions)
+	if err != nil {
+		return nil, err
+	}
+	subvolumesClient, err := netapp.NewSubvolumesClient(config.SubscriptionID, credential, subvolumeClientOptions)
+	if err != nil {
+		return nil, err
+	}
+
 	sdkClient := &AzureClient{
-		AuthConfig:       azauth.NewClientCredentialsConfig(config.ClientID, config.ClientSecret, config.TenantID),
-		FeaturesClient:   features.NewClient(config.SubscriptionID),
-		GraphClient:      resourcegraph.New(),
-		VolumesClient:    netapp.NewVolumesClient(config.SubscriptionID),
-		SnapshotsClient:  netapp.NewSnapshotsClient(config.SubscriptionID),
-		SubvolumesClient: netapp.NewSubvolumesClient(config.SubscriptionID),
-	}
-
-	// Set authorization endpoints
-	sdkClient.AuthConfig.AADEndpoint = azure.PublicCloud.ActiveDirectoryEndpoint
-	sdkClient.AuthConfig.Resource = azure.PublicCloud.ResourceManagerEndpoint
-
-	// Plumb the authorization through to sub-clients.
-	if sdkClient.FeaturesClient.Authorizer, err = sdkClient.AuthConfig.Authorizer(); err != nil {
-		return nil, err
-	}
-	if sdkClient.GraphClient.Authorizer, err = sdkClient.AuthConfig.Authorizer(); err != nil {
-		return nil, err
-	}
-	if sdkClient.VolumesClient.Authorizer, err = sdkClient.AuthConfig.Authorizer(); err != nil {
-		return nil, err
-	}
-	if sdkClient.SnapshotsClient.Authorizer, err = sdkClient.AuthConfig.Authorizer(); err != nil {
-		return nil, err
-	}
-	if sdkClient.SubvolumesClient.Authorizer, err = sdkClient.AuthConfig.Authorizer(); err != nil {
-		return nil, err
+		Credential:       credential,
+		FeaturesClient:   featuresClient,
+		GraphClient:      graphClient,
+		VolumesClient:    volumesClient,
+		SnapshotsClient:  snapshotsClient,
+		SubvolumesClient: subvolumesClient,
 	}
 
 	return Client{
@@ -417,7 +447,7 @@ func ParseSubvolumeID(
 
 // exportPolicyExport turns an internal ExportPolicy into something consumable by the SDK.
 func exportPolicyExport(exportPolicy *ExportPolicy) *netapp.VolumePropertiesExportPolicy {
-	anfRules := make([]netapp.ExportPolicyRule, 0)
+	anfRules := make([]*netapp.ExportPolicyRule, 0)
 
 	for _, rule := range exportPolicy.Rules {
 
@@ -439,11 +469,11 @@ func exportPolicyExport(exportPolicy *ExportPolicy) *netapp.VolumePropertiesExpo
 			AllowedClients: &allowedClients,
 		}
 
-		anfRules = append(anfRules, anfRule)
+		anfRules = append(anfRules, &anfRule)
 	}
 
 	return &netapp.VolumePropertiesExportPolicy{
-		Rules: &anfRules,
+		Rules: anfRules,
 	}
 }
 
@@ -451,11 +481,11 @@ func exportPolicyExport(exportPolicy *ExportPolicy) *netapp.VolumePropertiesExpo
 func exportPolicyImport(anfExportPolicy *netapp.VolumePropertiesExportPolicy) *ExportPolicy {
 	rules := make([]ExportRule, 0)
 
-	if anfExportPolicy == nil || *anfExportPolicy.Rules == nil {
+	if anfExportPolicy == nil || len(anfExportPolicy.Rules) == 0 {
 		return &ExportPolicy{Rules: rules}
 	}
 
-	for _, anfRule := range *anfExportPolicy.Rules {
+	for _, anfRule := range anfExportPolicy.Rules {
 
 		rule := ExportRule{
 			RuleIndex:      DerefInt32(anfRule.RuleIndex),
@@ -494,7 +524,7 @@ func (c Client) newFileSystemFromVolume(ctx context.Context, vol *netapp.Volume)
 		return nil, fmt.Errorf("volume %s has no location", *vol.Name)
 	}
 
-	if vol.VolumeProperties == nil {
+	if vol.Properties == nil {
 		return nil, fmt.Errorf("volume %s has no properties", *vol.Name)
 	}
 
@@ -507,26 +537,26 @@ func (c Client) newFileSystemFromVolume(ctx context.Context, vol *netapp.Volume)
 		FullName:          CreateVolumeFullName(resourceGroup, netappAccount, cPoolName, name),
 		Location:          DerefString(vol.Location),
 		Type:              DerefString(vol.Type),
-		ExportPolicy:      *exportPolicyImport(vol.VolumeProperties.ExportPolicy),
+		ExportPolicy:      *exportPolicyImport(vol.Properties.ExportPolicy),
 		Labels:            c.getLabelsFromVolume(vol),
-		FileSystemID:      DerefString(vol.VolumeProperties.FileSystemID),
-		ProvisioningState: DerefString(vol.VolumeProperties.ProvisioningState),
-		CreationToken:     DerefString(vol.VolumeProperties.CreationToken),
-		ProtocolTypes:     DerefStringArray(vol.VolumeProperties.ProtocolTypes),
-		QuotaInBytes:      DerefInt64(vol.VolumeProperties.UsageThreshold),
+		FileSystemID:      DerefString(vol.Properties.FileSystemID),
+		ProvisioningState: DerefString(vol.Properties.ProvisioningState),
+		CreationToken:     DerefString(vol.Properties.CreationToken),
+		ProtocolTypes:     DerefStringPtrArray(vol.Properties.ProtocolTypes),
+		QuotaInBytes:      DerefInt64(vol.Properties.UsageThreshold),
 		ServiceLevel:      cPool.ServiceLevel,
-		SnapshotDirectory: DerefBool(vol.SnapshotDirectoryVisible),
-		SubnetID:          DerefString(vol.VolumeProperties.SubnetID),
-		UnixPermissions:   DerefString(vol.VolumeProperties.UnixPermissions),
+		SnapshotDirectory: DerefBool(vol.Properties.SnapshotDirectoryVisible),
+		SubnetID:          DerefString(vol.Properties.SubnetID),
+		UnixPermissions:   DerefString(vol.Properties.UnixPermissions),
 		MountTargets:      c.getMountTargetsFromVolume(ctx, vol),
-		SubvolumesEnabled: c.getSubvolumesEnabledFromVolume(vol.EnableSubvolumes),
-		NetworkFeatures:   string(vol.NetworkFeatures),
+		SubvolumesEnabled: c.getSubvolumesEnabledFromVolume(vol.Properties.EnableSubvolumes),
+		NetworkFeatures:   DerefNetworkFeatures(vol.Properties.NetworkFeatures),
 	}, nil
 }
 
 // getSubvolumesEnabledFromVolume extracts the SubvolumesEnabled from an SDK volume.
-func (c Client) getSubvolumesEnabledFromVolume(value netapp.EnableSubvolumes) bool {
-	if value != netapp.EnableSubvolumesEnabled {
+func (c Client) getSubvolumesEnabledFromVolume(value *netapp.EnableSubvolumes) bool {
+	if value == nil || *value != netapp.EnableSubvolumesEnabled {
 		return false
 	}
 	return true
@@ -536,12 +566,12 @@ func (c Client) getSubvolumesEnabledFromVolume(value netapp.EnableSubvolumes) bo
 func (c Client) getMountTargetsFromVolume(ctx context.Context, vol *netapp.Volume) []MountTarget {
 	mounts := make([]MountTarget, 0)
 
-	if vol.MountTargets == nil {
+	if vol.Properties.MountTargets == nil {
 		Logc(ctx).Tracef("Volume %s has nil MountTargetProperties.", *vol.Name)
 		return mounts
 	}
 
-	for _, mtp := range *vol.MountTargets {
+	for _, mtp := range vol.Properties.MountTargets {
 
 		mt := MountTarget{
 			MountTargetID: DerefString(mtp.MountTargetID),
@@ -568,58 +598,46 @@ func (c Client) getLabelsFromVolume(vol *netapp.Volume) map[string]string {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-// Functions to retrieve ANF volumes
+// Functions to retrieve and manage volumes
 // ///////////////////////////////////////////////////////////////////////////////
 
 // getVolumesFromPool gets a set of volumes belonging to a single capacity pool.  As pools can come and go
 // in between cache updates, we ignore any 404 errors here.
 func (c Client) getVolumesFromPool(ctx context.Context, cPool *CapacityPool) (*[]*FileSystem, error) {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
+	logFields := log.Fields{
+		"API":          "VolumesClient.NewListPager",
+		"capacityPool": cPool.FullName,
+	}
 
 	var filesystems []*FileSystem
 
-	volumeList, err := c.sdkClient.VolumesClient.List(sdkCtx, cPool.ResourceGroup, cPool.NetAppAccount, cPool.Name)
-	if err != nil {
+	pager := c.sdkClient.VolumesClient.NewListPager(cPool.ResourceGroup, cPool.NetAppAccount, cPool.Name, nil)
 
-		logFields := log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "VolumesClient.List",
-			"capacityPool":  cPool.FullName,
-		}
+	for pager.More() {
+		var rawResponse *http.Response
+		responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
 
-		if IsANFNotFoundError(err) {
-			Logc(ctx).WithFields(logFields).WithError(err).Warning("Capacity pool not found, ignoring.")
-			return &filesystems, nil
-		}
+		nextResult, err := pager.NextPage(responseCtx)
 
-		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching volumes from capacity pool.")
-		return nil, err
-	}
+		logFields["correlationID"] = GetCorrelationID(rawResponse)
 
-	if c.config.DebugTraceFlags["api"] {
-		Logc(ctx).WithFields(log.Fields{
-			"correlationID": GetCorrelationID(volumeList.Response().Response.Response),
-			"API":           "VolumesClient.List",
-			"capacityPool":  cPool.FullName,
-		}).Debug("Read volumes from capacity pool.")
-	}
-
-	for ; volumeList.NotDone(); err = volumeList.NextWithContext(ctx) {
 		if err != nil {
+			Logc(ctx).WithFields(logFields).Error("Could not iterate volumes.")
 			return nil, fmt.Errorf("error iterating volumes; %v", err)
 		}
 
-		volumes := volumeList.Values()
-
-		for idx := range volumes {
-			filesystem, fsErr := c.newFileSystemFromVolume(ctx, &volumes[idx])
+		for _, volume := range nextResult.Value {
+			filesystem, fsErr := c.newFileSystemFromVolume(ctx, volume)
 			if fsErr != nil {
 				Logc(ctx).WithError(fsErr).Errorf("Internal error creating filesystem.")
 				return nil, fsErr
 			}
 			filesystems = append(filesystems, filesystem)
 		}
+	}
+
+	if c.config.DebugTraceFlags["api"] {
+		Logc(ctx).WithFields(logFields).Debug("Read volumes from capacity pool.")
 	}
 
 	return &filesystems, nil
@@ -712,27 +730,29 @@ func (c Client) VolumeExistsByCreationToken(ctx context.Context, creationToken s
 
 // VolumeByID returns a Filesystem based on its Azure-style ID.
 func (c Client) VolumeByID(ctx context.Context, id string) (*FileSystem, error) {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
+	logFields := log.Fields{
+		"API": "VolumesClient.Get",
+		"ID":  id,
+	}
 
-	Logc(ctx).Tracef("Fetching volume by ID %s.", id)
+	Logc(ctx).WithFields(logFields).Trace("Fetching volume by ID.")
 
 	_, resourceGroup, _, netappAccount, cPoolName, volumeName, err := ParseVolumeID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	volume, err := c.sdkClient.VolumesClient.Get(sdkCtx, resourceGroup, netappAccount, cPoolName, volumeName)
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	response, err := c.sdkClient.VolumesClient.Get(responseCtx,
+		resourceGroup, netappAccount, cPoolName, volumeName, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
-
-		logFields := log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "VolumesClient.Get",
-			"ID":            id,
-		}
-
 		if IsANFNotFoundError(err) {
-			Logc(ctx).WithFields(logFields).WithError(err).Debug("Volume not found.")
+			Logc(ctx).WithFields(logFields).Debug("Volume not found.")
 			return nil, utils.NotFoundError(fmt.Sprintf("volume with ID '%s' not found", id))
 		}
 
@@ -740,13 +760,9 @@ func (c Client) VolumeByID(ctx context.Context, id string) (*FileSystem, error) 
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(volume.Response.Response),
-		"API":           "VolumesClient.Get",
-		"ID":            id,
-	}).Debug("Found volume by ID.")
+	Logc(ctx).WithFields(logFields).Debug("Found volume by ID.")
 
-	return c.newFileSystemFromVolume(ctx, &volume)
+	return c.newFileSystemFromVolume(ctx, &response.Volume)
 }
 
 // VolumeExistsByID checks whether a volume exists using its creation token as a key.
@@ -761,10 +777,6 @@ func (c Client) VolumeExistsByID(ctx context.Context, id string) (bool, *FileSys
 		return true, filesystem, nil
 	}
 }
-
-// ///////////////////////////////////////////////////////////////////////////////
-// Functions to manage volumes
-// ///////////////////////////////////////////////////////////////////////////////
 
 // WaitForVolumeState watches for a desired volume state and returns when that state is achieved.
 func (c Client) WaitForVolumeState(
@@ -795,7 +807,12 @@ func (c Client) WaitForVolumeState(
 			return nil
 		}
 
-		err = fmt.Errorf("volume state is %s, not %s", f.ProvisioningState, desiredState)
+		errMsg := fmt.Sprintf("volume state is %s, not %s", f.ProvisioningState, desiredState)
+		if desiredState == StateDeleted && f.ProvisioningState == StateDeleting {
+			err = utils.VolumeDeletingError(errMsg)
+		} else {
+			err = errors.New(errMsg)
+		}
 
 		// Return a permanent error to stop retrying if we reached one of the abort states
 		if utils.SliceContainsString(abortStates, f.ProvisioningState) {
@@ -825,7 +842,7 @@ func (c Client) WaitForVolumeState(
 		if IsTerminalStateError(err) {
 			Logc(ctx).WithError(err).Error("Volume reached terminal state.")
 		} else {
-			Logc(ctx).Errorf("Volume state was not %s after %3.2f seconds.",
+			Logc(ctx).Warningf("Volume state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return volumeState, err
@@ -838,9 +855,6 @@ func (c Client) WaitForVolumeState(
 
 // CreateVolume creates a new volume.
 func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequest) (*FileSystem, error) {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
-
 	resourceGroup := request.ResourceGroup
 	netappAccount := request.NetAppAccount
 	cPoolName := request.CapacityPool
@@ -863,30 +877,33 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 		tags[k] = &tag[0]
 	}
 
+	serviceLevel := netapp.ServiceLevel(cPool.ServiceLevel)
+	networkFeatures := netapp.NetworkFeatures(request.NetworkFeatures)
+
 	newVol := netapp.Volume{
 		Location: &location,
 		Name:     &request.Name,
 		Tags:     tags,
-		VolumeProperties: &netapp.VolumeProperties{
+		Properties: &netapp.VolumeProperties{
 			CreationToken:            &request.CreationToken,
-			ServiceLevel:             netapp.ServiceLevel(cPool.ServiceLevel),
+			ServiceLevel:             &serviceLevel,
 			UsageThreshold:           &request.QuotaInBytes,
 			ExportPolicy:             exportPolicyExport(&request.ExportPolicy),
-			ProtocolTypes:            &request.ProtocolTypes,
+			ProtocolTypes:            CreateStringPtrArray(request.ProtocolTypes),
 			SubnetID:                 &request.SubnetID,
 			SnapshotDirectoryVisible: &request.SnapshotDirectory,
-			NetworkFeatures:          netapp.NetworkFeatures(request.NetworkFeatures),
+			NetworkFeatures:          &networkFeatures,
 		},
 	}
 
 	// Only set the snapshot ID if we are cloning
 	if request.SnapshotID != "" {
-		newVol.SnapshotID = &request.SnapshotID
+		newVol.Properties.SnapshotID = &request.SnapshotID
 	}
 
 	// Only send unix permissions if specified, since it is not yet a GA feature
 	if request.UnixPermissions != "" {
-		newVol.VolumeProperties.UnixPermissions = &request.UnixPermissions
+		newVol.Properties.UnixPermissions = &request.UnixPermissions
 	}
 
 	Logc(ctx).WithFields(log.Fields{
@@ -900,26 +917,26 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 		"snapshotDir":   request.SnapshotDirectory,
 	}).Debug("Issuing create request.")
 
-	future, err := c.sdkClient.VolumesClient.CreateOrUpdate(sdkCtx,
-		newVol, resourceGroup, netappAccount, cPoolName, request.Name)
+	logFields := log.Fields{
+		"API":           "VolumesClient.BeginCreateOrUpdate",
+		"volume":        volumeFullName,
+		"creationToken": request.CreationToken,
+	}
+
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	_, err := c.sdkClient.VolumesClient.BeginCreateOrUpdate(responseCtx,
+		resourceGroup, netappAccount, cPoolName, request.Name, newVol, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
-
-		Logc(ctx).WithFields(log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "VolumesClient.CreateOrUpdate",
-			"volume":        volumeFullName,
-			"creationToken": request.CreationToken,
-		}).WithError(err).Error("Error creating volume.")
-
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error creating volume.")
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(future.Response()),
-		"API":           "VolumesClient.CreateOrUpdate",
-		"volume":        volumeFullName,
-		"creationToken": request.CreationToken,
-	}).Info("Volume created.")
+	Logc(ctx).WithFields(logFields).Info("Volume create request issued.")
 
 	// The volume doesn't exist yet, so forge the volume ID to enable conversion to a FileSystem struct
 	newVolID := CreateVolumeID(c.config.SubscriptionID, resourceGroup, netappAccount, cPoolName, request.Name)
@@ -932,28 +949,27 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 func (c Client) ModifyVolume(
 	ctx context.Context, filesystem *FileSystem, labels map[string]string, unixPermissions *string,
 ) error {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
-
-	// Fetch the netapp.Volume to fill in the updated fields
-	anfVolume, err := c.sdkClient.VolumesClient.Get(sdkCtx,
-		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name)
-	if err != nil {
-
-		Logc(ctx).WithFields(log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "VolumesClient.Get",
-			"volume":        filesystem.FullName,
-		}).WithError(err).Error("Error finding volume to modify.")
-
-		return fmt.Errorf("couldn't get volume to modify; %v", err)
+	logFields := log.Fields{
+		"API":    "VolumesClient.Get",
+		"volume": filesystem.FullName,
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(anfVolume.Response.Response),
-		"API":           "VolumesClient.Get",
-		"volume":        filesystem.FullName,
-	}).Debug("Found volume to modify.")
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	// Fetch the netapp.Volume to fill in the updated fields
+	response, err := c.sdkClient.VolumesClient.Get(responseCtx,
+		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error finding volume to modify.")
+		return fmt.Errorf("couldn't get volume to modify; %v", err)
+	}
+	anfVolume := response.Volume
+
+	Logc(ctx).WithFields(logFields).Debug("Found volume to modify.")
 
 	tags := make(map[string]*string)
 
@@ -975,98 +991,104 @@ func (c Client) ModifyVolume(
 	}
 
 	if unixPermissions != nil {
-		anfVolume.UnixPermissions = unixPermissions
+		anfVolume.Properties.UnixPermissions = unixPermissions
 	}
 
 	// Clear out ReadOnly and other fields that we don't want to change when merely relabeling.
-	anfVolume.ServiceLevel = ""
-	anfVolume.ProvisioningState = nil
-	anfVolume.ExportPolicy = nil
-	anfVolume.ProtocolTypes = nil
-	anfVolume.MountTargets = nil
-	anfVolume.ThroughputMibps = nil
-	anfVolume.BaremetalTenantID = nil
+	serviceLevel := netapp.ServiceLevel("")
+	anfVolume.Properties.ServiceLevel = &serviceLevel
+	anfVolume.Properties.ProvisioningState = nil
+	anfVolume.Properties.ExportPolicy = nil
+	anfVolume.Properties.ProtocolTypes = nil
+	anfVolume.Properties.MountTargets = nil
+	anfVolume.Properties.ThroughputMibps = nil
+	anfVolume.Properties.BaremetalTenantID = nil
 
 	Logc(ctx).WithFields(log.Fields{
 		"name":          anfVolume.Name,
-		"creationToken": anfVolume.CreationToken,
+		"creationToken": anfVolume.Properties.CreationToken,
 	}).Debug("Modifying volume.")
 
-	future, err := c.sdkClient.VolumesClient.CreateOrUpdate(sdkCtx,
-		anfVolume, filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name)
+	logFields = log.Fields{
+		"API":    "VolumesClient.BeginCreateOrUpdate",
+		"volume": filesystem.FullName,
+	}
+
+	_, err = c.sdkClient.VolumesClient.BeginCreateOrUpdate(responseCtx,
+		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, anfVolume, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
-
-		Logc(ctx).WithFields(log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "VolumesClient.CreateOrUpdate",
-			"volume":        filesystem.FullName,
-		}).WithError(err).Error("Error modifying volume.")
-
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error modifying volume.")
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(future.Response()),
-		"API":           "VolumesClient.CreateOrUpdate",
-		"volume":        filesystem.FullName,
-	}).Debug("Volume modified.")
+	Logc(ctx).WithFields(logFields).Debug("Volume modified.")
 
 	return nil
 }
 
 // ResizeVolume sends a VolumePatch to update a volume's quota.
 func (c Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSizeBytes int64) error {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
+	logFields := log.Fields{
+		"API":    "VolumesClient.BeginUpdate",
+		"volume": filesystem.FullName,
+	}
 
 	patch := netapp.VolumePatch{
 		ID:       &filesystem.ID,
 		Location: &filesystem.Location,
 		Name:     &filesystem.Name,
-		VolumePatchProperties: &netapp.VolumePatchProperties{
+		Properties: &netapp.VolumePatchProperties{
 			UsageThreshold: &newSizeBytes,
 		},
 	}
 
-	future, err := c.sdkClient.VolumesClient.Update(sdkCtx,
-		patch, filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name)
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	poller, err := c.sdkClient.VolumesClient.BeginUpdate(responseCtx,
+		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, patch, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
-
-		Logc(ctx).WithFields(log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "VolumesClient.Update",
-			"volume":        filesystem.FullName,
-		}).WithError(err).Error("Error resizing volume.")
-
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error resizing volume.")
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(future.Response()),
-		"API":           "VolumesClient.Update",
-		"volume":        filesystem.FullName,
-	}).Debug("Volume resized.")
+	Logc(ctx).WithFields(logFields).Debug("Volume resize request issued.")
+
+	_, err = poller.PollUntilDone(responseCtx, &runtime.PollUntilDoneOptions{Frequency: 2 * time.Second})
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error polling for volume resize result.")
+		return err
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Volume resize complete.")
 
 	return nil
 }
 
 // DeleteVolume deletes a volume.
 func (c Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
+	logFields := log.Fields{
+		"API":    "VolumesClient.BeginDelete",
+		"volume": filesystem.FullName,
+	}
 
-	future, err := c.sdkClient.VolumesClient.Delete(sdkCtx,
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	_, err := c.sdkClient.VolumesClient.BeginDelete(responseCtx,
 		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
-
-		logFields := log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "VolumesClient.Delete",
-			"volume":        filesystem.FullName,
-		}
-
 		if IsANFNotFoundError(err) {
-			Logc(ctx).WithFields(logFields).WithError(err).Info("Volume already deleted.")
+			Logc(ctx).WithFields(logFields).Info("Volume already deleted.")
 			return nil
 		}
 
@@ -1074,11 +1096,7 @@ func (c Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error 
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(future.Response()),
-		"API":           "VolumesClient.Delete",
-		"volume":        filesystem.FullName,
-	}).Debug("Volume deleted.")
+	Logc(ctx).WithFields(logFields).Debug("Volume deleted.")
 
 	return nil
 }
@@ -1102,7 +1120,7 @@ func (c Client) newSnapshotFromANFSnapshot(_ context.Context, anfSnapshot *netap
 		return nil, fmt.Errorf("snapshot %s has no location", *anfSnapshot.Name)
 	}
 
-	if anfSnapshot.SnapshotProperties == nil {
+	if anfSnapshot.Properties == nil {
 		return nil, fmt.Errorf("snapshot %s has no properties", *anfSnapshot.Name)
 	}
 
@@ -1116,12 +1134,12 @@ func (c Client) newSnapshotFromANFSnapshot(_ context.Context, anfSnapshot *netap
 		FullName:          CreateSnapshotFullName(resourceGroup, netappAccount, cPool, volume, snapshotName),
 		Location:          DerefString(anfSnapshot.Location),
 		Type:              DerefString(anfSnapshot.Type),
-		SnapshotID:        DerefString(anfSnapshot.SnapshotID),
-		ProvisioningState: DerefString(anfSnapshot.ProvisioningState),
+		SnapshotID:        DerefString(anfSnapshot.Properties.SnapshotID),
+		ProvisioningState: DerefString(anfSnapshot.Properties.ProvisioningState),
 	}
 
-	if anfSnapshot.Created != nil {
-		snapshot.Created = anfSnapshot.Created.ToTime()
+	if anfSnapshot.Properties.Created != nil {
+		snapshot.Created = *anfSnapshot.Properties.Created
 	}
 
 	return &snapshot, nil
@@ -1129,40 +1147,40 @@ func (c Client) newSnapshotFromANFSnapshot(_ context.Context, anfSnapshot *netap
 
 // SnapshotsForVolume returns a list of snapshots on a volume.
 func (c Client) SnapshotsForVolume(ctx context.Context, filesystem *FileSystem) (*[]*Snapshot, error) {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
-
-	snapshotList, err := c.sdkClient.SnapshotsClient.List(sdkCtx,
-		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name)
-	if err != nil {
-
-		Logc(ctx).WithFields(log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "SnapshotsClient.List",
-			"volume":        filesystem.FullName,
-		}).WithError(err).Error("Error fetching snapshots from volume.")
-
-		return nil, err
+	logFields := log.Fields{
+		"API":    "SnapshotsClient.NewListPager",
+		"volume": filesystem.FullName,
 	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(snapshotList.Response.Response),
-		"API":           "SnapshotsClient.List",
-		"volume":        filesystem.FullName,
-	}).Debug("Read snapshots from volume.")
 
 	var snapshots []*Snapshot
 
-	for idx := range *snapshotList.Value {
-		anfSnapshot := (*snapshotList.Value)[idx]
-		snapshot, snapErr := c.newSnapshotFromANFSnapshot(ctx, &anfSnapshot)
-		if snapErr != nil {
-			Logc(ctx).WithError(snapErr).Errorf("Internal error creating snapshot.")
-			return nil, snapErr
+	pager := c.sdkClient.SnapshotsClient.NewListPager(
+		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, nil)
+
+	for pager.More() {
+		var rawResponse *http.Response
+		responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+		nextResult, err := pager.NextPage(responseCtx)
+
+		logFields["correlationID"] = GetCorrelationID(rawResponse)
+
+		if err != nil {
+			Logc(ctx).WithFields(logFields).Error("Could not iterate snapshots.")
+			return nil, fmt.Errorf("error iterating snapshots; %v", err)
 		}
 
-		snapshots = append(snapshots, snapshot)
+		for _, anfSnapshot := range nextResult.Value {
+			snapshot, snapErr := c.newSnapshotFromANFSnapshot(ctx, anfSnapshot)
+			if snapErr != nil {
+				Logc(ctx).WithError(snapErr).Errorf("Internal error creating snapshot.")
+				return nil, snapErr
+			}
+			snapshots = append(snapshots, snapshot)
+		}
 	}
+
+	Logc(ctx).WithFields(logFields).Debug("Read snapshots from volume.")
 
 	return &snapshots, nil
 }
@@ -1171,22 +1189,24 @@ func (c Client) SnapshotsForVolume(ctx context.Context, filesystem *FileSystem) 
 func (c Client) SnapshotForVolume(
 	ctx context.Context, filesystem *FileSystem, snapshotName string,
 ) (*Snapshot, error) {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
+	logFields := log.Fields{
+		"API":      "SnapshotsClient.Get",
+		"volume":   filesystem.FullName,
+		"snapshot": snapshotName,
+	}
 
-	anfSnapshot, err := c.sdkClient.SnapshotsClient.Get(sdkCtx,
-		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, snapshotName)
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	response, err := c.sdkClient.SnapshotsClient.Get(responseCtx,
+		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool,
+		filesystem.Name, snapshotName, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
-
-		logFields := log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "SnapshotsClient.Get",
-			"volume":        filesystem.FullName,
-			"snapshot":      snapshotName,
-		}
-
 		if IsANFNotFoundError(err) {
-			Logc(ctx).WithFields(logFields).WithError(err).Debug("Snapshot not found.")
+			Logc(ctx).WithFields(logFields).Debug("Snapshot not found.")
 			return nil, utils.NotFoundError(fmt.Sprintf("snapshot %s not found", snapshotName))
 		}
 
@@ -1194,14 +1214,9 @@ func (c Client) SnapshotForVolume(
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(anfSnapshot.Response.Response),
-		"API":           "SnapshotsClient.Get",
-		"volume":        filesystem.FullName,
-		"snapshot":      snapshotName,
-	}).Debug("Found snapshot.")
+	Logc(ctx).WithFields(logFields).Debug("Found snapshot.")
 
-	return c.newSnapshotFromANFSnapshot(ctx, &anfSnapshot)
+	return c.newSnapshotFromANFSnapshot(ctx, &response.Snapshot)
 }
 
 // WaitForSnapshotState waits for a desired snapshot state and returns once that state is achieved.
@@ -1257,7 +1272,7 @@ func (c Client) WaitForSnapshotState(
 		if IsTerminalStateError(err) {
 			Logc(ctx).WithError(err).Error("Snapshot reached terminal state.")
 		} else {
-			Logc(ctx).Errorf("Snapshot state was not %s after %3.2f seconds.",
+			Logc(ctx).Warningf("Snapshot state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return err
@@ -1270,64 +1285,64 @@ func (c Client) WaitForSnapshotState(
 
 // CreateSnapshot creates a new snapshot.
 func (c Client) CreateSnapshot(ctx context.Context, filesystem *FileSystem, name string) (*Snapshot, error) {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
+	logFields := log.Fields{
+		"API":      "SnapshotsClient.BeginCreate",
+		"volume":   filesystem.FullName,
+		"snapshot": name,
+	}
 
 	anfSnapshot := netapp.Snapshot{
 		Location: &filesystem.Location,
 		Name:     &name,
 	}
 
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
 	// Create the snapshot
-	future, err := c.sdkClient.SnapshotsClient.Create(sdkCtx,
-		anfSnapshot, filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, name)
+	_, err := c.sdkClient.SnapshotsClient.BeginCreate(responseCtx,
+		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool,
+		filesystem.Name, name, anfSnapshot, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
-
-		Logc(ctx).WithFields(log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "SnapshotsClient.Create",
-			"volume":        filesystem.FullName,
-			"snapshot":      name,
-		}).WithError(err).Error("Error creating snapshot.")
-
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error creating snapshot.")
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(future.Response()),
-		"API":           "SnapshotsClient.Create",
-		"volume":        filesystem.FullName,
-		"snapshot":      name,
-	}).Info("Snapshot created.")
+	Logc(ctx).WithFields(logFields).Info("Snapshot create request issued.")
 
 	// The snapshot doesn't exist yet, so forge the snapshot ID to enable conversion to a Snapshot struct
 	newSnapshotID := CreateSnapshotID(c.config.SubscriptionID, filesystem.ResourceGroup,
 		filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, name)
 	anfSnapshot.ID = &newSnapshotID
 
-	anfSnapshot.SnapshotProperties = &netapp.SnapshotProperties{}
+	anfSnapshot.Properties = &netapp.SnapshotProperties{}
 
 	return c.newSnapshotFromANFSnapshot(ctx, &anfSnapshot)
 }
 
 // DeleteSnapshot deletes a snapshot.
 func (c Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snapshot *Snapshot) error {
-	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
-	defer cancel()
+	logFields := log.Fields{
+		"API":      "SnapshotsClient.BeginDelete",
+		"volume":   filesystem.FullName,
+		"snapshot": snapshot.Name,
+	}
 
-	future, err := c.sdkClient.SnapshotsClient.Delete(sdkCtx,
-		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, snapshot.Name)
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	_, err := c.sdkClient.SnapshotsClient.BeginDelete(responseCtx,
+		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool,
+		filesystem.Name, snapshot.Name, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
-
-		logFields := log.Fields{
-			"correlationID": GetCorrelationIDFromError(err),
-			"API":           "SnapshotsClient.Delete",
-			"volume":        filesystem.FullName,
-			"snapshot":      snapshot.Name,
-		}
-
 		if IsANFNotFoundError(err) {
-			Logc(ctx).WithFields(logFields).WithError(err).Info("Snapshot already deleted.")
+			Logc(ctx).WithFields(logFields).Info("Snapshot already deleted.")
 			return nil
 		}
 
@@ -1335,15 +1350,14 @@ func (c Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snap
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"correlationID": GetCorrelationID(future.Response()),
-		"API":           "SnapshotsClient.Delete",
-		"volume":        filesystem.FullName,
-		"snapshot":      snapshot.Name,
-	}).Debug("Snapshot deleted.")
+	Logc(ctx).WithFields(logFields).Debug("Snapshot deleted.")
 
 	return nil
 }
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Functions to retrieve and manage subvolumes
+// ///////////////////////////////////////////////////////////////////////////////
 
 // newSubvolumeFromSubvolumeInfo creates a new internal Subvolume struct from an SDK SubvolumeInfo
 func (c Client) newSubvolumeFromSubvolumeInfo(_ context.Context, subVol *netapp.SubvolumeInfo) (*Subvolume, error) {
@@ -1362,7 +1376,7 @@ func (c Client) newSubvolumeFromSubvolumeInfo(_ context.Context, subVol *netapp.
 		return nil, fmt.Errorf("could not find capacity pool %s", cPoolFullName)
 	}
 
-	if subVol.SubvolumeProperties == nil {
+	if subVol.Properties == nil {
 		return nil, fmt.Errorf("subvolume %s has no properties", *subVol.Name)
 	}
 
@@ -1375,8 +1389,8 @@ func (c Client) newSubvolumeFromSubvolumeInfo(_ context.Context, subVol *netapp.
 		Name:              subvolumeName,
 		FullName:          CreateSubvolumeFullName(resourceGroup, netappAccount, cPoolName, volumeName, subvolumeName),
 		Type:              DerefString(subVol.Type),
-		ProvisioningState: DerefString(subVol.SubvolumeProperties.ProvisioningState),
-		Size:              DerefInt64(subVol.SubvolumeProperties.Size),
+		ProvisioningState: DerefString(subVol.Properties.ProvisioningState),
+		Size:              DerefInt64(subVol.Properties.Size),
 	}
 
 	return &subvolume, nil
@@ -1390,170 +1404,58 @@ func (c Client) updateSubvolumeFromSubvolumeModel(
 		return nil, errors.New("subvolume ID may not be nil")
 	}
 
-	if subVolModel.SubvolumeModelProperties == nil {
+	if subVolModel.Properties == nil {
 		return nil, fmt.Errorf("subvolume model %s has no properties", *subVolModel.Name)
 	}
 
-	original.ProvisioningState = DerefString(subVolModel.SubvolumeModelProperties.ProvisioningState)
-	original.Size = DerefInt64(subVolModel.SubvolumeModelProperties.Size)
+	original.ProvisioningState = DerefString(subVolModel.Properties.ProvisioningState)
+	original.Size = DerefInt64(subVolModel.Properties.Size)
 
-	if subVolModel.SubvolumeModelProperties.CreationTimeStamp != nil {
-		original.Created = subVolModel.SubvolumeModelProperties.CreationTimeStamp.ToTime()
+	if subVolModel.Properties.CreationTimeStamp != nil {
+		original.Created = *subVolModel.Properties.CreationTimeStamp
 	}
 
 	return original, nil
 }
 
-func (c Client) subvolumesClientListByVolume(ctx context.Context, resourceGroup, netappAccount,
-	capacityPool, volumeName string,
-) (*netapp.SubvolumesListPage, error) {
-	var subvolumesInfoList netapp.SubvolumesListPage
-	var err error
-
-	volumeFullName := CreateVolumeFullName(resourceGroup, netappAccount, capacityPool, volumeName)
-	api := "SubvolumesClient.ListByVolume"
-	logFields := log.Fields{
-		"API":    api,
-		"volume": volumeFullName,
-	}
-
-	invoke := func() error {
-		sdkCtx, cancel := context.WithTimeout(ctx, DefaultSubvolumeSDKTimeout)
-		defer cancel()
-
-		subvolumesInfoList, err = c.sdkClient.SubvolumesClient.ListByVolume(sdkCtx, resourceGroup, netappAccount,
-			capacityPool, volumeName)
-
-		if err != nil {
-			logFields["correlationID"] = GetCorrelationIDFromError(err)
-
-			if IsANFTooManyRequestsError(err) {
-				Logc(ctx).WithFields(logFields).WithError(err).Error(
-					"Unable to receive response due to API throttling.")
-				return utils.TooManyRequestsError("unable to receive response due to API throttling")
-			} else {
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Error("Error listing subvolumes on volume.")
-				return backoff.Permanent(err)
-			}
-		}
-
-		return nil
-	}
-	invokeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
-			"increment": duration.Truncate(10 * time.Millisecond),
-			"message":   err.Error(),
-			"API":       api,
-		}).Debugf("Retrying API.")
-	}
-	invokeBackoff := c.SubvolumeCreateBackOff()
-
-	Logc(ctx).WithFields(logFields).Info("Listing subvolumes on volume.")
-
-	if err := backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		if utils.IsTooManyRequestsError(err) {
-			Logc(ctx).WithFields(logFields).Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
-		} else {
-			Logc(ctx).WithFields(logFields).Errorf("Failed to list subvolumes by volume: %v", err)
-		}
-		return nil, err
-	}
-
-	logFields["correlationID"] = GetCorrelationID(subvolumesInfoList.Response().Response.Response)
-	Logc(ctx).WithFields(logFields).Debug("Read subvolumes from volume.")
-
-	return &subvolumesInfoList, nil
-}
-
 // SubvolumesForVolume returns a list of subvolume on a volume.
 func (c Client) SubvolumesForVolume(ctx context.Context, filesystem *FileSystem) (*[]*Subvolume, error) {
-	subvolumeInfoList, err := c.subvolumesClientListByVolume(ctx, filesystem.ResourceGroup,
-		filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name)
-	if err != nil {
-		return nil, err
+	logFields := log.Fields{
+		"API":    "SubvolumesClient.NewListByVolumePager",
+		"volume": filesystem.FullName,
 	}
 
 	var subvolumes []*Subvolume
 
-	for subvolumeInfoList.NotDone() {
-		subvolumeInfoList, err = c.subvolumesClientNextWithContext(ctx, subvolumeInfoList)
+	pager := c.sdkClient.SubvolumesClient.NewListByVolumePager(filesystem.ResourceGroup,
+		filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, nil)
+
+	for pager.More() {
+		var rawResponse *http.Response
+		responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+		nextResult, err := pager.NextPage(responseCtx)
+
+		logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 		if err != nil {
-			return nil, fmt.Errorf("error iterating subvolumeInfo list: %v", err)
+			Logc(ctx).WithFields(logFields).Error("Could not iterate subvolumes.")
+			return nil, fmt.Errorf("error iterating subvolumes: %v", err)
 		}
 
-		subvolumeInfos := subvolumeInfoList.Values()
-
-		for idx := range subvolumeInfos {
-
-			subvolume, subvolumeErr := c.newSubvolumeFromSubvolumeInfo(ctx, &subvolumeInfos[idx])
+		for _, anfSubvolume := range nextResult.Value {
+			subvolume, subvolumeErr := c.newSubvolumeFromSubvolumeInfo(ctx, anfSubvolume)
 			if subvolumeErr != nil {
-				Logc(ctx).WithError(subvolumeErr).Errorf("Internal error creating internal Subvolume object.")
+				Logc(ctx).WithError(subvolumeErr).Errorf("Internal error creating subvolume.")
 				return nil, subvolumeErr
 			}
-
 			subvolumes = append(subvolumes, subvolume)
 		}
 	}
 
+	Logc(ctx).WithFields(logFields).Debug("Read subvolumes from volume.")
+
 	return &subvolumes, nil
-}
-
-// subvolumesClientNextWithContext advances to the next page of the subvolumes list page
-func (c Client) subvolumesClientNextWithContext(ctx context.Context, subvolumeInfoList *netapp.SubvolumesListPage) (
-	*netapp.SubvolumesListPage, error,
-) {
-	var err error
-
-	api := "SubvolumesListPage.NextWithContext"
-	logFields := log.Fields{
-		"API": api,
-	}
-
-	invoke := func() error {
-		sdkCtx, cancel := context.WithTimeout(ctx, DefaultSubvolumeSDKTimeout)
-		defer cancel()
-
-		err = subvolumeInfoList.NextWithContext(sdkCtx)
-		if err != nil {
-			logFields["correlationID"] = GetCorrelationIDFromError(err)
-
-			if IsANFTooManyRequestsError(err) {
-				Logc(ctx).WithFields(logFields).WithError(err).Error(
-					"Unable to receive response due to API throttling.")
-				return utils.TooManyRequestsError("unable to receive response due to API throttling")
-			} else {
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Error("Error iterating subvolumeInfo list.")
-				return backoff.Permanent(err)
-			}
-		}
-		return nil
-	}
-
-	invokeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
-			"increment": duration.Truncate(10 * time.Millisecond),
-			"message":   err.Error(),
-			"API":       api,
-		}).Debugf("Retrying API.")
-	}
-	invokeBackoff := c.SubvolumeCreateBackOff()
-
-	Logc(ctx).WithFields(logFields).Info("Iterating subvolumeInfo list.")
-
-	if err = backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		if utils.IsTooManyRequestsError(err) {
-			Logc(ctx).WithFields(logFields).Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
-		} else {
-			Logc(ctx).WithFields(logFields).Errorf("Failed to iterate subvolumeInfo list: %v", err)
-		}
-		return nil, err
-	}
-
-	Logc(ctx).WithFields(logFields).Debug("Iterated subvolumeInfo list.")
-
-	return subvolumeInfoList, err
 }
 
 // Subvolumes returns a list of all subvolumes.
@@ -1608,8 +1510,8 @@ func (c Client) SubvolumeParentVolume(ctx context.Context, volConfig *storage.Vo
 			return nil, err
 		}
 
-		volume, err := c.VolumeByID(ctx, CreateVolumeID(subscriptionID, resourceGroup, netappAccount, cPoolName,
-			volumeName))
+		volume, err := c.VolumeByID(ctx,
+			CreateVolumeID(subscriptionID, resourceGroup, netappAccount, cPoolName, volumeName))
 		if err != nil {
 			return nil, err
 		}
@@ -1624,7 +1526,7 @@ func (c Client) SubvolumeParentVolume(ctx context.Context, volConfig *storage.Vo
 func (c Client) SubvolumeExists(
 	ctx context.Context, volConfig *storage.VolumeConfig, candidateFileVolumePools []string,
 ) (bool, *Subvolume, error) {
-	// When we know the internal ID, use that as it is vastly more efficient
+	// When we know the internal ID, use that as it is vastly more efficient.
 	if volConfig.InternalID != "" {
 		return c.SubvolumeExistsByID(ctx, volConfig.InternalID)
 	}
@@ -1702,92 +1604,47 @@ func (c Client) SubvolumeByCreationToken(
 	}
 }
 
-func (c Client) subvolumesClientGet(ctx context.Context, subvolumeID string) (*netapp.SubvolumeInfo, error) {
-	var subvolumeInfo netapp.SubvolumeInfo
-	var err error
+// SubvolumeByID returns a Subvolume based on its Azure-style ID.
+func (c Client) SubvolumeByID(ctx context.Context, subvolumeID string, queryMetadata bool) (*Subvolume, error) {
+	logFields := log.Fields{
+		"API": "SubvolumesClient.Get",
+		"ID":  subvolumeID,
+	}
 
 	_, resourceGroup, _, netappAccount, capacityPool, volumeName, subvolumeName, err := ParseSubvolumeID(subvolumeID)
 	if err != nil {
 		return nil, err
 	}
 
-	api := "SubvolumesClient.Get"
-	logFields := log.Fields{
-		"API":         api,
-		"subvolumeID": subvolumeID,
-	}
+	Logc(ctx).WithFields(logFields).Trace("Fetching subvolume by ID.")
 
-	invoke := func() error {
-		sdkCtx, cancel := context.WithTimeout(ctx, DefaultSubvolumeSDKTimeout)
-		defer cancel()
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
 
-		subvolumeInfo, err = c.sdkClient.SubvolumesClient.Get(sdkCtx, resourceGroup, netappAccount, capacityPool, volumeName,
-			subvolumeName)
+	response, err := c.sdkClient.SubvolumesClient.Get(responseCtx,
+		resourceGroup, netappAccount, capacityPool, volumeName, subvolumeName, nil)
 
-		if err != nil {
-			logFields["correlationID"] = GetCorrelationIDFromError(err)
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
 
-			if IsANFTooManyRequestsError(err) {
-				Logc(ctx).WithFields(logFields).WithError(err).Error(
-					"Unable to receive response due to API throttling.")
-				return utils.TooManyRequestsError("unable to receive response due to API throttling")
-			} else if IsANFNotFoundError(err) {
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Debug("Subvolume not found by ID.")
-				return backoff.Permanent(utils.NotFoundError(fmt.Sprintf("subvolume not found")))
-			} else {
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching subvolume by ID.")
-				return backoff.Permanent(err)
-			}
+	if err != nil {
+		if IsANFNotFoundError(err) {
+			Logc(ctx).WithFields(logFields).Debug("Subvolume not found.")
+			return nil, utils.NotFoundError(fmt.Sprintf("subvolume with ID '%s' not found", subvolumeID))
 		}
 
-		return nil
-	}
-	invokeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
-			"increment": duration.Truncate(10 * time.Millisecond),
-			"message":   err.Error(),
-			"API":       api,
-		}).Debugf("Retrying API.")
-	}
-	invokeBackoff := c.SubvolumeCreateBackOff()
-
-	Logc(ctx).WithFields(logFields).Info("Getting subvolume by ID.")
-
-	if err := backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		if utils.IsTooManyRequestsError(err) {
-			Logc(ctx).WithFields(logFields).Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
-		} else if utils.IsNotFoundError(err) {
-			Logc(ctx).WithFields(logFields).Warnf("Failed to get subvolume: %v", err)
-		} else {
-			Logc(ctx).WithFields(logFields).Errorf("Failed to get subvolume: %v", err)
-		}
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching subvolume.")
 		return nil, err
 	}
 
-	logFields["correlationID"] = GetCorrelationID(subvolumeInfo.Response.Response)
 	Logc(ctx).WithFields(logFields).Debug("Subvolume found by ID")
 
-	return &subvolumeInfo, nil
-}
-
-// SubvolumeByID returns a Subvolume based on its Azure-style ID.
-func (c Client) SubvolumeByID(ctx context.Context, subvolumeID string, queryMetadata bool) (*Subvolume, error) {
-	Logc(ctx).Tracef("Fetching subvolume by ID %s.", subvolumeID)
-
-	subvolumeInfo, err := c.subvolumesClientGet(ctx, subvolumeID)
-	if err != nil {
-		return nil, err
-	}
-
-	subvolume, err := c.newSubvolumeFromSubvolumeInfo(ctx, subvolumeInfo)
+	subvolume, err := c.newSubvolumeFromSubvolumeInfo(ctx, &response.SubvolumeInfo)
 	if err != nil {
 		return nil, err
 	}
 
 	// GET does not fetch metadata as it requires talking to actual storage and the delay exceeds Azure 1 second time
-	// limit
+	// limit.
 	if queryMetadata {
 		Logc(ctx).Debugf("Fetching subvolume %s metadata.", subvolumeID)
 		return c.SubvolumeMetadata(ctx, subvolume)
@@ -1796,214 +1653,49 @@ func (c Client) SubvolumeByID(ctx context.Context, subvolumeID string, queryMeta
 	}
 }
 
-func (c Client) subvolumesClientGetMetadata(ctx context.Context,
-	subvolume *Subvolume,
-) (*netapp.SubvolumesGetMetadataFuture, error) {
-	var future netapp.SubvolumesGetMetadataFuture
-	var err error
-
-	api := "SubvolumesClient.GetMetadata"
-	logFields := log.Fields{
-		"API":         api,
-		"subvolumeID": subvolume.ID,
-	}
-
-	invoke := func() error {
-		sdkCtx, cancel := context.WithTimeout(ctx, DefaultSubvolumeSDKTimeout)
-		defer cancel()
-
-		future, err = c.sdkClient.SubvolumesClient.GetMetadata(sdkCtx, subvolume.ResourceGroup,
-			subvolume.NetAppAccount, subvolume.CapacityPool, subvolume.Volume, subvolume.Name)
-		if err != nil {
-			logFields["correlationID"] = GetCorrelationIDFromError(err)
-
-			if IsANFTooManyRequestsError(err) {
-				Logc(ctx).WithFields(logFields).WithError(err).Error(
-					"Unable to receive response due to API throttling.")
-				return utils.TooManyRequestsError("unable to receive response due to API throttling")
-			} else if IsANFNotFoundError(err) {
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Debug("Subvolume not found.")
-				return backoff.Permanent(utils.NotFoundError(fmt.Sprintf("subvolume not found")))
-			} else {
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching subvolume metadata.")
-				return backoff.Permanent(err)
-			}
-		}
-
-		return nil
-	}
-	invokeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
-			"increment": duration.Truncate(10 * time.Millisecond),
-			"message":   err.Error(),
-			"API":       api,
-		}).Debugf("Retrying API.")
-	}
-	invokeBackoff := c.SubvolumeCreateBackOff()
-
-	Logc(ctx).WithFields(logFields).Info("Get subvolume metadata.")
-
-	if err := backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		if utils.IsTooManyRequestsError(err) {
-			Logc(ctx).WithFields(logFields).Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
-		} else {
-			Logc(ctx).WithFields(logFields).Errorf("Failed to get subvolume metadata: %v", err)
-		}
-		return nil, err
-	}
-
-	logFields["correlationID"] = GetCorrelationID(future.Response())
-	Logc(ctx).WithFields(logFields).Debug("Async request to retrieve metadata sent.")
-
-	return &future, nil
-}
-
-func (c Client) subvolumesClientWaitForMetadata(ctx context.Context,
-	subvolumeID string, future *netapp.SubvolumesGetMetadataFuture,
-) error {
-	var err error
-
-	api := "SubvolumesGetMetadataFuture.WaitForCompletionRef"
-	logFields := log.Fields{
-		"API":         api,
-		"subvolumeID": subvolumeID,
-	}
-
-	invoke := func() error {
-		err = future.WaitForCompletionRef(ctx, c.sdkClient.SubvolumesClient.Client)
-
-		if err != nil {
-			logFields["correlationID"] = GetCorrelationIDFromError(err)
-
-			if IsANFTooManyRequestsError(err) {
-				Logc(ctx).WithFields(logFields).WithError(err).Error(
-					"Unable to receive response due to API throttling.")
-				return utils.TooManyRequestsError("unable to receive response due to API throttling")
-			} else {
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Debug("Unable to retrieve subvolume metadata.")
-				return backoff.Permanent(err)
-			}
-		}
-
-		return nil
-	}
-	invokeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
-			"increment": duration.Truncate(10 * time.Millisecond),
-			"message":   err.Error(),
-			"API":       api,
-		}).Debugf("Retrying API.")
-	}
-	invokeBackoff := c.SubvolumeCreateBackOff()
-
-	Logc(ctx).WithFields(logFields).Info("Waiting to get subvolume metadata.")
-
-	if err := backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		if utils.IsTooManyRequestsError(err) {
-			Logc(ctx).WithFields(logFields).Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
-		} else {
-			Logc(ctx).WithFields(logFields).Errorf("Failure when waiting to retrieve subvolume metadata: %v", err)
-		}
-		return err
-	}
-
-	logFields["correlationID"] = ""
-	Logc(ctx).WithFields(logFields).Debug("Subvolume metadata found by ID")
-
-	return nil
-}
-
-// SubvolumeMetadata returns a Subvolume metadata
+// SubvolumeMetadata fetches a Subvolume metadata, melds it into the supplied subvolume, and returns the result.
 func (c Client) SubvolumeMetadata(ctx context.Context, subvolume *Subvolume) (*Subvolume, error) {
-	Logc(ctx).Tracef("Fetching subvolume metadata %s.", subvolume.FullName)
-
 	logFields := log.Fields{
-		"subvolumeID": subvolume.ID,
+		"API": "SubvolumesClient.BeginGetMetadata",
+		"ID":  subvolume.ID,
 	}
 
-	subvolumesGetMetadataFuture, err := c.subvolumesClientGetMetadata(ctx, subvolume)
+	Logc(ctx).WithFields(logFields).Tracef("Fetching subvolume metadata.")
+
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	poller, err := c.sdkClient.SubvolumesClient.BeginGetMetadata(responseCtx, subvolume.ResourceGroup,
+		subvolume.NetAppAccount, subvolume.CapacityPool, subvolume.Volume, subvolume.Name, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
+		if IsANFNotFoundError(err) {
+			Logc(ctx).WithFields(logFields).Debug("Subvolume not found.")
+			return nil, utils.NotFoundError(fmt.Sprintf("subvolume with ID '%s' not found", subvolume.ID))
+		}
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching subvolume metadata.")
 		return nil, err
 	}
 
 	Logc(ctx).WithFields(logFields).Debug("Waiting for the request to complete.")
 
-	if err = c.subvolumesClientWaitForMetadata(ctx, subvolume.ID, subvolumesGetMetadataFuture); err != nil {
-		return nil, err
-	}
+	// Create a context with timeout as needed by PollUntilDone()
+	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
+	responseCtx = runtime.WithCaptureResponse(sdkCtx, &rawResponse)
+	defer cancel()
 
-	subvolumeModel, err := c.subvolumesClientGetMetadataFutureResult(ctx, subvolume, subvolumesGetMetadataFuture)
+	response, err := poller.PollUntilDone(responseCtx, &runtime.PollUntilDoneOptions{Frequency: 2 * time.Second})
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error polling for subvolume metadata.")
 		return nil, err
 	}
 
-	return c.updateSubvolumeFromSubvolumeModel(ctx, subvolume, &subvolumeModel)
-}
-
-// subvolumesClientGetMetadataFutureResult returns the result of the subvolumeMetadataFuture call
-func (c Client) subvolumesClientGetMetadataFutureResult(ctx context.Context, subvolume *Subvolume,
-	subvolumesGetMetadataFuture *netapp.SubvolumesGetMetadataFuture,
-) (netapp.SubvolumeModel, error) {
-	var subvolumeModel netapp.SubvolumeModel
-	var err error
-	api := "SubvolumesGetMetadataFuture.Result"
-
-	logFields := log.Fields{
-		"subvolumeID": subvolume.ID,
-		"API":         api,
-	}
-
-	invoke := func() error {
-		subvolumeModel, err = subvolumesGetMetadataFuture.Result(c.sdkClient.SubvolumesClient)
-		if err != nil {
-
-			logFields["correlationID"] = GetCorrelationIDFromError(err)
-
-			if IsANFTooManyRequestsError(err) {
-				Logc(ctx).WithFields(logFields).WithError(err).Error(
-					"Unable to receive response due to API throttling.")
-				return utils.TooManyRequestsError("unable to receive response due to API throttling")
-			} else {
-				logFields["subvolume.FullName"] = subvolume.FullName
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Error(
-					"Unable to retrieve subvolume get metadata future result.")
-				return backoff.Permanent(err)
-			}
-		}
-
-		return nil
-	}
-
-	invokeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
-			"increment": duration.Truncate(10 * time.Millisecond),
-			"message":   err.Error(),
-			"API":       api,
-		}).Debugf("Retrying API.")
-	}
-	invokeBackoff := c.SubvolumeCreateBackOff()
-
-	Logc(ctx).WithFields(logFields).Info("Retrieving subvolume get metadata result.")
-
-	if err = backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		if utils.IsTooManyRequestsError(err) {
-			Logc(ctx).WithFields(logFields).Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
-		} else {
-			Logc(ctx).WithFields(logFields).Errorf("Failed to retrieve subvolume get metadata result: %v", err)
-		}
-
-		return netapp.SubvolumeModel{}, fmt.Errorf("unable to retrieve subvolume get metadata result for %v: %v",
-			subvolume.FullName, err)
-	}
-
-	logFields["correlationID"] = GetCorrelationID(subvolumeModel.Response.Response)
-	Logc(ctx).WithFields(logFields).Debug("Retrieved subvolume get metadata result.")
-
-	return subvolumeModel, nil
+	return c.updateSubvolumeFromSubvolumeModel(ctx, subvolume, &response.SubvolumeModel)
 }
 
 // SubvolumeExistsByID checks whether a subvolume exists using its creation token as a key.
@@ -2027,7 +1719,7 @@ func (c Client) WaitForSubvolumeState(
 	subvolumeState := ""
 
 	logFields := log.Fields{
-		"subvolumeID":  subvolume.ID,
+		"ID":           subvolume.ID,
 		"desiredState": desiredState,
 	}
 
@@ -2089,7 +1781,7 @@ func (c Client) WaitForSubvolumeState(
 		if IsTerminalStateError(err) {
 			Logc(ctx).WithFields(logFields).Errorf("Subvolume reached terminal state.")
 		} else {
-			Logc(ctx).WithFields(logFields).Errorf("Subvolume state was not %s after %3.2f seconds.",
+			Logc(ctx).WithFields(logFields).Warningf("Subvolume state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return subvolumeState, err
@@ -2100,279 +1792,138 @@ func (c Client) WaitForSubvolumeState(
 	return subvolumeState, nil
 }
 
-func (c Client) subvolumesClientCreate(ctx context.Context, newSubvol netapp.SubvolumeInfo,
-	resourceGroup, netappAccount, capacityPool, volumeName, subvolumeName string,
-) error {
-	var future netapp.SubvolumesCreateFuture
-	var err error
-
-	subvolumeID := CreateSubvolumeID(c.config.SubscriptionID, resourceGroup, netappAccount, capacityPool, volumeName,
-		subvolumeName)
-
-	api := "SubvolumesClient.Create"
-	logFields := log.Fields{
-		"API":         api,
-		"subvolumeID": subvolumeID,
-	}
-
-	invoke := func() error {
-		sdkCtx, cancel := context.WithTimeout(ctx, DefaultSubvolumeSDKTimeout)
-		defer cancel()
-
-		future, err = c.sdkClient.SubvolumesClient.Create(sdkCtx, newSubvol, resourceGroup, netappAccount,
-			capacityPool, volumeName, subvolumeName)
-
-		if err != nil {
-			logFields["correlationID"] = GetCorrelationIDFromError(err)
-
-			if IsANFTooManyRequestsError(err) {
-				Logc(ctx).WithFields(logFields).WithError(err).Error(
-					"Unable to receive response due to API throttling.")
-				return utils.TooManyRequestsError("unable to receive response due to API throttling")
-			} else {
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Error("Error creating subvolume.")
-				return backoff.Permanent(err)
-			}
-		}
-
-		return nil
-	}
-	invokeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
-			"increment": duration.Truncate(10 * time.Millisecond),
-			"message":   err.Error(),
-			"API":       api,
-		}).Debugf("Retrying API.")
-	}
-	invokeBackoff := c.SubvolumeCreateBackOff()
-
-	Logc(ctx).WithFields(logFields).Info("Creating subvolume.")
-
-	if err := backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		if utils.IsTooManyRequestsError(err) {
-			Logc(ctx).WithFields(logFields).Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
-		} else {
-			Logc(ctx).WithFields(logFields).Errorf("Failed to create subvolume: %v", err)
-		}
-		return err
-	}
-
-	logFields["correlationID"] = GetCorrelationID(future.Response())
-	Logc(ctx).WithFields(logFields).Debug("Subvolume create request sent.")
-
-	return nil
-}
-
 // CreateSubvolume creates a new subvolume
 func (c Client) CreateSubvolume(ctx context.Context, request *SubvolumeCreateRequest) (*Subvolume, error) {
-	var err error
+	subvolumeName := request.CreationToken
 
 	resourceGroup, netappAccount, cpoolName, volumeName, err := ParseVolumeName(request.Volume)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get volume information: %v", err)
 	}
 
-	subvolumeFullName := CreateSubvolumeFullName(resourceGroup, netappAccount, cpoolName, volumeName, request.CreationToken)
-
-	path := "/" + request.CreationToken
+	path := "/" + subvolumeName
 	newSubvol := netapp.SubvolumeInfo{
-		Name: &request.CreationToken,
-		SubvolumeProperties: &netapp.SubvolumeProperties{
+		Name: &subvolumeName,
+		Properties: &netapp.SubvolumeProperties{
 			Path: &path,
 		},
 	}
 
 	if request.Size > 0 {
-		newSubvol.SubvolumeProperties.Size = &request.Size
+		newSubvol.Properties.Size = &request.Size
 	}
 
 	if request.Parent != "" {
 		parentPath := "/" + request.Parent
-		newSubvol.SubvolumeProperties.ParentPath = &parentPath
+		newSubvol.Properties.ParentPath = &parentPath
 	}
 
 	Logc(ctx).WithFields(log.Fields{
-		"name":          request.CreationToken,
+		"name":          subvolumeName,
 		"resourceGroup": resourceGroup,
 		"netAppAccount": netappAccount,
 		"capacityPool":  cpoolName,
 		"volumeName":    volumeName,
 	}).Debug("Issuing subvolume create request.")
 
-	err = c.subvolumesClientCreate(ctx, newSubvol, resourceGroup, netappAccount, cpoolName, volumeName,
-		request.CreationToken)
+	logFields := log.Fields{
+		"API":    "SubvolumesClient.BeginCreate",
+		"volume": volumeName,
+		"name":   subvolumeName,
+	}
+
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	_, err = c.sdkClient.SubvolumesClient.BeginCreate(responseCtx,
+		resourceGroup, netappAccount, cpoolName, volumeName, subvolumeName, newSubvol, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error creating subvolume.")
 		return nil, err
 	}
+
+	Logc(ctx).WithFields(logFields).Info("Subvolume create request issued.")
 
 	// The subvolume doesn't exist yet, so forge the subvolume ID to enable conversion to a Subvolume struct
 	newSubvolumeID := CreateSubvolumeID(c.config.SubscriptionID, resourceGroup, netappAccount, cpoolName, volumeName,
 		request.CreationToken)
 	newSubvol.ID = &newSubvolumeID
 
-	subvol, err := c.newSubvolumeFromSubvolumeInfo(ctx, &newSubvol)
-	if err != nil {
-		return nil, err
-	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"name": subvolumeFullName,
-	}).Info("Subvolume created.")
-
-	return subvol, nil
-}
-
-func (c Client) subvolumesClientUpdate(
-	ctx context.Context, patch *netapp.SubvolumePatchRequest, subvolume *Subvolume,
-) error {
-	var future netapp.SubvolumesUpdateFuture
-	var err error
-
-	api := "SubvolumesClient.Update"
-	logFields := log.Fields{
-		"API":         api,
-		"subvolumeID": subvolume.ID,
-	}
-
-	invoke := func() error {
-		sdkCtx, cancel := context.WithTimeout(ctx, DefaultSubvolumeSDKTimeout)
-		defer cancel()
-
-		future, err = c.sdkClient.SubvolumesClient.Update(
-			sdkCtx, *patch, subvolume.ResourceGroup, subvolume.NetAppAccount, subvolume.CapacityPool,
-			subvolume.Volume, subvolume.Name)
-
-		if err != nil {
-			logFields["correlationID"] = GetCorrelationIDFromError(err)
-
-			if IsANFTooManyRequestsError(err) {
-				Logc(ctx).WithFields(logFields).WithError(err).Error(
-					"Unable to receive response due to API throttling.")
-				return utils.TooManyRequestsError("unable to receive response due to API throttling")
-			} else {
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Error("Error resizing subvolume.")
-				return backoff.Permanent(err)
-			}
-		}
-
-		return nil
-	}
-	invokeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
-			"increment": duration.Truncate(10 * time.Millisecond),
-			"message":   err.Error(),
-			"API":       api,
-		}).Debugf("Retrying API.")
-	}
-	invokeBackoff := c.SubvolumeCreateBackOff()
-
-	Logc(ctx).WithFields(logFields).Info("Resizing subvolume.")
-
-	if err := backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		if utils.IsTooManyRequestsError(err) {
-			Logc(ctx).WithFields(logFields).Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
-		} else {
-			Logc(ctx).WithFields(logFields).Errorf("Failed to resize subvolume: %v", err)
-		}
-		return err
-	}
-
-	logFields["correlationID"] = GetCorrelationID(future.Response())
-	Logc(ctx).WithFields(logFields).Debug("Subvolume resized.")
-
-	return nil
+	return c.newSubvolumeFromSubvolumeInfo(ctx, &newSubvol)
 }
 
 // ResizeSubvolume sends a SubvolumePatchRequest to update a subvolume's size.
 func (c Client) ResizeSubvolume(ctx context.Context, subvolume *Subvolume, newSizeBytes int64) error {
+	logFields := log.Fields{
+		"API": "SubvolumesClient.BeginUpdate",
+		"ID":  subvolume.ID,
+	}
+
 	path := "/" + subvolume.Name
 	patch := &netapp.SubvolumePatchRequest{
-		SubvolumePatchParams: &netapp.SubvolumePatchParams{
+		Properties: &netapp.SubvolumePatchParams{
 			Size: &newSizeBytes,
 			Path: &path,
 		},
 	}
 
-	err := c.subvolumesClientUpdate(ctx, patch, subvolume)
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	poller, err := c.sdkClient.SubvolumesClient.BeginUpdate(responseCtx,
+		subvolume.ResourceGroup, subvolume.NetAppAccount, subvolume.CapacityPool,
+		subvolume.Volume, subvolume.Name, *patch, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
 	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error resizing subvolume.")
 		return err
 	}
 
-	return nil
-}
+	Logc(ctx).WithFields(logFields).Debug("Subvolume resize request issued.")
 
-func (c Client) subvolumesClientDelete(ctx context.Context, subvolume *Subvolume) error {
-	var future netapp.SubvolumesDeleteFuture
-	var err error
-
-	api := "SubvolumesClient.Delete"
-	logFields := log.Fields{
-		"API":         api,
-		"subvolumeID": subvolume.ID,
-	}
-
-	invoke := func() error {
-		sdkCtx, cancel := context.WithTimeout(ctx, DefaultSubvolumeSDKTimeout)
-		defer cancel()
-
-		future, err = c.sdkClient.SubvolumesClient.Delete(sdkCtx, subvolume.ResourceGroup,
-			subvolume.NetAppAccount, subvolume.CapacityPool, subvolume.Volume, subvolume.Name)
-
-		if err != nil {
-			logFields["correlationID"] = GetCorrelationIDFromError(err)
-
-			if IsANFTooManyRequestsError(err) {
-				Logc(ctx).WithFields(logFields).WithError(err).Error(
-					"Unable to receive response due to API throttling.")
-				return utils.TooManyRequestsError("unable to receive response due to API throttling")
-			} else if IsANFNotFoundError(err) {
-				Logc(ctx).WithFields(logFields).WithError(err).Info("Subvolume already deleted")
-				return backoff.Permanent(utils.NotFoundError(fmt.Sprintf("subvolume %s not found", subvolume.Name)))
-			} else {
-				// Return a permanent error for non HTTP 429 case
-				Logc(ctx).WithFields(logFields).WithError(err).Error("Error deleting subvolume.")
-				return backoff.Permanent(err)
-			}
-		}
-
-		return nil
-	}
-	invokeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
-			"increment": duration.Truncate(10 * time.Millisecond),
-			"message":   err.Error(),
-			"API":       api,
-		}).Debugf("Retrying API.")
-	}
-	invokeBackoff := c.SubvolumeCreateBackOff()
-
-	Logc(ctx).WithFields(logFields).Info("Deleting subvolume.")
-
-	if err := backoff.RetryNotify(invoke, invokeBackoff, invokeNotify); err != nil {
-		if utils.IsTooManyRequestsError(err) {
-			Logc(ctx).WithFields(logFields).Errorf("API has not succeeded after %3.2f seconds.", invokeBackoff.MaxElapsedTime.Seconds())
-		} else if utils.IsNotFoundError(err) {
-			Logc(ctx).WithFields(logFields).Warnf("Failed to delete subvolume: %v", err)
-		} else {
-			Logc(ctx).WithFields(logFields).Errorf("Failed to delete subvolume: %v", err)
-		}
-
+	_, err = poller.PollUntilDone(responseCtx, &runtime.PollUntilDoneOptions{Frequency: 2 * time.Second})
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error polling for subvolume resize result.")
 		return err
 	}
 
-	logFields["correlationID"] = GetCorrelationID(future.Response())
-	Logc(ctx).WithFields(logFields).Debug("Subvolume deleted.")
+	Logc(ctx).WithFields(logFields).Debug("Subvolume resize complete.")
 
 	return nil
 }
 
 // DeleteSubvolume deletes a subvolume.
 func (c Client) DeleteSubvolume(ctx context.Context, subvolume *Subvolume) error {
-	if err := c.subvolumesClientDelete(ctx, subvolume); err != nil {
+	logFields := log.Fields{
+		"API": "SubvolumesClient.BeginDelete",
+		"ID":  subvolume.ID,
+	}
+
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	_, err := c.sdkClient.SubvolumesClient.BeginDelete(responseCtx,
+		subvolume.ResourceGroup, subvolume.NetAppAccount, subvolume.CapacityPool,
+		subvolume.Volume, subvolume.Name, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
+	if err != nil {
+		if IsANFNotFoundError(err) {
+			Logc(ctx).WithFields(logFields).Info("Subvolume already deleted.")
+			return nil
+		}
+
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error deleting subvolume.")
 		return err
 	}
+
+	Logc(ctx).WithFields(logFields).Debug("Subvolume deleted.")
 
 	return nil
 }
@@ -2428,8 +1979,8 @@ func IsANFNotFoundError(err error) bool {
 		return false
 	}
 
-	if detailedErr, ok := err.(autorest.DetailedError); ok {
-		if detailedErr.Response != nil && detailedErr.Response.StatusCode == http.StatusNotFound {
+	if detailedErr, ok := err.(*azcore.ResponseError); ok {
+		if detailedErr.RawResponse != nil && detailedErr.RawResponse.StatusCode == http.StatusNotFound {
 			return true
 		}
 	}
@@ -2443,8 +1994,8 @@ func IsANFTooManyRequestsError(err error) bool {
 		return false
 	}
 
-	if detailedErr, ok := err.(autorest.DetailedError); ok {
-		if detailedErr.Response != nil && detailedErr.Response.StatusCode == http.StatusTooManyRequests {
+	if detailedErr, ok := err.(*azcore.ResponseError); ok {
+		if detailedErr.RawResponse != nil && detailedErr.RawResponse.StatusCode == http.StatusTooManyRequests {
 			return true
 		}
 	}
@@ -2459,8 +2010,8 @@ func GetCorrelationIDFromError(err error) (id string) {
 		return
 	}
 
-	if detailedErr, ok := err.(autorest.DetailedError); ok {
-		id = GetCorrelationID(detailedErr.Response)
+	if detailedErr, ok := err.(*azcore.ResponseError); ok {
+		id = GetCorrelationID(detailedErr.RawResponse)
 	}
 
 	return
@@ -2480,16 +2031,6 @@ func GetCorrelationID(response *http.Response) (id string) {
 	return
 }
 
-func (c Client) SubvolumeCreateBackOff() *backoff.ExponentialBackOff {
-	invokeBackoff := backoff.NewExponentialBackOff()
-	invokeBackoff.MaxElapsedTime = c.config.SDKTimeout
-	invokeBackoff.RandomizationFactor = 0.1
-	invokeBackoff.InitialInterval = 1 * time.Second
-	invokeBackoff.Multiplier = 1.414
-
-	return invokeBackoff
-}
-
 // DerefString accepts a string pointer and returns the value of the string, or "" if the pointer is nil.
 func DerefString(s *string) string {
 	if s != nil {
@@ -2504,6 +2045,27 @@ func DerefStringArray(s *[]string) []string {
 		return *s
 	}
 	return make([]string, 0)
+}
+
+// DerefStringPtrArray accepts an array of string pointers and returns the value of the array.
+func DerefStringPtrArray(in []*string) []string {
+	out := make([]string, len(in))
+	for index, sPtr := range in {
+		out[index] = DerefString(sPtr)
+	}
+	return out
+}
+
+// CreateStringPtrArray accepts an array of strings and returns an array of pointers to those strings.
+func CreateStringPtrArray(in []string) []*string {
+	out := make([]*string, 0)
+	if in != nil {
+		for index := range in {
+			s := in[index]
+			out = append(out, &s)
+		}
+	}
+	return out
 }
 
 // DerefBool accepts a bool pointer and returns the value of the bool, or false if the pointer is nil.
@@ -2528,6 +2090,14 @@ func DerefInt64(i *int64) int64 {
 		return *i
 	}
 	return 0
+}
+
+// DerefNetworkFeatures accepts a NetworkFeatures pointer and returns its string value, or "" if the pointer is nil.
+func DerefNetworkFeatures(f *netapp.NetworkFeatures) string {
+	if f != nil {
+		return string(*f)
+	}
+	return ""
 }
 
 // TerminalStateError signals that the object is in a terminal state.  This is used to stop waiting on
