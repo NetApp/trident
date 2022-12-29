@@ -89,7 +89,7 @@ func ensureDeviceReadable(ctx context.Context, device string) error {
 	defer Logc(ctx).Debug("<<<< devices.ensureDeviceReadable")
 
 	args := []string{"if=" + device, "bs=4096", "count=1", "status=none"}
-	out, err := execCommandWithTimeout(ctx, "dd", 5*time.Second, false, args...)
+	out, err := execCommandWithTimeout(ctx, "dd", deviceOperationsTimeout, false, args...)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("failed to read the device")
 		return err
@@ -110,7 +110,7 @@ func isDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 	defer Logc(ctx).Debug("<<<< devices.isDeviceUnformatted")
 
 	args := []string{"if=" + device, "bs=4096", "count=512", "status=none"}
-	out, err := execCommandWithTimeout(ctx, "dd", 5*time.Second, false, args...)
+	out, err := execCommandWithTimeout(ctx, "dd", deviceOperationsTimeout, false, args...)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{"error": err, "device": device}).Error("failed to read the device")
 		return false, err
@@ -337,7 +337,7 @@ func listAllISCSIDevices(ctx context.Context) {
 	for _, entry := range entries {
 		sysLog = append(sysLog, entry.Name())
 	}
-	out1, _ := execCommandWithTimeout(ctx, "multipath", 5*time.Second, true, "-ll")
+	out1, _ := execCommandWithTimeout(ctx, "multipath", deviceOperationsTimeout, true, "-ll")
 	out2, _ := execIscsiadmCommand(ctx, "-m", "session")
 	Logc(ctx).WithFields(log.Fields{
 		"/dev/dm-*":                  dmLog,
@@ -349,7 +349,7 @@ func listAllISCSIDevices(ctx context.Context) {
 }
 
 // removeDevice tells Linux that a device will be removed.
-func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) error {
+func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, ignoreErrors bool) error {
 	Logc(ctx).Debug(">>>> devices.removeDevice")
 	defer Logc(ctx).Debug("<<<< devices.removeDevice")
 
@@ -364,7 +364,7 @@ func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) e
 		filename := fmt.Sprintf(chrootPathPrefix+"/sys/block/%s/device/delete", deviceName)
 		if f, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o200); err != nil {
 			Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
-			if force {
+			if ignoreErrors {
 				continue
 			}
 			return err
@@ -373,14 +373,14 @@ func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) e
 		if written, err := f.WriteString("1"); err != nil {
 			Logc(ctx).WithFields(log.Fields{"file": filename, "error": err}).Warning("Could not write to file.")
 			f.Close()
-			if force {
+			if ignoreErrors {
 				continue
 			}
 			return err
 		} else if written == 0 {
 			Logc(ctx).WithField("file", filename).Warning("No data written to file.")
 			f.Close()
-			if force {
+			if ignoreErrors {
 				continue
 			}
 			return errors.New("too few bytes written to sysfs file")
@@ -388,11 +388,59 @@ func removeDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) e
 
 		f.Close()
 
-		listAllISCSIDevices(ctx)
 		Logc(ctx).WithField("scanFile", filename).Debug("Invoked device delete.")
 	}
+	listAllISCSIDevices(ctx)
 
 	return nil
+}
+
+// canFlushMultipathDevice determines whether device can be flushed.
+//  1. Check the health of path by executing 'multipath -C <devicePath>'
+//  2. If no error, return nil.
+//  3. Else, error or 'no usable paths found'
+//     Check for maxFlushWaitDuration expired, if expired return TimeoutError.
+//     else, return FlushError.
+func canFlushMultipathDevice(ctx context.Context, devicePath string) error {
+	Logc(ctx).WithField("device", devicePath).Debug(">>>> devices.canFlushMultipathDevice")
+	defer Logc(ctx).Debug("<<<< devices.canFlushMultipathDevice")
+
+	out, err := execCommandWithTimeout(ctx, "multipath", deviceOperationsTimeout, true, "-C", devicePath)
+	if err == nil {
+		delete(iSCSIVolumeFlushExceptions, devicePath)
+		return nil
+	}
+
+	outString := string(out)
+	Logc(ctx).WithFields(log.Fields{
+		"error":  err,
+		"device": devicePath,
+		"output": outString,
+	}).Error("Flush pre-check failed for the device.")
+
+	if !strings.Contains(outString, "no usable paths found") {
+		return ISCSIDeviceFlushError("multipath device is not ready for flush")
+	}
+
+	// Apply timeout only for the case LUN is made offline or deleted,
+	// i.e., "no usable paths found" is returned on health check of the path.
+	if iSCSIVolumeFlushExceptions[devicePath].IsZero() {
+		iSCSIVolumeFlushExceptions[devicePath] = time.Now()
+	} else {
+		elapsed := time.Since(iSCSIVolumeFlushExceptions[devicePath])
+		if elapsed > iSCSIMaxFlushWaitDuration {
+			Logc(ctx).WithFields(
+				log.Fields{
+					"device":  devicePath,
+					"elapsed": elapsed,
+					"maxWait": iSCSIMaxFlushWaitDuration,
+				}).Debug("Volume is not safe to remove, but max flush wait time is expired, skip flush.")
+			delete(iSCSIVolumeFlushExceptions, devicePath)
+			return TimeoutError(fmt.Sprintf("Max flush wait time expired. Elapsed: %v", elapsed))
+		}
+	}
+
+	return ISCSIDeviceFlushError("multipath device is unavailable")
 }
 
 // multipathFlushDevice invokes the 'multipath' commands to flush paths for a single device.
@@ -404,21 +452,37 @@ func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error
 		return nil
 	}
 
-	err := flushOneDevice(ctx, "/dev/"+deviceInfo.MultipathDevice)
+	devicePath := "/dev/" + deviceInfo.MultipathDevice
+
+	deviceErr := canFlushMultipathDevice(ctx, devicePath)
+	if deviceErr != nil {
+		if IsISCSIDeviceFlushError(deviceErr) {
+			Logc(ctx).WithFields(
+				log.Fields{
+					"error":  deviceErr,
+					"device": devicePath,
+				}).Debug("Flush failed.")
+			return deviceErr
+		}
+		if IsTimeoutError(deviceErr) {
+			Logc(ctx).WithFields(log.Fields{
+				"error":  deviceErr,
+				"device": devicePath,
+				"LUN":    deviceInfo.LUN,
+				"host":   deviceInfo.Host,
+			}).Debug("Flush timed out.")
+			return deviceErr
+		}
+	}
+
+	err := flushOneDevice(ctx, devicePath)
 	if err != nil {
+		// Ideally this should not be the case, otherwise, we may need
+		// to add more checks in canFlushMultipathDevice()
 		return err
 	}
 
-	_, err = execCommandWithTimeout(ctx, "multipath", 30*time.Second, true, "-f", "/dev/"+deviceInfo.MultipathDevice)
-	if err != nil {
-		// nothing to do if it generates an error but log it
-		Logc(ctx).WithFields(log.Fields{
-			"device": deviceInfo.MultipathDevice,
-			"error":  err,
-		}).Error("Error encountered in multipath flush device command.")
-		return err
-	}
-
+	RemoveMultipathDeviceMapping(ctx, devicePath)
 	return nil
 }
 
@@ -790,7 +854,7 @@ func findDevicesForMultipathDevice(ctx context.Context, device string) []string 
 }
 
 // PrepareDeviceForRemoval informs Linux that a device will be removed.
-func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName string, unsafe, force bool) error {
+func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName string, ignoreErrors, force bool) (string, error) {
 	fields := log.Fields{
 		"lunID":            lunID,
 		"iSCSINodeName":    iSCSINodeName,
@@ -799,26 +863,35 @@ func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName strin
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.PrepareDeviceForRemoval")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.PrepareDeviceForRemoval")
 
+	var multipathDevice string
+	var performDeferredDeviceRemoval bool
+
 	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, iSCSINodeName, false, true)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"error": err,
 			"lunID": lunID,
 		}).Warn("Could not get device info for removal, skipping host removal steps.")
-		return err
+		return multipathDevice, err
 	}
 
 	if deviceInfo == nil {
 		Logc(ctx).WithFields(log.Fields{
 			"lunID": lunID,
 		}).Debug("No device found for removal, skipping host removal steps.")
-		return nil
+		return multipathDevice, nil
 	}
 
-	return removeSCSIDevice(ctx, deviceInfo, unsafe, force)
+	performDeferredDeviceRemoval, err = removeSCSIDevice(ctx, deviceInfo, ignoreErrors, force)
+	if performDeferredDeviceRemoval && deviceInfo.MultipathDevice != "" {
+		multipathDevice = "/dev/" + deviceInfo.MultipathDevice
+	}
+
+	return multipathDevice, err
 }
 
 // PrepareDeviceAtMountPathForRemoval informs Linux that a device will be removed.
+// Unused stub.
 func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, unmount, unsafe, force bool) error {
 	fields := log.Fields{"mountpoint": mountpoint}
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.PrepareDeviceAtMountPathForRemoval")
@@ -835,50 +908,89 @@ func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, 
 		}
 	}
 
-	return removeSCSIDevice(ctx, deviceInfo, unsafe, force)
+	_, err = removeSCSIDevice(ctx, deviceInfo, unsafe, force)
+
+	return err
+}
+
+// RemoveMultipathDeviceMapping uses "multipath -f <devicePath>" to flush(remove) unused map.
+// Unused maps can happen when Unstage is called on offline/deleted LUN.
+func RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) {
+	Logc(ctx).WithField("devicePath", devicePath).Debug(">>>> devices.RemoveMultipathDevicemapping")
+	defer Logc(ctx).Debug("<<<< devices.RemoveMultipathDeviceMapping")
+
+	if devicePath == "" {
+		return
+	}
+
+	out, err := execCommandWithTimeout(ctx, "multipath", 10*time.Second, false, "-f", devicePath)
+	if err != nil {
+		// Nothing to do if it generates an error, but log it.
+		Logc(ctx).WithFields(log.Fields{
+			"error":      err,
+			"output":     string(out),
+			"devicePath": devicePath,
+		}).Error("Error encountered in multipath flush(remove) mapping command.")
+	}
+
+	return
 }
 
 // removeSCSIDevice informs Linux that a device will be removed.  The deviceInfo provided only needs
 // the devices and multipathDevice fields set.
-// IMPORTANT: The unsafe and force arguments have significant ramifications. Setting unsafe=true will cause the
+// IMPORTANT: The unsafe and force arguments have significant ramifications. Setting ignoreErrors=true will cause the
 // function to ignore errors, and try to the remove the device even if that results in data loss, data corruption,
-// or putting the system into an invalid state. Setting force=true will cause data loss, as it does not wait for the
-// device to flush any remaining data. Setting unsafe=false and force=false will fail at the first problem encountered,
-// so that callers can be assured that a successful return indicates that the device was cleanly removed.
+// or putting the system into an invalid state. Setting skipFlush=true will cause data loss, as it does not wait for the
+// device to flush any remaining data, but this option is provided to avoid an indefinite hang of flush operation in
+// case of an end device is in bad state. Setting ignoreErrors=false and skipFlush=false will fail at the first problem
+// encountered, so that callers can be assured that a successful return indicates that the device was cleanly removed.
 // This is important because while most of the time the top priority is to avoid data
 // loss or data corruption, there are times when data loss is unavoidable, or has already
 // happened, and in those cases it's better to be able to clean up than to be stuck in an
 // endless retry loop.
-func removeSCSIDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, unsafe, force bool) error {
+func removeSCSIDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, ignoreErrors, skipFlush bool) (bool, error) {
 	listAllISCSIDevices(ctx)
 
 	// Flush multipath device
-	if !force {
+	if !skipFlush {
 		err := multipathFlushDevice(ctx, deviceInfo)
-		if nil != err && !unsafe {
-			return err
+		if err != nil {
+			if IsTimeoutError(err) {
+				// Proceed to removeDevice(), ignore any errors.
+				ignoreErrors = true
+			} else if !ignoreErrors {
+				return false, err
+			}
 		}
 	}
 
 	// Flush devices
-	if !force {
-		err := flushDevice(ctx, deviceInfo, unsafe)
-		if nil != err && !unsafe {
-			return err
+	if !skipFlush {
+		err := flushDevice(ctx, deviceInfo, ignoreErrors)
+		if err != nil && !ignoreErrors {
+			return false, err
 		}
 	}
 
 	// Remove device
-	err := removeDevice(ctx, deviceInfo, unsafe)
-	if nil != err && !unsafe {
-		return err
+	err := removeDevice(ctx, deviceInfo, ignoreErrors)
+	if err != nil && !ignoreErrors {
+		return false, err
 	}
 
 	// Give the host a chance to fully process the removal
 	time.Sleep(time.Second)
 	listAllISCSIDevices(ctx)
 
-	return nil
+	// If ignoreErrors was set to true while entering into this function and
+	// multipathFlushDevice above is executed successfully then multipath device
+	// mapping would have been removed there. However, we still may attempt
+	// executing RemoveMultipathDeviceMapping() one more time because of below
+	// bool return. In RemoveMultipathDeviceMapping() we swallow error for now.
+	// In case RemoveMultipathDeviceMapping() changes in future to handle error,
+	// one may need to revisit the below bool ignoreErrors being set on timeout error
+	// resulting from multipathFlushDevice() call at the start of this function.
+	return ignoreErrors || skipFlush, nil
 }
 
 // ScsiDeviceInfo contains information about SCSI devices
@@ -924,7 +1036,7 @@ func getDeviceInfoForLUN(
 	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 
 	devices, err := IscsiUtils.GetDevicesForLUN(paths)
-	if nil != err {
+	if err != nil {
 		return nil, err
 	} else if 0 == len(devices) {
 		return nil, fmt.Errorf("scan not completed for LUN %d on target %s", lunID, iSCSINodeName)
@@ -1039,7 +1151,7 @@ func waitForMultipathDeviceForLUN(ctx context.Context, lunID int, iSCSINodeName 
 	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
 
 	devices, err := IscsiUtils.GetDevicesForLUN(paths)
-	if nil != err {
+	if err != nil {
 		return err
 	}
 

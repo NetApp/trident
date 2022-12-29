@@ -713,7 +713,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		}
 		if lunID >= 0 {
 			// Inform the host about the device removal
-			if err := utils.PrepareDeviceForRemoval(ctx, lunID, iSCSINodeName, true, false); err != nil {
+			if _, err := utils.PrepareDeviceForRemoval(ctx, lunID, iSCSINodeName, true, false); err != nil {
 				Logc(ctx).Error(err)
 			}
 		}

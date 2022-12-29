@@ -1124,7 +1124,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Delete the device from the host.
-	err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN,
+	unmappedMpathDevice, err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN,
 		p.unsafeDetach, force)
 	if nil != err && !p.unsafeDetach {
 		return status.Error(codes.Internal, err.Error())
@@ -1185,6 +1185,11 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	// Delete the device info we saved to the volume tracking info path so unstage can succeed.
 	if err := p.nodeHelper.DeleteTrackingInfo(ctx, volumeId); err != nil {
 		return status.Error(codes.Internal, err.Error())
+	}
+
+	// If there is multipath device, flush(remove) mappings
+	if unmappedMpathDevice != "" {
+		utils.RemoveMultipathDeviceMapping(ctx, unmappedMpathDevice)
 	}
 
 	return nil

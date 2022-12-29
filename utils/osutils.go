@@ -152,11 +152,11 @@ func execCommandWithTimeout(
 		"command": name,
 		"timeout": timeout,
 		"args":    args,
-	}).Debug(">>>> osutils.execCommandWithTimeoutAndInput.")
+	}).Debug(">>>> osutils.execCommandWithTimeout.")
 
 	out, err := execCommandWithTimeoutAndInput(ctx, name, timeout, logOutput, "", args...)
 
-	Logc(ctx).Debug("<<<< osutils.execCommandWithTimeoutAndInput.")
+	Logc(ctx).Debug("<<<< osutils.execCommandWithTimeout.")
 	return out, err
 }
 

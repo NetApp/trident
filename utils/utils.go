@@ -17,6 +17,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/multierr"
@@ -52,6 +53,8 @@ const (
 
 	// NAS protocols
 	SMB = "smb"
+
+	deviceOperationsTimeout = 5 * time.Second
 )
 
 var (

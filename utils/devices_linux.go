@@ -31,18 +31,15 @@ func flushOneDevice(ctx context.Context, devicePath string) error {
 	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.flushOneDevice")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.flushOneDevice")
 
-	disk, err := os.Open(devicePath)
+	out, err := execCommandWithTimeout(ctx, "blockdev", deviceOperationsTimeout, true, "--flushbufs", devicePath)
 	if err != nil {
-		Logc(ctx).Error("Failed to open disk.")
-		return fmt.Errorf("failed to open disk %s: %s", devicePath, err)
-	}
-	defer disk.Close()
-
-	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, disk.Fd(), unix.BLKFLSBUF, 0)
-	if errno != 0 {
-		err := os.NewSyscallError("ioctl", errno)
-		Logc(ctx).Error("BLKFLSBUF ioctl failed")
-		return fmt.Errorf("BLKFLSBUF ioctl failed %s: %s", devicePath, err)
+		Logc(ctx).WithFields(
+			log.Fields{
+				"error":  err,
+				"output": string(out),
+				"device": devicePath,
+			}).Debug("blockdev --flushbufs failed.")
+		return fmt.Errorf("flush device failed for %s : %s", devicePath, err)
 	}
 
 	return nil

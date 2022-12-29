@@ -484,6 +484,28 @@ func IsAuthError(err error) bool {
 	return ok
 }
 
+// ///////////////////////////////////////////////////////////////////////////
+// iSCSIDeviceFlushError
+// ///////////////////////////////////////////////////////////////////////////
+
+type iSCSIDeviceFlushError struct {
+	message string
+}
+
+func (e *iSCSIDeviceFlushError) Error() string { return e.message }
+
+func ISCSIDeviceFlushError(message string) error {
+	return &iSCSIDeviceFlushError{message}
+}
+
+func IsISCSIDeviceFlushError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*iSCSIDeviceFlushError)
+	return ok
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // tooManyRequestsError (HTTP 429)
 /////////////////////////////////////////////////////////////////////////////

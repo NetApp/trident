@@ -34,6 +34,7 @@ const (
 	iscsiadmLoginTimeout                = iscsiadmLoginTimeoutValue * time.Second
 	iscsiadmLoginRetryMax               = "1"
 	iSCSISessionStateLoggedIn           = "LOGGED_IN"
+	iSCSIMaxFlushWaitDuration           = 6 * time.Minute
 
 	SessionInfoSource          = "sessionSource"
 	SessionSourceNodeStage     = "nodeStage"
@@ -41,14 +42,20 @@ const (
 	SessionSourceCurrentStatus = "currentStatus"
 )
 
-// Exclusion list contains keywords if found in any Target IQN should not be considered for
-// self-healing.
-// solidfire: Exclude solidfire for now. Solidfire maintains a different handle 'Current Portal'
-//            which is not published or captured in VolumePublishInfo, current self-healing logic does not
-//            work for logout, login or scan as it is designed to work with published portal information.
-var iSCSISelfHealingExclusion = []string{"solidfire"}
+var (
 
-var IscsiUtils = NewIscsiReconcileUtils()
+	// Exclusion list contains keywords if found in any Target IQN should not be considered for
+	// self-healing.
+	// solidfire: Exclude solidfire for now. Solidfire maintains a different handle 'Current Portal'
+	//            which is not published or captured in VolumePublishInfo, current self-healing logic does not
+	//            work for logout, login or scan as it is designed to work with published portal information.
+	iSCSISelfHealingExclusion = []string{"solidfire"}
+
+	IscsiUtils = NewIscsiReconcileUtils()
+
+	// Non-persistent map to maintain flush delays/errors if any, for device path(s).
+	iSCSIVolumeFlushExceptions = make(map[string]time.Time)
+)
 
 // AttachISCSIVolumeRetry attaches a volume with retry by invoking AttachISCSIVolume with backoff.
 func AttachISCSIVolumeRetry(
