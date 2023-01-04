@@ -23,7 +23,7 @@ func mountFilesystemForResize(
 	ctx context.Context, devicePath, stagedTargetPath, mountOptions string,
 ) (string, error) {
 	logFields := log.Fields{
-		"devicePath":       devicePath,
+		"rawDevicePath":    devicePath,
 		"stagedTargetPath": stagedTargetPath,
 		"mountOptions":     mountOptions,
 	}

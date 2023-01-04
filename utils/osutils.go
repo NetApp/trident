@@ -32,6 +32,8 @@ var (
 	execCmd = exec.CommandContext
 )
 
+const devMapperRoot = "/dev/mapper/"
+
 func init() {
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
 		SetChrootPathPrefix("/host")

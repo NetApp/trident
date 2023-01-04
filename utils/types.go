@@ -10,7 +10,7 @@ import (
 )
 
 //go:generate mockgen -destination=../mocks/mock_utils/mock_json_utils.go github.com/netapp/trident/utils JSONReaderWriter
-//go:generate mockgen -destination=../mocks/mock_utils/mock_utils.go github.com/netapp/trident/utils LUKSDeviceInterface
+//go:generate mockgen -destination=../mocks/mock_utils/mock_luks/mock_luks.go -package mock_luks github.com/netapp/trident/utils LUKSDeviceInterface
 
 type VolumeAccessInfo struct {
 	IscsiAccessInfo
@@ -77,7 +77,7 @@ type VolumePublishInfo struct {
 	HostName          string   `json:"hostName,omitempty"`
 	FilesystemType    string   `json:"fstype,omitempty"`
 	SharedTarget      bool     `json:"sharedTarget,omitempty"`
-	DevicePath        string   `json:"devicePath,omitempty"`
+	DevicePath        string   `json:"rawDevicePath,omitempty"`
 	Unmanaged         bool     `json:"unmanaged,omitempty"`
 	StagingMountpoint string   `json:"stagingMountpoint,omitempty"` // NOTE: Added in 22.04 release
 	TridentUUID       string   `json:"tridentUUID,omitempty"`       // NOTE: Added in 22.07 release
@@ -188,18 +188,22 @@ type JSONReaderWriter interface {
 }
 
 type LUKSDeviceInterface interface {
-	DevicePath() string
-	LUKSDevicePath() string
-	LUKSDeviceName() string
+	RawDevicePath() string
+	MappedDevicePath() string
+	MappedDeviceName() string
+
 	IsLUKSFormatted(ctx context.Context) (bool, error)
 	IsOpen(ctx context.Context) (bool, error)
-	LUKSFormat(ctx context.Context, luksPassphrase string) error
+
 	Open(ctx context.Context, luksPassphrase string) error
+	LUKSFormat(ctx context.Context, luksPassphrase string) error
+	EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, error)
+	RotatePassphrase(ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string) error
 }
 
 type LUKSDevice struct {
-	devicePath     string
-	luksDeviceName string
+	rawDevicePath string
+	mappingName   string
 }
 
 // Data structure and related interfaces to help iSCSI self-healing

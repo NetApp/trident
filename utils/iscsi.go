@@ -211,16 +211,14 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 			return fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
 		}
 	}
+
 	if isLUKSDevice {
-		// Try to Open with current luks passphrase
-		luksPassphrase, ok := secrets["luks-passphrase"]
-		if !ok {
-			return fmt.Errorf("could not open LUKS device, no passphrase provided")
-		}
-		luksFormatted, devicePath, err = EnsureLUKSDevice(ctx, devicePath, name, luksPassphrase)
+		luksDevice := NewLUKSDevice(devicePath, name)
+		_, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
 		if err != nil {
-			return fmt.Errorf("could not open LUKS device; %v", err)
+			return err
 		}
+		devicePath = luksDevice.MappedDevicePath()
 	}
 
 	// Return the device in the publish info in case the mount will be done later
@@ -429,8 +427,8 @@ func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) err
 		if _, err := execCommand(ctx, "ls", "-al", "/dev"); err != nil {
 			Logc(ctx).Warnf("Could not run ls -al /dev: %v", err)
 		}
-		if _, err := execCommand(ctx, "ls", "-al", "/dev/mapper"); err != nil {
-			Logc(ctx).Warnf("Could not run ls -al /dev/mapper: %v", err)
+		if _, err := execCommand(ctx, "ls", "-al", devMapperRoot); err != nil {
+			Logc(ctx).Warnf("Could not run ls -al %s: %v", devMapperRoot, err)
 		}
 		if _, err := execCommand(ctx, "ls", "-al", "/dev/disk/by-path"); err != nil {
 			Logc(ctx).Warnf("Could not run ls -al /dev/disk/by-path: %v", err)
@@ -953,8 +951,8 @@ func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Conte
 			devicePath := sysPath + hostName + "/device/"
 			if deviceDirs, err := ioutil.ReadDir(devicePath); err != nil {
 				Logc(ctx).WithFields(log.Fields{
-					"error":      err,
-					"devicePath": devicePath,
+					"error":         err,
+					"rawDevicePath": devicePath,
 				}).Error("Could not read device path.")
 				return hostSessionMap
 			} else {

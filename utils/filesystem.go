@@ -161,7 +161,7 @@ func ExpandFilesystemOnNode(
 	expansionMountPoint := publishInfo.StagingMountpoint
 
 	logFields := log.Fields{
-		"devicePath":        devicePath,
+		"rawDevicePath":     devicePath,
 		"stagedTargetPath":  stagedTargetPath,
 		"mountOptions":      mountOptions,
 		"filesystemType":    fsType,
