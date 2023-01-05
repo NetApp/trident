@@ -353,7 +353,8 @@ func (d *SANStorageDriver) getEndpointCredentials(
 	if parseErr == nil {
 		username := requestURL.User.Username()
 		password, _ := requestURL.User.Password()
-		return username, password, nil
+		// If there are special characters in the password, they must be escaped before sending the HTTPS request.
+		return username, url.PathEscape(password), nil
 	}
 	Logc(ctx).Errorf("could not determine credentials: %+v", parseErr)
 	return "", "", errors.New("could not determine credentials")
