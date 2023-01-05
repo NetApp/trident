@@ -15,7 +15,7 @@ func TestAuditLoggerHasAuditEventWhenEnabled(t *testing.T) {
 
 	assert.True(t, log.IsLevelEnabled(log.InfoLevel), "Expected audit logger to be info level or higher when enabled.")
 
-	output := captureOutput(t, func() { Audit().Log(context.Background(), AuditCSIAccess, log.Fields{}, "Foo.") })
+	output := captureOutput(t, func() { Audit().Log(context.Background(), AuditGRPCAccess, log.Fields{}, "Foo.") })
 	assert.True(t, len(output) > 0, "Expected output from the audit logger when enabled.")
 	assert.Contains(t, output, auditKey, fmt.Sprintf("Expected the auditKey: %s to be present in the output.", auditKey))
 }
@@ -23,7 +23,7 @@ func TestAuditLoggerHasAuditEventWhenEnabled(t *testing.T) {
 func TestAuditLoggerDoesNothingWhenDisabled(t *testing.T) {
 	InitAuditLogger(true)
 
-	output := captureOutput(t, func() { Audit().Log(context.Background(), AuditCSIAccess, log.Fields{}, "Foo.") })
+	output := captureOutput(t, func() { Audit().Log(context.Background(), AuditGRPCAccess, log.Fields{}, "Foo.") })
 	assert.True(t, len(output) == 0, "Expected no output from the audit logger when disabled.")
 }
 

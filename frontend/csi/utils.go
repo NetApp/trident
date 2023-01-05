@@ -53,18 +53,26 @@ func NewNodeServiceCapability(cap csi.NodeServiceCapability_RPC_Type) *csi.NodeS
 	}
 }
 
+// logGRPC is a unary interceptor that logs GRPC requests.
 func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{},
 	error,
 ) {
 	ctx = GenerateRequestContext(ctx, "", ContextSourceCSI)
-	Logc(ctx).Debugf("GRPC call: %s", info.FullMethod)
-	Logc(ctx).Debugf("GRPC request: %+v", req)
+	Audit().Logf(ctx, AuditGRPCAccess, log.Fields{}, "GRPC call: %s", info.FullMethod)
+	logFields := log.Fields{
+		"Request": fmt.Sprintf("GRPC request: %+v", req),
+	}
+
+	Logc(ctx).WithFields(logFields).Debugf("GRPC call: %s", info.FullMethod)
+
+	// Handle the actual request.
 	resp, err := handler(ctx, req)
 	if err != nil {
 		Logc(ctx).Errorf("GRPC error: %v", err)
 	} else {
 		Logc(ctx).Debugf("GRPC response: %+v", resp)
 	}
+
 	return resp, err
 }
 

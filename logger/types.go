@@ -24,7 +24,7 @@ const (
 	LogSource = "logSource"
 
 	AuditRESTAccess   = AuditEvent("rest")
-	AuditCSIAccess    = AuditEvent("csi")
+	AuditGRPCAccess   = AuditEvent("grpc")
 	AuditDockerAccess = AuditEvent("docker")
 )
 

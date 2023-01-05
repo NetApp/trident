@@ -265,11 +265,11 @@ func (p *Plugin) Version() string {
 func (p *Plugin) Create(request *volume.CreateRequest) error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
-	Logc(ctx).WithFields(log.Fields{
+	Audit().Logln(ctx, AuditDockerAccess, log.Fields{
 		"method":  "Create",
 		"name":    request.Name,
 		"options": request.Options,
-	}).Debug("Docker frontend method is invoked.")
+	}, "Docker frontend method is invoked.")
 
 	// Find a matching storage class, or register a new one
 	scConfig, err := frontendcommon.GetStorageClass(ctx, request.Options, p.orchestrator)
@@ -303,9 +303,9 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 func (p *Plugin) List() (*volume.ListResponse, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
-	Logc(ctx).WithFields(log.Fields{
+	Audit().Logln(ctx, AuditDockerAccess, log.Fields{
 		"method": "List",
-	}).Debug("Docker frontend method is invoked.")
+	}, "Docker frontend method is invoked.")
 
 	err := p.reloadVolumes(ctx)
 	if err != nil {
@@ -330,10 +330,10 @@ func (p *Plugin) List() (*volume.ListResponse, error) {
 func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
-	Logc(ctx).WithFields(log.Fields{
+	Audit().Logln(ctx, AuditDockerAccess, log.Fields{
 		"method": "Get",
 		"name":   request.Name,
-	}).Debug("Docker frontend method is invoked")
+	}, "Docker frontend method is invoked")
 
 	// Get is called at the start of every 'docker volume' workflow except List & Unmount,
 	// so refresh the volume list here.
@@ -379,10 +379,10 @@ func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 func (p *Plugin) Remove(request *volume.RemoveRequest) error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
-	Logc(ctx).WithFields(log.Fields{
+	Audit().Logln(ctx, AuditDockerAccess, log.Fields{
 		"method": "Remove",
 		"name":   request.Name,
-	}).Debug("Docker frontend method is invoked.")
+	}, "Docker frontend method is invoked.")
 
 	err := p.orchestrator.DeleteVolume(ctx, request.Name)
 	if err != nil {
@@ -397,10 +397,10 @@ func (p *Plugin) Remove(request *volume.RemoveRequest) error {
 func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
-	Logc(ctx).WithFields(log.Fields{
+	Audit().Logln(ctx, AuditDockerAccess, log.Fields{
 		"method": "Path",
 		"name":   request.Name,
-	}).Debug("Docker frontend method is invoked.")
+	}, "Docker frontend method is invoked.")
 
 	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
@@ -418,11 +418,11 @@ func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error)
 func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
-	Logc(ctx).WithFields(log.Fields{
+	Audit().Logln(ctx, AuditDockerAccess, log.Fields{
 		"method": "Mount",
 		"name":   request.Name,
 		"id":     request.ID,
-	}).Debug("Docker frontend method is invoked.")
+	}, "Docker frontend method is invoked.")
 
 	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
@@ -455,11 +455,11 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
-	Logc(ctx).WithFields(log.Fields{
+	Audit().Logln(ctx, AuditDockerAccess, log.Fields{
 		"method": "Unmount",
 		"name":   request.Name,
 		"id":     request.ID,
-	}).Debug("Docker frontend method is invoked.")
+	}, "Docker frontend method is invoked.")
 
 	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
@@ -484,9 +484,9 @@ func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 func (p *Plugin) Capabilities() *volume.CapabilitiesResponse {
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
-	Logc(ctx).WithFields(log.Fields{
+	Audit().Logln(ctx, AuditDockerAccess, log.Fields{
 		"method": "Capabilities",
-	}).Debug("Docker frontend method is invoked.")
+	}, "Docker frontend method is invoked.")
 
 	return &volume.CapabilitiesResponse{Capabilities: volume.Capability{Scope: "global"}}
 }

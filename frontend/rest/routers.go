@@ -24,6 +24,7 @@ func NewNodeRouter(plugin *csi.Plugin) *mux.Router {
 
 func newRouter(routes Routes, https bool, logLevel log.Level) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
+
 	for _, route := range routes {
 		handler := http.Handler(route.HandlerFunc)
 
@@ -38,7 +39,7 @@ func newRouter(routes Routes, https bool, logLevel log.Level) *mux.Router {
 		}
 
 		// Apply logging middleware
-		handler = Logger(handler, route.Name, logLevel)
+		handler = Logger(handler, route.Name)
 
 		router.
 			Methods(route.Method).
