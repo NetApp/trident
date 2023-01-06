@@ -1124,8 +1124,8 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Delete the device from the host.
-	unmappedMpathDevice, err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN,
-		p.unsafeDetach, force)
+	unmappedMpathDevice, err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber),
+		publishInfo.IscsiTargetIQN, p.unsafeDetach, force)
 	if nil != err && !p.unsafeDetach {
 		return status.Error(codes.Internal, err.Error())
 	}
@@ -1547,8 +1547,20 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 			VolumeContext: volContext,
 			Secrets:       map[string]string{},
 		}
+
+		publishedCHAPCredentials := publishInfo.IscsiChapInfo
+
 		if err = p.EnsureAttachISCSIVolume(ctx, req, "", &publishInfo, iSCSILoginTimeout); err != nil {
 			return fmt.Errorf("failed to login to the target")
+		}
+
+		if publishedCHAPCredentials != publishInfo.IscsiChapInfo {
+			updateErr := publishedISCSISessions.UpdateCHAPForPortal(portal, publishInfo.IscsiChapInfo)
+			if updateErr != nil {
+				Logc(ctx).Warn("Failed to update published CHAP information.")
+			}
+
+			Logc(ctx).Debug("Updated published CHAP information.")
 		}
 
 		Logc(ctx).Debug("Login to target is successful.")

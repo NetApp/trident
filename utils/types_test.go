@@ -411,6 +411,15 @@ func TestISCSISessions_UpdateCHAPForPortal(t *testing.T) {
 	// Positive Scenarios
 	assert.Nil(t, iSCSISessionNotEmpty.UpdateCHAPForPortal(portal, newCredentials),
 		"expected CHAP update to pass")
+	assert.True(t, iSCSISessionNotEmpty.Info[portal].PortalInfo.Credentials.UseCHAP == newCredentials.UseCHAP)
+	assert.True(t,
+		iSCSISessionNotEmpty.Info[portal].PortalInfo.Credentials.IscsiUsername == newCredentials.IscsiUsername)
+	assert.True(t,
+		iSCSISessionNotEmpty.Info[portal].PortalInfo.Credentials.IscsiInitiatorSecret == newCredentials.IscsiInitiatorSecret)
+	assert.True(t,
+		iSCSISessionNotEmpty.Info[portal].PortalInfo.Credentials.IscsiTargetUsername == newCredentials.IscsiTargetUsername)
+	assert.True(t,
+		iSCSISessionNotEmpty.Info[portal].PortalInfo.Credentials.IscsiTargetSecret == newCredentials.IscsiTargetSecret)
 }
 
 func TestISCSISessions_AddLUNToPortal(t *testing.T) {

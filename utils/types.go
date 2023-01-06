@@ -291,12 +291,12 @@ func (a ISCSIAction) String() string {
 e.g.
 (Published Sessions)
 [10.193.156.185]:
-        PortalInfo: {ISCSITargetIQN:iqn.1992-08.com.netapp:sn.something1:vs.17 SessionNumber: Credentials:UseCHAP:true IscsiUsername:<REDACTED> IscsiInitiatorSecret:<REDACTED> IscsiTargetUsername:<REDACTED> IscsiTargetSecret:<REDACTED>  ReasonInvalid:not invalid LastAccessTime:0001-01-01 00:00:00 +0000 UTC FirstIdentifiedStaleAt:0001-01-01 00:00:00 +0000 UTC}
-        LUNInfo: {Info:map[0:pvc-813f64d1-4ce3-446c-ad66-bc41eef1bb6d]}
+        PortalInfo: {ISCSITargetIQN:iqn.1992-08.com.netapp:sn.something1:vs.17 SessionNumber: Credentials:UseCHAP:true IscsiUsername:<REDACTED> IscsiInitiatorSecret:<REDACTED> IscsiTargetUsername:<REDACTED> IscsiTargetSecret:<REDACTED>  ReasonInvalid:not invalid LastAccessTime:2023-01-04 08:40:58.620794241 -0500 EST m=+1080.812296147 FirstIdentifiedStaleAt:0001-01-01 00:00:00 +0000 UTC Source:nodeStage}
+        LUNInfo: {Info:map[0:pvc-be27afff-0054-4672-b796-0329fa870462]}
 
 (Current Sessions)
 [Portal: 10.193.156.185]:
-        PortalInfo: {ISCSITargetIQN:iqn.1992-08.com.netapp:sn.something1:vs.17 SessionNumber:6 Credentials:UseCHAP:true IscsiUsername:<REDACTED> IscsiInitiatorSecret:<REDACTED> IscsiTargetUsername:<REDACTED> IscsiTargetSecret:<REDACTED>  ReasonInvalid:not invalid LastAccessTime:0001-01-01 00:00:00 +0000 UTC FirstIdentifiedStaleAt:0001-01-01 00:00:00 +0000 UTC}
+         PortalInfo: {ISCSITargetIQN:iqn.1992-08.com.netapp:sn.something1:vs.17 SessionNumber:40 Credentials:UseCHAP:true IscsiUsername:<REDACTED> IscsiInitiatorSecret:<REDACTED> IscsiTargetUsername:<REDACTED> IscsiTargetSecret:<REDACTED>  ReasonInvalid:not invalid LastAccessTime:0001-01-01 00:00:00 +0000 UTC FirstIdentifiedStaleAt:0001-01-01 00:00:00 +0000 UTC Source:currentStatus}
         LUNInfo: {Info:map[0:]}
 */
 
@@ -573,13 +573,12 @@ func (p *ISCSISessions) UpdateCHAPForPortal(portal string, newCHAP IscsiChapInfo
 	}
 
 	// Ensure current portal information has target IQN
-	currentPortalInfo := iSCSISessionData.PortalInfo
-	if !currentPortalInfo.HasTargetIQN() {
+	if !iSCSISessionData.PortalInfo.HasTargetIQN() {
 		return fmt.Errorf("failed to update CHAP; portal '%v' is missing Target IQN", portal)
 	}
 
 	// Update portal's CHAP information
-	currentPortalInfo.UpdateCHAPCredentials(newCHAP)
+	iSCSISessionData.PortalInfo.UpdateCHAPCredentials(newCHAP)
 
 	return nil
 }
