@@ -7,6 +7,8 @@
 **Enhancements**
 - Improved performance for ontap-nas-economy storage drivers managing multiple FlexVols.
 - Enabled dataLIF updates for all ONTAP NAS storage drivers.
+- **Kubernetes:** Added `--trident-image-registry` switch to installer
+  and value tridentImageRegistry to Helm chart. (Issue [#772](https://github.com/NetApp/trident/issues/772))
 
 ## Changes since v22.07.0
 

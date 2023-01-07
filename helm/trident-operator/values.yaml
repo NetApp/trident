@@ -33,7 +33,7 @@ affinity: {}
 
 
 
-# imageRegistry identifies the registry for the trident-operator, trident, and other images.  Leave empty to accept the default.
+# imageRegistry identifies the registry for official kubernetes csi sidecar images. Value is also used for tridentImageRegistry if this is not set. Leave empty to accept the default.
 imageRegistry: ""
 
 # imagePullPolicy sets the image pull policy for the trident-operator.
@@ -89,6 +89,9 @@ tridentDisableAuditLog: true
 
 # tridentImage allows the complete override of the image for Trident.
 tridentImage: ""
+
+# tridentImageRegistry identifies the registry for the trident-operator, trident, and other images. Leave empty to accept the default.
+tridentImageRegistry: ""
 
 # tridentImageTag allows overriding the tag of the image for Trident.
 tridentImageTag: ""
