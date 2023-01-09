@@ -231,10 +231,7 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Get options
-	opts, err := d.GetVolumeOpts(ctx, volConfig, volAttributes)
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(ctx, volConfig, volAttributes)
 
 	// Get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
@@ -487,10 +484,7 @@ func (d *SANStorageDriver) CreateClone(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	opts, err := d.GetVolumeOpts(ctx, cloneVolConfig, make(map[string]sa.Request))
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(ctx, cloneVolConfig, make(map[string]sa.Request))
 
 	// How "splitOnClone" value gets set:
 	// In the Core we first check clone's VolumeConfig for splitOnClone value
@@ -500,6 +494,7 @@ func (d *SANStorageDriver) CreateClone(
 
 	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
 	var storagePoolSplitOnCloneVal string
+	var err error
 	labels := ""
 	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
@@ -999,8 +994,8 @@ func (d *SANStorageDriver) getStoragePoolAttributes(ctx context.Context) map[str
 
 func (d *SANStorageDriver) GetVolumeOpts(
 	ctx context.Context, volConfig *storage.VolumeConfig, requests map[string]sa.Request,
-) (map[string]string, error) {
-	return getVolumeOptsCommon(ctx, volConfig, requests), nil
+) map[string]string {
+	return getVolumeOptsCommon(ctx, volConfig, requests)
 }
 
 func (d *SANStorageDriver) GetInternalVolumeName(_ context.Context, name string) string {
@@ -1295,7 +1290,8 @@ func (d *SANStorageDriver) Resize(
 	if volConfig.LUKSEncryption != "" {
 		luks, err := strconv.ParseBool(volConfig.LUKSEncryption)
 		if err != nil {
-			return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", volConfig.LUKSEncryption)
+			return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v",
+				volConfig.LUKSEncryption)
 		}
 		if luks {
 			return fmt.Errorf("cannot resize LUKS encrypted volumes")

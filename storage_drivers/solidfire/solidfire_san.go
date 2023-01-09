@@ -827,10 +827,7 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Get options
-	opts, err := d.GetVolumeOpts(volConfig, pool, volAttributes)
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(volConfig, pool, volAttributes)
 
 	qosOpt := utils.GetV(opts, "qos", "")
 	if qosOpt != "" {
@@ -933,10 +930,7 @@ func (d *SANStorageDriver) CreateClone(
 	var qos api.QoS
 	doModify := false
 
-	opts, err := d.GetVolumeOpts(cloneVolConfig, nil, make(map[string]sa.Request))
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(cloneVolConfig, nil, make(map[string]sa.Request))
 
 	qosOpt := utils.GetV(opts, "qos", "")
 	if qosOpt != "" {
@@ -1709,7 +1703,7 @@ func (d *SANStorageDriver) mapSolidfireLun(ctx context.Context, volConfig *stora
 
 func (d *SANStorageDriver) GetVolumeOpts(
 	volConfig *storage.VolumeConfig, pool storage.Pool, _ map[string]sa.Request,
-) (map[string]string, error) {
+) map[string]string {
 	opts := make(map[string]string)
 
 	if volConfig.FileSystem != "" {
@@ -1733,7 +1727,7 @@ func (d *SANStorageDriver) GetVolumeOpts(
 
 	opts["type"] = qosType
 
-	return opts, nil
+	return opts
 }
 
 func (d *SANStorageDriver) GetProtocol(context.Context) tridentconfig.Protocol {

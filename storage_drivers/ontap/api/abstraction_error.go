@@ -78,7 +78,7 @@ type volumeSpaceAttributesReadError struct {
 func (e *volumeSpaceAttributesReadError) Error() string { return e.message }
 
 func VolumeSpaceAttributesReadError(message string) error {
-	return &volumeIdAttributesReadError{message}
+	return &volumeSpaceAttributesReadError{message}
 }
 
 func IsVolumeSpaceAttributesReadError(err error) bool {

@@ -100,10 +100,14 @@ func (d *NASStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriver(ctx, config)
-	if err != nil {
-		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.API == nil {
+		d.API, err = InitializeOntapDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+		}
 	}
+
 	d.Config = *config
 
 	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
@@ -221,10 +225,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	// Get options
-	opts, err := d.GetVolumeOpts(ctx, volConfig, volAttributes)
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(ctx, volConfig, volAttributes)
 
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
@@ -257,12 +258,12 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
-
-	// Get the flexvol size based on the snapshot reserve
-	flexvolSize := calculateFlexvolSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
 	if err != nil {
 		return err
 	}
+	// Get the flexvol size based on the snapshot reserve
+	flexvolSize := calculateFlexvolSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
+
 	size := strconv.FormatUint(flexvolSize, 10)
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
@@ -415,10 +416,7 @@ func (d *NASStorageDriver) CreateClone(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	opts, err := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
 
 	labels := flexvol.Comment
 
@@ -907,8 +905,8 @@ func (d *NASStorageDriver) getStoragePoolAttributes(ctx context.Context) map[str
 
 func (d *NASStorageDriver) GetVolumeOpts(
 	ctx context.Context, volConfig *storage.VolumeConfig, requests map[string]sa.Request,
-) (map[string]string, error) {
-	return getVolumeOptsCommon(ctx, volConfig, requests), nil
+) map[string]string {
+	return getVolumeOptsCommon(ctx, volConfig, requests)
 }
 
 func (d *NASStorageDriver) GetInternalVolumeName(_ context.Context, name string) string {

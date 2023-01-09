@@ -491,10 +491,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}).Debug("Read aggregates assigned to SVM.")
 
 	// Get options
-	opts, err := d.GetVolumeOpts(ctx, volConfig, volAttributes)
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(ctx, volConfig, volAttributes)
 
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
@@ -752,10 +749,7 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	opts, err := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
 
 	// How "splitOnClone" value gets set:
 	// In the Core we first check clone's VolumeConfig for splitOnClone value
@@ -1288,8 +1282,8 @@ func (d *NASFlexGroupStorageDriver) getStoragePoolAttributes() map[string]sa.Off
 
 func (d *NASFlexGroupStorageDriver) GetVolumeOpts(
 	ctx context.Context, volConfig *storage.VolumeConfig, requests map[string]sa.Request,
-) (map[string]string, error) {
-	return getVolumeOptsCommon(ctx, volConfig, requests), nil
+) map[string]string {
+	return getVolumeOptsCommon(ctx, volConfig, requests)
 }
 
 func (d *NASFlexGroupStorageDriver) GetInternalVolumeName(_ context.Context, name string) string {

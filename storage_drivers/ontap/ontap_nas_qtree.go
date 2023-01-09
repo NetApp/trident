@@ -289,7 +289,8 @@ func (d *NASQtreeStorageDriver) Create(
 	// Generic user-facing message
 	createError := errors.New("volume creation failed")
 
-	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName, d.FlexvolNamePrefix())
+	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName,
+		d.FlexvolNamePrefix())
 	if err != nil {
 		return err
 	}
@@ -336,10 +337,7 @@ func (d *NASQtreeStorageDriver) Create(
 	}
 
 	// Get options
-	opts, err := d.GetVolumeOpts(ctx, volConfig, volAttributes)
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(ctx, volConfig, volAttributes)
 
 	// Get Flexvol options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
@@ -497,7 +495,8 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 	// Generic user-facing message
 	deleteError := errors.New("volume deletion failed")
 
-	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName, d.FlexvolNamePrefix())
+	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName,
+		d.FlexvolNamePrefix())
 	if err != nil {
 		return err
 	}
@@ -566,7 +565,8 @@ func (d *NASQtreeStorageDriver) Publish(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Publish")
 	}
 
-	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName, d.FlexvolNamePrefix())
+	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName,
+		d.FlexvolNamePrefix())
 	if err != nil {
 		return err
 	}
@@ -753,7 +753,8 @@ func (d *NASQtreeStorageDriver) Get(ctx context.Context, name string) error {
 		InternalName: name,
 	}
 
-	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName, d.FlexvolNamePrefix())
+	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName,
+		d.FlexvolNamePrefix())
 	if err != nil {
 		return err
 	}
@@ -913,7 +914,8 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 // is returned at random.
 func (d *NASQtreeStorageDriver) getFlexvolForQtree(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotReserve string,
-	enableSnapshotDir bool, enableEncryption *bool, shouldLimitFlexvolQuotaSize bool, sizeBytes, flexvolQuotaSizeLimit uint64,
+	enableSnapshotDir bool, enableEncryption *bool, shouldLimitFlexvolQuotaSize bool,
+	sizeBytes, flexvolQuotaSizeLimit uint64,
 ) (string, error) {
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
@@ -1344,8 +1346,8 @@ func (d *NASQtreeStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 
 func (d *NASQtreeStorageDriver) GetVolumeOpts(
 	ctx context.Context, volConfig *storage.VolumeConfig, requests map[string]sa.Request,
-) (map[string]string, error) {
-	return getVolumeOptsCommon(ctx, volConfig, requests), nil
+) map[string]string {
+	return getVolumeOptsCommon(ctx, volConfig, requests)
 }
 
 func (d *NASQtreeStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
@@ -1384,7 +1386,8 @@ func (d *NASQtreeStorageDriver) CreatePrepare(ctx context.Context, volConfig *st
 
 func (d *NASQtreeStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	// Determine which Flexvol contains the qtree
-	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName, d.FlexvolNamePrefix())
+	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName,
+		d.FlexvolNamePrefix())
 	if err != nil {
 		return err
 	}
@@ -1744,7 +1747,8 @@ func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 	// Generic user-facing message
 	resizeError := errors.New("storage driver failed to resize the volume")
 
-	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName, d.FlexvolNamePrefix())
+	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName,
+		d.FlexvolNamePrefix())
 	if err != nil {
 		return err
 	}
@@ -1901,7 +1905,9 @@ func (d NASQtreeStorageDriver) CreateQtreeInternalID(svm, flexvol, name string) 
 }
 
 // SetVolumePatternToFindQtree appropriately sets volumePattern with '*' or with flexvol name depending on internalId
-func (d NASQtreeStorageDriver) SetVolumePatternToFindQtree(ctx context.Context, internalID, internalName, volumePrefix string) (string, string, error) {
+func (d NASQtreeStorageDriver) SetVolumePatternToFindQtree(
+	ctx context.Context, internalID, internalName, volumePrefix string,
+) (string, string, error) {
 	volumePattern := "*"
 	qtreeName := internalName
 	flexVolumeName := ""

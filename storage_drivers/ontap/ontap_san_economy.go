@@ -455,10 +455,7 @@ func (d *SANEconomyStorageDriver) Create(
 	}
 
 	// Get options
-	opts, err := d.GetVolumeOpts(ctx, volConfig, volAttributes)
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(ctx, volConfig, volAttributes)
 
 	// Get Flexvol options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
@@ -1318,7 +1315,8 @@ func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 // LUN or it creates a new Flexvol with the needed attributes.  The name of the matching volume is returned,
 // as is a boolean indicating whether the volume was newly created to satisfy this request.
 func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
-	ctx context.Context, volAttrs *api.Volume, sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig,
+	ctx context.Context, volAttrs *api.Volume, sizeBytes uint64, opts map[string]string,
+	config drivers.OntapStorageDriverConfig,
 	storagePool storage.Pool, ignoredVols map[string]struct{},
 ) (string, bool, error) {
 	shouldLimitVolumeSize, flexvolSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
@@ -1576,8 +1574,8 @@ func (d *SANEconomyStorageDriver) getStoragePoolAttributes() map[string]sa.Offer
 
 func (d *SANEconomyStorageDriver) GetVolumeOpts(
 	ctx context.Context, volConfig *storage.VolumeConfig, requests map[string]sa.Request,
-) (map[string]string, error) {
-	return getVolumeOptsCommon(ctx, volConfig, requests), nil
+) map[string]string {
+	return getVolumeOptsCommon(ctx, volConfig, requests)
 }
 
 func (d *SANEconomyStorageDriver) GetInternalVolumeName(_ context.Context, name string) string {
