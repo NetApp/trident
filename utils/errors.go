@@ -584,3 +584,29 @@ func AsInvalidJSONError(err error) (error, bool) {
 
 	return err, false
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// resourceExhaustedError
+/////////////////////////////////////////////////////////////////////////////
+
+type resourceExhaustedError struct {
+	err     error
+	message string
+}
+
+func (e *resourceExhaustedError) Unwrap() error { return e.err }
+
+func (e *resourceExhaustedError) Error() string { return e.message }
+
+func ResourceExhaustedError(err error) error {
+	return &resourceExhaustedError{err, fmt.Sprintf("insufficient resources; %v", err)}
+}
+
+func HasResourceExhaustedError(err error) (bool, *resourceExhaustedError) {
+	if err == nil {
+		return false, nil
+	}
+	var resourceExhaustedErrorPtr *resourceExhaustedError
+	ok := errors.As(err, &resourceExhaustedErrorPtr)
+	return ok, resourceExhaustedErrorPtr
+}

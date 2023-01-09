@@ -79,3 +79,36 @@ func TestAsInvalidJSONError(t *testing.T) {
 		})
 	}
 }
+
+func TestResourceExhaustedError(t *testing.T) {
+	resExhaustedErr := ResourceExhaustedError(fmt.Errorf("volume limit reached"))
+
+	tests := []struct {
+		Name    string
+		Err     error
+		wantErr assert.BoolAssertionFunc
+	}{
+		{
+			Name:    "NotResourceExhaustedError",
+			Err:     fmt.Errorf("a generic error"),
+			wantErr: assert.False,
+		},
+		{
+			Name:    "ResourceExhaustedError",
+			Err:     resExhaustedErr,
+			wantErr: assert.True,
+		},
+		{
+			Name:    "WrappedResourceExhaustedError",
+			Err:     fmt.Errorf("wrapping resourceExhaustedError; %w", resExhaustedErr),
+			wantErr: assert.True,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			ok, _ := HasResourceExhaustedError(tt.Err)
+			tt.wantErr(t, ok, "Unexpected error")
+		})
+	}
+}

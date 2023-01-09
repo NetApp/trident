@@ -26,6 +26,9 @@ const (
 	UserServiceLevel2 = "premium"
 	UserServiceLevel3 = "extreme"
 
+	PoolServiceLevel1 = "standardsw"
+	PoolServiceLevel2 = "zoneredundantstandardsw"
+
 	AccessReadOnly  = "ReadOnly"
 	AccessReadWrite = "ReadWrite"
 
@@ -76,6 +79,7 @@ type Volume struct {
 	UnixPermissions       string         `json:"unixPermissions,omitempty"`
 	UsedBytes             int            `json:"usedBytes"`
 	StorageClass          string         `json:"storageClass"`
+	PoolID                string         `json:"poolId"`
 }
 
 type MountPoint struct {
@@ -112,6 +116,8 @@ type VolumeCreateRequest struct {
 	BackupID          string         `json:"backupId,omitempty"`
 	Network           string         `json:"network,omitempty"`
 	SnapshotID        string         `json:"snapshotId,omitempty"`
+	PoolID            string         `json:"poolId,omitempty"`
+	RegionalHA        bool           `json:"regionalHA"`
 }
 
 type VolumeRenameRequest struct {
@@ -242,4 +248,28 @@ type Backup struct {
 type BackupCreateRequest struct {
 	VolumeID string `json:"volumeId"`
 	Name     string `json:"name"`
+}
+
+type Pool struct {
+	AllocatedBytes  int64     `json:"allocatedBytes"`
+	CreatedAt       time.Time `json:"createdAt"`
+	DeletedAt       time.Time `json:"deletedAt"`
+	ManagedPool     bool      `json:"managedPool"`
+	Name            string    `json:"name"`
+	Network         string    `json:"network"`
+	NumberOfVolumes int       `json:"numberOfVolumes"`
+	PoolID          string    `json:"poolId"`
+	Region          string    `json:"region"`
+	SecondaryZone   string    `json:"secondaryZone"`
+	ServiceLevel    string    `json:"serviceLevel"`
+	SizeInBytes     int64     `json:"sizeInBytes"`
+	State           string    `json:"state"`
+	StateDetails    string    `json:"stateDetails"`
+	StorageClass    string    `json:"storageClass"`
+	UpdatedAt       time.Time `json:"updatedAt"`
+	Zone            string    `json:"zone"`
+}
+
+func (p Pool) AvailableCapacity() int64 {
+	return p.SizeInBytes - p.AllocatedBytes
 }

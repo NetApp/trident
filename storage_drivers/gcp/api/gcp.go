@@ -36,7 +36,7 @@ const (
 	httpTimeoutSeconds    = 30
 	retryTimeoutSeconds   = 30
 	VolumeCreateTimeout   = 10 * time.Second
-	DefaultTimeout        = 120 * time.Second
+	DefaultTimeout        = 240 * time.Second
 	defaultAPIURL         = "https://cloudvolumesgcp-api.netapp.com"
 	defaultAPIAudienceURL = defaultAPIURL
 	MaxLabelLength        = 255
@@ -1181,6 +1181,29 @@ func (d *Client) DeleteBackup(ctx context.Context, volume *Volume, backup *Backu
 	return nil
 }
 
+// GetPools returns the list of the storage pools present
+func (d *Client) GetPools(ctx context.Context) (*[]*Pool, error) {
+	resourcePath := "/Pools"
+
+	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
+	if err != nil {
+		return nil, errors.New("failed to read pools")
+	}
+
+	if err = d.getErrorFromAPIResponse(response, responseBody); err != nil {
+		return nil, err
+	}
+
+	var pools []*Pool
+	if err = json.Unmarshal(responseBody, &pools); err != nil {
+		return nil, fmt.Errorf("could not parse pool data: %s; %v", string(responseBody), err)
+	}
+
+	Logc(ctx).WithField("count", len(pools)).Debug("Read pools.")
+
+	return &pools, nil
+}
+
 func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody []byte) error {
 	if response.StatusCode >= 300 {
 		// Parse JSON error data
@@ -1200,9 +1223,27 @@ func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody [
 	}
 }
 
-func IsValidUserServiceLevel(userServiceLevel string) bool {
+func IsValidStorageClass(storageClass string) bool {
+	switch storageClass {
+	case StorageClassHardware, StorageClassSoftware:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsValidUserServiceLevel(userServiceLevel, storageClass string) bool {
+	if storageClass == StorageClassHardware {
+		switch userServiceLevel {
+		case UserServiceLevel1, UserServiceLevel2, UserServiceLevel3:
+			return true
+		default:
+			return false
+		}
+	}
+
 	switch userServiceLevel {
-	case UserServiceLevel1, UserServiceLevel2, UserServiceLevel3:
+	case PoolServiceLevel1, PoolServiceLevel2:
 		return true
 	default:
 		return false
@@ -1226,12 +1267,18 @@ func GCPAPIServiceLevelFromUserServiceLevel(userServiceLevel string) string {
 	switch userServiceLevel {
 	default:
 		fallthrough
+	// Hardware Storage Class service levels
 	case UserServiceLevel1:
 		return APIServiceLevel1
 	case UserServiceLevel2:
 		return APIServiceLevel2
 	case UserServiceLevel3:
 		return APIServiceLevel3
+	// Software Storage Class service levels
+	case PoolServiceLevel1:
+		return APIServiceLevel1
+	case PoolServiceLevel2:
+		return APIServiceLevel1
 	}
 }
 

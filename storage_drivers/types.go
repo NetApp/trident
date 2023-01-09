@@ -532,6 +532,7 @@ type GCPNFSStorageDriverPool struct {
 	Zone                              string              `json:"zone"`
 	ServiceLevel                      string              `json:"serviceLevel"`
 	StorageClass                      string              `json:"storageClass"`
+	StoragePools                      []string            `json:"storagePools"`
 	Network                           string              `json:"network"`
 	SupportedTopologies               []map[string]string `json:"supportedTopologies"`
 	GCPNFSStorageDriverConfigDefaults `json:"defaults"`

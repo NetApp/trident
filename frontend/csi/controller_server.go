@@ -943,6 +943,10 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(
 		"protocol":     string(volume.Config.Protocol),
 	}
 
+	if volume.Config.InternalID != "" {
+		attributes["internalID"] = volume.Config.InternalID
+	}
+
 	accessibleTopologies := make([]*csi.Topology, 0)
 	if volume.Config.AllowedTopologies != nil {
 		for _, segment := range volume.Config.AllowedTopologies {

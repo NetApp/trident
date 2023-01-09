@@ -4,14 +4,18 @@ package gcp
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"regexp"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
+	mockGCPClient "github.com/netapp/trident/mocks/mock_storage_drivers/mock_gcp"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
@@ -26,6 +30,8 @@ const (
 	ClientID          = "98765432123456789"
 	ClientX509CertURL = "https://random.com/x509Cert"
 )
+
+var ctx = context.Background
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
@@ -62,6 +68,8 @@ func newTestGCPDriver() *NFSStorageDriver {
 	config.VolumeCreateTimeout = "30"
 	config.StorageDriverName = "gcp-cvs"
 	config.StoragePrefix = sp("test_")
+	config.StoragePools = []string{"pool1"}
+	config.DebugTraceFlags[discovery] = true
 
 	API := api.NewDriver(api.ClientConfig{
 		ProjectNumber:   config.ProjectNumber,
@@ -89,6 +97,48 @@ func callString(s NFSStorageDriver) string {
 
 func callGoString(s NFSStorageDriver) string {
 	return s.GoString()
+}
+
+func getDummyGCPPools() *[]*api.Pool {
+	pool1 := &api.Pool{
+		PoolID:          "abc1",
+		Name:            "pool1",
+		StorageClass:    api.PoolServiceLevel1,
+		NumberOfVolumes: 2,
+		ServiceLevel:    api.PoolServiceLevel1,
+		SizeInBytes:     1000,
+		AllocatedBytes:  500,
+	}
+	pool2 := &api.Pool{
+		PoolID:          "abc2",
+		Name:            "pool2",
+		StorageClass:    api.PoolServiceLevel1,
+		NumberOfVolumes: 1,
+		ServiceLevel:    api.PoolServiceLevel2,
+		SizeInBytes:     1000,
+		AllocatedBytes:  900,
+	}
+	pool3 := &api.Pool{
+		PoolID:          "abc3",
+		Name:            "pool3",
+		StorageClass:    api.PoolServiceLevel2,
+		NumberOfVolumes: 50,
+		ServiceLevel:    api.PoolServiceLevel1,
+		SizeInBytes:     1000,
+		AllocatedBytes:  500,
+	}
+	pool4 := &api.Pool{
+		PoolID:          "abc4",
+		Name:            "pool4",
+		StorageClass:    api.PoolServiceLevel2,
+		NumberOfVolumes: 10,
+		ServiceLevel:    api.PoolServiceLevel1,
+		SizeInBytes:     1000,
+		AllocatedBytes:  500,
+	}
+
+	pools := []*api.Pool{pool1, pool2, pool3, pool4}
+	return &pools
 }
 
 func TestGCPStorageDriverConfigString(t *testing.T) {
@@ -137,49 +187,6 @@ func TestMakeNetworkPath(t *testing.T) {
 		HostProjectNumber: "527303026223",
 	}
 	assert.Equal(t, "projects/527303026223/global/networks/myNetwork", driver.makeNetworkPath("myNetwork"))
-}
-
-func TestApplyMinimumVolumeSizeSW(t *testing.T) {
-	tests := []struct {
-		Name               string
-		RequestedSizeBytes uint64
-		SizeBytes          uint64
-	}{
-		{
-			Name:               "size 1",
-			RequestedSizeBytes: 1,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSW,
-		},
-		{
-			Name:               "size smaller than minimum",
-			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSW - 1,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSW,
-		},
-		{
-			Name:               "size equals minimum",
-			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSW,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSW,
-		},
-		{
-			Name:               "size just above minimum",
-			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSW + 1,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSW + 1,
-		},
-		{
-			Name:               "size well above minimum",
-			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSW * 3,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSW * 3,
-		},
-	}
-
-	d := NFSStorageDriver{}
-
-	for _, test := range tests {
-		t.Run(test.Name, func(t *testing.T) {
-			sizeBytes := d.applyMinimumVolumeSizeSW(test.RequestedSizeBytes)
-			assert.Equal(t, test.SizeBytes, sizeBytes, "incorrect size")
-		})
-	}
 }
 
 func TestApplyMinimumVolumeSizeHW(t *testing.T) {
@@ -531,6 +538,93 @@ func TestEnsureTopologyRegionAndZone(t *testing.T) {
 			// Verify the allowedTopologies hasn't been modified
 			assert.Nil(t, volConfig.AllowedTopologies, "Unexpected allowed topologies")
 			assert.Equal(t, test.ExpectedZone, zone, "Unexpected zone")
+		})
+	}
+}
+
+func TestGetPoolsForCreate(t *testing.T) {
+	sPool := storage.NewStoragePool(nil, "spool1")
+
+	tests := []struct {
+		Name         string
+		poolConfig   string
+		storageClass string
+		volSize      int64
+		mockFunc     func(client *mockGCPClient.MockGCPClient)
+		wantErr      assert.ErrorAssertionFunc
+	}{
+		{
+			Name:         "GetPoolsApiError",
+			poolConfig:   "abc1",
+			storageClass: api.StorageClassSoftware,
+			volSize:      100,
+			mockFunc: func(client *mockGCPClient.MockGCPClient) {
+				client.EXPECT().GetPools(gomock.Any()).Return(nil, errors.New("failed to get pools"))
+			},
+			wantErr: assert.Error,
+		},
+		{
+			// getDummyGCPPools doesn't have pool4, so we get empty pool array in this case
+			Name:         "GetPoolsNoMatch",
+			poolConfig:   "abc5",
+			storageClass: api.StorageClassSoftware,
+			volSize:      200,
+			mockFunc: func(client *mockGCPClient.MockGCPClient) {
+				client.EXPECT().GetPools(gomock.Any()).Return(getDummyGCPPools(), nil)
+			},
+			wantErr: assert.Error,
+		},
+		{
+			Name:         "GetPoolsWithLeastVols",
+			poolConfig:   "",
+			storageClass: api.StorageClassSoftware,
+			volSize:      300,
+			mockFunc: func(client *mockGCPClient.MockGCPClient) {
+				client.EXPECT().GetPools(gomock.Any()).Return(getDummyGCPPools(), nil)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			Name:         "VolumeLimitReachedError",
+			poolConfig:   "abc3",
+			storageClass: api.StorageClassSoftware,
+			volSize:      300,
+			mockFunc: func(client *mockGCPClient.MockGCPClient) {
+				client.EXPECT().GetPools(gomock.Any()).Return(getDummyGCPPools(), nil)
+			},
+			wantErr: assert.Error,
+		},
+		{
+			Name:         "UnsupportedCapacityError",
+			poolConfig:   "abc2",
+			storageClass: api.StorageClassSoftware,
+			volSize:      300,
+			mockFunc: func(client *mockGCPClient.MockGCPClient) {
+				client.EXPECT().GetPools(gomock.Any()).Return(getDummyGCPPools(), nil)
+			},
+			wantErr: assert.Error,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			gcpClient := mockGCPClient.NewMockGCPClient(mockCtrl)
+			tt.mockFunc(gcpClient)
+
+			sPool.InternalAttributes()[StoragePools] = tt.poolConfig
+			sPool.InternalAttributes()[StorageClass] = tt.storageClass
+
+			d := newTestGCPDriver()
+			d.API = gcpClient
+
+			gPool, err := d.GetPoolsForCreate(ctx(), sPool, api.PoolServiceLevel1, tt.volSize)
+			tt.wantErr(t, err, "Unexpected error")
+			fmt.Println(err)
+			if err == nil && tt.Name != "GetPoolsNoMatch" && tt.Name != "GetPoolsForPO" {
+				assert.NotNil(t, gPool, "gPool is empty")
+			}
 		})
 	}
 }

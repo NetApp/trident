@@ -353,6 +353,8 @@ func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
 		return status.Error(codes.DeadlineExceeded, err.Error())
 	} else if utils.IsVolumeDeletingError(err) {
 		return status.Error(codes.DeadlineExceeded, err.Error())
+	} else if ok, errPtr := utils.HasResourceExhaustedError(err); ok && errPtr != nil {
+		return status.Error(codes.ResourceExhausted, err.Error())
 	} else {
 		return status.Error(codes.Unknown, err.Error())
 	}

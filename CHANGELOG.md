@@ -5,6 +5,7 @@
 ## Changes since v22.10.0
 
 **Enhancements**
+- Added support for storage pools for GCP volumes with CVS service level.
 - Improved performance for ontap-nas-economy storage drivers managing multiple FlexVols.
 - Enabled dataLIF updates for all ONTAP NAS storage drivers.
 

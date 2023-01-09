@@ -58,4 +58,5 @@ type GCPClient interface {
 	) error
 	CreateBackup(ctx context.Context, request *BackupCreateRequest) error
 	DeleteBackup(ctx context.Context, volume *Volume, backup *Backup) error
+	GetPools(ctx context.Context) (*[]*Pool, error)
 }
