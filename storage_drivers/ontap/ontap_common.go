@@ -1004,31 +1004,11 @@ func ValidateSANDriver(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< ValidateSANDriver")
 	}
 
-	// If the user sets the LIF to use in the config, disable multipathing and use just the one IP address
+	// Specifying single DataLIF is no longer supported for iSCSI attachments. Please note multipathing should
+	// be enabled by default.
 	if config.DataLIF != "" {
-		cleanDataLIF := sanitizeDataLIF(config.DataLIF)
-
-		// Make sure it's actually a valid address
-		if ip := net.ParseIP(cleanDataLIF); nil == ip {
-			return fmt.Errorf("data LIF is not a valid IP: %s", cleanDataLIF)
-		}
-		// Make sure the IP matches one of the LIFs
-		found := false
-		for _, ip := range ips {
-			if cleanDataLIF == ip {
-				found = true
-				break
-			}
-		}
-		if found {
-			Logc(ctx).WithField("ip", cleanDataLIF).Debug("Found matching Data LIF.")
-		} else {
-			Logc(ctx).WithField("ip", cleanDataLIF).Debug("Could not find matching Data LIF.")
-			return fmt.Errorf("could not find Data LIF for %s", cleanDataLIF)
-		}
-
-		// Replace the IPs with a singleton list
-		ips = []string{cleanDataLIF}
+		Logc(ctx).WithField("dataLIF", config.DataLIF).
+			Warning("Specifying data LIF is no longer supported for SAN backends.")
 	}
 
 	if config.DriverContext == tridentconfig.ContextDocker {

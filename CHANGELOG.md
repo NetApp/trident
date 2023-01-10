@@ -2,6 +2,10 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
+## Changes since v23.01.0
+
+- For the ontap-san and ontap-san-economy drivers the data LIF parameter is deprecated for SAN attachments. The data LIFs needed for iSCSI multipath support are determined at the time of volume attachment.
+
 ## Changes since v22.10.0
 
 **Enhancements**
