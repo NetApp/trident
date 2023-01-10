@@ -74,7 +74,10 @@ func AttachISCSIVolumeRetry(
 	}
 
 	attachNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("Attach iSCSI volume is not yet through, waiting.")
+		Logc(ctx).WithFields(log.Fields{
+			"increment": duration,
+			"error":     err,
+		}).Debug("Attach iSCSI volume is not complete, waiting.")
 	}
 
 	attachBackoff := backoff.NewExponentialBackOff()
@@ -680,6 +683,7 @@ func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]
 	Logc(ctx).WithFields(logFields).Debug(">>>> iscsi.portalsToLogin")
 	defer Logc(ctx).Debug("<<<< iscsi.portalsToLogin")
 
+	portalsInStaleState := make([]string, 0)
 	portalsNotLoggedIn := make([]string, len(portals))
 	copy(portalsNotLoggedIn, portals)
 
@@ -699,11 +703,25 @@ func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]
 
 				return mainIpAddress == valIpAddress
 			}
+
+			lenBeforeCheck := len(portalsNotLoggedIn)
 			portalsNotLoggedIn = RemoveStringFromSliceConditionally(portalsNotLoggedIn, e.Portal, matchFunc)
+			lenAfterCheck := len(portalsNotLoggedIn)
+
+			// If the portal is logged in ensure it is not stale
+			if lenBeforeCheck != lenAfterCheck {
+				if IsISCSISessionStale(ctx, e.SID) {
+					portalsInStaleState = append(portalsInStaleState, e.Portal)
+				}
+			}
 		}
 	}
 
-	loggedIn := len(portals) != len(portalsNotLoggedIn)
+	if len(portals) == len(portalsInStaleState) {
+		return nil, false, fmt.Errorf("no new session to establish and existing session(s) might be in unhealthy state")
+	}
+
+	loggedIn := len(portals) != (len(portalsNotLoggedIn) + len(portalsInStaleState))
 	return portalsNotLoggedIn, loggedIn, nil
 }
 

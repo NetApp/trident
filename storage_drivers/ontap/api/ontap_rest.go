@@ -2771,7 +2771,7 @@ func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string
 
 	dataLIFs := make([]string, 0)
 	for _, record := range lifResponse.Payload.Records {
-		if record.IP != nil {
+		if record.IP != nil && record.State == models.IPInterfaceStateUp {
 			dataLIFs = append(dataLIFs, string(record.IP.Address))
 		}
 	}

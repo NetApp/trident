@@ -1144,21 +1144,6 @@ func (mr *MockZapiClientInterfaceMockRecorder) NetInterfaceGetDataLIFs(arg0, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetInterfaceGetDataLIFs", reflect.TypeOf((*MockZapiClientInterface)(nil).NetInterfaceGetDataLIFs), arg0, arg1)
 }
 
-// NetInterfaceGetDataLIFsNode mocks base method.
-func (m *MockZapiClientInterface) NetInterfaceGetDataLIFsNode(arg0 context.Context, arg1 string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NetInterfaceGetDataLIFsNode", arg0, arg1)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NetInterfaceGetDataLIFsNode indicates an expected call of NetInterfaceGetDataLIFsNode.
-func (mr *MockZapiClientInterfaceMockRecorder) NetInterfaceGetDataLIFsNode(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetInterfaceGetDataLIFsNode", reflect.TypeOf((*MockZapiClientInterface)(nil).NetInterfaceGetDataLIFsNode), arg0, arg1)
-}
-
 // NodeListSerialNumbers mocks base method.
 func (m *MockZapiClientInterface) NodeListSerialNumbers(arg0 context.Context) ([]string, error) {
 	m.ctrl.T.Helper()

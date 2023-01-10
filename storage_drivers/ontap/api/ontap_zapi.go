@@ -2790,36 +2790,10 @@ func (c Client) NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error) {
 	response, err := azgo.NewNetInterfaceGetIterRequest().
 		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(azgo.NetInterfaceGetIterRequestQuery{
-			NetInterfaceInfoPtr: &azgo.NetInterfaceInfoType{
-				OperationalStatusPtr: &LifOperationalStatusUp,
-			},
+			NetInterfaceInfoPtr: &azgo.NetInterfaceInfoType{},
 		}).ExecuteUsing(c.zr)
 
 	return response, err
-}
-
-func (c Client) NetInterfaceGetDataLIFsNode(ctx context.Context, ip string) (string, error) {
-	lifResponse, err := c.NetInterfaceGet()
-	if err = azgo.GetError(ctx, lifResponse, err); err != nil {
-		return "", fmt.Errorf("error checking network interfaces: %v", err)
-	}
-	var nodeName string
-
-	if lifResponse.Result.AttributesListPtr != nil {
-		for _, attrs := range lifResponse.Result.AttributesListPtr.NetInterfaceInfoPtr {
-			if ip == attrs.Address() {
-				nodeName = attrs.CurrentNode()
-				break
-			}
-		}
-	}
-
-	if nodeName == "" {
-		Logc(ctx).Warningf("No node found; no node meets the criteria (IP address: "+
-			"%s with at least one data LIF operational status of up)", ip)
-	}
-
-	return nodeName, nil
 }
 
 func (c Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
@@ -2831,9 +2805,11 @@ func (c Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([
 	dataLIFs := make([]string, 0)
 	if lifResponse.Result.AttributesListPtr != nil {
 		for _, attrs := range lifResponse.Result.AttributesListPtr.NetInterfaceInfoPtr {
-			for _, proto := range attrs.DataProtocols().DataProtocolPtr {
-				if proto == protocol {
-					dataLIFs = append(dataLIFs, attrs.Address())
+			if attrs.OperationalStatus() == LifOperationalStatusUp {
+				for _, proto := range attrs.DataProtocols().DataProtocolPtr {
+					if proto == protocol {
+						dataLIFs = append(dataLIFs, attrs.Address())
+					}
 				}
 			}
 		}
@@ -3114,4 +3090,4 @@ func (c Client) IscsiInitiatorSetDefaultAuth(
 
 // iSCSI initiator operations END
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
