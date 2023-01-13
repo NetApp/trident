@@ -1300,3 +1300,9 @@ func EnsureLUKSDeviceMappedOnHost(ctx context.Context, luksDevice LUKSDeviceInte
 
 	return luksRotated, luksFormatted, nil
 }
+
+func ResizeLUKSDevice(ctx context.Context, luksDevicePath, luksPassphrase string) error {
+	luksDeviceName := filepath.Base(luksDevicePath)
+	luksDevice := &LUKSDevice{"", luksDeviceName}
+	return luksDevice.Resize(ctx, luksPassphrase)
+}

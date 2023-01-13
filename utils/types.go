@@ -199,6 +199,7 @@ type LUKSDeviceInterface interface {
 	LUKSFormat(ctx context.Context, luksPassphrase string) error
 	EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, error)
 	RotatePassphrase(ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string) error
+	Resize(ctx context.Context, luksPassphrase string) error
 }
 
 type LUKSDevice struct {

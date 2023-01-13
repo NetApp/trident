@@ -1287,17 +1287,6 @@ func (d *SANStorageDriver) Resize(
 		return nil
 	}
 
-	if volConfig.LUKSEncryption != "" {
-		luks, err := strconv.ParseBool(volConfig.LUKSEncryption)
-		if err != nil {
-			return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v",
-				volConfig.LUKSEncryption)
-		}
-		if luks {
-			return fmt.Errorf("cannot resize LUKS encrypted volumes")
-		}
-	}
-
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, name, newFlexvolSize, d.Config, d.GetAPI(),
 	); aggrLimitsErr != nil {

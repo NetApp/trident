@@ -88,3 +88,10 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 	defer Logc(ctx).Debug("<<<< devices_windows.RotatePassphrase")
 	return UnsupportedError("RotatePassphrase is not supported for windows")
 }
+
+// Resize performs a luksResize on the LUKS device
+func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
+	Logc(ctx).Debug(">>>> devices_darwin.Resize")
+	defer Logc(ctx).Debug("<<<< devices_darwin.Resize")
+	return UnsupportedError("Resize is not supported for darwin")
+}

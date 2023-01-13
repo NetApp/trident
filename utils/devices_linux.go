@@ -23,6 +23,8 @@ import (
 
 const (
 	luksCommandTimeout time.Duration = time.Second * 300
+	luksCypherMode                   = "aes-xts-plain64"
+	luksType                         = "luks2"
 )
 
 // flushOneDevice flushes any outstanding I/O to a disk
@@ -151,7 +153,8 @@ func (d *LUKSDevice) Close(ctx context.Context) error {
 
 // closeLUKSDevice performs a luksClose on the specified LUKS device
 func closeLUKSDevice(ctx context.Context, luksDevicePath string) error {
-	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "luksClose", luksDevicePath)
+	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "luksClose",
+		luksDevicePath)
 	if nil != err {
 		log.WithFields(log.Fields{
 			"MappedDeviceName": luksDevicePath,
@@ -335,5 +338,25 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 		"device":           d.RawDevicePath(),
 		"MappedDevicePath": d.MappedDevicePath(),
 	}).Info("Rotated LUKS passphrase for encrypted volume.")
+	return nil
+}
+
+// Resize performs a luksResize on the LUKS device
+func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
+	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "resize",
+		d.MappedDevicePath())
+	if nil != err {
+		log.WithFields(log.Fields{
+			"MappedDevicePath": d.MappedDevicePath(),
+			"error":            err.Error(),
+			"output":           string(output),
+		}).Debug("Failed to resize LUKS device")
+
+		// Exit code 2 means bad passphrase
+		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == 2 {
+			return IncorrectLUKSPassphraseError(fmt.Sprintf("no key available with this passphrase; %v", err))
+		}
+		return fmt.Errorf("failed to resize LUKS device %s; %v", d.MappedDevicePath(), err)
+	}
 	return nil
 }

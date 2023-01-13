@@ -387,7 +387,7 @@ func (p *Plugin) NodeExpandVolume(
 		}).Info("Received something other than the expected stagingTargetPath.")
 	}
 
-	err = p.nodeExpandVolume(ctx, &trackingInfo.VolumePublishInfo, requiredBytes, stagingTargetPath, volumeId)
+	err = p.nodeExpandVolume(ctx, &trackingInfo.VolumePublishInfo, requiredBytes, stagingTargetPath, volumeId, req.GetSecrets())
 	if err != nil {
 		return nil, err
 	}
@@ -396,7 +396,7 @@ func (p *Plugin) NodeExpandVolume(
 
 func (p *Plugin) nodeExpandVolume(
 	ctx context.Context, publishInfo *utils.VolumePublishInfo, requiredBytes int64, stagingTargetPath string,
-	volumeId string,
+	volumeId string, secrets map[string]string,
 ) error {
 	protocol, err := getVolumeProtocolFromPublishInfo(publishInfo)
 	if err != nil {
@@ -429,6 +429,30 @@ func (p *Plugin) nodeExpandVolume(
 		Logc(ctx).WithField("devicePath", publishInfo.DevicePath).WithError(err).Error(
 			"Unable to expand volume")
 		return err
+	}
+
+	isLUKS, err := strconv.ParseBool(publishInfo.LUKSEncryption)
+	if err != nil {
+		Logc(ctx).WithField("volumeId", volumeId).Warnf("Could not parse LUKSEncryption into a bool, got %v.",
+			publishInfo.LUKSEncryption)
+	}
+	if isLUKS {
+		Logc(ctx).WithField("volumeId", volumeId).Info("Resizing the LUKS mapping.")
+		// Refresh the luks device
+		// cryptsetup resize <luks-device-path> << <passphrase>
+		passphrase, ok := secrets["luks-passphrase"]
+		if !ok {
+			return status.Error(codes.InvalidArgument, "cannot expand LUKS encrypted volume; no passphrase provided")
+		} else if passphrase == "" {
+			return status.Error(codes.InvalidArgument, "cannot expand LUKS encrypted volume; empty passphrase provided")
+		}
+		err := utils.ResizeLUKSDevice(ctx, publishInfo.DevicePath, passphrase)
+		if err != nil {
+			if utils.IsIncorrectLUKSPassphraseError(err) {
+				return status.Error(codes.InvalidArgument, err.Error())
+			}
+			return status.Error(codes.Internal, err.Error())
+		}
 	}
 
 	// Expand filesystem.
@@ -1319,7 +1343,8 @@ func (p *Plugin) nodeStageNFSBlockVolume(
 	}
 
 	loopFileSize := loopFileInfo.Size()
-	err = p.nodeExpandVolume(ctx, publishInfo, loopFileSize, stagingTargetPath, volumeId)
+
+	err = p.nodeExpandVolume(ctx, publishInfo, loopFileSize, stagingTargetPath, volumeId, map[string]string{})
 	if err != nil {
 		return nil, err
 	}

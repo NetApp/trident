@@ -538,3 +538,50 @@ func TestRotateLUKSDevicePassphrase_Negative(t *testing.T) {
 	err = luksDevice.RotatePassphrase(context.Background(), "pvc-test", "previous", "newpassphrase")
 	assert.Error(t, err)
 }
+
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func TestResize_Positive(t *testing.T) {
+	execCmd = fakeExecCommand
+	execReturnValue = ""
+	execReturnCode = 0
+
+	// Reset exec command
+	defer func() {
+		execCmd = exec.CommandContext
+	}()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Resize no error
+	luksDeviceName := "luks-test_pvc"
+	luksDevice := &LUKSDevice{"/dev/sdb", luksDeviceName}
+	err := luksDevice.Resize(context.Background(), "testpassphrase")
+	assert.NoError(t, err)
+}
+
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func TestResize_Negative(t *testing.T) {
+	execCmd = fakeExecCommand
+	execReturnValue = ""
+	execReturnCode = 0
+
+	// Reset exec command
+	defer func() {
+		execCmd = exec.CommandContext
+	}()
+
+	luksDeviceName := "luks-test_pvc"
+	luksDevice := &LUKSDevice{"/dev/sdb", luksDeviceName}
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Bad Passphrase error
+	execReturnCode = 2
+	err := luksDevice.Resize(context.Background(), "testpassphrase")
+	assert.Error(t, err)
+	assert.True(t, IsIncorrectLUKSPassphraseError(err))
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Misc error
+	execReturnCode = 4
+	err = luksDevice.Resize(context.Background(), "testpassphrase")
+	assert.Error(t, err)
+}

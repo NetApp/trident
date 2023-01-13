@@ -1899,16 +1899,6 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 		return fmt.Errorf("requested size %d is less than existing volume size %d", flexvolSize, totalLunSize)
 	}
 
-	if volConfig.LUKSEncryption != "" {
-		luks, err := strconv.ParseBool(volConfig.LUKSEncryption)
-		if err != nil {
-			return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", luks)
-		}
-		if luks {
-			return fmt.Errorf("cannot resize LUKS encrypted volumes")
-		}
-	}
-
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, bucketVol, flexvolSize, d.Config, d.GetAPI(),
 	); aggrLimitsErr != nil {
