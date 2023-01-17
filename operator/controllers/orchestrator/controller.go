@@ -194,7 +194,7 @@ func NewController(clients *clients.Clients) (*Controller, error) {
 	c.daemonsetIndexer = c.daemonsetInformer.GetIndexer()
 
 	// Add handlers for TridentOrchestrator CRs
-	c.informerCR.AddEventHandler(
+	_, _ = c.informerCR.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    c.addOrchestrator,
 			UpdateFunc: c.updateOrchestrator,
@@ -203,7 +203,7 @@ func NewController(clients *clients.Clients) (*Controller, error) {
 	)
 
 	// Add handlers for TridentOrchestrator CRs
-	c.deploymentInformer.AddEventHandler(
+	_, _ = c.deploymentInformer.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    c.deploymentAddedOrDeleted,
 			UpdateFunc: c.deploymentUpdated,
@@ -212,7 +212,7 @@ func NewController(clients *clients.Clients) (*Controller, error) {
 	)
 
 	// Add handlers for TridentOrchestrator CRs
-	c.daemonsetInformer.AddEventHandler(
+	_, _ = c.daemonsetInformer.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    c.daemonsetAddedOrDeleted,
 			UpdateFunc: c.daemonsetUpdated,

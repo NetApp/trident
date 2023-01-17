@@ -133,7 +133,7 @@ func TestValidateKubernetesVersionFromInfo(t *testing.T) {
 
 	// mismatched versions
 	k8sMinVersion = KubernetesVersionMax
-	k8sCurrentVersionParts = strings.Split(KubernetesVersionMin, ".") // v1.20 -> [v1, 20]
+	k8sCurrentVersionParts = strings.Split(KubernetesVersionMin, ".") // v1.21 -> [v1, 21]
 	currentK8sVersionInfo = &k8sversion.Info{
 		Major:      k8sCurrentVersionParts[0],
 		Minor:      k8sCurrentVersionParts[1],
@@ -144,7 +144,7 @@ func TestValidateKubernetesVersionFromInfo(t *testing.T) {
 
 	// improperly formatted version
 	k8sMinVersion = KubernetesVersionMax
-	k8sCurrentVersionParts = strings.Split(KubernetesVersionMin, ".") // v1.20 -> [v1, 20]
+	k8sCurrentVersionParts = strings.Split(KubernetesVersionMin, ".") // v1.21 -> [v1, 21]
 	currentK8sVersionInfo = &k8sversion.Info{
 		Major:      k8sCurrentVersionParts[0],
 		Minor:      k8sCurrentVersionParts[1],

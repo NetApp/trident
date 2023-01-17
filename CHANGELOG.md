@@ -13,6 +13,10 @@
 - Improved performance for ontap-nas-economy storage drivers managing multiple FlexVols.
 - Enabled dataLIF updates for all ONTAP NAS storage drivers.
 
+**Deprecations:**
+
+- **Kubernetes:** Updated minimum supported Kubernetes to 1.21.
+
 ## Changes since v22.07.0
 
 - **IMPORTANT**: Kubernetes 1.25 is now supported in Trident. Please upgrade Trident prior to upgrading Kubernetes.

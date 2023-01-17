@@ -261,13 +261,13 @@ func newTridentCrdControllerImpl(
 	// Set up event handlers for when our Trident CRDs change
 	log.Info("Setting up CRD controller event handlers.")
 
-	backendConfigInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, _ = backendConfigInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    controller.addTridentBackendConfigEvent,
 		UpdateFunc: controller.updateTridentBackendConfigEvent,
 		DeleteFunc: controller.deleteTridentBackendConfigEvent,
 	})
 
-	backendInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, _ = backendInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		// Do not handle add backends here, otherwise it may results in continuous
 		// reconcile loops esp. in cases where backends are created as a result
 		// of a backend config.
@@ -283,19 +283,19 @@ func newTridentCrdControllerImpl(
 		DeleteFunc: controller.deleteTridentBackendEvent,
 	})
 
-	mirrorInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, _ = mirrorInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    controller.addMirrorRelationship,
 		UpdateFunc: controller.updateMirrorRelationship,
 		DeleteFunc: controller.deleteMirrorRelationship,
 	})
 
-	snapshotInfoInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, _ = snapshotInfoInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    controller.addSnapshotInfo,
 		UpdateFunc: controller.updateSnapshotInfo,
 		DeleteFunc: controller.deleteSnapshotInfo,
 	})
 
-	secretInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, _ = secretInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		// Do not handle AddFunc here otherwise everytime trident is restarted,
 		// there will be unwarranted reconciles and backend initializations
 		UpdateFunc: controller.updateSecretEvent,
@@ -314,7 +314,7 @@ func newTridentCrdControllerImpl(
 		snapshotInformer.Informer(),
 	}
 	for _, informer := range informers {
-		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		_, _ = informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(oldCrd, newCrd interface{}) {
 				ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 				if err := controller.removeFinalizers(ctx, newCrd, false); err != nil {

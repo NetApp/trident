@@ -153,7 +153,7 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 
 	imagePullSecrets := []string{"thisisasecret"}
 
-	version := utils.MustParseSemantic("1.20.0")
+	version := utils.MustParseSemantic("1.26.0")
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          "trident-csi",
@@ -200,7 +200,7 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 
 	imagePullSecrets := []string{"thisisasecret"}
 
-	version := utils.MustParseSemantic("1.20.0")
+	version := utils.MustParseSemantic("1.26.0")
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          "\ntrident-csi",
@@ -359,7 +359,7 @@ func TestGetCSIDeploymentYAMLTolerations(t *testing.T) {
 }
 
 func TestGetCSIDeploymentYAMLImagePullPolicy(t *testing.T) {
-	versions := []string{"1.20.0"}
+	versions := []string{"1.26.0"}
 	expectedStr := `imagePullPolicy: %s`
 
 	expectedIfNotPresent := fmt.Sprintf(expectedStr, v1.PullIfNotPresent)
@@ -437,7 +437,7 @@ func TestGetCSIDaemonSetYAMLLinux_DebugIsTrue(t *testing.T) {
 }
 
 func TestGetCSIDaemonSetYAMLLinux_ForceDetach(t *testing.T) {
-	versions := []string{"1.20.0"}
+	versions := []string{"1.26.0"}
 	expectedStr := `- "--enable_force_detach=%s"`
 	disabled := "false"
 	enabled := "true"
@@ -488,7 +488,7 @@ func TestGetCSIDaemonSetYAMLLinux_ForceDetach(t *testing.T) {
 }
 
 func TestGetCSIDaemonSetYAMLLinuxImagePullPolicy(t *testing.T) {
-	versions := []string{"1.20.0"}
+	versions := []string{"1.26.0"}
 	expectedStr := `imagePullPolicy: %s`
 
 	expectedIfNotPresent := fmt.Sprintf(expectedStr, v1.PullIfNotPresent)
@@ -690,7 +690,7 @@ func TestGetCSIDaemonSetYAMLWindows_DebugIsFalse(t *testing.T) {
 }
 
 func TestGetCSIDaemonSetYAMLWindowsImagePullPolicy(t *testing.T) {
-	versions := []string{"1.20.0"}
+	versions := []string{"1.26.0"}
 	expectedStr := `imagePullPolicy: %s`
 
 	expectedIfNotPresent := fmt.Sprintf(expectedStr, string(v1.PullIfNotPresent))

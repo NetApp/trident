@@ -36,7 +36,7 @@ func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
 	}
 
 	if !d.SupportsFeature(ctx, MinimumONTAPIVersion) {
-		return errors.New("ONTAP 9.3 or later is required")
+		return errors.New("ONTAP 9.5 or later is required")
 	}
 
 	Logc(ctx).WithField("Ontapi", ontapVersion).Debug("ONTAP API version.")

@@ -139,7 +139,7 @@ const (
 	PlatformCSI        Platform = "csi" // plain CSI, no other CO present
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "v1.20"
+	KubernetesVersionMin = "v1.21"
 	KubernetesVersionMax = "v1.26"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted

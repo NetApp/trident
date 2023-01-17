@@ -192,7 +192,7 @@ const (
 
 // Indicate the minimum Ontapi version for each feature here
 var features = map[Feature]*utils.Version{
-	MinimumONTAPIVersion:      utils.MustParseSemantic("1.130.0"), // cDOT 9.3.0
+	MinimumONTAPIVersion:      utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	NetAppFlexGroups:          utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
 	NetAppFlexGroupsClone:     utils.MustParseSemantic("1.170.0"), // cDOT 9.7.0
 	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
@@ -205,7 +205,7 @@ var features = map[Feature]*utils.Version{
 
 // Indicate the minimum Ontap version for each feature here (non-API specific)
 var featuresByVersion = map[Feature]*utils.Version{
-	MinimumONTAPIVersion:      utils.MustParseSemantic("9.3.0"),
+	MinimumONTAPIVersion:      utils.MustParseSemantic("9.5.0"),
 	NetAppFlexGroups:          utils.MustParseSemantic("9.2.0"),
 	NetAppFlexGroupsClone:     utils.MustParseSemantic("9.7.0"),
 	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("9.2.0"),

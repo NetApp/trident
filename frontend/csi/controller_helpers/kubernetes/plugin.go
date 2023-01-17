@@ -171,7 +171,7 @@ func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 	p.pvcIndexer = p.pvcController.GetIndexer()
 
 	// Add handlers for CSI-provisioned PVCs
-	p.pvcController.AddEventHandler(
+	_, _ = p.pvcController.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    p.addPVC,
 			UpdateFunc: p.updatePVC,
@@ -180,7 +180,7 @@ func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 	)
 
 	if !p.SupportsFeature(ctx, csi.ExpandCSIVolumes) {
-		p.pvcController.AddEventHandlerWithResyncPeriod(
+		_, _ = p.pvcController.AddEventHandlerWithResyncPeriod(
 			cache.ResourceEventHandlerFuncs{
 				UpdateFunc: p.updatePVCResize,
 			},
@@ -208,7 +208,7 @@ func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 	p.pvIndexer = p.pvController.GetIndexer()
 
 	// Add handler for deleting legacy PVs
-	p.pvController.AddEventHandler(
+	_, _ = p.pvController.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			UpdateFunc: p.updateLegacyPV,
 		},
@@ -234,7 +234,7 @@ func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 	p.scIndexer = p.scController.GetIndexer()
 
 	// Add handler for registering storage classes with Trident
-	p.scController.AddEventHandler(
+	_, _ = p.scController.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    p.addStorageClass,
 			UpdateFunc: p.updateStorageClass,
@@ -243,7 +243,7 @@ func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 	)
 
 	// Add handler for replacing legacy storage classes
-	p.scController.AddEventHandler(
+	_, _ = p.scController.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    p.addLegacyStorageClass,
 			UpdateFunc: p.updateLegacyStorageClass,
@@ -271,7 +271,7 @@ func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 	p.nodeIndexer = p.nodeController.GetIndexer()
 
 	// Add handler for registering k8s nodes with Trident
-	p.nodeController.AddEventHandler(
+	_, _ = p.nodeController.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    p.addNode,
 			UpdateFunc: p.updateNode,
