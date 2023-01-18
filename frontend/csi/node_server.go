@@ -1247,6 +1247,31 @@ func (p *Plugin) nodeUnstageISCSIVolumeRetry(
 	return &csi.NodeUnstageVolumeResponse{}, nil
 }
 
+// publishLUKSVolume ensures the LUKS device has the most recent passphrase, if specified
+func (p *Plugin) publishLUKSVolume(ctx context.Context, volumeId string, secrets map[string]string, luksMappingPath string) error {
+	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := utils.GetLUKSPassphrasesFromSecretMap(secrets)
+	if luksPassphrase == "" || previousLUKSPassphrase == "" {
+		Logc(ctx).Infof("Single LUKS passphrase provided to NodePublishVolume, skipping passphrase rotation")
+		return nil
+	}
+	if luksPassphraseName == "" || previousLUKSPassphraseName == "" {
+		Logc(ctx).Infof("LUKS passphrase names cannot be empty, skipping passphrase rotation")
+		return nil
+	}
+
+	devicePath, err := utils.GetUnderlyingDevicePathForLUKSDevice(ctx, luksMappingPath)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Could not determine underlying device for LUKS mapping, skipping passphrase rotation.")
+		return nil
+	}
+	luksDevice := utils.NewLUKSDevice(devicePath, volumeId)
+	_, err = utils.EnsureCurrentLUKSDevicePassphrase(ctx, luksDevice, volumeId, secrets)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Failed to rotate LUKS passphrase.")
+	}
+	return nil
+}
+
 func (p *Plugin) nodePublishISCSIVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
@@ -1266,7 +1291,18 @@ func (p *Plugin) nodePublishISCSIVolume(
 	if req.GetReadonly() {
 		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
-
+	if publishInfo.LUKSEncryption != "" {
+		isLUKS, err := strconv.ParseBool(publishInfo.LUKSEncryption)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+		}
+		if isLUKS {
+			err = p.publishLUKSVolume(ctx, req.GetVolumeId(), req.GetSecrets(), publishInfo.DevicePath)
+			if err != nil {
+				return nil, fmt.Errorf("could not publish LUKS volume; %v", err)
+			}
+		}
+	}
 	isRawBlock := publishInfo.FilesystemType == tridentconfig.FsRaw
 	if isRawBlock {
 

@@ -34,6 +34,21 @@ func (m *MockLUKSDeviceInterface) EXPECT() *MockLUKSDeviceInterfaceMockRecorder 
 	return m.recorder
 }
 
+// CheckPassphrase mocks base method.
+func (m *MockLUKSDeviceInterface) CheckPassphrase(arg0 context.Context, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckPassphrase", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckPassphrase indicates an expected call of CheckPassphrase.
+func (mr *MockLUKSDeviceInterfaceMockRecorder) CheckPassphrase(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPassphrase", reflect.TypeOf((*MockLUKSDeviceInterface)(nil).CheckPassphrase), arg0, arg1)
+}
+
 // EnsureFormattedAndOpen mocks base method.
 func (m *MockLUKSDeviceInterface) EnsureFormattedAndOpen(arg0 context.Context, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()

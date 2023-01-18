@@ -36,10 +36,9 @@ func TestMountLUKSDevice(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretA").Return(false, nil)
-	luksRotated, luksFormatted, err := EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err := EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.NoError(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test second passphrase works
@@ -53,12 +52,10 @@ func TestMountLUKSDevice(t *testing.T) {
 	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretA").Return(false, fmt.Errorf("bad passphrase"))
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretB").Return(false, nil)
-	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "pvc-test", "secretB", "secretA").Return(nil)
 
-	luksRotated, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.NoError(t, err)
 	assert.False(t, luksFormatted)
-	assert.True(t, luksRotated)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: passphrase rotation fails
@@ -72,12 +69,10 @@ func TestMountLUKSDevice(t *testing.T) {
 	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretA").Return(false, fmt.Errorf("bad passphrase"))
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretB").Return(false, nil)
-	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "pvc-test", "secretB", "secretA").Return(fmt.Errorf("failed to rotate"))
 
-	luksRotated, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.NoError(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,10 +90,9 @@ func TestMountLUKSDevice_Negative(t *testing.T) {
 	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
 
 	secrets := map[string]string{}
-	luksRotated, luksFormatted, err := EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err := EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test no passphrase name specified
@@ -108,10 +102,9 @@ func TestMountLUKSDevice_Negative(t *testing.T) {
 	secrets = map[string]string{
 		"luks-passphrase": "secretA",
 	}
-	luksRotated, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test no second passphrase name specified
@@ -124,10 +117,9 @@ func TestMountLUKSDevice_Negative(t *testing.T) {
 	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretA").Return(false, fmt.Errorf("bad passphrase"))
 
-	luksRotated, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test first passphrase fails, no second specified
@@ -139,10 +131,9 @@ func TestMountLUKSDevice_Negative(t *testing.T) {
 		"luks-passphrase":      "secretA",
 		"luks-passphrase-name": "A",
 	}
-	luksRotated, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test first passphrase fails, second is blank
@@ -155,10 +146,9 @@ func TestMountLUKSDevice_Negative(t *testing.T) {
 		"previous-luks-passphrase":      "",
 		"previous-luks-passphrase-name": "",
 	}
-	luksRotated, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test first passphrase fails, second is the same
@@ -171,10 +161,9 @@ func TestMountLUKSDevice_Negative(t *testing.T) {
 		"previous-luks-passphrase":      "secretA",
 		"previous-luks-passphrase-name": "A",
 	}
-	luksRotated, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test first passphrase is blank
@@ -186,10 +175,9 @@ func TestMountLUKSDevice_Negative(t *testing.T) {
 		"previous-luks-passphrase":      "secretB",
 		"previous-luks-passphrase-name": "B",
 	}
-	luksRotated, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Passphrase rotation fails
@@ -204,12 +192,10 @@ func TestMountLUKSDevice_Negative(t *testing.T) {
 	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretB").Return(false, fmt.Errorf("bad passphrase")).Times(1)
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretA").Return(false, nil)
-	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "pvc-test", "secretA", "secretB").Return(fmt.Errorf("failed to rotate"))
 
-	luksRotated, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.NoError(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test second passphrase is also incorrect
@@ -224,8 +210,7 @@ func TestMountLUKSDevice_Negative(t *testing.T) {
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretA").Return(false, fmt.Errorf("bad passphrase"))
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretB").Return(false, fmt.Errorf("bad passphrase"))
 
-	luksRotated, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
+	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
-	assert.False(t, luksRotated)
 }

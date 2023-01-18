@@ -95,3 +95,15 @@ func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
 	defer Logc(ctx).Debug("<<<< devices_darwin.Resize")
 	return UnsupportedError("Resize is not supported for darwin")
 }
+
+func (d *LUKSDevice) CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error) {
+	Logc(ctx).Debug(">>>> devices_windows.CheckPassphrase")
+	defer Logc(ctx).Debug("<<<< devices_windows.CheckPassphrase")
+	return false, UnsupportedError("CheckPassphrase is not supported for windows")
+}
+
+func GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, luksDevicePath string) (string, error) {
+	Logc(ctx).Debug(">>>> devices_windows.GetUnderlyingDevicePathForLUKSDevice")
+	defer Logc(ctx).Debug("<<<< devices_windows.GetUnderlyingDevicePathForLUKSDevice")
+	return "", UnsupportedError("GetUnderlyingDevicePathForLUKSDevice is not supported for windows")
+}

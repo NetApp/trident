@@ -539,6 +539,95 @@ func TestRotateLUKSDevicePassphrase_Negative(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestGetUnderlyingDevicePathForLUKSDevice(t *testing.T) {
+	execCmd = fakeExecCommand
+	execReturnCode = 0
+	execReturnValue = `/dev/mapper/luks-trident_pvc_0c6202cb_be41_46b7_bea9_7f2c5c2c4a41 is active and is in use.
+  type:    LUKS2
+  cipher:  aes-xts-plain64
+  keysize: 512 bits
+  key location: keyring
+  device:  /dev/mapper/3600a09807770457a795d526950374c76
+  sector size:  512
+  offset:  32768 sectors
+  size:    2064384 sectors
+  mode:    read/write`
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case
+	devicePath, err := GetUnderlyingDevicePathForLUKSDevice(context.Background(), "")
+	assert.NoError(t, err)
+	assert.Equal(t, "/dev/mapper/3600a09807770457a795d526950374c76", devicePath)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: cannot parse
+	execReturnValue = "Not good output"
+	devicePath, err = GetUnderlyingDevicePathForLUKSDevice(context.Background(), "")
+	assert.Error(t, err)
+	assert.Equal(t, "", devicePath)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: no LUKS device
+	execReturnCode = 4
+	devicePath, err = GetUnderlyingDevicePathForLUKSDevice(context.Background(), "")
+	assert.Error(t, err)
+	assert.Equal(t, "", devicePath)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: output has "device:" but nothing else on the line
+	execReturnCode = 0
+	execReturnValue = `device:`
+	devicePath, err = GetUnderlyingDevicePathForLUKSDevice(context.Background(), "")
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: output has "device:" but extra on the line
+	execReturnCode = 0
+	execReturnValue = `/dev/mapper/luks-trident_pvc_0c6202cb_be41_46b7_bea9_7f2c5c2c4a41 is active and is in use.
+  type:    LUKS2
+  cipher:  aes-xts-plain64
+  keysize: 512 bits
+  key location: keyring
+  device:  /dev/mapper/3600a09807770457a795d526950374c76 extra stuff on line
+  sector size:  512
+  offset:  32768 sectors
+  size:    2064384 sectors
+  mode:    read/write`
+	devicePath, err = GetUnderlyingDevicePathForLUKSDevice(context.Background(), "")
+	assert.Error(t, err)
+}
+
+func TestCheckPassphrase(t *testing.T) {
+	execCmd = fakeExecCommand
+	execReturnCode = 0
+	// Reset exec command after tests
+	defer func() {
+		execCmd = exec.CommandContext
+	}()
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Correct passphrase
+	luksDevice := NewLUKSDevice("", "test-pvc")
+	correct, err := luksDevice.CheckPassphrase(context.Background(), "passphrase")
+	assert.True(t, correct)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Not correct passphrase
+	execReturnCode = 2
+	luksDevice = NewLUKSDevice("", "test-pvc")
+	correct, err = luksDevice.CheckPassphrase(context.Background(), "passphrase")
+	assert.False(t, correct)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: error
+	execReturnCode = 4
+	luksDevice = NewLUKSDevice("", "test-pvc")
+	correct, err = luksDevice.CheckPassphrase(context.Background(), "passphrase")
+	assert.False(t, correct)
+	assert.Error(t, err)
+}
+
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 func TestResize_Positive(t *testing.T) {
 	execCmd = fakeExecCommand

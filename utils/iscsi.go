@@ -217,7 +217,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 
 	if isLUKSDevice {
 		luksDevice := NewLUKSDevice(devicePath, name)
-		_, luksFormatted, err = EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
+		luksFormatted, err = EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
 		if err != nil {
 			return err
 		}

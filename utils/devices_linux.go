@@ -25,6 +25,8 @@ const (
 	luksCommandTimeout time.Duration = time.Second * 300
 	luksCypherMode                   = "aes-xts-plain64"
 	luksType                         = "luks2"
+	// Return code for "no permission (bad passphrase)" from cryptsetup command
+	luksCryptsetupBadPassphraseReturnCode = 2
 )
 
 // flushOneDevice flushes any outstanding I/O to a disk
@@ -136,7 +138,7 @@ func (d *LUKSDevice) Open(ctx context.Context, luksPassphrase string) error {
 		}).Info("Failed to open LUKS device.")
 
 		// Exit code 2 means bad passphrase
-		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == 2 {
+		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == luksCryptsetupBadPassphraseReturnCode {
 			return fmt.Errorf("no key available with this passphrase; %v", err)
 		}
 
@@ -359,4 +361,46 @@ func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
 		return fmt.Errorf("failed to resize LUKS device %s; %v", d.MappedDevicePath(), err)
 	}
 	return nil
+}
+
+// GetUnderlyingDevicePathForLUKSDevice returns the device mapped to the LUKS device
+// uses cryptsetup status <luks-device> and parses the output
+func GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, luksDevicePath string) (string, error) {
+	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "status", luksDevicePath)
+	if err != nil {
+		return "", err
+	}
+
+	var devicePath string
+	if strings.Contains(string(output), "device:") {
+		for _, v := range strings.Split(string(output), "\n") {
+			if strings.Contains(v, "device:") {
+				if len(strings.Fields(v)) != 2 {
+					break
+				}
+				devicePath = strings.Fields(v)[1]
+				devicePath = strings.TrimSpace(devicePath)
+				break
+			}
+		}
+	}
+
+	if devicePath == "" {
+		return "", fmt.Errorf("cryptsetup status command output does not contain a device")
+	}
+	return devicePath, nil
+}
+
+// CheckPassphrase returns whether the specified passphrase string is the current LUKS passphrase for the device
+func (d *LUKSDevice) CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error) {
+	device := d.RawDevicePath()
+	luksDeviceName := d.MappedDeviceName()
+	_, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device, luksDeviceName, "--type", "luks2", "--test-passphrase")
+	if err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == luksCryptsetupBadPassphraseReturnCode {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
