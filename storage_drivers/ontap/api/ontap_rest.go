@@ -1846,7 +1846,9 @@ func (c RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string
 		return err
 	}
 	if igroup == nil {
-		return fmt.Errorf("unexpected response from igroup lookup, igroup was nil")
+		// Initiator group not found. Log a message and return nil.
+		Logc(ctx).WithField("igroup", initiatorGroupName).Debug("No such initiator group (igroup).")
+		return nil
 	}
 	igroupUUID := igroup.UUID
 
