@@ -49,9 +49,9 @@ type Azure interface {
 	SubvolumeExistsByID(context.Context, string) (bool, *Subvolume, error)
 	SubvolumeParentVolume(context.Context, *storage.VolumeConfig) (*FileSystem, error)
 	WaitForSubvolumeState(context.Context, *Subvolume, string, []string, time.Duration) (string, error)
-	CreateSubvolume(context.Context, *SubvolumeCreateRequest) (*Subvolume, error)
+	CreateSubvolume(context.Context, *SubvolumeCreateRequest) (*Subvolume, PollerResponse, error)
 	ResizeSubvolume(context.Context, *Subvolume, int64) error
-	DeleteSubvolume(context.Context, *Subvolume) error
+	DeleteSubvolume(context.Context, *Subvolume) (PollerResponse, error)
 	ValidateFilePoolVolumes(context.Context, []string) ([]*FileSystem, error)
 
 	SnapshotsForVolume(context.Context, *FileSystem) (*[]*Snapshot, error)

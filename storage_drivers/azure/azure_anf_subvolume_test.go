@@ -1049,7 +1049,7 @@ func TestSubvolumeCreate(t *testing.T) {
 
 	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(false, subVolume,
 		nil).Times(1)
-	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(subVolume, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(subVolume, nil, nil).Times(1)
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
 
@@ -1111,6 +1111,8 @@ func TestSubvolumeCreate_ErrorSubvolumeExists1(t *testing.T) {
 
 	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(true, subVolume,
 		nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -1119,8 +1121,6 @@ func TestSubvolumeCreate_ErrorSubvolumeExists1(t *testing.T) {
 
 func TestSubvolumeCreate_ErrorSubvolumeExists2(t *testing.T) {
 	config, filesystems, volConfig, subVolume, _ := getStructsForSubvolumeCreate()
-
-	subVolume.ProvisioningState = api.StateCreating
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
 	driver.Config = *config
@@ -1132,6 +1132,8 @@ func TestSubvolumeCreate_ErrorSubvolumeExists2(t *testing.T) {
 	storagePool := virtualPool["myANFSubvolumeBackend_pool_0"]
 	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(true, subVolume,
 		nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateCreating, fmt.Errorf("some error")).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -1212,7 +1214,7 @@ func TestSubvolumeCreateVolume_ZeroSize(t *testing.T) {
 
 	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(false, subVolume,
 		nil).Times(1)
-	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(subVolume, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(subVolume, nil, nil).Times(1)
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
 
@@ -1324,7 +1326,7 @@ func TestSubvolumeCreateVolume_Error(t *testing.T) {
 
 	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(false, nil,
 		nil).Times(1)
-	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(nil, errFailed).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(nil, nil, errFailed).Times(1)
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
 	assert.Error(t, result, "created subvolume")
@@ -1446,12 +1448,33 @@ func TestSubvolumeCreateClone(t *testing.T) {
 
 	mockAPI.EXPECT().SubvolumeByID(ctx, subVolume1.ID, false).Return(subVolume1, nil).Times(1)
 	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(false, nil, nil).Times(1)
-	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(subVolume2, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(subVolume2, nil, nil).Times(1)
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume2, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
 	result := driver.CreateClone(ctx, sourceVolConfig, volConfig, nil)
 
 	assert.Nil(t, result, "created clone of subvolume")
+}
+
+func TestSubvolumeCreateClone_ErrorSubvolumeCreating(t *testing.T) {
+	config, sourceVolConfig, volConfig, subVolume1, subVolume2, _ := getStructsForSubvolumeCreateClone()
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeByID(ctx, subVolume1.ID, false).Return(subVolume1, nil).Times(1)
+	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(true, subVolume2,
+		nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume2, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateCreating, fmt.Errorf("some error")).Times(1)
+	result := driver.CreateClone(ctx, sourceVolConfig, volConfig, nil)
+
+	assert.Error(t, result, "created clone of subvolume")
 }
 
 func TestSubvolumeCreateClone_ErrorInvalidVolumeName(t *testing.T) {
@@ -1558,6 +1581,8 @@ func TestSubvolumeCreateClone_ErrorSourceVolumeAlreadyExists(t *testing.T) {
 	mockAPI.EXPECT().SubvolumeByID(ctx, subVolume1.ID, false).Return(subVolume1, nil).Times(1)
 	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(true, subVolume1,
 		nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume1, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
 	result := driver.CreateClone(ctx, sourceVolConfig, volConfig, nil)
 
 	assert.Error(t, result, "failed to create clone of subvolume")
@@ -1565,7 +1590,6 @@ func TestSubvolumeCreateClone_ErrorSourceVolumeAlreadyExists(t *testing.T) {
 
 func TestSubvolumeCreateClone_ErrorSourceVolumeAlreadyExistsButInCreatingState(t *testing.T) {
 	config, sourceVolConfig, volConfig, subVolume1, _, _ := getStructsForSubvolumeCreateClone()
-	subVolume1.ProvisioningState = api.StateCreating
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
 	driver.Config = *config
@@ -1578,6 +1602,8 @@ func TestSubvolumeCreateClone_ErrorSourceVolumeAlreadyExistsButInCreatingState(t
 	mockAPI.EXPECT().SubvolumeByID(ctx, subVolume1.ID, false).Return(subVolume1, nil).Times(1)
 	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(true, subVolume1,
 		nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume1, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
 	result := driver.CreateClone(ctx, sourceVolConfig, volConfig, nil)
 
 	assert.Error(t, result, "failed to create clone of subvolume")
@@ -1596,7 +1622,7 @@ func TestSubvolumeCreateClone_ErrorUnableToCreateSubvolume(t *testing.T) {
 
 	mockAPI.EXPECT().SubvolumeByID(ctx, subVolume1.ID, false).Return(subVolume1, nil).Times(1)
 	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(false, nil, nil).Times(1)
-	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(nil, errFailed).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(nil, nil, errFailed).Times(1)
 	result := driver.CreateClone(ctx, sourceVolConfig, volConfig, nil)
 
 	assert.Error(t, result, "failed to create clone of subvolume")
@@ -1838,7 +1864,7 @@ func TestSubvolumeWaitForSubvolumeCreate_Creating(t *testing.T) {
 		mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
 			driver.volumeCreateTimeout).Return(state, errFailed).Times(1)
 
-		result := driver.waitForSubvolumeCreate(ctx, subVolume)
+		result := driver.waitForSubvolumeCreate(ctx, subVolume, nil)
 		assert.Error(t, result, "subvolume creation is complete")
 	}
 }
@@ -1858,7 +1884,7 @@ func TestSubvolumeWaitForSubvolumeCreate_DeletingNotCompleted(t *testing.T) {
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateDeleted, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume)
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, nil)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -1877,7 +1903,7 @@ func TestSubvolumeWaitForSubvolumeCreate_DeletingCompleted(t *testing.T) {
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateDeleted, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateDeleted, errFailed).Times(1)
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume)
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, nil)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -1893,9 +1919,11 @@ func TestSubvolumeWaitForSubvolumeCreate_ErrorDelete(t *testing.T) {
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateError, errFailed).Times(1)
 
-	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(nil, nil).Times(1)
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume)
+	poller := api.PollerSVCreateResponse{}
+
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -1911,9 +1939,11 @@ func TestSubvolumeWaitForSubvolumeCreate_ErrorDeleteFailed(t *testing.T) {
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateError, errFailed).Times(1)
 
-	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(errFailed).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(nil, errFailed).Times(1)
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume)
+	poller := api.PollerSVCreateResponse{}
+
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -1930,7 +1960,9 @@ func TestSubvolumeWaitForSubvolumeCreate_OtherStates(t *testing.T) {
 		mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
 			driver.volumeCreateTimeout).Return(state, errFailed).Times(1)
 
-		result := driver.waitForSubvolumeCreate(ctx, subVolume)
+		poller := api.PollerSVCreateResponse{}
+
+		result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller)
 		assert.Nil(t, result, "subvolume creation is complete")
 	}
 }
@@ -2020,10 +2052,33 @@ func TestSubvolumeDestroy_InternalIDIsNull(t *testing.T) {
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateDeleted, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
 
-	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(nil, nil).Times(1)
 	result := driver.Destroy(ctx, volConfig)
 
 	assert.Nil(t, result, " subvolume not destroyed")
+}
+
+func TestSubvolumeDestroy_DeleteSubvolumeError(t *testing.T) {
+	config, volConfig, subVolume := getStructsForSubvolumeDestroy()
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	volConfig.InternalID = ""
+
+	var poller api.PollerResponse
+	poller = &api.PollerSVDeleteResponse{}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+
+	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(true, subVolume,
+		nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(poller, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateError, fmt.Errorf("some error")).Times(1)
+
+	result := driver.Destroy(ctx, volConfig)
+
+	assert.Error(t, result, "subvolume destroyed")
 }
 
 func TestSubvolumeDestroy_InternalIDIsNull_DeleteSubvolumeError(t *testing.T) {
@@ -2038,7 +2093,7 @@ func TestSubvolumeDestroy_InternalIDIsNull_DeleteSubvolumeError(t *testing.T) {
 	mockAPI.EXPECT().SubvolumeExists(ctx, volConfig, driver.getAllFilePoolVolumes()).Return(true, subVolume,
 		nil).Times(1)
 
-	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(errFailed).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(nil, errFailed).Times(1)
 	result := driver.Destroy(ctx, volConfig)
 
 	assert.Error(t, result, "subvolume destroyed")
@@ -2063,7 +2118,7 @@ func TestSubvolumeDestroy_InternalIDIsNotNull(t *testing.T) {
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 
-	mockAPI.EXPECT().DeleteSubvolume(ctx, extantSubvolume).Return(errFailed).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, extantSubvolume).Return(nil, errFailed).Times(1)
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -2383,7 +2438,7 @@ func TestSubvolumeCreateSnapshot(t *testing.T) {
 	driver.helper.Config.StoragePrefix = &prefix
 
 	mockAPI.EXPECT().SubvolumeExistsByID(ctx, subVolume.ID).Return(false, nil, nil).Times(1)
-	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(subVolume, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(subVolume, nil, nil).Times(1)
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
 
@@ -2391,6 +2446,31 @@ func TestSubvolumeCreateSnapshot(t *testing.T) {
 
 	assert.NotNil(t, result, "snaspshot not created")
 	assert.NoError(t, resultErr, "error")
+}
+
+func TestSubvolumeDeleteSnapshot_DeleteSnapshotError(t *testing.T) {
+	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	subVolume.ProvisioningState = ""
+	subVolume.FullName = ""
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	var poller api.PollerResponse
+	poller = &api.PollerSVDeleteResponse{}
+
+	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(poller, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateError, fmt.Errorf("some error")).Times(1)
+
+	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Error(t, result, "deleted snapshot")
 }
 
 func TestSubvolumeCreateSnapshot_ErrorParsingSubvolumeID(t *testing.T) {
@@ -2439,7 +2519,7 @@ func TestSubvolumeCreateSnapshot_ErrorCreatingSnapshot(t *testing.T) {
 	driver.helper.Config.StoragePrefix = &prefix
 
 	mockAPI.EXPECT().SubvolumeExistsByID(ctx, subVolume.ID).Return(false, nil, nil).Times(1)
-	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(nil, errFailed).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(nil, nil, errFailed).Times(1)
 
 	result, resultErr := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 
@@ -2491,7 +2571,7 @@ func TestSubvolumeCreateSnapshot_ErrorSubvolumeState(t *testing.T) {
 	driver.helper.Config.StoragePrefix = &prefix
 
 	mockAPI.EXPECT().SubvolumeExistsByID(ctx, subVolume.ID).Return(false, nil, nil).Times(1)
-	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(subVolume, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, subvolumeCreateRequest).Return(subVolume, nil, nil).Times(1)
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateCreating, errFailed).Times(1)
 
@@ -2861,7 +2941,7 @@ func TestSubvolumeDeleteSnapshot(t *testing.T) {
 	driver.helper = newMockANFSubvolumeHelper()
 	driver.helper.Config.StoragePrefix = &prefix
 
-	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(nil, nil).Times(1)
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateDeleted, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
 
@@ -2899,7 +2979,7 @@ func TestSubvolumeDeleteSnapshot_ErrorDeletingSubvolume(t *testing.T) {
 	driver.helper = newMockANFSubvolumeHelper()
 	driver.helper.Config.StoragePrefix = &prefix
 
-	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(errFailed).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, subVolume).Return(nil, errFailed).Times(1)
 
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 	assert.Error(t, result, "deleted snapshot")

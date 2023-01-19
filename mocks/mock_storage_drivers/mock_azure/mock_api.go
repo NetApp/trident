@@ -95,12 +95,13 @@ func (mr *MockAzureMockRecorder) CreateSnapshot(arg0, arg1, arg2 interface{}) *g
 }
 
 // CreateSubvolume mocks base method.
-func (m *MockAzure) CreateSubvolume(arg0 context.Context, arg1 *api.SubvolumeCreateRequest) (*api.Subvolume, error) {
+func (m *MockAzure) CreateSubvolume(arg0 context.Context, arg1 *api.SubvolumeCreateRequest) (*api.Subvolume, api.PollerResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSubvolume", arg0, arg1)
 	ret0, _ := ret[0].(*api.Subvolume)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(api.PollerResponse)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // CreateSubvolume indicates an expected call of CreateSubvolume.
@@ -139,11 +140,12 @@ func (mr *MockAzureMockRecorder) DeleteSnapshot(arg0, arg1, arg2 interface{}) *g
 }
 
 // DeleteSubvolume mocks base method.
-func (m *MockAzure) DeleteSubvolume(arg0 context.Context, arg1 *api.Subvolume) error {
+func (m *MockAzure) DeleteSubvolume(arg0 context.Context, arg1 *api.Subvolume) (api.PollerResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteSubvolume", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(api.PollerResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteSubvolume indicates an expected call of DeleteSubvolume.

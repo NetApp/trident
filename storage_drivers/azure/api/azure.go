@@ -5,8 +5,10 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"regexp"
 	"time"
@@ -73,6 +75,51 @@ type AzureClient struct {
 	SnapshotsClient  *netapp.SnapshotsClient
 	SubvolumesClient *netapp.SubvolumesClient
 	AzureResources
+}
+
+type PollerSVCreateResponse struct {
+	*runtime.Poller[netapp.SubvolumesClientCreateResponse]
+}
+type PollerSVDeleteResponse struct {
+	*runtime.Poller[netapp.SubvolumesClientDeleteResponse]
+}
+
+type PollerResponse interface {
+	Result(context.Context) error
+}
+
+func (p *PollerSVCreateResponse) Result(ctx context.Context) error {
+	if p != nil && p.Poller != nil {
+		var rawResponse *http.Response
+		responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+		_, err := p.PollUntilDone(responseCtx, &runtime.PollUntilDoneOptions{Frequency: 2 * time.Second})
+		if err != nil {
+			Logc(ctx).WithError(err).Error("Error polling for subvolume create result.")
+			return GetMessageFromError(ctx, err)
+		}
+
+		Logc(ctx).Debug("Result received for subvolume create.")
+	}
+
+	return nil
+}
+
+func (p *PollerSVDeleteResponse) Result(ctx context.Context) error {
+	if p != nil && p.Poller != nil {
+		var rawResponse *http.Response
+		responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+		_, err := p.PollUntilDone(responseCtx, &runtime.PollUntilDoneOptions{Frequency: 2 * time.Second})
+		if err != nil {
+			Logc(ctx).WithError(err).Error("Error polling for subvolume delete result.")
+			return GetMessageFromError(ctx, err)
+		}
+
+		Logc(ctx).Debug("Result received for subvolume delete.")
+	}
+
+	return nil
 }
 
 // Client encapsulates connection details.
@@ -1793,12 +1840,12 @@ func (c Client) WaitForSubvolumeState(
 }
 
 // CreateSubvolume creates a new subvolume
-func (c Client) CreateSubvolume(ctx context.Context, request *SubvolumeCreateRequest) (*Subvolume, error) {
+func (c Client) CreateSubvolume(ctx context.Context, request *SubvolumeCreateRequest) (*Subvolume, PollerResponse, error) {
 	subvolumeName := request.CreationToken
 
 	resourceGroup, netappAccount, cpoolName, volumeName, err := ParseVolumeName(request.Volume)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get volume information: %v", err)
+		return nil, nil, fmt.Errorf("unable to get volume information: %v", err)
 	}
 
 	path := "/" + subvolumeName
@@ -1835,14 +1882,14 @@ func (c Client) CreateSubvolume(ctx context.Context, request *SubvolumeCreateReq
 	var rawResponse *http.Response
 	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
 
-	_, err = c.sdkClient.SubvolumesClient.BeginCreate(responseCtx,
+	poller, err := c.sdkClient.SubvolumesClient.BeginCreate(responseCtx,
 		resourceGroup, netappAccount, cpoolName, volumeName, subvolumeName, newSubvol, nil)
 
 	logFields["correlationID"] = GetCorrelationID(rawResponse)
 
 	if err != nil {
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error creating subvolume.")
-		return nil, err
+		return nil, nil, err
 	}
 
 	Logc(ctx).WithFields(logFields).Info("Subvolume create request issued.")
@@ -1852,7 +1899,10 @@ func (c Client) CreateSubvolume(ctx context.Context, request *SubvolumeCreateReq
 		request.CreationToken)
 	newSubvol.ID = &newSubvolumeID
 
-	return c.newSubvolumeFromSubvolumeInfo(ctx, &newSubvol)
+	subvol, err := c.newSubvolumeFromSubvolumeInfo(ctx, &newSubvol)
+	createPollerResp := PollerSVCreateResponse{poller}
+
+	return subvol, &createPollerResp, err
 }
 
 // ResizeSubvolume sends a SubvolumePatchRequest to update a subvolume's size.
@@ -1888,8 +1938,9 @@ func (c Client) ResizeSubvolume(ctx context.Context, subvolume *Subvolume, newSi
 
 	_, err = poller.PollUntilDone(responseCtx, &runtime.PollUntilDoneOptions{Frequency: 2 * time.Second})
 	if err != nil {
-		Logc(ctx).WithFields(logFields).WithError(err).Error("Error polling for subvolume resize result.")
-		return err
+		trimmedErr := GetMessageFromError(responseCtx, err)
+		Logc(ctx).WithFields(logFields).WithError(trimmedErr).Error("Error polling for subvolume resize result.")
+		return trimmedErr
 	}
 
 	Logc(ctx).WithFields(logFields).Debug("Subvolume resize complete.")
@@ -1898,7 +1949,7 @@ func (c Client) ResizeSubvolume(ctx context.Context, subvolume *Subvolume, newSi
 }
 
 // DeleteSubvolume deletes a subvolume.
-func (c Client) DeleteSubvolume(ctx context.Context, subvolume *Subvolume) error {
+func (c Client) DeleteSubvolume(ctx context.Context, subvolume *Subvolume) (PollerResponse, error) {
 	logFields := log.Fields{
 		"API": "SubvolumesClient.BeginDelete",
 		"ID":  subvolume.ID,
@@ -1907,7 +1958,7 @@ func (c Client) DeleteSubvolume(ctx context.Context, subvolume *Subvolume) error
 	var rawResponse *http.Response
 	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
 
-	_, err := c.sdkClient.SubvolumesClient.BeginDelete(responseCtx,
+	poller, err := c.sdkClient.SubvolumesClient.BeginDelete(responseCtx,
 		subvolume.ResourceGroup, subvolume.NetAppAccount, subvolume.CapacityPool,
 		subvolume.Volume, subvolume.Name, nil)
 
@@ -1916,16 +1967,17 @@ func (c Client) DeleteSubvolume(ctx context.Context, subvolume *Subvolume) error
 	if err != nil {
 		if IsANFNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Info("Subvolume already deleted.")
-			return nil
+			return nil, nil
 		}
 
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error deleting subvolume.")
-		return err
+		return nil, err
 	}
 
 	Logc(ctx).WithFields(logFields).Debug("Subvolume deleted.")
+	deletePollerResp := PollerSVDeleteResponse{poller}
 
-	return nil
+	return &deletePollerResp, nil
 }
 
 // ValidateFilePoolVolumes validates a filePoolVolume and its location
@@ -2029,6 +2081,46 @@ func GetCorrelationID(response *http.Response) (id string) {
 	}
 
 	return
+}
+
+// GetMessageFromError accepts an error returned from the ANF SDK and extracts
+// the error message.
+func GetMessageFromError(ctx context.Context, inputErr error) error {
+	type AzureError struct {
+		Error struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+
+	if inputErr == nil {
+		return inputErr
+	}
+
+	if detailedErr, ok := inputErr.(*azcore.ResponseError); ok {
+		if detailedErr.RawResponse != nil && detailedErr.RawResponse.Body != nil {
+			bytes, readErr := io.ReadAll(detailedErr.RawResponse.Body)
+			if readErr != nil {
+				Logc(ctx).WithError(readErr).Error("Failed to read error body.")
+				return inputErr
+			}
+
+			var azureError AzureError
+			unmarshalErr := json.Unmarshal(bytes, &azureError)
+			if unmarshalErr != nil {
+				Logc(ctx).WithError(unmarshalErr).Error("Unmarshal error.")
+			} else {
+				errCode := azureError.Error.Code
+				errMessage := azureError.Error.Message
+
+				if errMessage != "" {
+					return fmt.Errorf("%v: %v", errCode, errMessage)
+				}
+			}
+		}
+	}
+
+	return inputErr
 }
 
 // DerefString accepts a string pointer and returns the value of the string, or "" if the pointer is nil.
