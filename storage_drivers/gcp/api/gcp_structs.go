@@ -80,6 +80,7 @@ type Volume struct {
 	UsedBytes             int            `json:"usedBytes"`
 	StorageClass          string         `json:"storageClass"`
 	PoolID                string         `json:"poolId"`
+	RegionalHA            bool           `json:"regionalHA"`
 }
 
 type MountPoint struct {

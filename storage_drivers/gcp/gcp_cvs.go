@@ -1144,6 +1144,9 @@ func (d *NFSStorageDriver) CreateClone(
 		Network:           gcpNetwork,
 	}
 
+	// Use the same service level for clone as the source volume.
+	cloneVolConfig.ServiceLevel = sourceVolConfig.ServiceLevel
+
 	// Check if we need to create clone in zone redundant pool
 	if cloneVolConfig.ServiceLevel == api.PoolServiceLevel2 {
 		createRequest.RegionalHA = true
@@ -1189,6 +1192,22 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 	// Get the volume size
 	volConfig.Size = strconv.FormatInt(volume.QuotaInBytes, 10)
+
+	// Set the serviceLevel in the imported volumes's config appropriately.
+	// a) for storageClass == software,
+	//      i) if RegionalHA is true, this means the volume is created in zoneRedundantstandardsw pool
+	//      ii) else use the serviceLevel as "standardsw"
+	// b) for storageClass == hardware, user save the servicelevel as one of standard, premium and extreme
+
+	if volume.StorageClass == api.StorageClassSoftware {
+		if volume.RegionalHA {
+			volConfig.ServiceLevel = api.PoolServiceLevel2
+		} else {
+			volConfig.ServiceLevel = api.PoolServiceLevel1
+		}
+	} else {
+		volConfig.ServiceLevel = api.UserServiceLevelFromAPIServiceLevel(volume.ServiceLevel)
+	}
 
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
