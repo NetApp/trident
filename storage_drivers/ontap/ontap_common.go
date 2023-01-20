@@ -1237,9 +1237,17 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 
 	switch config.NASType {
 	case sa.SMB:
-		config.UnixPermissions = ""
 		if config.SecurityStyle == "" {
 			config.SecurityStyle = DefaultSecurityStyleSMB
+		}
+		// SMB supports "mixed" and "ntfs" security styles.
+		// ONTAP supports unix permissions only with security style "mixed" on SMB volume.
+		if config.SecurityStyle == "mixed" {
+			if config.UnixPermissions == "" {
+				config.UnixPermissions = DefaultUnixPermissions
+			}
+		} else {
+			config.UnixPermissions = ""
 		}
 	case sa.NFS:
 		if config.UnixPermissions == "" {
