@@ -26,7 +26,7 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-// NASFlexGroupStorageDriver is for NFS FlexGroup storage provisioning
+// NASFlexGroupStorageDriver is for NFS and SMB FlexGroup storage provisioning
 type NASFlexGroupStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
@@ -173,6 +173,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 	}
 
 	pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels)
+	pool.Attributes()[sa.NASType] = sa.NewStringOffer(config.NASType)
 
 	if len(mediaOffers) > 0 {
 		pool.Attributes()[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
@@ -288,7 +289,13 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 				pool.Attributes()[attrName] = offer
 			}
 
+			nasType := config.NASType
+			if vpool.NASType != "" {
+				nasType = vpool.NASType
+			}
+
 			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels, vpool.Labels)
+			pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
 
 			if region != "" {
 				pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
@@ -919,10 +926,16 @@ func (d *NASFlexGroupStorageDriver) Publish(
 	}
 
 	// Add fields needed by Attach
-	publishInfo.NfsPath = fmt.Sprintf("/%s", name)
-	publishInfo.NfsServerIP = d.Config.DataLIF
-	publishInfo.FilesystemType = "nfs"
-	publishInfo.MountOptions = mountOptions
+	if d.Config.NASType == sa.SMB {
+		publishInfo.SMBPath = volConfig.AccessInfo.SMBPath
+		publishInfo.SMBServer = d.Config.DataLIF
+		publishInfo.FilesystemType = sa.SMB
+	} else {
+		publishInfo.NfsPath = fmt.Sprintf("/%s", name)
+		publishInfo.NfsServerIP = d.Config.DataLIF
+		publishInfo.FilesystemType = sa.NFS
+		publishInfo.MountOptions = mountOptions
+	}
 
 	return publishShare(ctx, d.API, &d.Config, publishInfo, name, d.API.FlexgroupModifyExportPolicy)
 }
@@ -1295,9 +1308,14 @@ func (d *NASFlexGroupStorageDriver) CreatePrepare(ctx context.Context, volConfig
 }
 
 func (d *NASFlexGroupStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
-	volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
-	volConfig.FileSystem = ""
+	if d.Config.NASType == sa.SMB {
+		volConfig.AccessInfo.SMBServer = d.Config.DataLIF
+		volConfig.FileSystem = sa.SMB
+	} else {
+		volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
+		volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
+		volConfig.FileSystem = sa.NFS
+	}
 
 	// Set correct junction path
 	flexgroup, err := d.API.FlexgroupInfo(ctx, volConfig.InternalName)
@@ -1309,12 +1327,28 @@ func (d *NASFlexGroupStorageDriver) CreateFollowup(ctx context.Context, volConfi
 
 	if flexgroup.JunctionPath == "" {
 		// Flexgroup is not mounted, we need to mount it
-		volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
-		if err := d.API.FlexgroupMount(ctx, volConfig.InternalName, volConfig.AccessInfo.NfsPath); err != nil {
-			return fmt.Errorf("error mounting volume to junction %s; %v", volConfig.AccessInfo.NfsPath, err)
+
+		if d.Config.NASType == sa.SMB {
+			volConfig.AccessInfo.SMBPath = ConstructOntapNASFlexGroupSMBVolumePath(ctx, d.Config.SMBShare,
+				volConfig.InternalName)
+			err = d.MountFlexgroup(ctx, volConfig.InternalName, volConfig.AccessInfo.SMBPath)
+			if err != nil {
+				return err
+			}
+		} else {
+			volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
+			err = d.MountFlexgroup(ctx, volConfig.InternalName, volConfig.AccessInfo.NfsPath)
+			if err != nil {
+				return err
+			}
 		}
 	} else {
-		volConfig.AccessInfo.NfsPath = flexgroup.JunctionPath
+		if d.Config.NASType == sa.SMB {
+			volConfig.AccessInfo.SMBPath = ConstructOntapNASFlexGroupSMBVolumePath(ctx, d.Config.SMBShare,
+				flexgroup.JunctionPath)
+		} else {
+			volConfig.AccessInfo.NfsPath = flexgroup.JunctionPath
+		}
 	}
 
 	return nil
@@ -1518,4 +1552,12 @@ func (d NASFlexGroupStorageDriver) GoString() string {
 // GetCommonConfig returns driver's CommonConfig
 func (d NASFlexGroupStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
+}
+
+// MountFlexgroup returns the flexgroup volume mount error(if any)
+func (d NASFlexGroupStorageDriver) MountFlexgroup(ctx context.Context, name, junctionPath string) error {
+	if err := d.API.FlexgroupMount(ctx, name, junctionPath); err != nil {
+		return fmt.Errorf("error mounting volume to junction %s; %v", junctionPath, err)
+	}
+	return nil
 }

@@ -135,17 +135,17 @@ func (mr *MockOntapAPIMockRecorder) ExportPolicyExists(arg0, arg1 interface{}) *
 }
 
 // ExportRuleCreate mocks base method.
-func (m *MockOntapAPI) ExportRuleCreate(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockOntapAPI) ExportRuleCreate(arg0 context.Context, arg1, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExportRuleCreate", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ExportRuleCreate", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ExportRuleCreate indicates an expected call of ExportRuleCreate.
-func (mr *MockOntapAPIMockRecorder) ExportRuleCreate(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) ExportRuleCreate(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleCreate", reflect.TypeOf((*MockOntapAPI)(nil).ExportRuleCreate), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleCreate", reflect.TypeOf((*MockOntapAPI)(nil).ExportRuleCreate), arg0, arg1, arg2, arg3)
 }
 
 // ExportRuleDestroy mocks base method.

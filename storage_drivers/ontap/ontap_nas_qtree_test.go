@@ -90,8 +90,10 @@ func TestNASQtreeStorageDriver_ensureDefaultExportPolicyRule_NoRulesSet(t *testi
 	// Return an empty set of rules when asked for them
 	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), fakeExportPolicy).Return(make(map[string]int), nil)
 	// Ensure that the default rules are created after getting an empty list of rules
-	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), rules[0]).After(ruleListCall).Return(nil)
-	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), rules[1]).After(ruleListCall).Return(nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), rules[0],
+		gomock.Any()).After(ruleListCall).Return(nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), rules[1],
+		gomock.Any()).After(ruleListCall).Return(nil)
 
 	qtreeDriver := newNASQtreeStorageDriver(mockAPI)
 	qtreeDriver.flexvolExportPolicy = fakeExportPolicy
@@ -150,7 +152,7 @@ func TestNASQtreeStorageDriver_ensureDefaultExportPolicyRule_ErrorCreatingRules(
 	// Return an empty set of rules when asked for them
 	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), fakeExportPolicy).Return(make(map[string]int), nil)
 	// Ensure that the default rules are created after getting an empty list of rules
-	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), rules[0]).After(ruleListCall).Return(
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), rules[0], gomock.Any()).After(ruleListCall).Return(
 		fmt.Errorf("foobar"),
 	)
 
@@ -261,7 +263,8 @@ func TestSetVolumePatternWithInternalID(t *testing.T) {
 	internalID := "/svm/fakeSVM/flexvol/fakeFlexvol/qtree/fakeQtree"
 	internalName := "fakeQtree"
 	volumePrefix := "fakePrefix"
-	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName, volumePrefix)
+	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName,
+		volumePrefix)
 	assert.NoError(t, err, "unexpected error found while setting setting volume pattern")
 	assert.Equal(t, volumePattern, "fakeFlexvol")
 	assert.Equal(t, name, "fakeQtree")
@@ -274,7 +277,8 @@ func TestSetVolumePatternWithMisformedInternalID(t *testing.T) {
 	internalID := "/flexvol/fakeFlexvol/qtree/fakeQtree"
 	internalName := "fakeQtree"
 	volumePrefix := "fakePrefix"
-	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName, volumePrefix)
+	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName,
+		volumePrefix)
 	assert.Error(t, err, "expected an error when InternalID is misformed")
 	assert.Equal(t, volumePattern, "")
 	assert.Equal(t, name, "")
@@ -287,7 +291,8 @@ func TestSetVolumePatternWithoutInternalID(t *testing.T) {
 	internalID := ""
 	internalName := "fakeQtree"
 	volumePrefix := "fakePrefix"
-	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName, volumePrefix)
+	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName,
+		volumePrefix)
 	assert.NoError(t, err, "unexpected error found while setting setting volume pattern")
 	assert.Equal(t, volumePattern, "fakePrefix*")
 	assert.Equal(t, name, "fakeQtree")
@@ -300,7 +305,8 @@ func TestSetVolumePatternWithNoInternalIDAndNoPrefix(t *testing.T) {
 	internalID := ""
 	internalName := "fakeQtree"
 	volumePrefix := ""
-	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName, volumePrefix)
+	volumePattern, name, err := driver.SetVolumePatternToFindQtree(context.Background(), internalID, internalName,
+		volumePrefix)
 	assert.NoError(t, err, "unexpected error found while setting setting volume pattern")
 	assert.Equal(t, volumePattern, "*")
 	assert.Equal(t, name, "fakeQtree")

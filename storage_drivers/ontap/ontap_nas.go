@@ -41,7 +41,7 @@ import (
 // via abstraction layer (ONTAPI interface)
 // //////////////////////////////////////////////////////////////////////////////////////////
 
-// NASStorageDriver is for NFS storage provisioning
+// NASStorageDriver is for NFS and SMB storage provisioning
 type NASStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
@@ -637,10 +637,17 @@ func (d *NASStorageDriver) Publish(
 	// TODO (akerr) Figure out if this is the behavior we want or if we should be changing the junction path for
 	//  managed imports
 	// publishInfo.NfsPath = fmt.Sprintf("/%s", name)
-	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
-	publishInfo.NfsServerIP = d.Config.DataLIF
-	publishInfo.FilesystemType = "nfs"
-	publishInfo.MountOptions = mountOptions
+
+	if d.Config.NASType == sa.SMB {
+		publishInfo.SMBPath = volConfig.AccessInfo.SMBPath
+		publishInfo.SMBServer = d.Config.DataLIF
+		publishInfo.FilesystemType = sa.SMB
+	} else {
+		publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
+		publishInfo.NfsServerIP = d.Config.DataLIF
+		publishInfo.FilesystemType = sa.NFS
+		publishInfo.MountOptions = mountOptions
+	}
 
 	return publishShare(ctx, d.API, &d.Config, publishInfo, name, d.API.VolumeModifyExportPolicy)
 }
@@ -918,6 +925,7 @@ func (d *NASStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 }
 
 func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	var accessPath string
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateFollowup",
@@ -930,9 +938,14 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	}
 
 	volConfig.MirrorHandle = d.API.SVMName() + ":" + volConfig.InternalName
-	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
-	volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
-	volConfig.FileSystem = ""
+	if d.Config.NASType == sa.SMB {
+		volConfig.AccessInfo.SMBServer = d.Config.DataLIF
+		volConfig.FileSystem = sa.SMB
+	} else {
+		volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
+		volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
+		volConfig.FileSystem = sa.NFS
+	}
 
 	// Set correct junction path
 	flexvol, err := d.API.VolumeInfo(ctx, volConfig.InternalName)
@@ -943,20 +956,27 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	if flexvol.JunctionPath == "" {
 		if flexvol.AccessType == "rw" || flexvol.AccessType == "dp" {
 			// Flexvol is not mounted, we need to mount it
-			volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
-			if err := d.API.VolumeMount(ctx, volConfig.InternalName, volConfig.AccessInfo.NfsPath); err != nil {
-				// An API error is returned if we attempt to mount a DP volume that has not yet been snapmirrored,
-				// we expect this to be the case.
+			if d.Config.NASType == sa.SMB {
+				volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
+					volConfig.InternalName)
+				accessPath = volConfig.AccessInfo.SMBPath
+			} else {
+				volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
+				accessPath = volConfig.AccessInfo.NfsPath
+			}
 
-				if api.IsApiError(err) && flexvol.DPVolume {
-					Logc(ctx).Debugf("Received expected API error when mounting DP volume to junction; %v", err)
-				} else {
-					return fmt.Errorf("error mounting volume to junction %s; %v", volConfig.AccessInfo.NfsPath, err)
-				}
+			err = d.MountVolume(ctx, volConfig.InternalName, accessPath, flexvol)
+			if err != nil {
+				return err
 			}
 		}
 	} else {
-		volConfig.AccessInfo.NfsPath = flexvol.JunctionPath
+		if d.Config.NASType == sa.SMB {
+			volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
+				flexvol.JunctionPath)
+		} else {
+			volConfig.AccessInfo.NfsPath = flexvol.JunctionPath
+		}
 	}
 	return nil
 }
@@ -1247,4 +1267,21 @@ func (d *NASStorageDriver) GetReplicationDetails(
 	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
 ) (string, string, error) {
 	return getReplicationDetails(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
+}
+
+// MountVolume returns the volume mount error(if any)
+func (d *NASStorageDriver) MountVolume(
+	ctx context.Context, name, junctionPath string, flexVol *api.Volume,
+) error {
+	if err := d.API.VolumeMount(ctx, name, junctionPath); err != nil {
+		// An API error is returned if we attempt to mount a DP volume that has not yet been snapmirrored,
+		// we expect this to be the case.
+
+		if api.IsApiError(err) && flexVol.DPVolume {
+			Logc(ctx).Debugf("Received expected API error when mounting DP volume to junction; %v", err)
+		} else {
+			return fmt.Errorf("error mounting volume to junction %s; %v", junctionPath, err)
+		}
+	}
+	return nil
 }

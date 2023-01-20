@@ -320,7 +320,7 @@ func reconcileNASNodeAccess(
 		Logc(ctx).Error(err)
 		return err
 	}
-	err = reconcileExportPolicyRules(ctx, policyName, desiredRules, clientAPI)
+	err = reconcileExportPolicyRules(ctx, policyName, desiredRules, clientAPI, config)
 	if err != nil {
 		err = fmt.Errorf("unabled to reconcile export policy rules; %v", err)
 		Logc(ctx).WithField("ExportPolicy", policyName).Error(err)
@@ -348,6 +348,7 @@ func getDesiredExportPolicyRules(
 
 func reconcileExportPolicyRules(
 	ctx context.Context, policyName string, desiredPolicyRules []string, clientAPI api.OntapAPI,
+	config *drivers.OntapStorageDriverConfig,
 ) error {
 	fields := log.Fields{
 		"Method":             "reconcileExportPolicyRule",
@@ -367,7 +368,7 @@ func reconcileExportPolicyRules(
 			delete(rules, rule)
 		} else {
 			// Rule does not exist, so create it
-			if err = clientAPI.ExportRuleCreate(ctx, policyName, rule); err != nil {
+			if err = clientAPI.ExportRuleCreate(ctx, policyName, rule, config.NASType); err != nil {
 				return err
 			}
 		}
@@ -489,7 +490,8 @@ func GetOntapDriverRedactList() []string {
 // PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
 // This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
 func PopulateOntapLunMapping(
-	ctx context.Context, clientAPI api.OntapAPI, ips []string, volConfig *storage.VolumeConfig, lunID int, lunPath, igroupName string,
+	ctx context.Context, clientAPI api.OntapAPI, ips []string, volConfig *storage.VolumeConfig, lunID int,
+	lunPath, igroupName string,
 ) error {
 	var targetIQN string
 	targetIQN, err := clientAPI.IscsiNodeGetNameRequest(ctx)
@@ -1026,6 +1028,9 @@ func ValidateSANDriver(
 func ValidateNASDriver(
 	ctx context.Context, api api.OntapAPI, config *drivers.OntapStorageDriverConfig,
 ) error {
+	var dataLIFs []string
+	var protocol string
+
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "ValidateNASDriver", "Type": "ontap_common"}
 		Logc(ctx).WithFields(fields).Debug(">>>> ValidateNASDriver")
@@ -1034,13 +1039,20 @@ func ValidateNASDriver(
 
 	isLuks, err := strconv.ParseBool(config.LUKSEncryption)
 	if err != nil {
-		return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", config.LUKSEncryption)
+		return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v",
+			config.LUKSEncryption)
 	}
 	if isLuks {
 		return fmt.Errorf("ONTAP NAS drivers do not support LUKS encrypted volumes")
 	}
 
-	dataLIFs, err := api.NetInterfaceGetDataLIFs(ctx, "nfs")
+	if config.NASType == sa.SMB {
+		protocol = "cifs"
+	} else {
+		protocol = "nfs"
+	}
+
+	dataLIFs, err = api.NetInterfaceGetDataLIFs(ctx, protocol)
 	if err != nil {
 		return err
 	}
@@ -1051,7 +1063,7 @@ func ValidateNASDriver(
 		Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Found NAS LIFs.")
 	}
 
-	// If they didn't set a LIF to use in the config, we'll set it to the first nfs LIF we happen to find
+	// If they didn't set a LIF to use in the config, we'll set it to the first NFS/SMB LIF we happen to find
 	if config.DataLIF == "" {
 		if utils.IPv6Check(dataLIFs[0]) {
 			config.DataLIF = "[" + dataLIFs[0] + "]"
@@ -1099,7 +1111,8 @@ const (
 	DefaultUnixPermissions           = "---rwxrwxrwx"
 	DefaultSnapshotDir               = "false"
 	DefaultExportPolicy              = "default"
-	DefaultSecurityStyle             = "unix"
+	DefaultSecurityStyleNFS          = "unix"
+	DefaultSecurityStyleSMB          = "ntfs"
 	DefaultNfsMountOptionsDocker     = "-o nfsvers=3"
 	DefaultNfsMountOptionsKubernetes = ""
 	DefaultSplitOnClone              = "false"
@@ -1153,10 +1166,6 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		}
 	}
 
-	if config.UnixPermissions == "" {
-		config.UnixPermissions = DefaultUnixPermissions
-	}
-
 	if config.SnapshotDir == "" {
 		config.SnapshotDir = DefaultSnapshotDir
 	}
@@ -1169,10 +1178,6 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.ExportPolicy = "<automatic>"
 	} else if config.ExportPolicy == "" {
 		config.ExportPolicy = DefaultExportPolicy
-	}
-
-	if config.SecurityStyle == "" {
-		config.SecurityStyle = DefaultSecurityStyle
 	}
 
 	if config.NfsMountOptions == "" {
@@ -1223,6 +1228,26 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 
 	if len(config.FlexGroupAggregateList) == 0 {
 		config.FlexGroupAggregateList = []string{}
+	}
+
+	// If NASType is not provided in the backend config, default to NFS
+	if config.NASType == "" {
+		config.NASType = sa.NFS
+	}
+
+	switch config.NASType {
+	case sa.SMB:
+		config.UnixPermissions = ""
+		if config.SecurityStyle == "" {
+			config.SecurityStyle = DefaultSecurityStyleSMB
+		}
+	case sa.NFS:
+		if config.UnixPermissions == "" {
+			config.UnixPermissions = DefaultUnixPermissions
+		}
+		if config.SecurityStyle == "" {
+			config.SecurityStyle = DefaultSecurityStyleNFS
+		}
 	}
 
 	Logc(ctx).WithFields(log.Fields{
@@ -1708,6 +1733,7 @@ func InitializeStoragePoolsCommon(
 		}
 
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels)
+		pool.Attributes()[sa.NASType] = sa.NewStringOffer(config.NASType)
 
 		pool.InternalAttributes()[Size] = config.Size
 		pool.InternalAttributes()[Region] = config.Region
@@ -1843,7 +1869,13 @@ func InitializeStoragePoolsCommon(
 			pool.Attributes()[attrName] = offer
 		}
 
+		nasType := config.NASType
+		if vpool.NASType != "" {
+			nasType = vpool.NASType
+		}
+
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels, vpool.Labels)
+		pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
 
 		if region != "" {
 			pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
@@ -1898,6 +1930,8 @@ func InitializeStoragePoolsCommon(
 func ValidateStoragePools(
 	ctx context.Context, physicalPools, virtualPools map[string]storage.Pool, d StorageDriver, labelLimit int,
 ) error {
+	config := d.GetConfig()
+
 	// Validate pool-level attributes
 	allPools := make([]storage.Pool, 0, len(physicalPools)+len(virtualPools))
 
@@ -1948,11 +1982,24 @@ func ValidateStoragePools(
 		}
 
 		// Validate SecurityStyles
-		switch pool.InternalAttributes()[SecurityStyle] {
-		case "unix", "mixed":
-			break
-		default:
-			return fmt.Errorf("invalid securityStyle %s in pool %s", pool.InternalAttributes()[SecurityStyle], poolName)
+		// SMB supports "mixed" and "ntfs" security styles.
+		// NFS supports "mixed" and "unix" security styles.
+		if config.NASType == sa.SMB {
+			switch pool.InternalAttributes()[SecurityStyle] {
+			case "mixed", "ntfs":
+				break
+			default:
+				return fmt.Errorf("invalid securityStyle %s, for NASType %s in pool %s",
+					pool.InternalAttributes()[SecurityStyle], config.NASType, poolName)
+			}
+		} else {
+			switch pool.InternalAttributes()[SecurityStyle] {
+			case "mixed", "unix":
+				break
+			default:
+				return fmt.Errorf("invalid securityStyle %s, for NASType %s in pool %s",
+					pool.InternalAttributes()[SecurityStyle], config.NASType, poolName)
+			}
 		}
 
 		// Validate ExportPolicy
@@ -1961,8 +2008,10 @@ func ValidateStoragePools(
 		}
 
 		// Validate UnixPermissions
-		if pool.InternalAttributes()[UnixPermissions] == "" {
-			return fmt.Errorf("UNIX permissions cannot by empty in pool %s", poolName)
+		if config.NASType == sa.NFS {
+			if pool.InternalAttributes()[UnixPermissions] == "" {
+				return fmt.Errorf("UNIX permissions cannot by empty in pool %s", poolName)
+			}
 		}
 
 		// Validate TieringPolicy
@@ -2032,7 +2081,8 @@ func ValidateStoragePools(
 		if _, ok := pool.InternalAttributes()[LUKSEncryption]; ok {
 			isLuks, err := strconv.ParseBool(pool.InternalAttributes()[LUKSEncryption])
 			if err != nil {
-				return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", pool.InternalAttributes()[LUKSEncryption])
+				return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v",
+					pool.InternalAttributes()[LUKSEncryption])
 			}
 			if isLuks && !(d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName) {
 				return fmt.Errorf("LUKS encrypted volumes are only supported by the following drivers: %s, %s",
@@ -2686,4 +2736,50 @@ func GetEncryptionValue(encryption string) (*bool, error) {
 		return &enable, err
 	}
 	return nil, nil
+}
+
+// ConstructOntapNASSMBVolumePath returns windows compatible volume path for Ontap NAS.
+// Function accepts parameters in following way:
+// 1.smbShare : This takes the value given in backend config, without path prefix.
+// 2.volumeName : This takes the value of volume's internal name, it is always prefixed with unix styled path separator.
+// Example, ConstructOntapNASSMBVolumePath(ctx, "test_share", "/vol")
+func ConstructOntapNASSMBVolumePath(ctx context.Context, smbShare, volumeName string) string {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASSMBVolumePath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASSMBVolumePath")
+
+	completeVolumePath := utils.WindowsPathSeparator + smbShare + volumeName
+
+	// Replace unix styled path separator, if exists
+	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
+}
+
+// ConstructOntapNASFlexGroupSMBVolumePath returns windows compatible volume path for Ontap NAS FlexGroup
+// Function accepts parameters in following way:
+// 1.smbShare : This takes the value given in backend config, without path prefix.
+// 2.volumeName : This takes the value of volume's internal name, it is always prefixed with unix styled path separator.
+// Example, ConstructOntapNASFlexGroupSMBVolumePath(ctx, "test_share", "/vol")
+func ConstructOntapNASFlexGroupSMBVolumePath(ctx context.Context, smbShare, volumeName string) string {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASFlexGroupSMBVolumePath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASFlexGroupSMBVolumePath")
+
+	completeVolumePath := utils.WindowsPathSeparator + smbShare + volumeName
+
+	// Replace unix styled path separator, if exists
+	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
+}
+
+// ConstructOntapNASQTreeSMBVolumePath returns windows compatible volume path for Ontap NAS QTree
+// Function accepts parameters in following way:
+// 1.smbShare : This takes the value given in backend config, without path prefix.
+// 2.flexVol : This takes the value of the parent volume, without path prefix.
+// 3.volumeName : This takes the value of volume's internal name,  without path prefix.
+// Example, ConstructOntapNASQTreeSMBVolumePath(ctx, "test_share", "flex-vol", "vol")
+func ConstructOntapNASQTreeSMBVolumePath(ctx context.Context, smbShare, flexVol, volumeName string) string {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASQTreeSMBVolumePath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASQTreeSMBVolumePath")
+
+	completeVolumePath := utils.WindowsPathSeparator + smbShare + utils.WindowsPathSeparator + flexVol + utils.WindowsPathSeparator + volumeName
+
+	// Replace unix styled path separator, if exists
+	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
 }

@@ -780,13 +780,16 @@ func (c Client) FlexGroupCreate(
 		SetSize(size).
 		SetSnapshotPolicy(snapshotPolicy).
 		SetSpaceReserve(spaceReserve).
-		SetUnixPermissions(unixPermissions).
 		SetExportPolicy(exportPolicy).
 		SetVolumeSecurityStyle(securityStyle).
 		SetAggrList(aggrList).
 		SetJunctionPath(junctionPath).
 		SetVolumeComment(comment)
 
+	// Set Unix permission for NFS volume only.
+	if unixPermissions != "" {
+		request.SetUnixPermissions(unixPermissions)
+	}
 	// For encrypt == nil - we don't explicitely set the encrypt argument.
 	// If destination aggregate is NAE enabled, new volume will be aggregate encrypted
 	// else it will be volume encrypted as per Ontap's default behaviour.
@@ -976,8 +979,13 @@ func (c Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(
 func (c Client) FlexGroupModifyUnixPermissions(
 	ctx context.Context, volumeName, unixPermissions string,
 ) (*azgo.VolumeModifyIterAsyncResponse, error) {
+	var volSecurityUnixAttrs *azgo.VolumeSecurityUnixAttributesType
+
 	volAttr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
-	volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
+	// Set Unix permission for NFS volume only.
+	if unixPermissions != "" {
+		volSecurityUnixAttrs = azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
+	}
 	volSecurityAttrs := azgo.NewVolumeSecurityAttributesType().SetVolumeSecurityUnixAttributes(*volSecurityUnixAttrs)
 	securityAttributes := azgo.NewVolumeAttributesType().SetVolumeSecurityAttributes(*volSecurityAttrs)
 	volAttr.SetVolumeAttributes(*securityAttributes)
@@ -1179,7 +1187,7 @@ func (c Client) VolumeCreate(
 
 	if dpVolume {
 		request.SetVolumeType("DP")
-	} else {
+	} else if unixPermissions != "" {
 		request.SetUnixPermissions(unixPermissions)
 	}
 
@@ -1242,8 +1250,14 @@ func (c Client) VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*
 func (c Client) VolumeModifyUnixPermissions(
 	volumeName, unixPermissions string,
 ) (*azgo.VolumeModifyIterResponse, error) {
+	var volSecurityUnixAttrs *azgo.VolumeSecurityUnixAttributesType
+
 	volAttr := &azgo.VolumeModifyIterRequestAttributes{}
-	volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
+	// Set Unix permission for NFS volume only.
+	if unixPermissions != "" {
+		volSecurityUnixAttrs = azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
+	}
+
 	volSecurityAttrs := azgo.NewVolumeSecurityAttributesType().SetVolumeSecurityUnixAttributes(*volSecurityUnixAttrs)
 	securityAttributes := azgo.NewVolumeAttributesType().SetVolumeSecurityAttributes(*volSecurityAttrs)
 	volAttr.SetVolumeAttributes(*securityAttributes)
@@ -1698,9 +1712,13 @@ func (c Client) QtreeCreate(
 	request := azgo.NewQtreeCreateRequest().
 		SetQtree(name).
 		SetVolume(volumeName).
-		SetMode(unixPermissions).
 		SetSecurityStyle(securityStyle).
 		SetExportPolicy(exportPolicy)
+
+	// Set Unix permission for NFS volume only.
+	if unixPermissions != "" {
+		request.SetMode(unixPermissions)
+	}
 
 	if qosPolicy != "" {
 		request.SetQosPolicyGroup(qosPolicy)

@@ -16,6 +16,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
+	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 
 	. "github.com/netapp/trident/logger"
@@ -270,7 +271,9 @@ func (d OntapAPIZAPI) LunGetGeometry(ctx context.Context, lunPath string) (uint6
 	return lunMaxSize, nil
 }
 
-func (d OntapAPIZAPI) LunCloneCreate(ctx context.Context, flexvol, source, lunName string, qosPolicyGroup QosPolicyGroup) error {
+func (d OntapAPIZAPI) LunCloneCreate(
+	ctx context.Context, flexvol, source, lunName string, qosPolicyGroup QosPolicyGroup,
+) error {
 	cloneResponse, err := d.api.LunCloneCreate(flexvol, source, lunName, qosPolicyGroup)
 	if err != nil {
 		return fmt.Errorf("error creating clone: %v", err)
@@ -1528,9 +1531,16 @@ func (d OntapAPIZAPI) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume
 	return volumes, nil
 }
 
-func (d OntapAPIZAPI) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRule string) error {
-	ruleResponse, err := d.api.ExportRuleCreate(policyName, desiredPolicyRule,
-		[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
+func (d OntapAPIZAPI) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRule, nasProtocol string) error {
+	var ruleResponse *azgo.ExportRuleCreateResponse
+	var err error
+	if nasProtocol == sa.SMB {
+		ruleResponse, err = d.api.ExportRuleCreate(policyName, desiredPolicyRule,
+			[]string{"cifs"}, []string{"any"}, []string{"any"}, []string{"any"})
+	} else {
+		ruleResponse, err = d.api.ExportRuleCreate(policyName, desiredPolicyRule,
+			[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
+	}
 	if err = azgo.GetError(ctx, ruleResponse, err); err != nil {
 		err = fmt.Errorf("error creating export rule: %v", err)
 		Logc(ctx).WithFields(log.Fields{

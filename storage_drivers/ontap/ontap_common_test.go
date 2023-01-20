@@ -1802,3 +1802,24 @@ func TestRestGetSLMLifs(t *testing.T) {
 
 	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
 }
+
+func TestConstructOntapNASSMBVolumePath(t *testing.T) {
+	ctx := context.Background()
+
+	result := ConstructOntapNASSMBVolumePath(ctx, "test_share", "/vol")
+	assert.Equal(t, "\\test_share\\vol", result, "unable to construct Ontap-NAS SMB volume path")
+}
+
+func TestConstructOntapNASFlexGroupSMBVolumePath(t *testing.T) {
+	ctx := context.Background()
+
+	result := ConstructOntapNASFlexGroupSMBVolumePath(ctx, "test_share", "/vol")
+	assert.Equal(t, "\\test_share\\vol", result, "unable to construct  Ontap-NAS-FlexGroup SMB volume path")
+}
+
+func TestConstructOntapNASQTreeSMBVolumePath(t *testing.T) {
+	ctx := context.Background()
+
+	result := ConstructOntapNASQTreeSMBVolumePath(ctx, "test_share", "flex-vol", "vol")
+	assert.Equal(t, "\\test_share\\flex-vol\\vol", result, "unable to construct Ontap-NAS-QTree SMB volume path")
+}

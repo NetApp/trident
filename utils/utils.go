@@ -54,6 +54,10 @@ const (
 	// NAS protocols
 	SMB = "smb"
 
+	// Path separator
+	WindowsPathSeparator = `\`
+	UnixPathSeparator    = "/"
+
 	deviceOperationsTimeout = 5 * time.Second
 )
 

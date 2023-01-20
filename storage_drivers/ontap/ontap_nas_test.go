@@ -1278,7 +1278,7 @@ func TestOntapNasStorageDriverGetVolumeExternalWrappers_Failure(t *testing.T) {
 	assert.Equal(t, 1, len(channel))
 }
 
-func TestOntapNasStorageDriverCreateFollowup(t *testing.T) {
+func TestOntapNasStorageDriverCreateFollowup_NASType_None(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	volConfig := &storage.VolumeConfig{
 		Size:         "1g",
@@ -1297,6 +1297,34 @@ func TestOntapNasStorageDriverCreateFollowup(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(&flexVol, nil)
 	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
+
+	result := driver.CreateFollowup(ctx, volConfig)
+
+	assert.NoError(t, result)
+}
+
+func TestOntapNasStorageDriverCreateFollowup_NASType_SMB(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	driver.Config.NASType = "smb"
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "cifs",
+		InternalName: "vol1",
+	}
+
+	flexVol := api.Volume{
+		Name:         "flexvol",
+		Comment:      "flexvol",
+		JunctionPath: "",
+		AccessType:   "rw",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(&flexVol, nil)
+	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "\\vol1").Return(nil)
 
 	result := driver.CreateFollowup(ctx, volConfig)
 
@@ -1352,7 +1380,7 @@ func TestOntapNasStorageDriverCreateFollowup_VolumeMountFailure(t *testing.T) {
 			if test.errorType == "api error" {
 				mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(api.ApiError(test.message))
 				result := driver.CreateFollowup(ctx, volConfig)
-				assert.NoError(t, result)
+				assert.Nil(t, result)
 			} else {
 				mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(fmt.Errorf(test.message))
 				result := driver.CreateFollowup(ctx, volConfig)
@@ -1362,7 +1390,7 @@ func TestOntapNasStorageDriverCreateFollowup_VolumeMountFailure(t *testing.T) {
 	}
 }
 
-func TestOntapNasStorageDriverCreateFollowup_WithJunctionPath(t *testing.T) {
+func TestOntapNasStorageDriverCreateFollowup_WithJunctionPath_NASType_None(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	volConfig := &storage.VolumeConfig{
 		Size:         "1g",
@@ -1375,6 +1403,32 @@ func TestOntapNasStorageDriverCreateFollowup_WithJunctionPath(t *testing.T) {
 		Name:         "flexvol",
 		Comment:      "flexvol",
 		JunctionPath: "/vol1",
+		AccessType:   "rw",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(&flexVol, nil)
+
+	result := driver.CreateFollowup(ctx, volConfig)
+
+	assert.NoError(t, result)
+}
+
+func TestOntapNasStorageDriverCreateFollowup_WithJunctionPath_NASType_SMB(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.NASType = "smb"
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "cifs",
+		InternalName: "vol1",
+	}
+
+	flexVol := api.Volume{
+		Name:         "flexvol",
+		Comment:      "flexvol",
+		JunctionPath: "\\vol1",
 		AccessType:   "rw",
 	}
 
@@ -2653,7 +2707,7 @@ func TestOntapNasStorageDriverVolumeImport_UnixPermissions(t *testing.T) {
 	assert.Error(t, result)
 }
 
-func TestOntapNasStorageDriverVolumePublish(t *testing.T) {
+func TestOntapNasStorageDriverVolumePublish_NASType_None(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	volConfig := &storage.VolumeConfig{
 		Size:             "1g",
@@ -2666,6 +2720,27 @@ func TestOntapNasStorageDriverVolumePublish(t *testing.T) {
 		MountOptions:     "-o nfsvers=3",
 	}
 	volConfig.AccessInfo.NfsPath = "/nfs"
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	result := driver.Publish(ctx, volConfig, &utils.VolumePublishInfo{})
+
+	assert.NoError(t, result)
+}
+
+func TestOntapNasStorageDriverVolumePublish_NASType_SMB(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.NASType = "smb"
+
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "cifs",
+		InternalName:     "vol1",
+		PeerVolumeHandle: "SVM1:vol1",
+		ImportNotManaged: false,
+	}
+	volConfig.AccessInfo.SMBPath = "/test_cifs_path"
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 

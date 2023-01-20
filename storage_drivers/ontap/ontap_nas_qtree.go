@@ -41,7 +41,7 @@ const (
 	resizeTask                                  = "resize"
 )
 
-// NASQtreeStorageDriver is for NFS storage provisioning of qtrees
+// NASQtreeStorageDriver is for NFS and SMB storage provisioning of qtrees
 type NASQtreeStorageDriver struct {
 	initialized                      bool
 	Config                           drivers.OntapStorageDriverConfig
@@ -595,10 +595,16 @@ func (d *NASQtreeStorageDriver) Publish(
 	}
 
 	// Add fields needed by Attach
-	publishInfo.NfsPath = fmt.Sprintf("/%s/%s", flexvol, name)
-	publishInfo.NfsServerIP = d.Config.DataLIF
-	publishInfo.FilesystemType = "nfs"
-	publishInfo.MountOptions = mountOptions
+	if d.Config.NASType == sa.SMB {
+		publishInfo.SMBPath = volConfig.AccessInfo.SMBPath
+		publishInfo.SMBServer = d.Config.DataLIF
+		publishInfo.FilesystemType = sa.SMB
+	} else {
+		publishInfo.NfsPath = fmt.Sprintf("/%s/%s", flexvol, name)
+		publishInfo.NfsServerIP = d.Config.DataLIF
+		publishInfo.FilesystemType = sa.NFS
+		publishInfo.MountOptions = mountOptions
+	}
 
 	return d.publishQtreeShare(ctx, name, flexvol, publishInfo)
 }
@@ -825,13 +831,25 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool,
 	enableEncryption *bool, snapshotReserve, exportPolicy string,
 ) (string, error) {
+	var unixPermissions string
+	var securityStyle string
+
 	flexvol := d.FlexvolNamePrefix() + utils.RandomString(10)
 	size := "1g"
-	unixPermissions := "0711"
+
 	if !d.Config.AutoExportPolicy {
 		exportPolicy = d.flexvolExportPolicy
 	}
-	securityStyle := "unix"
+
+	// Set Unix permission for NFS volume only.
+	switch d.Config.NASType {
+	case sa.SMB:
+		unixPermissions = ""
+		securityStyle = DefaultSecurityStyleSMB
+	case sa.NFS:
+		unixPermissions = "0711"
+		securityStyle = DefaultSecurityStyleNFS
+	}
 
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
@@ -1311,7 +1329,7 @@ func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule(ctx context.Contex
 		// No rules, so create one for IPv4 and IPv6
 		rules := []string{"0.0.0.0/0", "::/0"}
 		for _, rule := range rules {
-			err := d.API.ExportRuleCreate(ctx, d.flexvolExportPolicy, rule)
+			err := d.API.ExportRuleCreate(ctx, d.flexvolExportPolicy, rule, d.Config.NASType)
 			if err != nil {
 				return fmt.Errorf("error creating export rule: %v", err)
 			}
@@ -1407,9 +1425,16 @@ func (d *NASQtreeStorageDriver) CreateFollowup(ctx context.Context, volConfig *s
 	}
 
 	// Set export path info on the volume config
-	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
-	volConfig.AccessInfo.NfsPath = fmt.Sprintf("/%s/%s", flexvol, volConfig.InternalName)
-	volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
+	if d.Config.NASType == sa.SMB {
+		volConfig.AccessInfo.SMBServer = d.Config.DataLIF
+		volConfig.AccessInfo.SMBPath = ConstructOntapNASQTreeSMBVolumePath(ctx, d.Config.SMBShare, flexvol,
+			volConfig.InternalName)
+		volConfig.FileSystem = sa.SMB
+	} else {
+		volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
+		volConfig.AccessInfo.NfsPath = fmt.Sprintf("/%s/%s", flexvol, volConfig.InternalName)
+		volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
+	}
 
 	return nil
 }

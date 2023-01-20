@@ -18,6 +18,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	. "github.com/netapp/trident/logger"
+	sa "github.com/netapp/trident/storage_attribute"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
 )
@@ -813,7 +815,10 @@ func (d OntapAPIREST) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume
 	return d.api.VolumeListByAttrs(ctx, volumeAttrs)
 }
 
-func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRules string) error {
+func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRules, nasProtocol string) error {
+	var ruleResponse *n_a_s.ExportRuleCreateCreated
+	var err error
+	var protocol []string
 	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":             "ExportRuleCreate",
@@ -827,9 +832,15 @@ func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredP
 
 	// unlike the ZAPI version of this function, we must create them 1 at a time here in REST
 	for _, desiredPolicyRule := range strings.Split(desiredPolicyRules, ",") {
-		Logc(ctx).Debugf("processing desiredPolicyRule: '%v'", desiredPolicyRule)
-		ruleResponse, err := d.api.ExportRuleCreate(ctx, policyName, desiredPolicyRule,
-			[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
+		if nasProtocol == sa.SMB {
+			protocol = []string{"cifs"}
+		} else {
+			protocol = []string{"nfs"}
+		}
+
+		Logc(ctx).Debugf("processing desiredPolicyRule for %v protocol: '%v'", nasProtocol, desiredPolicyRule)
+		ruleResponse, err = d.api.ExportRuleCreate(ctx, policyName, desiredPolicyRule, protocol, []string{"any"},
+			[]string{"any"}, []string{"any"})
 		if err != nil {
 			err = fmt.Errorf("error creating export rule: %v", err)
 			Logc(ctx).WithFields(log.Fields{
@@ -1489,7 +1500,8 @@ func (d OntapAPIREST) LunGetComment(ctx context.Context, lunPath string) (string
 	return fstype, parse, nil
 }
 
-func (d OntapAPIREST) LunCloneCreate(ctx context.Context, flexvol, source, lunPath string,
+func (d OntapAPIREST) LunCloneCreate(
+	ctx context.Context, flexvol, source, lunPath string,
 	qosPolicyGroup QosPolicyGroup,
 ) error {
 	fullSourceLunPath := source
