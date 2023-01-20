@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/netapp/trident/config"
+	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
 )
@@ -232,4 +233,91 @@ func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *ut
 	}
 
 	return false, nil
+}
+
+// ensureLUKSVolumePassphrase ensures the LUKS device has the most recent passphrase and notifies the Trident controller
+// of any possibly in use passphrases. If forceUpdate is true, the Trident controller will be notified of the current
+// passphrase name, regardless of a rotation.
+func ensureLUKSVolumePassphrase(ctx context.Context, restClient controllerAPI.TridentController, luksDevice utils.LUKSDeviceInterface, volumeId string, secrets map[string]string, forceUpdate bool) error {
+	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := utils.GetLUKSPassphrasesFromSecretMap(secrets)
+	if luksPassphrase == "" {
+		return fmt.Errorf("LUKS passphrase cannot be empty")
+	}
+	if luksPassphraseName == "" {
+		return fmt.Errorf("LUKS passphrase name cannot be empty")
+	}
+
+	// Check if passphrase is already up-to-date
+	current, err := luksDevice.CheckPassphrase(ctx, luksPassphrase)
+	if err != nil {
+		return fmt.Errorf("could not verify passphrase %s; %v", luksPassphraseName, err)
+	}
+	if current {
+		Logc(ctx).WithFields(log.Fields{
+			"volume": volumeId,
+		}).Debugf("Current LUKS passphrase name '%s'.", luksPassphraseName)
+		if forceUpdate {
+			luksPassphraseNames := []string{luksPassphraseName}
+			err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
+			if err != nil {
+				return fmt.Errorf("could not update current passphrase name for LUKS volume; %v", err)
+			}
+		}
+		return nil
+	}
+
+	// Check if previous passphrase is set, otherwise we can't rotate
+	var previous bool
+	if previousLUKSPassphrase != "" {
+		if previousLUKSPassphraseName == "" {
+			return fmt.Errorf("previous LUKS passphrase name cannot be empty if previous LUKS passphrase is also specified")
+		}
+		previous, err = luksDevice.CheckPassphrase(ctx, previousLUKSPassphrase)
+		if err != nil {
+			return fmt.Errorf("could not verify passphrase %s; %v", luksPassphraseName, err)
+		}
+	}
+	if !previous {
+		return fmt.Errorf("no working passphrase provided")
+	}
+	Logc(ctx).WithFields(log.Fields{
+		"volume": volumeId,
+	}).Debugf("Current LUKS passphrase name '%s'.", previousLUKSPassphraseName)
+
+	// Send up current and previous passphrase names, if rotation fails
+	luksPassphraseNames := []string{luksPassphraseName, previousLUKSPassphraseName}
+	err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
+	if err != nil {
+		return fmt.Errorf("could not update passphrase names for LUKS volume, skipping passphrase rotation; %v", err)
+	}
+
+	// Rotate
+	Logc(ctx).WithFields(log.Fields{
+		"volume":                       volumeId,
+		"current-luks-passphrase-name": previousLUKSPassphraseName,
+		"new-luks-passphrase-name":     luksPassphraseName,
+	}).Info("Rotating LUKS passphrase.")
+	err = luksDevice.RotatePassphrase(ctx, volumeId, previousLUKSPassphrase, luksPassphrase)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"volume":                       volumeId,
+			"current-luks-passphrase-name": previousLUKSPassphraseName,
+			"new-luks-passphrase-name":     luksPassphraseName,
+		}).WithError(err).Errorf("Failed to rotate LUKS passphrase.")
+		return fmt.Errorf("failed to rotate LUKS passphrase")
+	}
+	Logc(ctx).Infof("Rotated LUKS passphrase")
+
+	isCurrent, err := luksDevice.CheckPassphrase(ctx, luksPassphrase)
+	if err != nil {
+		return fmt.Errorf("could not check current passphrase for LUKS volume; %v", err)
+	} else if isCurrent {
+		// Send only current passphrase up
+		luksPassphraseNames = []string{luksPassphraseName}
+		err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
+		if err != nil {
+			return fmt.Errorf("could not update passphrase names for LUKS volume after rotation; %v", err)
+		}
+	}
+	return nil
 }

@@ -15,11 +15,12 @@ const (
 var snapshotIDRegex = regexp.MustCompile(`^(?P<volume>[^\s/]+)/(?P<snapshot>[^\s/]+)$`)
 
 type SnapshotConfig struct {
-	Version            string `json:"version,omitempty"`
-	Name               string `json:"name,omitempty"`
-	InternalName       string `json:"internalName,omitempty"`
-	VolumeName         string `json:"volumeName,omitempty"`
-	VolumeInternalName string `json:"volumeInternalName,omitempty"`
+	Version             string   `json:"version,omitempty"`
+	Name                string   `json:"name,omitempty"`
+	InternalName        string   `json:"internalName,omitempty"`
+	VolumeName          string   `json:"volumeName,omitempty"`
+	VolumeInternalName  string   `json:"volumeInternalName,omitempty"`
+	LUKSPassphraseNames []string `json:"luksPassphraseNames,omitempty"`
 }
 
 func (c *SnapshotConfig) ID() string {
@@ -104,11 +105,12 @@ func (s *Snapshot) ConstructPersistent() *SnapshotPersistent {
 func (s *Snapshot) ConstructClone() *Snapshot {
 	return &Snapshot{
 		Config: &SnapshotConfig{
-			Version:            s.Config.Version,
-			Name:               s.Config.Name,
-			InternalName:       s.Config.InternalName,
-			VolumeName:         s.Config.VolumeName,
-			VolumeInternalName: s.Config.VolumeInternalName,
+			Version:             s.Config.Version,
+			Name:                s.Config.Name,
+			InternalName:        s.Config.InternalName,
+			VolumeName:          s.Config.VolumeName,
+			VolumeInternalName:  s.Config.VolumeInternalName,
+			LUKSPassphraseNames: s.Config.LUKSPassphraseNames,
 		},
 		Created:   s.Created,
 		SizeBytes: s.SizeBytes,

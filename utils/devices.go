@@ -1162,9 +1162,17 @@ func waitForMultipathDeviceForLUN(ctx context.Context, lunID int, iSCSINodeName 
 	return err
 }
 
-func NewLUKSDevice(rawDevicePath, volumeId string) *LUKSDevice {
+func NewLUKSDevice(rawDevicePath, volumeId string) (*LUKSDevice, error) {
 	luksDeviceName := luksDevicePrefix + volumeId
-	return &LUKSDevice{rawDevicePath, luksDeviceName}
+	return &LUKSDevice{rawDevicePath, luksDeviceName}, nil
+}
+
+func NewLUKSDeviceFromMappingPath(ctx context.Context, mappingPath, volumeId string) (*LUKSDevice, error) {
+	rawDevicePath, err := GetUnderlyingDevicePathForLUKSDevice(ctx, mappingPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not determine underlying device for LUKS mapping; %v", err)
+	}
+	return NewLUKSDevice(rawDevicePath, volumeId)
 }
 
 // MappedDevicePath returns the location of the LUKS device when opened.
@@ -1281,52 +1289,6 @@ func EnsureLUKSDeviceMappedOnHost(ctx context.Context, luksDevice LUKSDeviceInte
 	}
 
 	return luksFormatted, nil
-}
-
-// EnsureCurrentLUKSDevicePassphrase ensures the specified device is using the current LUKS passphrase
-// returns whether a passphrase rotation occurred
-func EnsureCurrentLUKSDevicePassphrase(ctx context.Context, luksDevice LUKSDeviceInterface, name string, secrets map[string]string) (bool, error) {
-	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := GetLUKSPassphrasesFromSecretMap(secrets) // Check current passphrase
-	current, err := luksDevice.CheckPassphrase(ctx, luksPassphrase)
-	if err != nil {
-		return false, fmt.Errorf("could not validate passphrase %s; %v", luksPassphraseName, err)
-	}
-	if current {
-		Logc(ctx).WithFields(log.Fields{
-			"volume": name,
-		}).Debugf("Current LUKS passphrase name '%s'.", luksPassphraseName)
-		return false, nil
-	}
-
-	// Check previous passphrase
-	previous, err := luksDevice.CheckPassphrase(ctx, previousLUKSPassphrase)
-	if err != nil {
-		return false, fmt.Errorf("could not validate passphrase %s; %v", luksPassphraseName, err)
-	}
-	if !previous {
-		return false, fmt.Errorf("no working passphrase provided")
-	} else {
-		Logc(ctx).WithFields(log.Fields{
-			"volume": name,
-		}).Debugf("Current LUKS passphrase name '%s'.", previousLUKSPassphraseName)
-	}
-
-	// Rotate if needed
-	Logc(ctx).WithFields(log.Fields{
-		"volume":                       name,
-		"current-luks-passphrase-name": previousLUKSPassphraseName,
-		"new-luks-passphrase-name":     luksPassphraseName,
-	}).Info("Rotating LUKS passphrase.")
-	err = luksDevice.RotatePassphrase(ctx, name, previousLUKSPassphrase, luksPassphrase)
-	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
-			"volume":                       name,
-			"current-luks-passphrase-name": previousLUKSPassphraseName,
-			"new-luks-passphrase-name":     luksPassphraseName,
-		}).WithError(err).Errorf("Failed to rotate LUKS passphrase.")
-		return false, fmt.Errorf("failed to rotate LUKS passphrase")
-	}
-	return true, nil
 }
 
 func ResizeLUKSDevice(ctx context.Context, luksDevicePath, luksPassphrase string) error {

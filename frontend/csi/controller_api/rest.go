@@ -230,3 +230,22 @@ func (c *ControllerRestClient) UpdateVolumePublication(
 	}
 	return nil
 }
+
+func (c *ControllerRestClient) UpdateVolumeLUKSPassphraseNames(
+	ctx context.Context, volumeName string, passphraseNames []string,
+) error {
+	operations := passphraseNames
+	body, err := json.Marshal(operations)
+	if err != nil {
+		return fmt.Errorf("could not marshal JSON; %v", err)
+	}
+	url := config.VolumeURL + "/" + volumeName + "/luksPassphraseNames"
+	resp, _, err := c.InvokeAPI(ctx, body, "PUT", url, false, false)
+	if err != nil {
+		return fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
+	}
+	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("could not update volume LUKS passphrase names")
+	}
+	return nil
+}

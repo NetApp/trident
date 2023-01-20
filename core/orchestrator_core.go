@@ -1918,6 +1918,34 @@ func (o *TridentOrchestrator) addVolumeFinish(
 	return externalVol, nil
 }
 
+// UpdateVolumeLUKSPassphraseNames updates the LUKS passphrase names stored on a volume in the cache and persistent store
+func (o *TridentOrchestrator) UpdateVolume(ctx context.Context, volume string, passphraseNames *[]string) error {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+	vol, err := o.storeClient.GetVolume(ctx, volume)
+	if err != nil {
+		return err
+	}
+
+	// We want to make sure the persistence layer is updated before we update the core copy
+	// So we have to deep copy the volume from the cache to construct the volume to pass into the store client
+	newVolume := storage.NewVolume(vol.Config.ConstructClone(), vol.BackendUUID, vol.Pool, vol.Orphaned, vol.State)
+	if passphraseNames != nil {
+		newVolume.Config.LUKSPassphraseNames = *passphraseNames
+	}
+	err = o.storeClient.UpdateVolume(ctx, newVolume)
+	if err != nil {
+		return err
+	}
+	o.volumes[volume] = newVolume
+	return nil
+}
+
 func (o *TridentOrchestrator) CloneVolume(
 	ctx context.Context, volumeConfig *storage.VolumeConfig,
 ) (externalVol *storage.VolumeExternal, err error) {
@@ -2030,9 +2058,25 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	// Clear these values as they were copied from the source volume Config
 	cloneConfig.SubordinateVolumes = make(map[string]interface{})
 	cloneConfig.ShareSourceVolume = ""
+	cloneConfig.LUKSPassphraseNames = sourceVolume.Config.LUKSPassphraseNames
 	// Override this value only if SplitOnClone has been defined in clone volume's config
 	if volumeConfig.SplitOnClone != "" {
 		cloneConfig.SplitOnClone = volumeConfig.SplitOnClone
+	}
+
+	// If it's from snapshot, we need the LUKS passphrases value from the snapshot
+	isLUKS, err := strconv.ParseBool(cloneConfig.LUKSEncryption)
+	// If the LUKSEncryption is not a bool (or is empty string) assume we are not making a LUKS volume
+	if err != nil {
+		isLUKS = false
+	}
+	if cloneConfig.CloneSourceSnapshot != "" && isLUKS {
+		snapshotID := storage.MakeSnapshotID(cloneConfig.CloneSourceVolume, cloneConfig.CloneSourceSnapshot)
+		sourceSnapshot, found := o.snapshots[snapshotID]
+		if !found {
+			return nil, utils.NotFoundError("Could not find source snapshot for volume")
+		}
+		cloneConfig.LUKSPassphraseNames = sourceSnapshot.Config.LUKSPassphraseNames
 	}
 
 	// With the introduction of Virtual Pools we will try our best to place the cloned volume in the same
@@ -3771,6 +3815,7 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	// Complete the snapshot config
 	snapshotConfig.InternalName = snapshotConfig.Name
 	snapshotConfig.VolumeInternalName = volume.Config.InternalName
+	snapshotConfig.LUKSPassphraseNames = volume.Config.LUKSPassphraseNames
 
 	// Ensure a snapshot is even possible before creating the transaction
 	if err := backend.CanSnapshot(ctx, snapshotConfig, volume.Config); err != nil {
@@ -3801,6 +3846,14 @@ func (o *TridentOrchestrator) CreateSnapshot(
 		}
 		return nil, fmt.Errorf("failed to create snapshot %s for volume %s on backend %s: %v",
 			snapshotConfig.Name, snapshotConfig.VolumeName, backend.Name(), err)
+	}
+
+	// Ensure we store all potential LUKS passphrases, there may have been a passphrase rotation during the snapshot process
+	volume = o.volumes[snapshotConfig.VolumeName]
+	for _, v := range volume.Config.LUKSPassphraseNames {
+		if !utils.SliceContainsString(snapshotConfig.LUKSPassphraseNames, v) {
+			snapshotConfig.LUKSPassphraseNames = append(snapshotConfig.LUKSPassphraseNames, v)
+		}
 	}
 
 	// Save references to new snapshot

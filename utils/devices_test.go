@@ -14,7 +14,7 @@ import (
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 func TestNewLUKSDevice(t *testing.T) {
-	luksDevice := NewLUKSDevice("/dev/sdb", "pvc-test")
+	luksDevice, _ := NewLUKSDevice("/dev/sdb", "pvc-test")
 
 	assert.Equal(t, luksDevice.RawDevicePath(), "/dev/sdb")
 	assert.Equal(t, luksDevice.MappedDevicePath(), "/dev/mapper/luks-pvc-test")

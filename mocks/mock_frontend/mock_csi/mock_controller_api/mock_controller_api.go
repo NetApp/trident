@@ -112,6 +112,20 @@ func (mr *MockTridentControllerMockRecorder) InvokeAPI(arg0, arg1, arg2, arg3, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvokeAPI", reflect.TypeOf((*MockTridentController)(nil).InvokeAPI), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
+// UpdateVolumeLUKSPassphraseNames mocks base method.
+func (m *MockTridentController) UpdateVolumeLUKSPassphraseNames(arg0 context.Context, arg1 string, arg2 []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVolumeLUKSPassphraseNames", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVolumeLUKSPassphraseNames indicates an expected call of UpdateVolumeLUKSPassphraseNames.
+func (mr *MockTridentControllerMockRecorder) UpdateVolumeLUKSPassphraseNames(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeLUKSPassphraseNames", reflect.TypeOf((*MockTridentController)(nil).UpdateVolumeLUKSPassphraseNames), arg0, arg1, arg2)
+}
+
 // UpdateVolumePublication mocks base method.
 func (m *MockTridentController) UpdateVolumePublication(arg0 context.Context, arg1 *utils.VolumePublicationExternal) error {
 	m.ctrl.T.Helper()

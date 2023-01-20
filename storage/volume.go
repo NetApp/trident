@@ -54,6 +54,7 @@ type VolumeConfig struct {
 	RequisiteTopologies       []map[string]string    `json:"requisiteTopologies,omitempty"`
 	PreferredTopologies       []map[string]string    `json:"preferredTopologies,omitempty"`
 	AllowedTopologies         []map[string]string    `json:"allowedTopologies,omitempty"`
+	LUKSPassphraseNames       []string               `json:"luksPassphraseNames,omitempty"`
 	MirrorHandle              string                 `json:"mirrorHandle,omitempty"`
 	// IsMirrorDestination is whether the volume is currently the destination in a mirror relationship
 	IsMirrorDestination bool `json:"mirrorDestination,omitempty"`
@@ -236,6 +237,12 @@ func (r *UpgradeVolumeRequest) Validate() error {
 		return fmt.Errorf("the only supported type for volume upgrade is 'csi'")
 	}
 	return nil
+}
+
+type PatchRequestStringSlice struct {
+	Op    string   `json:"op"`
+	Path  string   `json:"path"`
+	Value []string `json:"value"`
 }
 
 type ByVolumeExternalName []*VolumeExternal

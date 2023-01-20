@@ -822,6 +822,202 @@ func TestAddStorageClassVolumes(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+func TestUpdateVolume_LUKSPassphraseNames(t *testing.T) {
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: luksPassphraseNames field updated
+	orchestrator := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "test-vol", LUKSPassphraseNames: []string{}},
+		BackendUUID: "12345",
+	}
+	orchestrator.volumes[vol.Config.Name] = vol
+	err := orchestrator.storeClient.AddVolume(context.TODO(), vol)
+	assert.NoError(t, err)
+	assert.Empty(t, orchestrator.volumes[vol.Config.Name].Config.LUKSPassphraseNames)
+
+	err = orchestrator.UpdateVolume(context.TODO(), "test-vol", &[]string{"A"})
+	desiredPassphraseNames := []string{"A"}
+	assert.NoError(t, err)
+	assert.Equal(t, desiredPassphraseNames, orchestrator.volumes[vol.Config.Name].Config.LUKSPassphraseNames)
+
+	storedVol, err := orchestrator.storeClient.GetVolume(context.TODO(), "test-vol")
+	assert.NoError(t, err)
+	assert.Equal(t, desiredPassphraseNames, storedVol.Config.LUKSPassphraseNames)
+
+	err = orchestrator.storeClient.DeleteVolume(context.TODO(), vol)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: luksPassphraseNames field nil
+	orchestrator = getOrchestrator(t, false)
+	vol = &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "test-vol", LUKSPassphraseNames: []string{}},
+		BackendUUID: "12345",
+	}
+	orchestrator.volumes[vol.Config.Name] = vol
+	err = orchestrator.storeClient.AddVolume(context.TODO(), vol)
+	assert.NoError(t, err)
+	assert.Empty(t, orchestrator.volumes[vol.Config.Name].Config.LUKSPassphraseNames)
+
+	err = orchestrator.UpdateVolume(context.TODO(), "test-vol", nil)
+	desiredPassphraseNames = []string{}
+	assert.NoError(t, err)
+	assert.Equal(t, desiredPassphraseNames, orchestrator.volumes[vol.Config.Name].Config.LUKSPassphraseNames)
+
+	storedVol, err = orchestrator.storeClient.GetVolume(context.TODO(), "test-vol")
+	assert.NoError(t, err)
+	assert.Equal(t, desiredPassphraseNames, storedVol.Config.LUKSPassphraseNames)
+
+	err = orchestrator.storeClient.DeleteVolume(context.TODO(), vol)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: failed to update persistence, volume not found
+	orchestrator = getOrchestrator(t, false)
+	vol = &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "test-vol", LUKSPassphraseNames: []string{}},
+		BackendUUID: "12345",
+	}
+	orchestrator.volumes[vol.Config.Name] = vol
+
+	err = orchestrator.UpdateVolume(context.TODO(), "test-vol", &[]string{"A"})
+	desiredPassphraseNames = []string{}
+	assert.Error(t, err)
+	assert.Equal(t, desiredPassphraseNames, orchestrator.volumes[vol.Config.Name].Config.LUKSPassphraseNames)
+
+	_, err = orchestrator.storeClient.GetVolume(context.TODO(), "test-vol")
+	// Not found
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: bootstrap error
+	orchestrator = getOrchestrator(t, false)
+	bootstrapError := fmt.Errorf("my bootstrap error")
+	orchestrator.bootstrapError = bootstrapError
+
+	err = orchestrator.UpdateVolume(context.TODO(), "test-vol", &[]string{"A"})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, bootstrapError)
+}
+
+func TestCloneVolume_SnapshotDataSource_LUKS(t *testing.T) {
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: luksPassphraseNames field updated
+	// // Setup
+	mockPools := tu.GetFakePools()
+	orchestrator := getOrchestrator(t, false)
+
+	// Make a backend
+	poolNames := []string{tu.SlowSnapshots}
+	pools := make(map[string]*fake.StoragePool, len(poolNames))
+	for _, poolName := range poolNames {
+		pools[poolName] = mockPools[poolName]
+	}
+	volumes := make([]fake.Volume, 0)
+	cfg, err := fakedriver.NewFakeStorageDriverConfigJSON("slow-block", "block", pools, volumes)
+	assert.NoError(t, err)
+	_, err = orchestrator.AddBackend(ctx(), cfg, "")
+	assert.NoError(t, err)
+	defer orchestrator.DeleteBackend(ctx(), "slow-block")
+
+	// Make a StorageClass
+	storageClass := &storageclass.Config{Name: "specific"}
+	_, err = orchestrator.AddStorageClass(ctx(), storageClass)
+	defer orchestrator.DeleteStorageClass(ctx(), storageClass.Name)
+	assert.NoError(t, err)
+
+	// Create the original volume
+	volConfig := tu.GenerateVolumeConfig("block", 1, "specific", config.Block)
+	volConfig.LUKSEncryption = "true"
+	volConfig.LUKSPassphraseNames = []string{"A", "B"}
+	_, err = orchestrator.AddVolume(ctx(), volConfig)
+	assert.NoError(t, err)
+	defer orchestrator.DeleteVolume(ctx(), volConfig.Name)
+
+	// Create a snapshot
+	snapshotConfig := generateSnapshotConfig("test-snapshot", volConfig.Name, volConfig.InternalName)
+	snapshot, err := orchestrator.CreateSnapshot(ctx(), snapshotConfig)
+	assert.NoError(t, err)
+	assert.Equal(t, snapshot.Config.LUKSPassphraseNames, []string{"A", "B"})
+	defer orchestrator.DeleteSnapshot(ctx(), volConfig.Name, snapshotConfig.Name)
+
+	// "rotate" the luksPassphraseNames of the volume
+	err = orchestrator.UpdateVolume(ctx(), volConfig.Name, &[]string{"A"})
+	assert.NoError(t, err)
+	vol, err := orchestrator.GetVolume(ctx(), volConfig.Name)
+	assert.NoError(t, err)
+	volConfig = vol.Config
+	assert.Equal(t, vol.Config.LUKSPassphraseNames, []string{"A"})
+
+	// Now clone the snapshot and ensure everything looks fine
+	cloneName := volConfig.Name + "_clone"
+	cloneConfig := &storage.VolumeConfig{
+		Name:                cloneName,
+		StorageClass:        volConfig.StorageClass,
+		CloneSourceVolume:   volConfig.Name,
+		CloneSourceSnapshot: snapshotConfig.Name,
+		VolumeMode:          volConfig.VolumeMode,
+	}
+	cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"A", "B"}, cloneResult.Config.LUKSPassphraseNames)
+	defer orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name)
+}
+
+func TestCloneVolume_VolumeDataSource_LUKS(t *testing.T) {
+	// // Setup
+	mockPools := tu.GetFakePools()
+	orchestrator := getOrchestrator(t, false)
+
+	// Create backend
+	poolNames := []string{tu.SlowSnapshots}
+	pools := make(map[string]*fake.StoragePool, len(poolNames))
+	for _, poolName := range poolNames {
+		pools[poolName] = mockPools[poolName]
+	}
+	volumes := make([]fake.Volume, 0)
+	cfg, err := fakedriver.NewFakeStorageDriverConfigJSON("slow-block", "block", pools, volumes)
+	assert.NoError(t, err)
+	_, err = orchestrator.AddBackend(ctx(), cfg, "")
+	assert.NoError(t, err)
+	defer orchestrator.DeleteBackend(ctx(), "slow-block")
+
+	// Create a StorageClass
+	storageClass := &storageclass.Config{Name: "specific"}
+	_, err = orchestrator.AddStorageClass(ctx(), storageClass)
+	defer orchestrator.DeleteStorageClass(ctx(), storageClass.Name)
+	assert.NoError(t, err)
+
+	// Create the Volume
+	volConfig := tu.GenerateVolumeConfig("block", 1, "specific", config.Block)
+	volConfig.LUKSEncryption = "true"
+	volConfig.LUKSPassphraseNames = []string{"A", "B"}
+	// Create the source volume
+	_, err = orchestrator.AddVolume(ctx(), volConfig)
+	assert.NoError(t, err)
+	defer orchestrator.DeleteVolume(ctx(), volConfig.Name)
+
+	// Create a snapshot
+	snapshotConfig := generateSnapshotConfig("test-snapshot", volConfig.Name, volConfig.InternalName)
+	snapshot, err := orchestrator.CreateSnapshot(ctx(), snapshotConfig)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"A", "B"}, snapshot.Config.LUKSPassphraseNames)
+	defer orchestrator.DeleteSnapshot(ctx(), volConfig.Name, snapshotConfig.Name)
+
+	// Now clone the volume and ensure everything looks fine
+	cloneName := volConfig.Name + "_clone"
+	cloneConfig := &storage.VolumeConfig{
+		Name:              cloneName,
+		StorageClass:      volConfig.StorageClass,
+		CloneSourceVolume: volConfig.Name,
+		VolumeMode:        volConfig.VolumeMode,
+	}
+	cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"A", "B"}, cloneResult.Config.LUKSPassphraseNames)
+	defer orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name)
+}
+
 // This test is modeled after TestAddStorageClassVolumes, but we don't need all the
 // tests around storage class deletion, etc.
 func TestCloneVolumes(t *testing.T) {

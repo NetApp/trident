@@ -1013,11 +1013,14 @@ func (p *Plugin) nodeStageISCSIVolume(
 		SharedTarget:   sharedTarget,
 	}
 	publishInfo.UseCHAP = useCHAP
-	isLUKS, ok := req.PublishContext["LUKSEncryption"]
-	if !ok {
-		isLUKS = ""
+	var isLUKS bool
+	if req.PublishContext["LUKSEncryption"] != "" {
+		isLUKS, err = strconv.ParseBool(req.PublishContext["LUKSEncryption"])
+		if err != nil {
+			return nil, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+		}
 	}
-	publishInfo.LUKSEncryption = isLUKS
+	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 
 	err = unstashIscsiTargetPortals(publishInfo, req.PublishContext)
 	if nil != err {
@@ -1063,6 +1066,17 @@ func (p *Plugin) nodeStageISCSIVolume(
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
 	if err != nil {
 		return nil, err
+	}
+	if isLUKS {
+		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		// Ensure we update the passphrase incase it has never been set before
+		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
+		if err != nil {
+			return nil, status.Error(codes.Internal, "could not set LUKS volume passphrase")
+		}
 	}
 
 	volTrackingInfo := &utils.VolumeTrackingInfo{
@@ -1247,31 +1261,6 @@ func (p *Plugin) nodeUnstageISCSIVolumeRetry(
 	return &csi.NodeUnstageVolumeResponse{}, nil
 }
 
-// publishLUKSVolume ensures the LUKS device has the most recent passphrase, if specified
-func (p *Plugin) publishLUKSVolume(ctx context.Context, volumeId string, secrets map[string]string, luksMappingPath string) error {
-	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := utils.GetLUKSPassphrasesFromSecretMap(secrets)
-	if luksPassphrase == "" || previousLUKSPassphrase == "" {
-		Logc(ctx).Infof("Single LUKS passphrase provided to NodePublishVolume, skipping passphrase rotation")
-		return nil
-	}
-	if luksPassphraseName == "" || previousLUKSPassphraseName == "" {
-		Logc(ctx).Infof("LUKS passphrase names cannot be empty, skipping passphrase rotation")
-		return nil
-	}
-
-	devicePath, err := utils.GetUnderlyingDevicePathForLUKSDevice(ctx, luksMappingPath)
-	if err != nil {
-		Logc(ctx).WithError(err).Error("Could not determine underlying device for LUKS mapping, skipping passphrase rotation.")
-		return nil
-	}
-	luksDevice := utils.NewLUKSDevice(devicePath, volumeId)
-	_, err = utils.EnsureCurrentLUKSDevicePassphrase(ctx, luksDevice, volumeId, secrets)
-	if err != nil {
-		Logc(ctx).WithError(err).Error("Failed to rotate LUKS passphrase.")
-	}
-	return nil
-}
-
 func (p *Plugin) nodePublishISCSIVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
@@ -1297,9 +1286,14 @@ func (p *Plugin) nodePublishISCSIVolume(
 			return nil, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
 		}
 		if isLUKS {
-			err = p.publishLUKSVolume(ctx, req.GetVolumeId(), req.GetSecrets(), publishInfo.DevicePath)
+			// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
+			luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
 			if err != nil {
-				return nil, fmt.Errorf("could not publish LUKS volume; %v", err)
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+			err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
+			if err != nil {
+				Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
 			}
 		}
 	}

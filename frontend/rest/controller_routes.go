@@ -113,6 +113,13 @@ var controllerRoutes = Routes{
 		DeleteVolume,
 	},
 	Route{
+		"UpdateVolume",
+		"PUT",
+		config.VolumeURL + "/{volume}/luksPassphraseNames",
+		nil,
+		UpdateVolumeLUKSPassphraseNames,
+	},
+	Route{
 		"ImportVolume",
 		"POST",
 		config.VolumeURL + "/import",

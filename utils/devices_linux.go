@@ -306,7 +306,7 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 	Logc(ctx).WithFields(log.Fields{
 		"volume":           volumeId,
 		"device":           d.RawDevicePath(),
-		"MappedDevicePath": d.MappedDevicePath(),
+		"mappedDevicePath": d.MappedDevicePath(),
 	}).Info("Rotating LUKS passphrase for encrypted volume.")
 
 	// make sure the new passphrase is valid
@@ -338,7 +338,7 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 	Logc(ctx).WithFields(log.Fields{
 		"volume":           volumeId,
 		"device":           d.RawDevicePath(),
-		"MappedDevicePath": d.MappedDevicePath(),
+		"mappedDevicePath": d.MappedDevicePath(),
 	}).Info("Rotated LUKS passphrase for encrypted volume.")
 	return nil
 }
@@ -395,11 +395,12 @@ func GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, luksDevicePath st
 func (d *LUKSDevice) CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error) {
 	device := d.RawDevicePath()
 	luksDeviceName := d.MappedDeviceName()
-	_, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device, luksDeviceName, "--type", "luks2", "--test-passphrase")
+	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device, luksDeviceName, "--type", "luks2", "--test-passphrase")
 	if err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == luksCryptsetupBadPassphraseReturnCode {
 			return false, nil
 		}
+		Logc(ctx).WithError(err).Errorf("Cryptsetup command failed, output: %s", output)
 		return false, err
 	}
 	return true, nil

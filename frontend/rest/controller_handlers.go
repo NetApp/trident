@@ -164,7 +164,7 @@ func UpdateGeneric(
 	w http.ResponseWriter,
 	r *http.Request,
 	response httpResponse,
-	updater func(map[string]string, []byte) int,
+	updater func(http.ResponseWriter, *http.Request, httpResponse, map[string]string, []byte) int,
 ) {
 	var err error
 	var httpStatusCode int
@@ -192,7 +192,7 @@ func UpdateGeneric(
 		httpStatusCode = httpStatusCodeForGetUpdateList(err)
 		return
 	}
-	httpStatusCode = updater(vars, body)
+	httpStatusCode = updater(w, r, response, vars, body)
 }
 
 type DeleteResponse struct {
@@ -310,13 +310,18 @@ func (r *UpdateBackendResponse) logFailure(ctx context.Context) {
 func UpdateBackend(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateBackendResponse{}
 	UpdateGeneric(w, r, response,
-		func(vars map[string]string, body []byte) int {
+		func(w http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte) int {
+			updateResponse, ok := response.(*UpdateBackendResponse)
+			if !ok {
+				response.setError(fmt.Errorf("response object must be of type UpdateBackendResponse"))
+				return http.StatusInternalServerError
+			}
 			backend, err := orchestrator.UpdateBackend(r.Context(), vars["backend"], string(body), "")
 			if err != nil {
-				response.Error = err.Error()
+				updateResponse.Error = err.Error()
 			}
 			if backend != nil {
-				response.BackendID = backend.Name
+				updateResponse.BackendID = backend.Name
 			}
 			return httpStatusCodeForGetUpdateList(err)
 		},
@@ -326,19 +331,24 @@ func UpdateBackend(w http.ResponseWriter, r *http.Request) {
 func UpdateBackendState(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateBackendResponse{}
 	UpdateGeneric(w, r, response,
-		func(vars map[string]string, body []byte) int {
+		func(w http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte) int {
+			updateResponse, ok := response.(*UpdateBackendResponse)
+			if !ok {
+				response.setError(fmt.Errorf("response object must be of type UpdateBackendResponse"))
+				return http.StatusInternalServerError
+			}
 			request := new(storage.UpdateBackendStateRequest)
 			err := json.Unmarshal(body, request)
 			if err != nil {
-				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
 				return httpStatusCodeForGetUpdateList(err)
 			}
 			backend, err := orchestrator.UpdateBackendState(r.Context(), vars["backend"], request.State)
 			if err != nil {
-				response.Error = err.Error()
+				updateResponse.Error = err.Error()
 			}
 			if backend != nil {
-				response.BackendID = backend.Name
+				updateResponse.BackendID = backend.Name
 			}
 			return httpStatusCodeForGetUpdateList(err)
 		},
@@ -541,6 +551,72 @@ func DeleteVolume(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+type UpdateVolumeResponse struct {
+	Volume *storage.VolumeExternal `json:"volume"`
+	Error  string                  `json:"error,omitempty"`
+}
+
+func (r *UpdateVolumeResponse) setError(err error) {
+	r.Error = err.Error()
+}
+
+func (r *UpdateVolumeResponse) isError() bool {
+	return r.Error != ""
+}
+
+func (r *UpdateVolumeResponse) logSuccess(ctx context.Context) {
+	Logc(ctx).WithFields(log.Fields{
+		"handler": "UpdateVolume",
+	}).Info("Updated a volume.")
+}
+
+func (r *UpdateVolumeResponse) logFailure(ctx context.Context) {
+	Logc(ctx).WithFields(log.Fields{
+		"handler": "UpdateVolume",
+	}).Error(r.Error)
+}
+
+func volumeLUKSPassphraseNamesUpdater(_ http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte) int {
+	updateResponse, ok := response.(*UpdateVolumeResponse)
+	if !ok {
+		response.setError(fmt.Errorf("response object must be of type UpdateVolumeResponse"))
+		return http.StatusInternalServerError
+	}
+	passphraseNames := new([]string)
+	volume, err := orchestrator.GetVolume(r.Context(), vars["volume"])
+	if err != nil {
+		updateResponse.Error = err.Error()
+		if utils.IsNotFoundError(err) {
+			return http.StatusNotFound
+		} else {
+			return http.StatusInternalServerError
+		}
+	} else {
+		updateResponse.Volume = volume
+	}
+	err = json.Unmarshal(body, passphraseNames)
+	if err != nil {
+		updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+		return http.StatusBadRequest
+	}
+
+	err = orchestrator.UpdateVolume(r.Context(), vars["volume"], passphraseNames)
+	if err != nil {
+		response.setError(fmt.Errorf("failed to update LUKS passphrase names for volume %s: %s", vars["volume"], err.Error()))
+		if utils.IsNotFoundError(err) {
+			return http.StatusNotFound
+		}
+		return http.StatusInternalServerError
+	}
+
+	return http.StatusOK
+}
+
+func UpdateVolumeLUKSPassphraseNames(w http.ResponseWriter, r *http.Request) {
+	response := &UpdateVolumeResponse{}
+	UpdateGeneric(w, r, response, volumeLUKSPassphraseNamesUpdater)
+}
+
 type ImportVolumeResponse struct {
 	Volume *storage.VolumeExternal `json:"volume"`
 	Error  string                  `json:"error,omitempty"`
@@ -640,35 +716,40 @@ func (i *UpgradeVolumeResponse) logFailure(ctx context.Context) {
 func UpgradeVolume(w http.ResponseWriter, r *http.Request) {
 	response := &UpgradeVolumeResponse{}
 	UpdateGeneric(w, r, response,
-		func(_ map[string]string, body []byte) int {
+		func(w http.ResponseWriter, r *http.Request, response httpResponse, _ map[string]string, body []byte) int {
+			updateResponse, ok := response.(*UpgradeVolumeResponse)
+			if !ok {
+				response.setError(fmt.Errorf("response object must be of type UpgradeVolumeResponse"))
+				return http.StatusInternalServerError
+			}
 			upgradeVolumeRequest := new(storage.UpgradeVolumeRequest)
 			err := json.Unmarshal(body, upgradeVolumeRequest)
 			if err != nil {
-				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
 				return httpStatusCodeForGetUpdateList(err)
 			}
 			if err = upgradeVolumeRequest.Validate(); err != nil {
-				response.setError(err)
+				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
 			k8sHelperFrontend, err := orchestrator.GetFrontend(r.Context(), controllerhelpers.KubernetesHelper)
 			if err != nil {
-				response.setError(err)
+				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
 			k8sHelper, ok := k8sHelperFrontend.(k8shelper.K8SControllerHelperPlugin)
 			if !ok {
 				err = fmt.Errorf("unable to obtain K8S helper frontend")
-				response.setError(err)
+				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
 
 			volume, err := k8sHelper.UpgradeVolume(r.Context(), upgradeVolumeRequest)
 			if err != nil {
-				response.Error = err.Error()
+				updateResponse.Error = err.Error()
 			}
 			if volume != nil {
-				response.Volume = volume
+				updateResponse.Volume = volume
 			}
 			return httpStatusCodeForGetUpdateList(err)
 		},
@@ -824,7 +905,12 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 	const auditMsg = "AddNode endpoint called."
 
 	UpdateGeneric(w, r, response,
-		func(_ map[string]string, body []byte) int {
+		func(w http.ResponseWriter, r *http.Request, response httpResponse, _ map[string]string, body []byte) int {
+			updateResponse, ok := response.(*AddNodeResponse)
+			if !ok {
+				response.setError(fmt.Errorf("response object must be of type AddNodeResponse"))
+				return http.StatusInternalServerError
+			}
 			node := new(utils.Node)
 			err := json.Unmarshal(body, node)
 			if err != nil {
@@ -839,24 +925,24 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 			}
 			if err != nil {
 				err = fmt.Errorf("could not get CSI helper frontend")
-				response.setError(err)
+				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
 
 			helper, ok := csiFrontend.(controllerhelpers.ControllerHelper)
 			if !ok {
 				err = fmt.Errorf("could not get CSI hybrid frontend")
-				response.setError(err)
+				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
 			topologyLabels, err := helper.GetNodeTopologyLabels(r.Context(), node.Name)
 			if err != nil {
-				response.setError(err)
+				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
 			node.TopologyLabels = topologyLabels
 			node.TopologyLabels = topologyLabels
-			response.setTopologyLabels(topologyLabels)
+			updateResponse.setTopologyLabels(topologyLabels)
 			Logc(r.Context()).WithField("node", node.Name).Info("Determined topology labels for node: ",
 				topologyLabels)
 
@@ -867,7 +953,7 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				response.setError(err)
 			}
-			response.Name = node.Name
+			updateResponse.Name = node.Name
 			return httpStatusCodeForAdd(err)
 		},
 	)
@@ -1072,17 +1158,22 @@ func (r *UpdateVolumePublicationResponse) logFailure(ctx context.Context) {
 func UpdateVolumePublication(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateVolumePublicationResponse{}
 	UpdateGeneric(w, r, response,
-		func(vars map[string]string, body []byte) int {
+		func(w http.ResponseWriter, r *http.Request, response httpResponse, _ map[string]string, body []byte) int {
+			updateResponse, ok := response.(*UpdateVolumePublicationResponse)
+			if !ok {
+				response.setError(fmt.Errorf("response object must be of type UpdateVolumePublicationResponse"))
+				return http.StatusInternalServerError
+			}
 			request := new(utils.VolumePublicationExternal)
 			err := json.Unmarshal(body, request)
 			if err != nil {
-				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
 				return httpStatusCodeForGetUpdateList(err)
 			}
 			err = orchestrator.UpdateVolumePublication(r.Context(),
 				request.VolumeName, request.NodeName, request.NotSafeToAttach)
 			if err != nil {
-				response.Error = err.Error()
+				updateResponse.Error = err.Error()
 			}
 			return httpStatusCodeForGetUpdateList(err)
 		},

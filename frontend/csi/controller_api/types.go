@@ -21,4 +21,5 @@ type TridentController interface {
 	DeleteNode(ctx context.Context, name string) error
 	GetChap(ctx context.Context, volume, node string) (*utils.IscsiChapInfo, error)
 	UpdateVolumePublication(ctx context.Context, publication *utils.VolumePublicationExternal) error
+	UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames []string) error
 }

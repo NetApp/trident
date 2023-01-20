@@ -606,7 +606,8 @@ func TestCheckPassphrase(t *testing.T) {
 	}()
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Correct passphrase
-	luksDevice := NewLUKSDevice("", "test-pvc")
+	luksDevice, err := NewLUKSDevice("", "test-pvc")
+	assert.NoError(t, err)
 	correct, err := luksDevice.CheckPassphrase(context.Background(), "passphrase")
 	assert.True(t, correct)
 	assert.NoError(t, err)
@@ -614,7 +615,8 @@ func TestCheckPassphrase(t *testing.T) {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Not correct passphrase
 	execReturnCode = 2
-	luksDevice = NewLUKSDevice("", "test-pvc")
+	luksDevice, err = NewLUKSDevice("", "test-pvc")
+	assert.NoError(t, err)
 	correct, err = luksDevice.CheckPassphrase(context.Background(), "passphrase")
 	assert.False(t, correct)
 	assert.NoError(t, err)
@@ -622,10 +624,47 @@ func TestCheckPassphrase(t *testing.T) {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: error
 	execReturnCode = 4
-	luksDevice = NewLUKSDevice("", "test-pvc")
+	luksDevice, err = NewLUKSDevice("", "test-pvc")
+	assert.NoError(t, err)
 	correct, err = luksDevice.CheckPassphrase(context.Background(), "passphrase")
 	assert.False(t, correct)
 	assert.Error(t, err)
+}
+
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func TestNewLUKSDeviceFromMappingPath(t *testing.T) {
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case
+	execCmd = fakeExecCommand
+	execReturnCode = 0
+	// Reset exec command after tests
+	defer func() {
+		execCmd = exec.CommandContext
+	}()
+	execReturnValue = `/dev/mapper/luks-pvc-test is active and is in use.
+  type:    LUKS2
+  cipher:  aes-xts-plain64
+  keysize: 512 bits
+  key location: keyring
+  device:  /dev/sdb
+  sector size:  512
+  offset:  32768 sectors
+  size:    2064384 sectors
+  mode:    read/write`
+	luksDevice, err := NewLUKSDeviceFromMappingPath(context.TODO(), "/dev/mapper/luks-pvc-test", "pvc-test")
+	assert.NoError(t, err)
+
+	assert.Equal(t, luksDevice.RawDevicePath(), "/dev/sdb")
+	assert.Equal(t, luksDevice.MappedDevicePath(), "/dev/mapper/luks-pvc-test")
+	assert.Equal(t, luksDevice.MappedDeviceName(), "luks-pvc-test")
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: error attempting to get device path
+	execReturnCode = 2
+	// Reset exec command after tests
+	luksDevice, err = NewLUKSDeviceFromMappingPath(context.TODO(), "/dev/mapper/luks-pvc-test", "pvc-test")
+	assert.Error(t, err)
+	assert.Nil(t, luksDevice)
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////

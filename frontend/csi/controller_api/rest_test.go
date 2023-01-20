@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -414,4 +415,45 @@ func TestCreateTLSRestClient(t *testing.T) {
 	fileHandler.Close()
 	e = os.Remove("data.txt")
 	assert.NoError(t, e)
+}
+
+func TestUpdateVolumeLUKSPassphraseNames(t *testing.T) {
+	// Positive
+	controllerRestClient := ControllerRestClient{}
+	ctx = context.Background()
+	mockUpdateVolumeLUKSPassphraseNames := func(w http.ResponseWriter, r *http.Request) {
+		passphraseNames := new([]string)
+		body, err := io.ReadAll(io.LimitReader(r.Body, config.MaxRESTRequestSize))
+		assert.NoError(t, err)
+
+		err = json.Unmarshal(body, passphraseNames)
+		assert.NoError(t, err, "Got: ", body)
+
+		createResponse(w, "", http.StatusOK)
+	}
+
+	server := getHttpServer(config.VolumeURL+"/"+"test-vol/luksPassphraseNames", mockUpdateVolumeLUKSPassphraseNames)
+	controllerRestClient.url = server.URL
+	err := controllerRestClient.UpdateVolumeLUKSPassphraseNames(ctx, "test-vol", []string{"A"})
+	assert.NoError(t, err)
+	server.Close()
+
+	// Negative: Volume not found
+	controllerRestClient = ControllerRestClient{}
+	ctx = context.Background()
+	mockUpdateVolumeLUKSPassphraseNames = func(w http.ResponseWriter, r *http.Request) {
+		createResponse(w, "", http.StatusNotFound)
+	}
+
+	server = getHttpServer(config.VolumeURL+"/"+"test-vol/luksPassphraseNames", mockUpdateVolumeLUKSPassphraseNames)
+	controllerRestClient.url = server.URL
+	err = controllerRestClient.UpdateVolumeLUKSPassphraseNames(ctx, "test-vol", []string{"A"})
+	assert.Error(t, err)
+	server.Close()
+
+	// Negative: Cannot connect to trident api
+	controllerRestClient = ControllerRestClient{}
+	ctx = context.Background()
+	err = controllerRestClient.UpdateVolumeLUKSPassphraseNames(ctx, "test-vol", []string{"A"})
+	assert.Error(t, err)
 }

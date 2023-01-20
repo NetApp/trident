@@ -3,13 +3,16 @@ package csi
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
+	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	"github.com/netapp/trident/mocks/mock_utils"
+	"github.com/netapp/trident/mocks/mock_utils/mock_luks"
 	"github.com/netapp/trident/utils"
 )
 
@@ -139,4 +142,326 @@ func TestPerformProtocolSpecificReconciliation_BOF(t *testing.T) {
 	res, err = performProtocolSpecificReconciliation(context.Background(), trackInfo)
 	assert.False(t, res)
 	assert.Error(t, err)
+}
+
+func TestEnsureLUKSVolumePassphrase(t *testing.T) {
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Passphrase already latest
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets := map[string]string{
+		"luks-passphrase-name": "A",
+		"luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	err := ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.NoError(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Passphrase already latest, force update
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name": "A",
+		"luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"A"}).Return(nil)
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, true)
+	assert.NoError(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: Passphrase not correct, but previous passphrase is correct, rotation needed
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":          "B",
+		"luks-passphrase":               "passphraseB",
+		"previous-luks-passphrase-name": "A",
+		"previous-luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B", "A"}).Return(nil)
+	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "test-vol", "passphraseA", "passphraseB").Return(nil)
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(true, nil)
+	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B"}).Return(nil)
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.NoError(t, err)
+	mockCtrl.Finish()
+}
+
+func TestEnsureLUKSVolumePassphrase_Error(t *testing.T) {
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Checking passphrase is correct errors
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets := map[string]string{
+		"luks-passphrase-name":          "B",
+		"luks-passphrase":               "passphraseB",
+		"previous-luks-passphrase-name": "A",
+		"previous-luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, fmt.Errorf("test error"))
+	err := ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Checking previous passphrase is correct errors
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":          "B",
+		"luks-passphrase":               "passphraseB",
+		"previous-luks-passphrase-name": "A",
+		"previous-luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(false, fmt.Errorf("test error"))
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Sending pre-rotation passphrases to trident controller fails
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":          "B",
+		"luks-passphrase":               "passphraseB",
+		"previous-luks-passphrase-name": "A",
+		"previous-luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B", "A"}).Return(fmt.Errorf("test error"))
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Passphrase rotation fails
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":          "B",
+		"luks-passphrase":               "passphraseB",
+		"previous-luks-passphrase-name": "A",
+		"previous-luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B", "A"}).Return(nil)
+	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "test-vol", "passphraseA", "passphraseB").Return(fmt.Errorf("test error"))
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Verifying passphrase rotation fails
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":          "B",
+		"luks-passphrase":               "passphraseB",
+		"previous-luks-passphrase-name": "A",
+		"previous-luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B", "A"}).Return(nil)
+	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "test-vol", "passphraseA", "passphraseB").Return(nil)
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(true, fmt.Errorf("test error"))
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Sending post-rotation passphrases to trident controller fails
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":          "B",
+		"luks-passphrase":               "passphraseB",
+		"previous-luks-passphrase-name": "A",
+		"previous-luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B", "A"}).Return(nil)
+	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "test-vol", "passphraseA", "passphraseB").Return(nil)
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(true, nil)
+	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B"}).Return(fmt.Errorf("test error"))
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+}
+
+func TestEnsureLUKSVolumePassphrase_InvalidSecret(t *testing.T) {
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: No passphrases
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets := map[string]string{}
+	err := ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: passphrase but no passphrase name
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase": "passphraseA",
+	}
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: passphrase but empty passphrase name
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name": "A",
+		"luks-passphrase":      "",
+	}
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: passphrase name but no passphrase name
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name": "A",
+	}
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: passphrase name but empty passphrase name
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name": "A",
+		"luks-passphrase":      "",
+	}
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: passphrase valid, previous luks passphrase valid but no name
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":     "A",
+		"luks-passphrase":          "passphraseA",
+		"previous-luks-passphrase": "passphraseB",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.NoError(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: passphrase valid, previous luks passphrase valid but empty name
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":          "A",
+		"luks-passphrase":               "passphraseA",
+		"previous-luks-passphrase-name": "",
+		"previous-luks-passphrase":      "passphraseB",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.NoError(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: passphrase valid, previous luks passphrase name valid but no passphrase
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":          "A",
+		"luks-passphrase":               "passphraseA",
+		"previous-luks-passphrase-name": "B",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.NoError(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: passphrase valid, previous luks passphrase name valid but empty passphrase
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":          "A",
+		"luks-passphrase":               "passphraseA",
+		"previous-luks-passphrase-name": "B",
+		"previous-luks-passphrase":      "",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.NoError(t, err)
+	mockCtrl.Finish()
+}
+
+func TestEnsureLUKSVolumePassphrase_NoCorrectPassphraseProvided(t *testing.T) {
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Passphrase not correct and no previous specified
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets := map[string]string{
+		"luks-passphrase-name": "A",
+		"luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(false, nil)
+	err := ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Passphrase not correct and incorrect previous
+	mockCtrl = gomock.NewController(t)
+	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockLUKSDevice = mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
+	secrets = map[string]string{
+		"luks-passphrase-name":          "B",
+		"luks-passphrase":               "passphraseB",
+		"previous-luks-passphrase-name": "A",
+		"previous-luks-passphrase":      "passphraseA",
+	}
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
+	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(false, nil)
+	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
+	assert.Error(t, err)
+	mockCtrl.Finish()
 }
