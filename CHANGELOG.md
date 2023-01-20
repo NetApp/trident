@@ -12,6 +12,7 @@
 - Added support for storage pools for GCP volumes with CVS service level.
 - Improved performance for ontap-nas-economy storage drivers managing multiple FlexVols.
 - Enabled dataLIF updates for all ONTAP NAS storage drivers.
+- Added options to exclude pod security policy creation during trident installation through helm.
 
 **Deprecations:**
 
