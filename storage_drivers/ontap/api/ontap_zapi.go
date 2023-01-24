@@ -979,12 +979,11 @@ func (c Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(
 func (c Client) FlexGroupModifyUnixPermissions(
 	ctx context.Context, volumeName, unixPermissions string,
 ) (*azgo.VolumeModifyIterAsyncResponse, error) {
-	var volSecurityUnixAttrs *azgo.VolumeSecurityUnixAttributesType
-
 	volAttr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
+	volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType()
 	// Set Unix permission for NFS volume only.
 	if unixPermissions != "" {
-		volSecurityUnixAttrs = azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
+		volSecurityUnixAttrs.SetPermissions(unixPermissions)
 	}
 	volSecurityAttrs := azgo.NewVolumeSecurityAttributesType().SetVolumeSecurityUnixAttributes(*volSecurityUnixAttrs)
 	securityAttributes := azgo.NewVolumeAttributesType().SetVolumeSecurityAttributes(*volSecurityAttrs)
@@ -1250,12 +1249,11 @@ func (c Client) VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*
 func (c Client) VolumeModifyUnixPermissions(
 	volumeName, unixPermissions string,
 ) (*azgo.VolumeModifyIterResponse, error) {
-	var volSecurityUnixAttrs *azgo.VolumeSecurityUnixAttributesType
-
 	volAttr := &azgo.VolumeModifyIterRequestAttributes{}
+	volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType()
 	// Set Unix permission for NFS volume only.
 	if unixPermissions != "" {
-		volSecurityUnixAttrs = azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
+		volSecurityUnixAttrs.SetPermissions(unixPermissions)
 	}
 
 	volSecurityAttrs := azgo.NewVolumeSecurityAttributesType().SetVolumeSecurityUnixAttributes(*volSecurityUnixAttrs)

@@ -2696,15 +2696,32 @@ func TestOntapNasStorageDriverVolumeImport_UnixPermissions(t *testing.T) {
 		Comment: "flexvol",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
-	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
-	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2",
-		"vol1", "").Return(fmt.Errorf("error modifying unix permissions"))
+	tests := []struct {
+		nasYype         string
+		securityStyle   string
+		unixPermissions string
+	}{
+		{nasYype: sa.SMB, securityStyle: "mixed", unixPermissions: DefaultUnixPermissions},
+		{nasYype: sa.SMB, securityStyle: "ntfs", unixPermissions: ""},
+		{nasYype: sa.NFS, securityStyle: "mixed", unixPermissions: DefaultUnixPermissions},
+		{nasYype: sa.NFS, securityStyle: "unix", unixPermissions: DefaultUnixPermissions},
+	}
 
-	result := driver.Import(ctx, volConfig, "vol1")
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("Unix Permissions: %d", i), func(t *testing.T) {
+			driver.Config.NASType = test.nasYype
+			driver.Config.SecurityStyle = test.securityStyle
 
-	assert.Error(t, result)
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+			mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2",
+				"vol1", "").Return(fmt.Errorf("error modifying unix permissions"))
+
+			result := driver.Import(ctx, volConfig, "vol1")
+			assert.Error(t, result)
+		})
+	}
 }
 
 func TestOntapNasStorageDriverVolumePublish_NASType_None(t *testing.T) {
