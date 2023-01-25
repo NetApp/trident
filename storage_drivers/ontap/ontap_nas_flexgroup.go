@@ -852,9 +852,20 @@ func (d *NASFlexGroupStorageDriver) Import(
 	if !volConfig.ImportNotManaged {
 		// unixPermissions specified in PVC annotation takes precedence over backend's unixPermissions config
 		unixPerms := volConfig.UnixPermissions
-		if unixPerms == "" {
-			unixPerms = d.Config.UnixPermissions
+
+		switch d.Config.NASType {
+		case sa.SMB:
+			if unixPerms == "" && d.Config.SecurityStyle == "mixed" {
+				unixPerms = d.Config.UnixPermissions
+			} else if d.Config.SecurityStyle == "ntfs" {
+				unixPerms = ""
+			}
+		case sa.NFS:
+			if unixPerms == "" {
+				unixPerms = d.Config.UnixPermissions
+			}
 		}
+
 		if err := d.API.FlexgroupModifyUnixPermissions(ctx, volConfig.InternalName, originalName,
 			unixPerms); err != nil {
 			return err

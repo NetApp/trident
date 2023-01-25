@@ -794,10 +794,6 @@ func (c RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
 	ctx context.Context,
 	volumeName, unixPermissions, style string,
 ) error {
-	if unixPermissions == "" {
-		return fmt.Errorf("missing new unix permissions value")
-	}
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return err
@@ -815,14 +811,17 @@ func (c RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
 
 	// handle NAS options
 	volumeNas := &models.VolumeNas{}
-	unixPermissions = convertUnixPermissions(unixPermissions)
-	volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
-	if parseErr != nil {
-		return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
-	}
-	volumeNas.UnixPermissions = volumePermissions
-
 	volumeInfo := &models.Volume{}
+
+	if unixPermissions != "" {
+		unixPermissions = convertUnixPermissions(unixPermissions)
+		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
+		if parseErr != nil {
+			return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
+		}
+		volumeNas.UnixPermissions = volumePermissions
+	}
+
 	volumeInfo.Nas = volumeNas
 	params.SetInfo(volumeInfo)
 
