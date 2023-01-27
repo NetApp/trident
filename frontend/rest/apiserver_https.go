@@ -11,10 +11,9 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	. "github.com/netapp/trident/logging"
 )
 
 type APIServerHTTPS struct {
@@ -61,27 +60,27 @@ func NewHTTPSServer(
 		apiServer.server.TLSConfig.ClientCAs = caCertPool
 	}
 
-	log.WithField("address", apiServer.server.Addr).Info("Initializing HTTPS REST frontend.")
+	Log().WithField("address", apiServer.server.Addr).Info("Initializing HTTPS REST frontend.")
 
 	return apiServer, nil
 }
 
 func (s *APIServerHTTPS) Activate() error {
 	go func() {
-		log.WithField("address", s.server.Addr).Infof("Activating HTTPS REST frontend.")
+		Log().WithField("address", s.server.Addr).Infof("Activating HTTPS REST frontend.")
 
 		err := s.server.ListenAndServeTLS(s.serverCertFile, s.serverKeyFile)
 		if err == http.ErrServerClosed {
-			log.WithField("address", s.server.Addr).Info("HTTPS REST frontend server has closed.")
+			Log().WithField("address", s.server.Addr).Info("HTTPS REST frontend server has closed.")
 		} else if err != nil {
-			log.Fatal(err)
+			Log().Fatal(err)
 		}
 	}()
 	return nil
 }
 
 func (s *APIServerHTTPS) Deactivate() error {
-	log.WithField("address", s.server.Addr).Infof("Deactivating HTTPS REST frontend.")
+	Log().WithField("address", s.server.Addr).Infof("Deactivating HTTPS REST frontend.")
 	ctx, cancel := context.WithTimeout(context.Background(), config.HTTPTimeout)
 	defer cancel()
 	return s.server.Shutdown(ctx)
@@ -102,7 +101,7 @@ type tlsAuthHandler struct {
 func (h *tlsAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Service requests from Trident nodes with a valid client certificate
 	if len(r.TLS.PeerCertificates) > 0 && r.TLS.PeerCertificates[0].Subject.CommonName == config.ClientCertName {
-		log.WithField("peerCert", config.ClientCertName).Debug("Authenticated by HTTPS REST frontend.")
+		Log().WithField("peerCert", config.ClientCertName).Debug("Authenticated by HTTPS REST frontend.")
 		h.handler.ServeHTTP(w, r)
 	} else {
 		w.Header().Set("WWW-Authenticate", fmt.Sprintf("Basic realm=\"%s\"", config.OrchestratorName))

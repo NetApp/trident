@@ -7,14 +7,13 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/netapp/trident/frontend/csi"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
@@ -22,7 +21,8 @@ import (
 
 // addSnapshotInfo is the add handler for the TridentSnapshotInfo watcher.
 func (c *TridentCrdController) addSnapshotInfo(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventAdd))
 
 	Logx(ctx).Trace("TridentCrdController#addSnapshotInfo")
@@ -50,10 +50,11 @@ func (c *TridentCrdController) addSnapshotInfo(obj interface{}) {
 
 // updateSnapshotInfo is the update handler for the TridentSnapshotInfo watcher.
 func (c *TridentCrdController) updateSnapshotInfo(old, new interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
-	Logx(ctx).Trace("TridentCrdController#updateSnapshotInfo")
+	Logx(ctx).Debug("TridentCrdController#updateSnapshotInfo")
 
 	newSnapInfo := new.(*netappv1.TridentSnapshotInfo)
 	if newSnapInfo == nil {
@@ -72,7 +73,7 @@ func (c *TridentCrdController) updateSnapshotInfo(old, new interface{}) {
 	}
 
 	if !needsUpdate {
-		Logx(ctx).WithField("TridentSnapshotInfo", newSnapInfo.Name).Debugf("No required update for TSI")
+		Logx(ctx).WithField("TridentSnapshotInfo", newSnapInfo.Name).Tracef("No required update for TSI")
 		return
 	}
 
@@ -95,7 +96,8 @@ func (c *TridentCrdController) updateSnapshotInfo(old, new interface{}) {
 
 // deleteSnapshotInfo is the delete handler for the TridentSnapshotInfo watcher.
 func (c *TridentCrdController) deleteSnapshotInfo(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
 	Logx(ctx).Debug("TridentCrdController#deleteSnapshotInfo")
@@ -138,7 +140,7 @@ func (c *TridentCrdController) updateTSIStatus(
 // updateTSICR updates the TridentSnapshotInfo CR
 func (c *TridentCrdController) updateTSICR(ctx context.Context, tsi *netappv1.TridentSnapshotInfo,
 ) (*netappv1.TridentSnapshotInfo, error) {
-	logFields := log.Fields{"TridentSnapshotInfo": tsi.Name}
+	logFields := LogFields{"TridentSnapshotInfo": tsi.Name}
 
 	// Update phase of the tsiCR
 	Logx(ctx).WithFields(logFields).Debug("Updating the TridentSnapshotInfo CR")
@@ -152,14 +154,15 @@ func (c *TridentCrdController) updateTSICR(ctx context.Context, tsi *netappv1.Tr
 }
 
 func (c *TridentCrdController) reconcileTSI(keyItem *KeyItem) error {
-	Logx(keyItem.ctx).Trace("TridentCrdController#reconcileTSI")
+	Logx(keyItem.ctx).Debug(">>>> TridentCrdController#reconcileTSI")
+	defer Logx(keyItem.ctx).Debug("<<<< TridentCrdController#reconcileTSI")
 
 	if err := c.handleTridentSnapshotInfo(keyItem); err != nil {
 		c.workqueue.AddRateLimited(*keyItem)
 
 		if utils.IsReconcileDeferredError(err) {
 			errMessage := fmt.Sprintf("deferred syncing TSI '%v', requeuing; %v", keyItem.key, err.Error())
-			Logx(keyItem.ctx).Info(errMessage)
+			Logx(keyItem.ctx).Warn(errMessage)
 			return utils.ReconcileDeferredError(fmt.Errorf(errMessage))
 		} else {
 			errMessage := fmt.Sprintf("error syncing TSI '%v', requeuing; %v", keyItem.key, err.Error())
@@ -200,7 +203,7 @@ func (c *TridentCrdController) handleTridentSnapshotInfo(keyItem *KeyItem) error
 	// Ensure TSI is not deleting, then ensure it has a finalizer
 	if snapshotInfoCopy.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !snapshotInfoCopy.HasTridentFinalizers() {
-			Logx(ctx).WithField("TSI.Name", snapshotInfoCopy.Name).Debugf("Adding finalizer.")
+			Logx(ctx).WithField("TSI.Name", snapshotInfoCopy.Name).Tracef("Adding finalizer.")
 			snapshotInfoCopy.AddTridentFinalizers()
 
 			if snapshotInfoCopy, err = c.updateTSICR(ctx, snapshotInfoCopy); err != nil {
@@ -208,19 +211,19 @@ func (c *TridentCrdController) handleTridentSnapshotInfo(keyItem *KeyItem) error
 			}
 		}
 	} else {
-		Logx(ctx).WithFields(log.Fields{
+		Logx(ctx).WithFields(LogFields{
 			"TridentSnapshotInfo.Name":                         snapshotInfoCopy.Name,
 			"TridentSnapshotInfo.ObjectMeta.DeletionTimestamp": snapshotInfoCopy.ObjectMeta.DeletionTimestamp,
 		}).Trace("TridentCrdController#handleTridentSnapshotInfo CR is being deleted, not updating.")
 
-		Logx(ctx).Debugf("Removing TridentSnapshotInfo '%v' finalizers.", snapshotInfoCopy.Name)
+		Logx(ctx).Tracef("Removing TridentSnapshotInfo '%v' finalizers.", snapshotInfoCopy.Name)
 		return c.removeFinalizers(ctx, snapshotInfoCopy, false)
 	}
 
 	validTSI, reason := snapshotInfoCopy.IsValid()
 	var status *netappv1.TridentSnapshotInfoStatus
 	if validTSI {
-		logFields := log.Fields{
+		logFields := LogFields{
 			"snapshotInfoName": snapshotInfoCopy.Name,
 		}
 		Logx(ctx).WithFields(logFields).Debug("Valid TridentSnapshotInfo provided.")
@@ -230,11 +233,11 @@ func (c *TridentCrdController) handleTridentSnapshotInfo(keyItem *KeyItem) error
 		}
 		status = &netappv1.TridentSnapshotInfoStatus{SnapshotHandle: snapshotHandle}
 	} else {
-		logFields := log.Fields{
+		logFields := LogFields{
 			"snapshotInfoName": snapshotInfoCopy.Name,
 			"reason":           reason,
 		}
-		Logx(ctx).WithFields(logFields).Debug("Invalid TridentSnapshotInfo provided.")
+		Logx(ctx).WithFields(logFields).Warn("Invalid TridentSnapshotInfo provided.")
 		c.recorder.Eventf(snapshotInfoCopy, corev1.EventTypeWarning, netappv1.SnapshotInfoInvalid, reason)
 		status = &netappv1.TridentSnapshotInfoStatus{}
 	}

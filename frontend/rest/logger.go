@@ -7,9 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 type loggingResponseWriter struct {
@@ -36,7 +34,7 @@ func Logger(inner http.Handler, routeName string) http.Handler {
 		if reqID := r.Header.Get("X-Request-ID"); reqID != "" {
 			requestId = reqID
 		}
-		ctx := GenerateRequestContext(r.Context(), requestId, ContextSourceREST)
+		ctx := GenerateRequestContext(r.Context(), requestId, ContextSourceREST, WorkflowTridentRESTLogger, LogLayerRESTFrontend)
 		r = r.WithContext(ctx)
 		logRestCallInfo("REST API call received.", r, start, routeName, "")
 
@@ -60,7 +58,7 @@ func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusC
 		}
 	}
 
-	logFields := log.Fields{
+	logFields := LogFields{
 		"Method":     r.Method,
 		"Route":      name,
 		"RequestURL": r.URL,

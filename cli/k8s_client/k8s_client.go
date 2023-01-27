@@ -18,7 +18,6 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/ghodss/yaml"
-	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/policy/v1beta1"
@@ -40,8 +39,10 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 
+	. "github.com/netapp/trident/logging"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 type OrchestratorFlavor string
@@ -71,7 +72,9 @@ var (
 	updateOpts = metav1.UpdateOptions{}
 	patchOpts  = metav1.PatchOptions{}
 
-	ctx = context.TODO
+	ctx = GenerateRequestContext(context.Background(), "", "", WorkflowK8sClientAPI,
+		LogLayerNone)
+	reqCtx = context.Background
 
 	yamlToJSON     = yaml.YAMLToJSON
 	jsonMarshal    = json.Marshal
@@ -135,13 +138,13 @@ func NewKubeClient(config *rest.Config, namespace string, k8sTimeout time.Durati
 		kubeClient.cli = CLIOpenShift
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"cli":       kubeClient.cli,
 		"flavor":    kubeClient.flavor,
 		"version":   kubeClient.Version().String(),
 		"timeout":   kubeClient.timeout,
 		"namespace": kubeClient.namespace,
-	}).Debug("Initialized Kubernetes API client.")
+	}).Trace("Initialized Kubernetes API client.")
 
 	return kubeClient, nil
 }
@@ -166,7 +169,7 @@ func NewFakeKubeClient() (KubernetesClient, error) {
 func (k *KubeClient) getAPIResources() {
 	// Read the API groups/resources available from the server
 	if _, apiResources, err := k.clientset.Discovery().ServerGroupsAndResources(); err != nil {
-		log.WithField("error", err).Warn("Could not get all server resources.")
+		Logc(ctx).WithField("error", err).Warn("Could not get all server resources.")
 	} else {
 		// Update the cache
 		for _, apiResourceList := range apiResources {
@@ -181,14 +184,14 @@ func (k *KubeClient) discoverKubernetesFlavor() OrchestratorFlavor {
 
 		gv, err := schema.ParseGroupVersion(groupVersion)
 		if err != nil {
-			log.WithField("groupVersion", groupVersion).Warnf("Could not parse group/version; %v", err)
+			Logc(ctx).WithField("groupVersion", groupVersion).Warnf("Could not parse group/version; %v", err)
 			continue
 		}
 
-		// log.WithFields(log.Fields{
-		//	"group":    gv.Group,
-		//	"version":  gv.Version,
-		// }).Debug("Considering dynamic resource, looking for openshift group.")
+		Logc(ctx).WithFields(LogFields{
+			"group":   gv.Group,
+			"version": gv.Version,
+		}).Trace("Considering dynamic resource, looking for openshift group.")
 
 		// OCP will have an openshift api server we can use to determine if the environment is OCP or Kubernetes
 		if strings.Contains(gv.Group, "config.openshift.io") {
@@ -203,8 +206,8 @@ func (k *KubeClient) Version() *version.Info {
 	return k.versionInfo
 }
 
-func (k *KubeClient) ServerVersion() *utils.Version {
-	return utils.MustParseSemantic(k.versionInfo.GitVersion)
+func (k *KubeClient) ServerVersion() *versionutils.Version {
+	return versionutils.MustParseSemantic(k.versionInfo.GitVersion)
 }
 
 func (k *KubeClient) Flavor() OrchestratorFlavor {
@@ -229,7 +232,7 @@ func (k *KubeClient) SetTimeout(timeout time.Duration) {
 
 func (k *KubeClient) Exec(podName, containerName string, commandArgs []string) ([]byte, error) {
 	// Get the pod and ensure it is in a good state
-	pod, err := k.clientset.CoreV1().Pods(k.namespace).Get(ctx(), podName, getOpts)
+	pod, err := k.clientset.CoreV1().Pods(k.namespace).Get(reqCtx(), podName, getOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -276,7 +279,7 @@ func (k *KubeClient) Exec(podName, containerName string, commandArgs []string) (
 
 	var sizeQueue remotecommand.TerminalSizeQueue
 
-	log.Debugf("Invoking tunneled command: '%v'", strings.Join(commandArgs, " "))
+	Logc(ctx).Debugf("Invoking tunneled command: '%v'", strings.Join(commandArgs, " "))
 
 	// Execute the request
 	err = exec.Stream(remotecommand.StreamOptions{
@@ -326,7 +329,7 @@ func (k *KubeClient) GetDeploymentsByLabel(label string, allNamespaces bool) ([]
 		namespace = ""
 	}
 
-	deploymentList, err := k.clientset.AppsV1().Deployments(namespace).List(ctx(), listOptions)
+	deploymentList, err := k.clientset.AppsV1().Deployments(namespace).List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -336,7 +339,7 @@ func (k *KubeClient) GetDeploymentsByLabel(label string, allNamespaces bool) ([]
 
 // CheckDeploymentExists returns true if the specified deployment exists.
 func (k *KubeClient) CheckDeploymentExists(name, namespace string) (bool, error) {
-	if _, err := k.clientset.AppsV1().Deployments(namespace).Get(ctx(), name, getOpts); err != nil {
+	if _, err := k.clientset.AppsV1().Deployments(namespace).Get(reqCtx(), name, getOpts); err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil
 		}
@@ -371,16 +374,16 @@ func (k *KubeClient) DeleteDeploymentByLabel(label string) error {
 		return err
 	}
 
-	err = k.clientset.AppsV1().Deployments(k.namespace).Delete(ctx(), deployment.Name, k.deleteOptions())
+	err = k.clientset.AppsV1().Deployments(k.namespace).Delete(reqCtx(), deployment.Name, k.deleteOptions())
 	if err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":      label,
 		"deployment": deployment.Name,
 		"namespace":  k.namespace,
-	}).Debug("Deleted Kubernetes deployment.")
+	}).Trace("Deleted Kubernetes deployment.")
 
 	return nil
 }
@@ -397,14 +400,14 @@ func (k *KubeClient) DeleteDeployment(name, namespace string, foreground bool) e
 // with a background propagation policy, so it returns immediately and the Kubernetes garbage collector reaps any
 // associated pod(s) asynchronously.
 func (k *KubeClient) deleteDeploymentBackground(name, namespace string) error {
-	if err := k.clientset.AppsV1().Deployments(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.AppsV1().Deployments(namespace).Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"deployment": name,
 		"namespace":  namespace,
-	}).Debug("Deleted Kubernetes deployment.")
+	}).Trace("Deleted Kubernetes deployment.")
 
 	return nil
 }
@@ -413,15 +416,15 @@ func (k *KubeClient) deleteDeploymentBackground(name, namespace string) error {
 // with a foreground propagation policy, so that it can then wait for the deployment to disappear which will happen
 // only after all owned objects (i.e. pods) are cleaned up.
 func (k *KubeClient) deleteDeploymentForeground(name, namespace string) error {
-	logFields := log.Fields{"name": name, "namespace": namespace}
-	log.WithFields(logFields).Debug("Starting foreground deletion of Deployment.")
+	logFields := LogFields{"name": name, "namespace": namespace}
+	Logc(ctx).WithFields(logFields).Debug("Starting foreground deletion of Deployment.")
 
 	propagationPolicy := metav1.DeletePropagationForeground
 	deleteOptions := metav1.DeleteOptions{
 		PropagationPolicy: &propagationPolicy,
 	}
 
-	if err := k.clientset.AppsV1().Deployments(namespace).Delete(ctx(), name, deleteOptions); err != nil {
+	if err := k.clientset.AppsV1().Deployments(namespace).Delete(reqCtx(), name, deleteOptions); err != nil {
 		return err
 	}
 
@@ -435,24 +438,24 @@ func (k *KubeClient) deleteDeploymentForeground(name, namespace string) error {
 	}
 
 	checkDeploymentNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":      name,
 			"namespace": namespace,
 			"increment": duration,
 			"err":       err,
-		}).Debugf("Deployment still exists, waiting.")
+		}).Tracef("Deployment still exists, waiting.")
 	}
 	checkDeploymentBackoff := backoff.NewExponentialBackOff()
 	checkDeploymentBackoff.MaxElapsedTime = k.timeout
 
-	log.WithFields(logFields).Trace("Waiting for Deployment to be deleted.")
+	Logc(ctx).WithFields(logFields).Trace("Waiting for Deployment to be deleted.")
 
 	if err := backoff.RetryNotify(checkDeploymentExists, checkDeploymentBackoff, checkDeploymentNotify); err != nil {
 		return fmt.Errorf("deployment %s/%s was not deleted after %3.2f seconds",
 			namespace, name, k.timeout.Seconds())
 	}
 
-	log.WithFields(logFields).Debug("Completed foreground deletion of Deployment.")
+	Logc(ctx).WithFields(logFields).Debug("Completed foreground deletion of Deployment.")
 
 	return nil
 }
@@ -465,16 +468,16 @@ func (k *KubeClient) PatchDeploymentByLabel(label string, patchBytes []byte, pat
 		return err
 	}
 
-	if _, err = k.clientset.AppsV1().Deployments(k.namespace).Patch(ctx(), deployment.Name,
+	if _, err = k.clientset.AppsV1().Deployments(k.namespace).Patch(reqCtx(), deployment.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":      label,
 		"deployment": deployment.Name,
 		"namespace":  k.namespace,
-	}).Debug("Patched Kubernetes deployment.")
+	}).Trace("Patched Kubernetes deployment.")
 
 	return nil
 }
@@ -507,7 +510,7 @@ func (k *KubeClient) GetServicesByLabel(label string, allNamespaces bool) ([]v1.
 		namespace = ""
 	}
 
-	serviceList, err := k.clientset.CoreV1().Services(namespace).List(ctx(), listOptions)
+	serviceList, err := k.clientset.CoreV1().Services(namespace).List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -541,29 +544,29 @@ func (k *KubeClient) DeleteServiceByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().Services(k.namespace).Delete(ctx(), service.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.CoreV1().Services(k.namespace).Delete(reqCtx(), service.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"service":   service.Name,
 		"namespace": k.namespace,
-	}).Debug("Deleted Kubernetes service.")
+	}).Trace("Deleted Kubernetes service.")
 
 	return nil
 }
 
 // DeleteService deletes a Service object matching the specified name and namespace
 func (k *KubeClient) DeleteService(name, namespace string) error {
-	if err := k.clientset.CoreV1().Services(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.CoreV1().Services(namespace).Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"Service":   name,
 		"namespace": namespace,
-	}).Debug("Deleted Kubernetes Service.")
+	}).Trace("Deleted Kubernetes Service.")
 
 	return nil
 }
@@ -576,16 +579,16 @@ func (k *KubeClient) PatchServiceByLabel(label string, patchBytes []byte, patchT
 		return err
 	}
 
-	if _, err = k.clientset.CoreV1().Services(k.namespace).Patch(ctx(), service.Name,
+	if _, err = k.clientset.CoreV1().Services(k.namespace).Patch(reqCtx(), service.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":      label,
 		"deployment": service.Name,
 		"namespace":  k.namespace,
-	}).Debug("Patched Kubernetes service.")
+	}).Trace("Patched Kubernetes service.")
 
 	return nil
 }
@@ -618,7 +621,7 @@ func (k *KubeClient) GetStatefulSetsByLabel(label string, allNamespaces bool) ([
 		namespace = ""
 	}
 
-	statefulSetList, err := k.clientset.AppsV1().StatefulSets(namespace).List(ctx(), listOptions)
+	statefulSetList, err := k.clientset.AppsV1().StatefulSets(namespace).List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -652,12 +655,12 @@ func (k *KubeClient) DeleteStatefulSetByLabel(label string) error {
 		return err
 	}
 
-	err = k.clientset.AppsV1().StatefulSets(k.namespace).Delete(ctx(), statefulset.Name, k.deleteOptions())
+	err = k.clientset.AppsV1().StatefulSets(k.namespace).Delete(reqCtx(), statefulset.Name, k.deleteOptions())
 	if err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":       label,
 		"statefulset": statefulset.Name,
 		"namespace":   k.namespace,
@@ -668,14 +671,14 @@ func (k *KubeClient) DeleteStatefulSetByLabel(label string) error {
 
 // DeleteStatefulSet deletes a statefulset object matching the specified name and namespace.
 func (k *KubeClient) DeleteStatefulSet(name, namespace string) error {
-	if err := k.clientset.AppsV1().StatefulSets(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.AppsV1().StatefulSets(namespace).Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"statefulset": name,
 		"namespace":   k.namespace,
-	}).Debug("Deleted Kubernetes statefulset.")
+	}).Trace("Deleted Kubernetes statefulset.")
 
 	return nil
 }
@@ -727,7 +730,7 @@ func (k *KubeClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]a
 		namespace = ""
 	}
 
-	daemonSetList, err := k.clientset.AppsV1().DaemonSets(namespace).List(ctx(), listOptions)
+	daemonSetList, err := k.clientset.AppsV1().DaemonSets(namespace).List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -737,7 +740,7 @@ func (k *KubeClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]a
 
 // CheckDaemonSetExists returns true if the specified daemonset exists.
 func (k *KubeClient) CheckDaemonSetExists(name, namespace string) (bool, error) {
-	if _, err := k.clientset.AppsV1().DaemonSets(namespace).Get(ctx(), name, getOpts); err != nil {
+	if _, err := k.clientset.AppsV1().DaemonSets(namespace).Get(reqCtx(), name, getOpts); err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil
 		}
@@ -772,16 +775,16 @@ func (k *KubeClient) DeleteDaemonSetByLabel(label string) error {
 		return err
 	}
 
-	err = k.clientset.AppsV1().DaemonSets(k.namespace).Delete(ctx(), daemonset.Name, k.deleteOptions())
+	err = k.clientset.AppsV1().DaemonSets(k.namespace).Delete(reqCtx(), daemonset.Name, k.deleteOptions())
 	if err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"daemonset": daemonset.Name,
 		"namespace": k.namespace,
-	}).Debug("Deleted Kubernetes daemonset.")
+	}).Trace("Deleted Kubernetes daemonset.")
 
 	return nil
 }
@@ -794,16 +797,16 @@ func (k *KubeClient) DeleteDaemonSetByLabelAndName(label, name string) error {
 		return err
 	}
 
-	err = k.clientset.AppsV1().DaemonSets(k.namespace).Delete(ctx(), daemonset.Name, k.deleteOptions())
+	err = k.clientset.AppsV1().DaemonSets(k.namespace).Delete(reqCtx(), daemonset.Name, k.deleteOptions())
 	if err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"daemonset": daemonset.Name,
 		"namespace": k.namespace,
-	}).Debug("Deleted Kubernetes daemonset.")
+	}).Trace("Deleted Kubernetes daemonset.")
 
 	return nil
 }
@@ -820,14 +823,14 @@ func (k *KubeClient) DeleteDaemonSet(name, namespace string, foreground bool) er
 // with a background propagation policy, so it returns immediately and the Kubernetes garbage collector reaps any
 // associated pod(s) asynchronously.
 func (k *KubeClient) deleteDaemonSetBackground(name, namespace string) error {
-	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"DaemonSet": name,
 		"namespace": namespace,
-	}).Debug("Deleted Kubernetes DaemonSet.")
+	}).Trace("Deleted Kubernetes DaemonSet.")
 
 	return nil
 }
@@ -836,15 +839,15 @@ func (k *KubeClient) deleteDaemonSetBackground(name, namespace string) error {
 // with a foreground propagation policy, so that it can then wait for the daemonset to disappear which will happen
 // only after all owned objects (i.e. pods) are cleaned up.
 func (k *KubeClient) deleteDaemonSetForeground(name, namespace string) error {
-	logFields := log.Fields{"name": name, "namespace": namespace}
-	log.WithFields(logFields).Debug("Starting foreground deletion of DaemonSet.")
+	logFields := LogFields{"name": name, "namespace": namespace}
+	Logc(ctx).WithFields(logFields).Debug("Starting foreground deletion of DaemonSet.")
 
 	propagationPolicy := metav1.DeletePropagationForeground
 	deleteOptions := metav1.DeleteOptions{
 		PropagationPolicy: &propagationPolicy,
 	}
 
-	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(ctx(), name, deleteOptions); err != nil {
+	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(reqCtx(), name, deleteOptions); err != nil {
 		return err
 	}
 
@@ -858,7 +861,7 @@ func (k *KubeClient) deleteDaemonSetForeground(name, namespace string) error {
 	}
 
 	checkDaemonSetNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":      name,
 			"namespace": namespace,
 			"increment": duration,
@@ -868,14 +871,14 @@ func (k *KubeClient) deleteDaemonSetForeground(name, namespace string) error {
 	checkDaemonSetBackoff := backoff.NewExponentialBackOff()
 	checkDaemonSetBackoff.MaxElapsedTime = k.timeout
 
-	log.WithFields(logFields).Trace("Waiting for DaemonSet to be deleted.")
+	Logc(ctx).WithFields(logFields).Trace("Waiting for DaemonSet to be deleted.")
 
 	if err := backoff.RetryNotify(checkDaemonSetExists, checkDaemonSetBackoff, checkDaemonSetNotify); err != nil {
 		return fmt.Errorf("daemonset %s/%s was not deleted after %3.2f seconds",
 			namespace, name, k.timeout.Seconds())
 	}
 
-	log.WithFields(logFields).Debug("Completed foreground deletion of DaemonSet.")
+	Logc(ctx).WithFields(logFields).Debug("Completed foreground deletion of DaemonSet.")
 
 	return nil
 }
@@ -890,16 +893,16 @@ func (k *KubeClient) PatchDaemonSetByLabelAndName(
 		return err
 	}
 
-	if _, err = k.clientset.AppsV1().DaemonSets(k.namespace).Patch(ctx(), daemonSet.Name,
+	if _, err = k.clientset.AppsV1().DaemonSets(k.namespace).Patch(reqCtx(), daemonSet.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"DaemonSet": daemonSet.Name,
 		"namespace": k.namespace,
-	}).Debug("Patched Kubernetes DaemonSet.")
+	}).Trace("Patched Kubernetes DaemonSet.")
 
 	return nil
 }
@@ -912,16 +915,16 @@ func (k *KubeClient) PatchDaemonSetByLabel(label string, patchBytes []byte, patc
 		return err
 	}
 
-	if _, err = k.clientset.AppsV1().DaemonSets(k.namespace).Patch(ctx(), daemonSet.Name,
+	if _, err = k.clientset.AppsV1().DaemonSets(k.namespace).Patch(reqCtx(), daemonSet.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"DaemonSet": daemonSet.Name,
 		"namespace": k.namespace,
-	}).Debug("Patched Kubernetes DaemonSet.")
+	}).Trace("Patched Kubernetes DaemonSet.")
 
 	return nil
 }
@@ -954,7 +957,7 @@ func (k *KubeClient) GetConfigMapsByLabel(label string, allNamespaces bool) ([]v
 		namespace = ""
 	}
 
-	configMapList, err := k.clientset.CoreV1().ConfigMaps(namespace).List(ctx(), listOptions)
+	configMapList, err := k.clientset.CoreV1().ConfigMaps(namespace).List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -987,16 +990,16 @@ func (k *KubeClient) DeleteConfigMapByLabel(label string) error {
 		return err
 	}
 
-	err = k.clientset.CoreV1().ConfigMaps(k.namespace).Delete(ctx(), configmap.Name, k.deleteOptions())
+	err = k.clientset.CoreV1().ConfigMaps(k.namespace).Delete(reqCtx(), configmap.Name, k.deleteOptions())
 	if err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"configmap": configmap.Name,
 		"namespace": k.namespace,
-	}).Debug("Deleted Kubernetes configmap.")
+	}).Trace("Deleted Kubernetes configmap.")
 
 	return nil
 }
@@ -1033,7 +1036,7 @@ func (k *KubeClient) GetPodsByLabel(label string, allNamespaces bool) ([]v1.Pod,
 		namespace = ""
 	}
 
-	podList, err := k.clientset.CoreV1().Pods(namespace).List(ctx(), listOptions)
+	podList, err := k.clientset.CoreV1().Pods(namespace).List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1066,15 +1069,15 @@ func (k *KubeClient) DeletePodByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().Pods(k.namespace).Delete(ctx(), pod.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.CoreV1().Pods(k.namespace).Delete(reqCtx(), pod.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"pod":       pod.Name,
 		"namespace": k.namespace,
-	}).Debug("Deleted Kubernetes pod.")
+	}).Trace("Deleted Kubernetes pod.")
 
 	return nil
 }
@@ -1086,21 +1089,21 @@ func (k *KubeClient) DeletePod(name, namespace string) error {
 		GracePeriodSeconds: &gracePeriod,
 	}
 
-	if err := k.clientset.CoreV1().Pods(namespace).Delete(ctx(), name, *deleteOptions); err != nil {
+	if err := k.clientset.CoreV1().Pods(namespace).Delete(reqCtx(), name, *deleteOptions); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"pod":       name,
 		"namespace": namespace,
-	}).Debug("Deleted Kubernetes pod.")
+	}).Trace("Deleted Kubernetes pod.")
 
 	return nil
 }
 
 func (k *KubeClient) GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error) {
 	var options metav1.GetOptions
-	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Get(ctx(), pvcName, options)
+	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Get(reqCtx(), pvcName, options)
 }
 
 func (k *KubeClient) GetPVCByLabel(label string, allNamespaces bool) (*v1.PersistentVolumeClaim, error) {
@@ -1114,7 +1117,7 @@ func (k *KubeClient) GetPVCByLabel(label string, allNamespaces bool) (*v1.Persis
 		namespace = ""
 	}
 
-	pvcList, err := k.clientset.CoreV1().PersistentVolumeClaims(namespace).List(ctx(), listOptions)
+	pvcList, err := k.clientset.CoreV1().PersistentVolumeClaims(namespace).List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1153,22 +1156,22 @@ func (k *KubeClient) DeletePVCByLabel(label string) error {
 		return err
 	}
 
-	err = k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Delete(ctx(), pvc.Name, k.deleteOptions())
+	err = k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Delete(reqCtx(), pvc.Name, k.deleteOptions())
 	if err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"namespace": k.namespace,
-	}).Debug("Deleted PVC by label.")
+	}).Trace("Deleted PVC by label.")
 
 	return nil
 }
 
 func (k *KubeClient) GetPV(pvName string) (*v1.PersistentVolume, error) {
 	var options metav1.GetOptions
-	return k.clientset.CoreV1().PersistentVolumes().Get(ctx(), pvName, options)
+	return k.clientset.CoreV1().PersistentVolumes().Get(reqCtx(), pvName, options)
 }
 
 func (k *KubeClient) GetPVByLabel(label string) (*v1.PersistentVolume, error) {
@@ -1177,7 +1180,7 @@ func (k *KubeClient) GetPVByLabel(label string) (*v1.PersistentVolume, error) {
 		return nil, err
 	}
 
-	pvList, err := k.clientset.CoreV1().PersistentVolumes().List(ctx(), listOptions)
+	pvList, err := k.clientset.CoreV1().PersistentVolumes().List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1207,18 +1210,18 @@ func (k *KubeClient) DeletePVByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().PersistentVolumes().Delete(ctx(), pv.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.CoreV1().PersistentVolumes().Delete(reqCtx(), pv.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithField("label", label).Debug("Deleted PV by label.")
+	Logc(ctx).WithField("label", label).Debug("Deleted PV by label.")
 
 	return nil
 }
 
 func (k *KubeClient) GetCRD(crdName string) (*apiextensionv1.CustomResourceDefinition, error) {
 	var options metav1.GetOptions
-	return k.extClientset.ApiextensionsV1().CustomResourceDefinitions().Get(ctx(), crdName, options)
+	return k.extClientset.ApiextensionsV1().CustomResourceDefinitions().Get(reqCtx(), crdName, options)
 }
 
 func (k *KubeClient) CheckCRDExists(crdName string) (bool, error) {
@@ -1232,7 +1235,7 @@ func (k *KubeClient) CheckCRDExists(crdName string) (bool, error) {
 }
 
 func (k *KubeClient) DeleteCRD(crdName string) error {
-	return k.extClientset.ApiextensionsV1().CustomResourceDefinitions().Delete(ctx(), crdName, k.deleteOptions())
+	return k.extClientset.ApiextensionsV1().CustomResourceDefinitions().Delete(reqCtx(), crdName, k.deleteOptions())
 }
 
 // GetPodSecurityPolicyByLabel returns a pod security policy object matching the specified label if it is unique
@@ -1260,7 +1263,7 @@ func (k *KubeClient) GetPodSecurityPoliciesByLabel(label string) ([]v1beta1.PodS
 		return nil, err
 	}
 
-	pspList, err := k.clientset.PolicyV1beta1().PodSecurityPolicies().List(ctx(), listOptions)
+	pspList, err := k.clientset.PolicyV1beta1().PodSecurityPolicies().List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1294,27 +1297,27 @@ func (k *KubeClient) DeletePodSecurityPolicyByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(ctx(), psp.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(reqCtx(), psp.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":             label,
 		"podSecurityPolicy": psp.Name,
-	}).Debug("Deleted Kubernetes pod security policy.")
+	}).Trace("Deleted Kubernetes pod security policy.")
 
 	return nil
 }
 
 // DeletePodSecurityPolicy deletes a pod security policy object matching the specified PSP name.
 func (k *KubeClient) DeletePodSecurityPolicy(pspName string) error {
-	if err := k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(ctx(), pspName, k.deleteOptions()); err != nil {
+	if err := k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(reqCtx(), pspName, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"service": pspName,
-	}).Debug("Deleted Kubernetes pod security policy.")
+	}).Trace("Deleted Kubernetes pod security policy.")
 
 	return nil
 }
@@ -1327,15 +1330,15 @@ func (k *KubeClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []by
 		return err
 	}
 
-	if _, err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Patch(ctx(), psp.Name,
+	if _, err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Patch(reqCtx(), psp.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":      label,
 		"deployment": psp.Name,
-	}).Debug("Patched Kubernetes pod security policy.")
+	}).Trace("Patched Kubernetes pod security policy.")
 
 	return nil
 }
@@ -1357,12 +1360,12 @@ func (k *KubeClient) PatchPodSecurityPolicyByLabelAndName(label, pspName string,
 		}
 	}
 
-	if _, err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Patch(ctx(), psp.Name,
+	if _, err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Patch(ctx, psp.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"label":      label,
 		"deployment": psp.Name,
 	}).Debug("Patched Kubernetes pod security policy.")
@@ -1417,7 +1420,7 @@ func (k *KubeClient) GetServiceAccountsByLabel(label string, allNamespaces bool)
 		namespace = ""
 	}
 
-	serviceAccountList, err := k.clientset.CoreV1().ServiceAccounts(namespace).List(ctx(), listOptions)
+	serviceAccountList, err := k.clientset.CoreV1().ServiceAccounts(namespace).List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1427,7 +1430,7 @@ func (k *KubeClient) GetServiceAccountsByLabel(label string, allNamespaces bool)
 
 // CheckServiceAccountExists returns true if a matching service account exists.
 func (k *KubeClient) CheckServiceAccountExists(name, namespace string) (bool, error) {
-	if _, err := k.clientset.CoreV1().ServiceAccounts(namespace).Get(ctx(), name, getOpts); err != nil {
+	if _, err := k.clientset.CoreV1().ServiceAccounts(namespace).Get(reqCtx(), name, getOpts); err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil
 		}
@@ -1462,16 +1465,16 @@ func (k *KubeClient) DeleteServiceAccountByLabel(label string) error {
 		return err
 	}
 
-	err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Delete(ctx(), serviceAccount.Name, k.deleteOptions())
+	err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Delete(reqCtx(), serviceAccount.Name, k.deleteOptions())
 	if err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":          label,
 		"serviceAccount": serviceAccount.Name,
 		"namespace":      k.namespace,
-	}).Debug("Deleted Kubernetes service account.")
+	}).Trace("Deleted Kubernetes service account.")
 
 	return nil
 }
@@ -1486,14 +1489,14 @@ func (k *KubeClient) DeleteServiceAccount(name, namespace string, foreground boo
 }
 
 func (k *KubeClient) deleteServiceAccountBackground(name, namespace string) error {
-	if err := k.clientset.CoreV1().ServiceAccounts(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.CoreV1().ServiceAccounts(namespace).Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"serviceAccount": name,
 		"namespace":      namespace,
-	}).Debug("Deleted Kubernetes service account.")
+	}).Trace("Deleted Kubernetes service account.")
 
 	return nil
 }
@@ -1501,8 +1504,8 @@ func (k *KubeClient) deleteServiceAccountBackground(name, namespace string) erro
 // DeleteServiceAccountForeground deletes a service account object matching the specified
 // name and namespace in the foreground
 func (k *KubeClient) deleteServiceAccountForeground(name, namespace string) error {
-	logFields := log.Fields{"name": name, "namespace": namespace}
-	log.WithFields(logFields).Debug("Starting foreground deletion of Service Account.")
+	logFields := LogFields{"name": name, "namespace": namespace}
+	Logc(ctx).WithFields(logFields).Debug("Starting foreground deletion of Service Account.")
 
 	propagationPolicy := metav1.DeletePropagationForeground
 	gracePeriodSeconds := int64(10)
@@ -1511,7 +1514,7 @@ func (k *KubeClient) deleteServiceAccountForeground(name, namespace string) erro
 		GracePeriodSeconds: &gracePeriodSeconds,
 	}
 
-	if err := k.clientset.CoreV1().ServiceAccounts(namespace).Delete(ctx(), name, deleteOptions); err != nil {
+	if err := k.clientset.CoreV1().ServiceAccounts(namespace).Delete(reqCtx(), name, deleteOptions); err != nil {
 		return err
 	}
 
@@ -1525,7 +1528,7 @@ func (k *KubeClient) deleteServiceAccountForeground(name, namespace string) erro
 	}
 
 	checkServiceAccountNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":      name,
 			"namespace": namespace,
 			"increment": duration,
@@ -1535,7 +1538,7 @@ func (k *KubeClient) deleteServiceAccountForeground(name, namespace string) erro
 	checkServiceAccountBackoff := backoff.NewExponentialBackOff()
 	checkServiceAccountBackoff.MaxElapsedTime = k.timeout
 
-	log.WithFields(logFields).Trace("Waiting for Service Account to be deleted.")
+	Logc(ctx).WithFields(logFields).Trace("Waiting for Service Account to be deleted.")
 
 	if err := backoff.RetryNotify(checkServiceAccountExists, checkServiceAccountBackoff,
 		checkServiceAccountNotify); err != nil {
@@ -1543,7 +1546,7 @@ func (k *KubeClient) deleteServiceAccountForeground(name, namespace string) erro
 			namespace, name, k.timeout.Seconds())
 	}
 
-	log.WithFields(logFields).Debug("Completed foreground deletion of Service Account.")
+	Logc(ctx).WithFields(logFields).Debug("Completed foreground deletion of Service Account.")
 
 	return nil
 }
@@ -1558,16 +1561,16 @@ func (k *KubeClient) PatchServiceAccountByLabelAndName(label, serviceAccountName
 		return err
 	}
 
-	if _, err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Patch(ctx(), serviceAccount.Name,
+	if _, err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Patch(reqCtx(), serviceAccount.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":          label,
 		"serviceAccount": serviceAccount.Name,
 		"namespace":      k.namespace,
-	}).Debug("Patched Kubernetes Service Account.")
+	}).Trace("Patched Kubernetes Service Account.")
 
 	return nil
 }
@@ -1580,16 +1583,16 @@ func (k *KubeClient) PatchServiceAccountByLabel(label string, patchBytes []byte,
 		return err
 	}
 
-	if _, err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Patch(ctx(), serviceAccount.Name,
+	if _, err = k.clientset.CoreV1().ServiceAccounts(k.namespace).Patch(reqCtx(), serviceAccount.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":          label,
 		"serviceAccount": serviceAccount.Name,
 		"namespace":      k.namespace,
-	}).Debug("Patched Kubernetes Service Account.")
+	}).Trace("Patched Kubernetes Service Account.")
 
 	return nil
 }
@@ -1651,7 +1654,7 @@ func (k *KubeClient) GetClusterRolesByLabel(label string) ([]v13.ClusterRole, er
 		return nil, err
 	}
 
-	clusterRoleList, err := k.clientset.RbacV1().ClusterRoles().List(ctx(), listOptions)
+	clusterRoleList, err := k.clientset.RbacV1().ClusterRoles().List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1666,7 +1669,7 @@ func (k *KubeClient) GetRolesByLabel(label string) ([]v13.Role, error) {
 		return nil, err
 	}
 
-	roleList, err := k.clientset.RbacV1().Roles(k.Namespace()).List(ctx(), listOptions)
+	roleList, err := k.clientset.RbacV1().Roles(k.Namespace()).List(ctx, listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1700,38 +1703,38 @@ func (k *KubeClient) DeleteClusterRoleByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.RbacV1().ClusterRoles().Delete(ctx(), clusterRole.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.RbacV1().ClusterRoles().Delete(reqCtx(), clusterRole.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":       label,
 		"clusterRole": clusterRole.Name,
-	}).Debug("Deleted Kubernetes cluster role.")
+	}).Trace("Deleted Kubernetes cluster role.")
 
 	return nil
 }
 
 // DeleteClusterRole deletes a cluster role object matching the specified name
 func (k *KubeClient) DeleteClusterRole(name string) error {
-	if err := k.clientset.RbacV1().ClusterRoles().Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.RbacV1().ClusterRoles().Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"clusterRole": name,
-	}).Debug("Deleted Kubernetes cluster role.")
+	}).Trace("Deleted Kubernetes cluster role.")
 
 	return nil
 }
 
 // DeleteRole deletes a cluster role object matching the specified name
 func (k *KubeClient) DeleteRole(name string) error {
-	if err := k.clientset.RbacV1().Roles(k.Namespace()).Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.RbacV1().Roles(k.Namespace()).Delete(ctx, name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"role": name,
 	}).Debug("Deleted Kubernetes role.")
 
@@ -1748,15 +1751,15 @@ func (k *KubeClient) PatchClusterRoleByLabelAndName(label, clusterRoleName strin
 		return err
 	}
 
-	if _, err = k.clientset.RbacV1().ClusterRoles().Patch(ctx(), clusterRole.Name,
+	if _, err = k.clientset.RbacV1().ClusterRoles().Patch(reqCtx(), clusterRole.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":       label,
 		"clusterRole": clusterRole.Name,
-	}).Debug("Patched Kubernetes cluster role.")
+	}).Trace("Patched Kubernetes cluster role.")
 
 	return nil
 }
@@ -1775,12 +1778,12 @@ func (k *KubeClient) PatchRoleByLabelAndName(label, roleName string, patchBytes 
 		return fmt.Errorf("role for name %s and label %s does not exist", roleName, label)
 	}
 
-	if _, err = k.clientset.RbacV1().Roles(k.Namespace()).Patch(ctx(), role.Name,
+	if _, err = k.clientset.RbacV1().Roles(k.Namespace()).Patch(ctx, role.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"label": label,
 		"role":  role.Name,
 	}).Debug("Patched Kubernetes role.")
@@ -1796,15 +1799,15 @@ func (k *KubeClient) PatchClusterRoleByLabel(label string, patchBytes []byte, pa
 		return err
 	}
 
-	if _, err = k.clientset.RbacV1().ClusterRoles().Patch(ctx(), clusterRole.Name,
+	if _, err = k.clientset.RbacV1().ClusterRoles().Patch(reqCtx(), clusterRole.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":       label,
 		"clusterRole": clusterRole.Name,
-	}).Debug("Patched Kubernetes cluster role.")
+	}).Trace("Patched Kubernetes cluster role.")
 
 	return nil
 }
@@ -1870,7 +1873,7 @@ func (k *KubeClient) GetClusterRoleBindingsByLabel(label string) ([]v13.ClusterR
 		return nil, err
 	}
 
-	clusterRoleBindingList, err := k.clientset.RbacV1().ClusterRoleBindings().List(ctx(), listOptions)
+	clusterRoleBindingList, err := k.clientset.RbacV1().ClusterRoleBindings().List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1885,7 +1888,7 @@ func (k *KubeClient) GetRoleBindingsByLabel(label string) ([]v13.RoleBinding, er
 		return nil, err
 	}
 
-	roleBindingList, err := k.clientset.RbacV1().RoleBindings(k.Namespace()).List(ctx(), listOptions)
+	roleBindingList, err := k.clientset.RbacV1().RoleBindings(k.Namespace()).List(ctx, listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -1919,39 +1922,39 @@ func (k *KubeClient) DeleteClusterRoleBindingByLabel(label string) error {
 		return err
 	}
 
-	err = k.clientset.RbacV1().ClusterRoleBindings().Delete(ctx(), clusterRoleBinding.Name, k.deleteOptions())
+	err = k.clientset.RbacV1().ClusterRoleBindings().Delete(reqCtx(), clusterRoleBinding.Name, k.deleteOptions())
 	if err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":              label,
 		"clusterRoleBinding": clusterRoleBinding.Name,
-	}).Debug("Deleted Kubernetes cluster role binding.")
+	}).Trace("Deleted Kubernetes cluster role binding.")
 
 	return nil
 }
 
 // DeleteClusterRoleBinding deletes a cluster role binding object matching the specified name
 func (k *KubeClient) DeleteClusterRoleBinding(name string) error {
-	if err := k.clientset.RbacV1().ClusterRoleBindings().Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.RbacV1().ClusterRoleBindings().Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"clusterRoleBinding": name,
-	}).Debug("Deleted Kubernetes cluster role binding.")
+	}).Trace("Deleted Kubernetes cluster role binding.")
 
 	return nil
 }
 
 // DeleteRoleBinding deletes a role binding object matching the specified name
 func (k *KubeClient) DeleteRoleBinding(name string) error {
-	if err := k.clientset.RbacV1().RoleBindings(k.Namespace()).Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.RbacV1().RoleBindings(k.Namespace()).Delete(ctx, name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"roleBinding": name,
 	}).Debug("Deleted Kubernetes role binding.")
 
@@ -1968,15 +1971,15 @@ func (k *KubeClient) PatchClusterRoleBindingByLabelAndName(label, clusterRoleBin
 		return err
 	}
 
-	if _, err = k.clientset.RbacV1().ClusterRoleBindings().Patch(ctx(), clusterRoleBinding.Name,
+	if _, err = k.clientset.RbacV1().ClusterRoleBindings().Patch(reqCtx(), clusterRoleBinding.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":              label,
 		"clusterRoleBinding": clusterRoleBinding.Name,
-	}).Debug("Patched Kubernetes cluster role binding.")
+	}).Trace("Patched Kubernetes cluster role binding.")
 
 	return nil
 }
@@ -1995,12 +1998,12 @@ func (k *KubeClient) PatchRoleBindingByLabelAndName(label, roleBindingName strin
 		return fmt.Errorf("roleBinding for name %s and label %s does not exist", roleBindingName, label)
 	}
 
-	if _, err = k.clientset.RbacV1().RoleBindings(k.Namespace()).Patch(ctx(), roleBinding.Name,
+	if _, err = k.clientset.RbacV1().RoleBindings(k.Namespace()).Patch(ctx, roleBinding.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"label":       label,
 		"roleBinding": roleBinding.Name,
 	}).Debug("Patched Kubernetes role binding.")
@@ -2016,15 +2019,15 @@ func (k *KubeClient) PatchClusterRoleBindingByLabel(label string, patchBytes []b
 		return err
 	}
 
-	if _, err = k.clientset.RbacV1().ClusterRoleBindings().Patch(ctx(), clusterRoleBinding.Name,
+	if _, err = k.clientset.RbacV1().ClusterRoleBindings().Patch(reqCtx(), clusterRoleBinding.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":              label,
 		"clusterRoleBinding": clusterRoleBinding.Name,
-	}).Debug("Patched Kubernetes cluster role binding.")
+	}).Trace("Patched Kubernetes cluster role binding.")
 
 	return nil
 }
@@ -2052,7 +2055,7 @@ func (k *KubeClient) GetCSIDriversByLabel(label string) ([]storagev1.CSIDriver, 
 		return nil, err
 	}
 
-	CSIDriverList, err := k.clientset.StorageV1().CSIDrivers().List(ctx(), listOptions)
+	CSIDriverList, err := k.clientset.StorageV1().CSIDrivers().List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -2086,27 +2089,27 @@ func (k *KubeClient) DeleteCSIDriverByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.StorageV1().CSIDrivers().Delete(ctx(), CSIDriver.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.StorageV1().CSIDrivers().Delete(reqCtx(), CSIDriver.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":       label,
 		"CSIDriverCR": CSIDriver.Name,
-	}).Debug("Deleted CSI driver.")
+	}).Trace("Deleted CSI driver.")
 
 	return nil
 }
 
 // DeleteCSIDriver deletes a CSI Driver object matching the specified name
 func (k *KubeClient) DeleteCSIDriver(name string) error {
-	if err := k.clientset.StorageV1().CSIDrivers().Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.StorageV1().CSIDrivers().Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"CSIDriverCR": name,
-	}).Debug("Deleted CSI driver.")
+	}).Trace("Deleted CSI driver.")
 
 	return nil
 }
@@ -2119,15 +2122,15 @@ func (k *KubeClient) PatchCSIDriverByLabel(label string, patchBytes []byte, patc
 		return err
 	}
 
-	if _, err = k.clientset.StorageV1().CSIDrivers().Patch(ctx(), csiDriver.Name,
+	if _, err = k.clientset.StorageV1().CSIDrivers().Patch(reqCtx(), csiDriver.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":      label,
 		"deployment": csiDriver.Name,
-	}).Debug("Patched Kubernetes CSI driver.")
+	}).Trace("Patched Kubernetes CSI driver.")
 
 	return nil
 }
@@ -2162,25 +2165,25 @@ func (k *KubeClient) PatchNamespace(namespace string, patchBytes []byte, patchTy
 		return err
 	}
 
-	if _, err := k.clientset.CoreV1().Namespaces().Patch(ctx(), ns.Name, patchType, patchBytes, patchOpts); err != nil {
+	if _, err := k.clientset.CoreV1().Namespaces().Patch(reqCtx(), ns.Name, patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"namespace": namespace,
-	}).Debug("Patched Kubernetes namespace")
+	}).Trace("Patched Kubernetes namespace")
 
 	return nil
 }
 
 func (k *KubeClient) GetNamespace(namespace string) (*v1.Namespace, error) {
-	return k.clientset.CoreV1().Namespaces().Get(ctx(), namespace, getOpts)
+	return k.clientset.CoreV1().Namespaces().Get(reqCtx(), namespace, getOpts)
 }
 
 // GetResourceQuota returns a ResourceQuota by name.
 func (k *KubeClient) GetResourceQuota(name string) (*v1.ResourceQuota, error) {
 	var options metav1.GetOptions
-	return k.clientset.CoreV1().ResourceQuotas(k.namespace).Get(ctx(), name, options)
+	return k.clientset.CoreV1().ResourceQuotas(k.namespace).Get(reqCtx(), name, options)
 }
 
 // GetResourceQuotaByLabel returns a ResourceQuota by label.
@@ -2196,10 +2199,10 @@ func (k *KubeClient) GetResourceQuotaByLabel(label string) (*v1.ResourceQuota, e
 		return nil, fmt.Errorf("multiple resource quotas have the label %s", label)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"namespace": k.namespace,
-	}).Debug("Found resource quota by label.")
+	}).Trace("Found resource quota by label.")
 
 	return &resourceQuotas[0], nil
 }
@@ -2211,7 +2214,7 @@ func (k *KubeClient) GetResourceQuotasByLabel(label string) ([]v1.ResourceQuota,
 		return nil, err
 	}
 
-	resourceQuotas, err := k.clientset.CoreV1().ResourceQuotas(k.namespace).List(ctx(), listOptions)
+	resourceQuotas, err := k.clientset.CoreV1().ResourceQuotas(k.namespace).List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -2221,14 +2224,14 @@ func (k *KubeClient) GetResourceQuotasByLabel(label string) ([]v1.ResourceQuota,
 
 // DeleteResourceQuota deletes a ResourceQuota by name.
 func (k *KubeClient) DeleteResourceQuota(name string) error {
-	if err := k.clientset.CoreV1().ResourceQuotas(k.namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.CoreV1().ResourceQuotas(k.namespace).Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"resourcequota": name,
 		"namespace":     k.namespace,
-	}).Debug("Deleted resource quota by name.")
+	}).Trace("Deleted resource quota by name.")
 
 	return nil
 }
@@ -2240,15 +2243,15 @@ func (k *KubeClient) DeleteResourceQuotaByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().ResourceQuotas(k.namespace).Delete(ctx(), resourceQuota.Name,
+	if err = k.clientset.CoreV1().ResourceQuotas(k.namespace).Delete(reqCtx(), resourceQuota.Name,
 		k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"namespace": k.namespace,
-	}).Debug("Deleted resource quota by label.")
+	}).Trace("Deleted resource quota by label.")
 
 	return nil
 }
@@ -2260,28 +2263,28 @@ func (k *KubeClient) PatchResourceQuotaByLabel(label string, patchBytes []byte, 
 		return err
 	}
 
-	if _, err = k.clientset.CoreV1().ResourceQuotas(k.namespace).Patch(ctx(), resourceQuota.Name,
+	if _, err = k.clientset.CoreV1().ResourceQuotas(k.namespace).Patch(reqCtx(), resourceQuota.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":         label,
 		"resourcequota": resourceQuota.Name,
 		"namespace":     k.namespace,
-	}).Debug("Patched Trident resource quota.")
+	}).Trace("Patched Trident resource quota.")
 
 	return nil
 }
 
 // CreateSecret creates a new Secret
 func (k *KubeClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
-	return k.clientset.CoreV1().Secrets(k.namespace).Create(ctx(), secret, createOpts)
+	return k.clientset.CoreV1().Secrets(k.namespace).Create(reqCtx(), secret, createOpts)
 }
 
 // UpdateSecret updates an existing Secret
 func (k *KubeClient) UpdateSecret(secret *v1.Secret) (*v1.Secret, error) {
-	return k.clientset.CoreV1().Secrets(k.namespace).Update(ctx(), secret, updateOpts)
+	return k.clientset.CoreV1().Secrets(k.namespace).Update(reqCtx(), secret, updateOpts)
 }
 
 // CreateCHAPSecret creates a new Secret for iSCSI CHAP mutual authentication
@@ -2310,7 +2313,7 @@ func (k *KubeClient) CreateCHAPSecret(
 // GetSecret looks up a Secret by name
 func (k *KubeClient) GetSecret(secretName string) (*v1.Secret, error) {
 	var options metav1.GetOptions
-	return k.clientset.CoreV1().Secrets(k.namespace).Get(ctx(), secretName, options)
+	return k.clientset.CoreV1().Secrets(k.namespace).Get(reqCtx(), secretName, options)
 }
 
 // GetSecretByLabel looks up a Secret by label
@@ -2341,7 +2344,7 @@ func (k *KubeClient) GetSecretsByLabel(label string, allNamespaces bool) ([]v1.S
 		namespace = ""
 	}
 
-	secretList, err := k.clientset.CoreV1().Secrets(namespace).List(ctx(), listOptions)
+	secretList, err := k.clientset.CoreV1().Secrets(namespace).List(reqCtx(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -2372,28 +2375,28 @@ func (k *KubeClient) DeleteSecretByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().Secrets(k.namespace).Delete(ctx(), secret.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.CoreV1().Secrets(k.namespace).Delete(reqCtx(), secret.Name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":     label,
 		"namespace": k.namespace,
-	}).Debug("Deleted secret by label.")
+	}).Trace("Deleted secret by label.")
 
 	return nil
 }
 
 // DeleteSecret deletes the specified Secret by name and namespace
 func (k *KubeClient) DeleteSecret(name, namespace string) error {
-	if err := k.clientset.CoreV1().Secrets(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
+	if err := k.clientset.CoreV1().Secrets(namespace).Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":      name,
 		"namespace": namespace,
-	}).Debug("Deleted secret by label.")
+	}).Trace("Deleted secret by label.")
 
 	return nil
 }
@@ -2406,16 +2409,16 @@ func (k *KubeClient) PatchSecretByLabel(label string, patchBytes []byte, patchTy
 		return err
 	}
 
-	if _, err = k.clientset.CoreV1().Secrets(k.namespace).Patch(ctx(), secret.Name,
+	if _, err = k.clientset.CoreV1().Secrets(k.namespace).Patch(reqCtx(), secret.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"label":      label,
 		"deployment": secret.Name,
 		"namespace":  k.namespace,
-	}).Debug("Patched Kubernetes secret.")
+	}).Trace("Patched Kubernetes secret.")
 
 	return nil
 }
@@ -2436,7 +2439,7 @@ func (k *KubeClient) CreateObjectByYAML(yamlData string) error {
 
 		checkCreateObjectByYAML := func() error {
 			if returnError := k.createObjectByYAML(yamlDocument); returnError != nil {
-				log.WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"yamlDocument": yamlDocument,
 					"err":          returnError,
 				}).Errorf("Object creation failed.")
@@ -2446,7 +2449,7 @@ func (k *KubeClient) CreateObjectByYAML(yamlData string) error {
 		}
 
 		createObjectNotify := func(err error, duration time.Duration) {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"yamlDocument": yamlDocument,
 				"increment":    duration,
 				"err":          err,
@@ -2455,7 +2458,7 @@ func (k *KubeClient) CreateObjectByYAML(yamlData string) error {
 		createObjectBackoff := backoff.NewExponentialBackOff()
 		createObjectBackoff.MaxElapsedTime = k.timeout
 
-		log.WithField("yamlDocument", yamlDocument).Trace("Waiting for object to be created.")
+		Logc(ctx).WithField("yamlDocument", yamlDocument).Trace("Waiting for object to be created.")
 
 		if err := backoff.RetryNotify(checkCreateObjectByYAML, createObjectBackoff, createObjectNotify); err != nil {
 			returnError := fmt.Errorf("yamlDocument %s was not created after %3.2f seconds",
@@ -2504,7 +2507,7 @@ func (k *KubeClient) createObjectByYAML(yamlData string) error {
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":      objName,
 		"namespace": objNamespace,
 		"kind":      gvk.Kind,
@@ -2512,31 +2515,31 @@ func (k *KubeClient) createObjectByYAML(yamlData string) error {
 
 	// Create the object
 	if namespaced {
-		if _, err = client.Resource(*gvr).Namespace(objNamespace).Create(ctx(), unstruct, createOpts); err != nil {
+		if _, err = client.Resource(*gvr).Namespace(objNamespace).Create(reqCtx(), unstruct, createOpts); err != nil {
 			return err
 		}
 	} else {
-		if _, err = client.Resource(*gvr).Create(ctx(), unstruct, createOpts); err != nil {
+		if _, err = client.Resource(*gvr).Create(reqCtx(), unstruct, createOpts); err != nil {
 			return err
 		}
 	}
 
-	log.WithField("name", objName).Debug("Created object by YAML.")
+	Logc(ctx).WithField("name", objName).Debug("Created object by YAML.")
 	return nil
 }
 
 // PatchCRD patches a CRD with a supplied YAML/JSON document in []byte format.
 func (k *KubeClient) PatchCRD(crdName string, patchBytes []byte, patchType types.PatchType) error {
-	log.WithField("name", crdName).Debug("Patching CRD.")
+	Logc(ctx).WithField("name", crdName).Debug("Patching CRD.")
 
 	// Update the object
 	patchOptions := metav1.PatchOptions{}
-	if _, err := k.extClientset.ApiextensionsV1().CustomResourceDefinitions().Patch(ctx(), crdName, patchType,
+	if _, err := k.extClientset.ApiextensionsV1().CustomResourceDefinitions().Patch(reqCtx(), crdName, patchType,
 		patchBytes, patchOptions); err != nil {
 		return err
 	}
 
-	log.WithField("name", crdName).Debug("Patched CRD.")
+	Logc(ctx).WithField("name", crdName).Debug("Patched CRD.")
 
 	return nil
 }
@@ -2604,30 +2607,30 @@ func (k *KubeClient) deleteObjectByYAML(yamlData string, ignoreNotFound bool) er
 		return errors.New("cannot determine object name from YAML")
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":      objName,
 		"namespace": objNamespace,
 		"kind":      gvk.Kind,
-	}).Debug("Deleting object.")
+	}).Trace("Deleting object.")
 
 	// Delete the object
 	if namespaced {
-		err = client.Resource(*gvr).Namespace(objNamespace).Delete(ctx(), objName, k.deleteOptions())
+		err = client.Resource(*gvr).Namespace(objNamespace).Delete(reqCtx(), objName, k.deleteOptions())
 	} else {
-		err = client.Resource(*gvr).Delete(ctx(), objName, k.deleteOptions())
+		err = client.Resource(*gvr).Delete(reqCtx(), objName, k.deleteOptions())
 	}
 
 	if err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok {
 			if ignoreNotFound && statusErr.Status().Reason == metav1.StatusReasonNotFound {
-				log.WithField("name", objName).Debugf("Object not found for delete, ignoring.")
+				Logc(ctx).WithField("name", objName).Debugf("Object not found for delete, ignoring.")
 				return nil
 			}
 		}
 		return err
 	}
 
-	log.WithField("name", objName).Debug("Deleted object by YAML.")
+	Logc(ctx).WithField("name", objName).Debug("Deleted object by YAML.")
 	return nil
 }
 
@@ -2669,7 +2672,7 @@ func (k *KubeClient) getUnstructuredObjectByYAML(yamlData string) (*unstructured
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":      objName,
 		"namespace": objNamespace,
 		"kind":      gvk.Kind,
@@ -2677,9 +2680,9 @@ func (k *KubeClient) getUnstructuredObjectByYAML(yamlData string) (*unstructured
 
 	// Get the object
 	if namespaced {
-		return client.Resource(*gvr).Namespace(objNamespace).Get(ctx(), objName, getOpts)
+		return client.Resource(*gvr).Namespace(objNamespace).Get(reqCtx(), objName, getOpts)
 	} else {
-		return client.Resource(*gvr).Get(ctx(), objName, getOpts)
+		return client.Resource(*gvr).Get(reqCtx(), objName, getOpts)
 	}
 }
 
@@ -2721,7 +2724,7 @@ func (k *KubeClient) updateObjectByYAML(yamlData string) error {
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":      objName,
 		"namespace": objNamespace,
 		"kind":      gvk.Kind,
@@ -2731,16 +2734,16 @@ func (k *KubeClient) updateObjectByYAML(yamlData string) error {
 	updateOptions := updateOpts
 
 	if namespaced {
-		if _, err = client.Resource(*gvr).Namespace(objNamespace).Update(ctx(), unstruct, updateOptions); err != nil {
+		if _, err = client.Resource(*gvr).Namespace(objNamespace).Update(reqCtx(), unstruct, updateOptions); err != nil {
 			return err
 		}
 	} else {
-		if _, err = client.Resource(*gvr).Update(ctx(), unstruct, updateOptions); err != nil {
+		if _, err = client.Resource(*gvr).Update(reqCtx(), unstruct, updateOptions); err != nil {
 			return err
 		}
 	}
 
-	log.WithField("name", objName).Debug("Updated object by YAML.")
+	Logc(ctx).WithField("name", objName).Debug("Updated object by YAML.")
 	return nil
 }
 
@@ -2768,7 +2771,7 @@ func (k *KubeClient) convertYAMLToUnstructuredObject(yamlData string) (
 		return nil, nil, err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"group":   gvk.Group,
 		"version": gvk.Version,
 		"kind":    gvk.Kind,
@@ -2788,7 +2791,7 @@ func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*schema.G
 		// The resource wasn't in the cache, so try getting just the one we need.
 		apiResourceList, err := discoveryClient.ServerResourcesForGroupVersion(gvk.GroupVersion().String())
 		if err != nil {
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"group":   gvk.Group,
 				"version": gvk.Version,
 				"kind":    gvk.Kind,
@@ -2820,11 +2823,11 @@ func (k *KubeClient) getDynamicResourceNoRefresh(
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"group":   gvk.Group,
 		"version": gvk.Version,
 		"kind":    gvk.Kind,
-	}).Debug("API resource not found.")
+	}).Trace("API resource not found.")
 
 	return nil, false, utils.NotFoundError("API resource not found")
 }
@@ -2843,7 +2846,7 @@ func (k *KubeClient) getDynamicResourceFromResourceList(
 ) (*schema.GroupVersionResource, bool, error) {
 	groupVersion, err := schema.ParseGroupVersion(resources.GroupVersion)
 	if err != nil {
-		log.WithField("groupVersion", groupVersion).Errorf("Could not parse group/version; %v", err)
+		Logc(ctx).WithField("groupVersion", groupVersion).Errorf("Could not parse group/version; %v", err)
 		return nil, false, utils.NotFoundError("Could not parse group/version")
 	}
 
@@ -2852,21 +2855,21 @@ func (k *KubeClient) getDynamicResourceFromResourceList(
 	}
 
 	for _, resource := range resources.APIResources {
-		// log.WithFields(log.Fields{
-		//	"group":    groupVersion.Group,
-		//	"version":  groupVersion.Version,
-		//	"kind":     resource.Kind,
-		//	"resource": resource.Name,
-		// }).Debug("Considering dynamic API resource.")
+		Logc(ctx).WithFields(LogFields{
+			"group":    groupVersion.Group,
+			"version":  groupVersion.Version,
+			"kind":     resource.Kind,
+			"resource": resource.Name,
+		}).Trace("Considering dynamic API resource.")
 
 		if resource.Kind == gvk.Kind {
 
-			log.WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"group":    groupVersion.Group,
 				"version":  groupVersion.Version,
 				"kind":     resource.Kind,
 				"resource": resource.Name,
-			}).Debug("Found API resource.")
+			}).Trace("Found API resource.")
 
 			return &schema.GroupVersionResource{
 				Group:    groupVersion.Group,
@@ -2909,7 +2912,7 @@ func (k *KubeClient) RemoveTridentUserFromOpenShiftSCC(user, scc string) error {
 
 	// Maintain idempotency by returning success if user not found
 	if !found {
-		log.WithField("user", sccUser).Debug("SCC user not found, ignoring.")
+		Logc(ctx).WithField("user", sccUser).Debug("SCC user not found, ignoring.")
 		return nil
 	}
 
@@ -2939,13 +2942,13 @@ func (k *KubeClient) GetOpenShiftSCCByName(user, scc string) (bool, bool, []byte
 		return SCCExist, SCCUserExist, nil, err
 	}
 
-	log.WithField("scc", scc).Debug("SCC found.")
+	Logc(ctx).WithField("scc", scc).Debug("SCC found.")
 	SCCExist = true
 
 	// Convert to JSON
 	jsonData, err := unstruct.MarshalJSON()
 	if err != nil {
-		log.WithField("scc", scc).Errorf("failed to marshal unstructured data in JSON: %v", unstruct)
+		Logc(ctx).WithField("scc", scc).Errorf("failed to marshal unstructured data in JSON: %v", unstruct)
 		return SCCExist, SCCUserExist, jsonData, err
 	}
 
@@ -2954,7 +2957,7 @@ func (k *KubeClient) GetOpenShiftSCCByName(user, scc string) (bool, bool, []byte
 		if usersSlice, ok := users.([]interface{}); ok {
 			for _, userIntf := range usersSlice {
 				if user, ok := userIntf.(string); ok && user == sccUser {
-					log.WithField("sccUser", sccUser).Debug("SCC User found.")
+					Logc(ctx).WithField("sccUser", sccUser).Debug("SCC User found.")
 					SCCUserExist = true
 					break
 				}
@@ -3010,7 +3013,7 @@ func (k *KubeClient) deleteOptions() metav1.DeleteOptions {
 }
 
 func (k *KubeClient) IsTopologyInUse() (bool, error) {
-	nodes, err := k.clientset.CoreV1().Nodes().List(ctx(), metav1.ListOptions{})
+	nodes, err := k.clientset.CoreV1().Nodes().List(reqCtx(), metav1.ListOptions{})
 	if err != nil {
 		return false, err
 	}
@@ -3032,7 +3035,7 @@ func (k *KubeClient) GetSnapshotterCRDVersion() (snapshotterCRDVersion string) {
 
 	crd, err := k.GetCRD(snapshotterCRDName)
 	if err != nil {
-		log.WithField("CRD", snapshotterCRDName).Warnf("Unable to get VolumeSnapshot CRD: %v", err)
+		Logc(ctx).WithField("CRD", snapshotterCRDName).Warnf("Unable to get VolumeSnapshot CRD: %v", err)
 		return
 	}
 
@@ -3054,7 +3057,7 @@ func (k *KubeClient) GetSnapshotterCRDVersion() (snapshotterCRDVersion string) {
 		snapshotterCRDVersion = versionBeta
 	}
 
-	log.WithField("CRD", snapshotterCRDName).Debugf("VolumeSnapshot CRD version '%s' found.", snapshotterCRDVersion)
+	Logc(ctx).WithField("CRD", snapshotterCRDName).Debugf("VolumeSnapshot CRD version '%s' found.", snapshotterCRDVersion)
 
 	return
 }
@@ -3078,9 +3081,9 @@ func (k *KubeClient) FollowPodLogs(pod, container, namespace string, logLineCall
 		Param("previous", strconv.FormatBool(logOptions.Previous)).
 		Param("timestamps", strconv.FormatBool(logOptions.Timestamps))
 
-	readCloser, err := req.Stream(ctx())
+	readCloser, err := req.Stream(reqCtx())
 	if err != nil {
-		log.Errorf("Could not follow pod logs; %v", err)
+		Logc(ctx).Errorf("Could not follow pod logs; %v", err)
 		return
 	}
 	defer func() {
@@ -3096,7 +3099,7 @@ func (k *KubeClient) FollowPodLogs(pod, container, namespace string, logLineCall
 		logLineCallback(line)
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"pod":       pod,
 		"container": container,
 	}).Debug("Received EOF from pod logs.")
@@ -3110,14 +3113,14 @@ func (k *KubeClient) addFinalizerToCRDObject(
 ) error {
 	var err error
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"CRD":  crdName,
 		"kind": gvk.Kind,
 	}).Debugf("Adding finalizers to CRD.")
 
 	// Get the CRD object
 	var unstruct *unstructured.Unstructured
-	if unstruct, err = client.Resource(*gvr).Get(ctx(), crdName, getOpts); err != nil {
+	if unstruct, err = client.Resource(*gvr).Get(reqCtx(), crdName, getOpts); err != nil {
 		return err
 	}
 
@@ -3130,7 +3133,7 @@ func (k *KubeClient) addFinalizerToCRDObject(
 					// check if the Trident finalizer is already present
 					for _, element := range finalizersSlice {
 						if finalizer, ok := element.(string); ok && finalizer == TridentFinalizer {
-							log.WithField("CRD", crdName).Debugf("Trident finalizer already present " +
+							Logc(ctx).WithField("CRD", crdName).Debugf("Trident finalizer already present " +
 								"on Kubernetes CRD object, nothing to do.")
 							return nil
 						}
@@ -3155,11 +3158,11 @@ func (k *KubeClient) addFinalizerToCRDObject(
 	// Update the object with the newly added finalizer
 	updateOptions := updateOpts
 
-	if _, err = client.Resource(*gvr).Update(ctx(), unstruct, updateOptions); err != nil {
+	if _, err = client.Resource(*gvr).Update(reqCtx(), unstruct, updateOptions); err != nil {
 		return err
 	}
 
-	log.Debugf("Added finalizers to Kubernetes CRD object %v", crdName)
+	Logc(ctx).Debugf("Added finalizers to Kubernetes CRD object %v", crdName)
 
 	return nil
 }
@@ -3187,7 +3190,7 @@ func (k *KubeClient) AddFinalizerToCRDs(CRDnames []string) error {
 	for _, crdName := range CRDnames {
 		err := k.addFinalizerToCRDObject(crdName, gvk, gvr, client)
 		if err != nil {
-			log.Errorf("error in adding finalizers to Kubernetes CRD object %v", crdName)
+			Logc(ctx).Errorf("error in adding finalizers to Kubernetes CRD object %v", crdName)
 			return err
 		}
 	}
@@ -3222,14 +3225,14 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"CRD":  crdName,
 		"kind": gvk.Kind,
 	}).Debugf("Adding finalizers to CRD.")
 
 	// Get the CRD object
 	var unstruct *unstructured.Unstructured
-	if unstruct, err = client.Resource(*gvr).Get(ctx(), crdName, getOpts); err != nil {
+	if unstruct, err = client.Resource(*gvr).Get(reqCtx(), crdName, getOpts); err != nil {
 		return err
 	}
 
@@ -3242,7 +3245,7 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 					// check if the Trident finalizer is already present
 					for _, element := range finalizersSlice {
 						if finalizer, ok := element.(string); ok && finalizer == TridentFinalizer {
-							log.WithField("CRD", crdName).Debugf("Trident finalizer already present " +
+							Logc(ctx).WithField("CRD", crdName).Debugf("Trident finalizer already present " +
 								"on Kubernetes CRD object, nothing to do.")
 							return nil
 						}
@@ -3265,11 +3268,11 @@ func (k *KubeClient) AddFinalizerToCRD(crdName string) error {
 	}
 
 	// Update the object with the newly added finalizer
-	if _, err = client.Resource(*gvr).Update(ctx(), unstruct, updateOpts); err != nil {
+	if _, err = client.Resource(*gvr).Update(reqCtx(), unstruct, updateOpts); err != nil {
 		return err
 	}
 
-	log.Debugf("Added finalizers to Kubernetes CRD object %v", crdName)
+	Logc(ctx).Debugf("Added finalizers to Kubernetes CRD object %v", crdName)
 
 	return nil
 }
@@ -3301,14 +3304,14 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 		return err
 	}
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name": crdName,
 		"kind": gvk.Kind,
 	}).Debugf("Removing finalizers from CRD object.")
 
 	// Get the CRD object
 	var unstruct *unstructured.Unstructured
-	if unstruct, err = client.Resource(*gvr).Get(ctx(), crdName, getOpts); err != nil {
+	if unstruct, err = client.Resource(*gvr).Get(reqCtx(), crdName, getOpts); err != nil {
 		return err
 	}
 
@@ -3325,7 +3328,7 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 						}
 					}
 					if !removedFinalizer {
-						log.Debugf("Finalizer not present on Kubernetes CRD object %v, nothing to do", crdName)
+						Logc(ctx).Debugf("Finalizer not present on Kubernetes CRD object %v, nothing to do", crdName)
 						return nil
 					}
 					// Found one or more finalizers, remove them all
@@ -3335,7 +3338,7 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 				}
 			} else {
 				// No finalizers present, nothing to do
-				log.Debugf("No finalizer found on Kubernetes CRD object %v, nothing to do", crdName)
+				Logc(ctx).Debugf("No finalizer found on Kubernetes CRD object %v, nothing to do", crdName)
 				return nil
 			}
 		}
@@ -3345,11 +3348,11 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 	}
 
 	// Update the object with the updated finalizers
-	if _, err = client.Resource(*gvr).Update(ctx(), unstruct, updateOpts); err != nil {
+	if _, err = client.Resource(*gvr).Update(reqCtx(), unstruct, updateOpts); err != nil {
 		return err
 	}
 
-	log.Debugf("Removed finalizers from Kubernetes CRD object %v", crdName)
+	Logc(ctx).Debugf("Removed finalizers from Kubernetes CRD object %v", crdName)
 
 	return nil
 }

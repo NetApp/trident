@@ -72,7 +72,7 @@ func storageClassList(storageClassNames []string) error {
 func GetStorageClasses() ([]string, error) {
 	url := BaseURL() + "/storageclass"
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
@@ -92,7 +92,7 @@ func GetStorageClasses() ([]string, error) {
 func GetStorageClass(storageClassName string) (api.StorageClass, error) {
 	url := BaseURL() + "/storageclass/" + storageClassName
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return api.StorageClass{}, err
 	} else if response.StatusCode != http.StatusOK {

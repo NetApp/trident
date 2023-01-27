@@ -10,12 +10,12 @@ import (
 	"strconv"
 
 	"github.com/olekukonko/tablewriter"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/rest"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -41,7 +41,7 @@ var getPublicationCmd = &cobra.Command{
 	Hidden:  true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if getVolume != "" && getNode != "" && cmd.Flags().Changed("dirty") {
-			log.Fatalf("--dirty flag not supported if both node and volume are specified.")
+			Log().Fatalf("--dirty flag not supported if both node and volume are specified.")
 		}
 
 		if OperatingMode == ModeTunnel {
@@ -74,7 +74,7 @@ func GetVolumePublication(volumeName, nodeName string) (*utils.VolumePublication
 
 	url := BaseURL() + "/publication/" + volumeName + "/" + nodeName
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func volumePublicationsList(cmd *cobra.Command) error {
 		url += "?notSafeToAttach=" + strconv.FormatBool(getNotSafeToAttach)
 	}
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return err
 	}

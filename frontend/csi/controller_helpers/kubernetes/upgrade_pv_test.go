@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 )
 
@@ -23,7 +23,7 @@ func TestHandleFailedPVUpgrades(t *testing.T) {
 
 	volExt := []*storage.VolumeExternal{&v1}
 
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowNone, LogLayerNone)
 	m, helper := newMockPlugin(t)
 	m.EXPECT().ListVolumes(ctx).Return(volExt, nil)
 
@@ -41,7 +41,7 @@ func TestHandleFailedPVUpgrades(t *testing.T) {
 }
 
 func TestHandleFailedPVUpgradesNoVolume(t *testing.T) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowNone, LogLayerNone)
 	m, helper := newMockPlugin(t)
 
 	tests := []struct {
@@ -65,7 +65,7 @@ func TestHandleFailedPVUpgradesNoVolume(t *testing.T) {
 }
 
 func TestHandleFailedPVUpgradesGetVolumeTransaction(t *testing.T) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowNone, LogLayerNone)
 	m, helper := newMockPlugin(t)
 
 	volConfig1 := storage.VolumeConfig{

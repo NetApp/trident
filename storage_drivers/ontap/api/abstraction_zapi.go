@@ -14,15 +14,13 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
-	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
-
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
+	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/utils"
 )
 
 func (d OntapAPIZAPI) SVMName() string {
@@ -46,15 +44,13 @@ func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
 }
 
 func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "VolumeCreate",
-			"Type":   "OntapAPIZAPI",
-			"spec":   volume,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> VolumeCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< VolumeCreate")
+	fields := LogFields{
+		"Method": "VolumeCreate",
+		"Type":   "OntapAPIZAPI",
+		"spec":   volume,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreate")
 
 	volCreateResponse, err := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size,
 		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy,
@@ -100,20 +96,18 @@ func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force bool
 }
 
 func (d OntapAPIZAPI) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "VolumeInfo",
-			"Type":   "OntapAPIZAPI",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> VolumeInfo")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< VolumeInfo")
+	fields := LogFields{
+		"Method": "VolumeInfo",
+		"Type":   "OntapAPIZAPI",
+		"name":   name,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeInfo")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeInfo")
 
 	// Get Flexvol by name
 	volumeGetResponse, err := d.api.VolumeGet(name)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volumeGetResponse": volumeGetResponse,
 		"name":              name,
 		"err":               err,
@@ -133,19 +127,21 @@ func (d OntapAPIZAPI) VolumeInfo(ctx context.Context, name string) (*Volume, err
 }
 
 func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType) (*Volume, error) {
-	var responseAccessType string
-	var responseAggregates []string
-	var responseComment string
-	var responseExportPolicy string
-	var responseJunctionPath string
-	var responseName string
-	var responseSize string
-	var responseSnapdirAccessEnabled bool
-	var responseSnapshotPolicy string
-	var responseSnapshotReserveInt int
-	var responseSnapshotSpaceUsed int
-	var responseSpaceReserve string
-	var responseUnixPermissions string
+	var (
+		responseAccessType           string
+		responseAggregates           []string
+		responseComment              string
+		responseExportPolicy         string
+		responseJunctionPath         string
+		responseName                 string
+		responseSize                 string
+		responseSnapdirAccessEnabled bool
+		responseSnapshotPolicy       string
+		responseSnapshotReserveInt   int
+		responseSnapshotSpaceUsed    int
+		responseSpaceReserve         string
+		responseUnixPermissions      string
+	)
 
 	if volumeGetResponse.VolumeIdAttributesPtr != nil {
 		volumeIdAttributes := volumeGetResponse.VolumeIdAttributes()
@@ -253,7 +249,8 @@ func (d OntapAPIZAPI) NodeListSerialNumbers(ctx context.Context) ([]string, erro
 }
 
 type OntapAPIZAPI struct {
-	api ZapiClientInterface
+	api        ZapiClientInterface
+	driverName string
 }
 
 func (d OntapAPIZAPI) LunGetGeometry(ctx context.Context, lunPath string) (uint64, error) {
@@ -282,7 +279,7 @@ func (d OntapAPIZAPI) LunCloneCreate(
 		if zerr.Code() == azgo.EOBJECTNOTFOUND {
 			return fmt.Errorf("snapshot does not exist in volume %s", source)
 		} else if zerr.IsFailedToLoadJobError() {
-			fields := log.Fields{
+			fields := LogFields{
 				"zerr": zerr,
 			}
 			Logc(ctx).WithFields(fields).Warn(
@@ -330,15 +327,13 @@ func (d OntapAPIZAPI) LunList(ctx context.Context, pattern string) (Luns, error)
 }
 
 func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "LunCreate",
-			"Type":   "OntapAPIZAPI",
-			"spec":   lun,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCreate")
+	fields := LogFields{
+		"Method": "LunCreate",
+		"Type":   "OntapAPIZAPI",
+		"spec":   lun,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
@@ -379,7 +374,7 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 func (d OntapAPIZAPI) LunDestroy(ctx context.Context, lunPath string) error {
 	offlineResponse, err := d.api.LunOffline(lunPath)
 	if err != nil {
-		fields := log.Fields{"LUN": lunPath, "offlineResponse": offlineResponse}
+		fields := LogFields{"LUN": lunPath, "offlineResponse": offlineResponse}
 		Logc(ctx).WithFields(fields).Errorf("Error LUN offline failed: %v", err)
 		return err
 	}
@@ -397,7 +392,7 @@ func (d OntapAPIZAPI) LunGetComment(ctx context.Context, lunPath string) (string
 		return "", parse, err
 	} else {
 		fstype = attrResponse.Result.Value()
-		Logc(ctx).WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+		Logc(ctx).WithFields(LogFields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
 	}
 	return fstype, parse, nil
 }
@@ -437,15 +432,14 @@ func (d OntapAPIZAPI) LunSetQosPolicyGroup(ctx context.Context, lunPath string, 
 }
 
 func (d OntapAPIZAPI) LunGetByName(ctx context.Context, name string) (*Lun, error) {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "LunGetByName",
-			"Type":    "OntapAPIZAPI",
-			"LunPath": name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunGetByName")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunGetByName")
+	fields := LogFields{
+		"Method":  "LunGetByName",
+		"Type":    "OntapAPIZAPI",
+		"LunPath": name,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunGetByName")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunGetByName")
+
 	lunResponse, err := d.api.LunGet(name)
 	if err != nil || lunResponse == nil {
 		return nil, fmt.Errorf("could not get LUN by name %v, error: %v", name, err)
@@ -728,7 +722,7 @@ func (d OntapAPIZAPI) IgroupCreate(ctx context.Context, initiatorGroupName, init
 	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_EXISTS {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Info("Initiator group (igroup) already exists.")
 	} else {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"igroup": initiatorGroupName,
 			"error":  err.Error(),
 		}).Error("Initiator group (igroup) could not be created.")
@@ -747,7 +741,7 @@ func (d OntapAPIZAPI) IgroupDestroy(ctx context.Context, initiatorGroupName stri
 	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_MAPS_EXIST {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Info("Initiator group (igroup) currently in use.")
 	} else {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"igroup": initiatorGroupName,
 			"error":  err.Error(),
 		}).Error("Initiator group (igroup) could not be deleted.")
@@ -761,7 +755,7 @@ func (d OntapAPIZAPI) EnsureIgroupAdded(ctx context.Context, initiatorGroupName,
 	err = azgo.GetError(ctx, response, err)
 	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"IQN":    initiator,
 			"igroup": initiatorGroupName,
 		}).Debug("Host IQN already in igroup.")
@@ -776,7 +770,7 @@ func (d OntapAPIZAPI) IgroupRemove(ctx context.Context, initiatorGroupName, init
 	err = azgo.GetError(ctx, response, err)
 	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NODE_NOT_IN_INITGROUP) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"IQN":    initiator,
 			"igroup": initiatorGroupName,
 		}).Debug("Host IQN not in igroup.")
@@ -862,9 +856,10 @@ func NewOntapAPIZAPIFromZapiClientInterface(zapiClient ZapiClientInterface) (Ont
 }
 
 // NewZAPIClient is a factory method for creating a new instance
-func NewZAPIClient(config ClientConfig, SVM string) *Client {
+func NewZAPIClient(config ClientConfig, SVM, driverName string) *Client {
 	d := &Client{
-		config: config,
+		driverName: driverName,
+		config:     config,
 		zr: &azgo.ZapiRunner{
 			ManagementLIF:        config.ManagementLIF,
 			SVM:                  SVM,
@@ -893,7 +888,7 @@ func NewZAPIClientFromOntapConfig(
 		ContextBasedZapiRecords: numRecords,
 		TrustedCACertificate:    ontapConfig.TrustedCACertificate,
 		DebugTraceFlags:         ontapConfig.DebugTraceFlags,
-	}, ontapConfig.SVM)
+	}, ontapConfig.SVM, ontapConfig.StorageDriverName)
 
 	if ontapConfig.SVM != "" {
 
@@ -924,11 +919,11 @@ func NewZAPIClientFromOntapConfig(
 			ContextBasedZapiRecords: numRecords,
 			TrustedCACertificate:    ontapConfig.TrustedCACertificate,
 			DebugTraceFlags:         ontapConfig.DebugTraceFlags,
-		}, ontapConfig.SVM)
+		}, ontapConfig.SVM, ontapConfig.StorageDriverName)
 		client.SetSVMUUID(svmUUID)
 		client.SetSVMMCC(mcc)
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"SVM":  ontapConfig.SVM,
 			"UUID": client.SVMUUID(),
 			"MCC":  client.SVMMCC(),
@@ -967,11 +962,11 @@ func NewZAPIClientFromOntapConfig(
 			ContextBasedZapiRecords: numRecords,
 			TrustedCACertificate:    ontapConfig.TrustedCACertificate,
 			DebugTraceFlags:         ontapConfig.DebugTraceFlags,
-		}, ontapConfig.SVM)
+		}, ontapConfig.SVM, ontapConfig.StorageDriverName)
 		client.SetSVMUUID(svmUUID)
 		client.SetSVMMCC(mcc)
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"SVM":  ontapConfig.SVM,
 			"UUID": client.SVMUUID(),
 			"MCC":  client.SVMMCC(),
@@ -1012,7 +1007,7 @@ func (d OntapAPIZAPI) EmsAutosupportLog(
 	)
 
 	if err = azgo.GetError(ctx, emsResponse, err); err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"driver": driverName,
 			"error":  err,
 		}).Error("Error logging EMS message.")
@@ -1030,15 +1025,13 @@ func (d OntapAPIZAPI) FlexgroupExists(ctx context.Context, volumeName string) (b
 }
 
 func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "FlexgroupCreate",
-			"Type":   "OntapAPIZAPI",
-			"spec":   volume,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> FlexgroupCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< FlexgroupCreate")
+	fields := LogFields{
+		"Method": "FlexgroupCreate",
+		"Type":   "OntapAPIZAPI",
+		"spec":   volume,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
 
 	sizeBytes, err := strconv.ParseUint(volume.Size, 10, 64)
 	if err != nil {
@@ -1086,20 +1079,18 @@ func (d OntapAPIZAPI) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Contex
 }
 
 func (d OntapAPIZAPI) FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error) {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "FlexgroupInfo",
-			"Type":   "OntapAPIZAPI",
-			"name":   volumeName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> FlexgroupInfo")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< FlexgroupInfo")
+	fields := LogFields{
+		"Method": "FlexgroupInfo",
+		"Type":   "OntapAPIZAPI",
+		"name":   volumeName,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupInfo")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupInfo")
 
 	// Get Flexvol by name
 	flexGroupGetResponse, err := d.api.FlexGroupGet(volumeName)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"flexGroupGetResponse": flexGroupGetResponse,
 		"name":                 volumeName,
 		"err":                  err,
@@ -1364,7 +1355,7 @@ func (d OntapAPIZAPI) GetSVMAggregateSpace(ctx context.Context, aggregate string
 				continue
 			}
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"aggrName":                            aggrName,
 				"size":                                aggrSpace.AggregateSize(),
 				"volumeFootprints":                    aggrSpace.VolumeFootprints(),
@@ -1543,7 +1534,7 @@ func (d OntapAPIZAPI) ExportRuleCreate(ctx context.Context, policyName, desiredP
 	}
 	if err = azgo.GetError(ctx, ruleResponse, err); err != nil {
 		err = fmt.Errorf("error creating export rule: %v", err)
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"ExportPolicy": policyName,
 			"ClientMatch":  desiredPolicyRule,
 		}).Error(err)
@@ -1560,7 +1551,7 @@ func (d OntapAPIZAPI) ExportRuleDestroy(ctx context.Context, policyName string, 
 	ruleResponse, err := d.api.ExportRuleDestroy(policyName, ruleIndex)
 	if err = azgo.GetError(ctx, ruleResponse, err); err != nil {
 		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v", policyName, ruleIndex, err)
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"ExportPolicy": policyName,
 			"RuleIndex":    ruleIndex,
 		}).Error(err)
@@ -1883,7 +1874,7 @@ func (d OntapAPIZAPI) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 			if zerr.Code() == azgo.EOBJECTNOTFOUND {
 				return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, sourceName)
 			} else if zerr.IsFailedToLoadJobError() {
-				fields := log.Fields{
+				fields := LogFields{
 					"zerr": zerr,
 				}
 				Logc(ctx).WithFields(fields).Warn(
@@ -1981,7 +1972,7 @@ func (d OntapAPIZAPI) VolumeListBySnapshotParent(
 	childVolumes, err := d.api.VolumeListAllBackedBySnapshot(ctx, sourceVolume, snapshotName)
 
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshotName":     snapshotName,
 			"parentVolumeName": sourceVolume,
 			"error":            err,

@@ -7,7 +7,7 @@ package utils
 import (
 	"context"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // ISCSIActiveOnHost unused stub function

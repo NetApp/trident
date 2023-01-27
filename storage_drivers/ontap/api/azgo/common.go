@@ -22,7 +22,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 

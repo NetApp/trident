@@ -6,20 +6,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
+	"io"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output.
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 

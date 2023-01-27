@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/netapp/trident/frontend/csi"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // helper method to log HTTP write failures if an error is seen
@@ -15,6 +15,11 @@ func logerr(n int, err error) {
 	if err != nil {
 		Logc(context.Background()).Errorf("HTTP response write failed: %v", err)
 	}
+}
+
+func sendErrResp(w http.ResponseWriter, err error, code int) {
+	w.WriteHeader(code)
+	logerr(w.Write([]byte(err.Error())))
 }
 
 // Node endpoint for startup and liveness probe

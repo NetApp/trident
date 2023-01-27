@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -75,14 +75,14 @@ func publicationUpdate(volumeName, nodeName string, notSafeToAttach *bool) error
 		return err
 	}
 
-	response, responseBody, err := api.InvokeRESTAPI("PUT", url, requestBytes, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("PUT", url, requestBytes)
 	if err != nil {
 		return err
 	}
 	if response.StatusCode != http.StatusAccepted && response.StatusCode != http.StatusOK {
 
 		if response.StatusCode == http.StatusNotFound {
-			log.Warning("Usage: publication <volume> <node>")
+			Log().Warning("Usage: publication <volume> <node>")
 		}
 
 		return fmt.Errorf("could not update volume publication %s: %v",

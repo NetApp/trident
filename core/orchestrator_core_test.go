@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"reflect"
@@ -16,14 +15,12 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	"github.com/netapp/trident/logging"
 	mockpersistentstore "github.com/netapp/trident/mocks/mock_persistent_store"
 	mockstorage "github.com/netapp/trident/mocks/mock_storage"
 	persistentstore "github.com/netapp/trident/persistent_store"
@@ -37,18 +34,12 @@ import (
 )
 
 var (
-	debug = flag.Bool("debug", false, "Enable debugging output")
-
 	inMemoryClient *persistentstore.InMemoryClient
 	ctx            = context.Background
 )
 
 func init() {
 	testing.Init()
-	if *debug {
-		log.SetLevel(log.DebugLevel)
-	}
-
 	inMemoryClient = persistentstore.NewInMemoryClient()
 }
 
@@ -1351,8 +1342,8 @@ func addBackendStorageClass(
 
 func captureOutput(f func()) string {
 	var buf bytes.Buffer
-	log.SetOutput(&buf)
-	defer log.SetOutput(io.Discard)
+	logging.InitLogOutput(&buf)
+	defer logging.InitLogOutput(io.Discard)
 	f()
 	return buf.String()
 }
@@ -1387,8 +1378,8 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	if !ok {
 		t.Fatalf("Volume %s not tracked by the orchestrator!", volumeName)
 	}
-	log.WithFields(
-		log.Fields{
+	logging.Log().WithFields(
+		logging.LogFields{
 			"volume.BackendUUID": volume.BackendUUID,
 			"volume.Config.Name": volume.Config.Name,
 			"volume.Config":      volume.Config,
@@ -1525,8 +1516,8 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		volumeBackend, err := orchestrator.getBackendByBackendUUID(volume.BackendUUID)
 		if volumeBackend == nil || err != nil {
 			for backendUUID, backend := range orchestrator.backends {
-				log.WithFields(
-					log.Fields{
+				logging.Log().WithFields(
+					logging.LogFields{
 						"volume.BackendUUID":  volume.BackendUUID,
 						"backend":             backend,
 						"backend.BackendUUID": backend.BackendUUID(),
@@ -1669,6 +1660,10 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 }
 
 func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool) {
+	level := logging.GetLogLevel()
+	_ = logging.SetDefaultLogLevel("debug")
+	defer func() { _ = logging.SetDefaultLogLevel(level) }()
+
 	backendName := "passwordBackend"
 	backendProtocol := config.File
 
@@ -6969,6 +6964,89 @@ func TestHandleFailedSnapshot(t *testing.T) {
 	assert.Error(t, err, "Delete volume transaction error")
 }
 
+func TestListLogWorkflows(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	flows, err := o.ListLoggingWorkflows(context.Background())
+	expected := []string{
+		"backend=create,delete,get,list,update", "controller=get_capabilities,publish,unpublish",
+		"core=bootstrap,init,node_reconcile,version", "cr=reconcile", "crd_controller=create", "grpc=trace",
+		"k8s_client=trace_api,trace_factory", "node=create,delete,get,get_capabilities,get_info,get_response,list,update",
+		"node_server=publish,stage,unpublish,unstage", "plugin=activate,create,deactivate,get,list",
+		"snapshot=clone_from,create,delete,get,list,update", "storage_class=create,delete,get,list,update",
+		"storage_client=create", "trident_rest=logger",
+		"volume=clone,create,delete,get,get_capabilities,get_path,get_stats,import,list,mount,resize,unmount,update,upgrade",
+	}
+	assert.Equal(t, expected, flows)
+	assert.NoError(t, err)
+}
+
+func TestListLogLayers(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	layers, err := o.ListLogLayers(context.Background())
+	expected := []string{
+		"all", "azure-netapp-files", "azure-netapp-files-subvolume", "core", "crd_frontend",
+		"csi_frontend", "docker_frontend", "fake", "gcp-cvs", "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup",
+		"ontap-san", "ontap-san-economy", "persistent_store", "rest_frontend", "solidfire-san",
+	}
+	assert.Equal(t, expected, layers)
+	assert.NoError(t, err)
+}
+
+func TestSetGetLogLevel(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	level, _ := o.GetLogLevel(context.Background())
+	defer func(level string) { _ = o.SetLogLevel(context.Background(), level) }(level)
+
+	err := o.SetLogLevel(context.Background(), "trace")
+	assert.NoError(t, err)
+
+	level, err = o.GetLogLevel(context.Background())
+	assert.Equal(t, "trace", level)
+	assert.NoError(t, err)
+
+	err = o.SetLogLevel(context.Background(), "foo")
+	assert.Error(t, err)
+}
+
+func TestSetGetLogWorkflows(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	flows, err := o.GetSelectedLoggingWorkflows(context.Background())
+	assert.Equal(t, "", flows)
+	assert.NoError(t, err)
+
+	err = o.SetLoggingWorkflows(context.Background(), "core=init:trident_rest=logger")
+	assert.NoError(t, err)
+
+	flows, err = o.GetSelectedLoggingWorkflows(context.Background())
+	assert.Equal(t, "core=init:trident_rest=logger", flows)
+	assert.NoError(t, err)
+
+	err = o.SetLoggingWorkflows(context.Background(), "foo=bar")
+	assert.Error(t, err)
+}
+
+func TestSetGetLogLayers(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	layers, err := o.GetSelectedLogLayers(context.Background())
+	assert.Equal(t, "", layers)
+	assert.NoError(t, err)
+
+	err = o.SetLogLayers(context.Background(), "core,csi_frontend")
+	assert.NoError(t, err)
+
+	layers, err = o.GetSelectedLogLayers(context.Background())
+	assert.Equal(t, "core,csi_frontend", layers)
+	assert.NoError(t, err)
+
+	err = o.SetLogLayers(context.Background(), "foo")
+	assert.Error(t, err)
+}
+
 func TestUpdateBackendByBackendUUID(t *testing.T) {
 	bName := "fake-backend"
 	bConfig := map[string]interface{}{
@@ -7025,7 +7103,7 @@ func TestUpdateBackendByBackendUUID(t *testing.T) {
 				"version": 1, "storageDriverName": "fake", "backendName": bName,
 				"username": "", "protocol": config.File,
 			},
-			contextValue:     ContextSourceCRD,
+			contextValue:     logging.ContextSourceCRD,
 			callingConfigRef: "test",
 			mocks:            func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
 			wantErr:          assert.Error,
@@ -7168,7 +7246,7 @@ func TestUpdateBackendByBackendUUID(t *testing.T) {
 			}
 
 			tt.mocks(mockStoreClient)
-			c := context.WithValue(ctx(), ContextKeyRequestSource, tt.contextValue)
+			c := context.WithValue(ctx(), logging.ContextKeyRequestSource, tt.contextValue)
 
 			_, err = o.UpdateBackendByBackendUUID(c, bName, string(configJSON), backendUUID, tt.callingConfigRef)
 			tt.wantErr(t, err, "Unexpected result")

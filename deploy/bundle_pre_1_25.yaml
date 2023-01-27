@@ -445,7 +445,7 @@ spec:
       containers:
         - command:
             - /trident-operator
-            - --debug
+            - --log-level=debug
           env:
             - name: POD_NAME
               valueFrom:

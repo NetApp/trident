@@ -15,13 +15,13 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 // RestError encapsulates the status, reason, and errno values from a REST invocation, and it provides helper methods for detecting
@@ -87,12 +87,14 @@ func (e RestError) Code() string {
 }
 
 type OntapAPIREST struct {
-	api RestClientInterface
+	api        RestClientInterface
+	driverName string
 }
 
-func NewOntapAPIREST(restClient *RestClient) (OntapAPIREST, error) {
+func NewOntapAPIREST(restClient *RestClient, driverName string) (OntapAPIREST, error) {
 	result := OntapAPIREST{
-		api: restClient,
+		api:        restClient,
+		driverName: driverName,
 	}
 
 	return result, nil
@@ -101,7 +103,8 @@ func NewOntapAPIREST(restClient *RestClient) (OntapAPIREST, error) {
 // NewOntapAPIRESTFromRestClientInterface added for testing
 func NewOntapAPIRESTFromRestClientInterface(restClient RestClientInterface) (OntapAPIREST, error) {
 	result := OntapAPIREST{
-		api: restClient,
+		api:        restClient,
+		driverName: "",
 	}
 
 	return result, nil
@@ -119,7 +122,7 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 	}
 	Logc(ctx).WithField("ontapVersion", ontapVersion).Debug("ONTAP version.")
 
-	ontapSemVer, err := utils.ParseSemantic(ontapVersion)
+	ontapSemVer, err := versionutils.ParseSemantic(ontapVersion)
 	if err != nil {
 		return err
 	}
@@ -130,15 +133,13 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 }
 
 func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "VolumeCreate",
-			"Type":   "OntapAPIREST",
-			"spec":   volume,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> VolumeCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< VolumeCreate")
+	fields := LogFields{
+		"Method": "VolumeCreate",
+		"Type":   "OntapAPIREST",
+		"spec":   volume,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreate")
 
 	creationErr := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
@@ -371,15 +372,13 @@ func (d OntapAPIREST) FlexgroupExists(ctx context.Context, volumeName string) (b
 }
 
 func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "FlexgroupCreate",
-			"Type":   "OntapAPIREST",
-			"spec":   volume,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> FlexgroupCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< FlexgroupCreate")
+	fields := LogFields{
+		"Method": "FlexgroupCreate",
+		"Type":   "OntapAPIREST",
+		"spec":   volume,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
 
 	volumeSize, _ := strconv.ParseUint(volume.Size, 10, 64)
 
@@ -681,7 +680,7 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 			continue
 		}
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"aggrName": aggrName,
 			"size":     aggrSpace.BlockStorage.Size,
 		}).Info("Dumping aggregate space")
@@ -819,16 +818,15 @@ func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredP
 	var ruleResponse *n_a_s.ExportRuleCreateCreated
 	var err error
 	var protocol []string
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "ExportRuleCreate",
-			"Type":               "OntapAPIREST",
-			"policyName":         policyName,
-			"desiredPolicyRules": desiredPolicyRules,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> ExportRuleCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ExportRuleCreate")
+
+	fields := LogFields{
+		"Method":             "ExportRuleCreate",
+		"Type":               "OntapAPIREST",
+		"policyName":         policyName,
+		"desiredPolicyRules": desiredPolicyRules,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ExportRuleCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ExportRuleCreate")
 
 	// unlike the ZAPI version of this function, we must create them 1 at a time here in REST
 	for _, desiredPolicyRule := range strings.Split(desiredPolicyRules, ",") {
@@ -843,7 +841,7 @@ func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredP
 			[]string{"any"}, []string{"any"})
 		if err != nil {
 			err = fmt.Errorf("error creating export rule: %v", err)
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"ExportPolicy": policyName,
 				"ClientMatch":  desiredPolicyRule,
 			}).Error(err)
@@ -861,7 +859,7 @@ func (d OntapAPIREST) ExportRuleDestroy(ctx context.Context, policyName string, 
 	ruleDestroyResponse, err := d.api.ExportRuleDestroy(ctx, policyName, ruleIndex)
 	if err != nil {
 		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v", policyName, ruleIndex, err)
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"ExportPolicy": policyName,
 			"RuleIndex":    ruleIndex,
 		}).Error(err)
@@ -1268,7 +1266,7 @@ func (d OntapAPIREST) VolumeListBySnapshotParent(
 ) (VolumeNameList, error) {
 	childVolumes, err := d.api.VolumeListAllBackedBySnapshot(ctx, sourceVolume, snapshotName)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshotName":     snapshotName,
 			"parentVolumeName": sourceVolume,
 			"error":            err,
@@ -1400,15 +1398,13 @@ func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error)
 }
 
 func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "LunCreate",
-			"Type":   "OntapAPIREST",
-			"spec":   lun,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCreate")
+	fields := LogFields{
+		"Method": "LunCreate",
+		"Type":   "OntapAPIREST",
+		"spec":   lun,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
@@ -1422,15 +1418,13 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 }
 
 func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "LunDestroy",
-			"Type":   "OntapAPIREST",
-			"Name":   lunPath,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunDestroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunDestroy")
+	fields := LogFields{
+		"Method": "LunDestroy",
+		"Type":   "OntapAPIREST",
+		"Name":   lunPath,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunDestroy")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunDestroy")
 
 	lun, err := d.api.LunGetByName(ctx, lunPath)
 	if err != nil {
@@ -1495,7 +1489,7 @@ func (d OntapAPIREST) LunGetComment(ctx context.Context, lunPath string) (string
 	if err != nil {
 		return "", parse, err
 	} else {
-		Logc(ctx).WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+		Logc(ctx).WithFields(LogFields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
 	}
 	return fstype, parse, nil
 }
@@ -1514,19 +1508,17 @@ func (d OntapAPIREST) LunCloneCreate(
 		fullCloneLunPath = fmt.Sprintf("/vol/%s/%s", flexvol, lunPath)
 	}
 
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":            "LunCloneCreate",
-			"Type":              "OntapAPIREST",
-			"flexvol":           flexvol,
-			"source":            source,
-			"lunPath":           lunPath,
-			"fullSourceLunPath": fullSourceLunPath,
-			"fullCloneLunPath":  fullCloneLunPath,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunCloneCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCloneCreate")
+	fields := LogFields{
+		"Method":            "LunCloneCreate",
+		"Type":              "OntapAPIREST",
+		"flexvol":           flexvol,
+		"source":            source,
+		"lunPath":           lunPath,
+		"fullSourceLunPath": fullSourceLunPath,
+		"fullCloneLunPath":  fullCloneLunPath,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCloneCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCloneCreate")
 
 	lunResponse, err := d.api.LunGetByName(ctx, fullSourceLunPath)
 	if err != nil {
@@ -1582,7 +1574,7 @@ func (d OntapAPIREST) GetCommentJSON(ctx context.Context, fstype, context, luks 
 	commentsJSON := commentsJsonBytes.String()
 
 	if commentLimit != 0 && len(commentsJSON) > commentLimit {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"commentsJSON":       commentsJSON,
 			"commentsJSONLength": len(commentsJSON),
 			"maxCommentLength":   commentLimit,
@@ -1610,15 +1602,13 @@ func (d OntapAPIREST) LunSetQosPolicyGroup(ctx context.Context, lunPath string, 
 }
 
 func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, error) {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "LunGetByName",
-			"Type":    "OntapAPIREST",
-			"LunPath": name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunGetByName")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunGetByName")
+	fields := LogFields{
+		"Method":  "LunGetByName",
+		"Type":    "OntapAPIREST",
+		"LunPath": name,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunGetByName")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunGetByName")
 
 	lunResponse, err := d.api.LunGetByName(ctx, name)
 	if err != nil {
@@ -1632,16 +1622,15 @@ func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, erro
 }
 
 func (d OntapAPIREST) LunRename(ctx context.Context, lunPath, newLunPath string) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "LunRename",
-			"Type":       "OntapAPIREST",
-			"OldLunName": lunPath,
-			"NewLunName": newLunPath,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunRename")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunRename")
+	fields := LogFields{
+		"Method":     "LunRename",
+		"Type":       "OntapAPIREST",
+		"OldLunName": lunPath,
+		"NewLunName": newLunPath,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunRename")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunRename")
+
 	return d.api.LunRename(ctx, lunPath, newLunPath)
 }
 
@@ -1693,7 +1682,7 @@ func (d OntapAPIREST) isLunMapped(
 					alreadyMapped = true
 
 					Logc(ctx).WithFields(
-						log.Fields{
+						LogFields{
 							"lun":    lunPath,
 							"igroup": initiatorGroupName,
 							"id":     lunID,
@@ -1710,7 +1699,7 @@ func (d OntapAPIREST) isLunMapped(
 						alreadyMapped = true
 
 						Logc(ctx).WithFields(
-							log.Fields{
+							LogFields{
 								"lun":    lunPath,
 								"igroup": initiatorGroupName,
 								"id":     lunID,
@@ -1748,7 +1737,7 @@ func (d OntapAPIREST) EnsureLunMapped(
 			}
 		}
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"lun":    lunPath,
 			"igroup": initiatorGroupName,
 			"id":     lunID,
@@ -1822,16 +1811,15 @@ func (d OntapAPIREST) LunSize(ctx context.Context, flexvolName string) (int, err
 }
 
 func (d OntapAPIREST) LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error) {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "LunSetSize",
-			"Type":    "OntapAPIREST",
-			"Name":    lunPath,
-			"NewSize": newSize,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunSetSize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunSetSize")
+	fields := LogFields{
+		"Method":  "LunSetSize",
+		"Type":    "OntapAPIREST",
+		"Name":    lunPath,
+		"NewSize": newSize,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunSetSize")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunSetSize")
+
 	return d.api.LunSetSize(ctx, lunPath, newSize)
 }
 
@@ -1925,17 +1913,16 @@ func (d OntapAPIREST) IscsiNodeGetNameRequest(ctx context.Context) (string, erro
 }
 
 func (d OntapAPIREST) IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "IgroupCreate",
-			"Type":               "OntapAPIREST",
-			"InitiatorGroupName": initiatorGroupName,
-			"InitiatorGroupType": initiatorGroupType,
-			"OsType":             osType,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> IgroupCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< IgroupCreate")
+	fields := LogFields{
+		"Method":             "IgroupCreate",
+		"Type":               "OntapAPIREST",
+		"InitiatorGroupName": initiatorGroupName,
+		"InitiatorGroupType": initiatorGroupType,
+		"OsType":             osType,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupCreate")
+
 	igroup, err := d.api.IgroupGetByName(ctx, initiatorGroupName)
 	if err != nil {
 		return err
@@ -1955,15 +1942,14 @@ func (d OntapAPIREST) IgroupCreate(ctx context.Context, initiatorGroupName, init
 }
 
 func (d OntapAPIREST) IgroupDestroy(ctx context.Context, initiatorGroupName string) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "IgroupDestroy",
-			"Type":               "OntapAPIREST",
-			"InitiatorGroupName": initiatorGroupName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> IgroupDestroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< IgroupDestroy")
+	fields := LogFields{
+		"Method":             "IgroupDestroy",
+		"Type":               "OntapAPIREST",
+		"InitiatorGroupName": initiatorGroupName,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupDestroy")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupDestroy")
+
 	err := d.api.IgroupDestroy(ctx, initiatorGroupName)
 	if err != nil {
 		if !IsNotFoundError(err) {
@@ -1978,16 +1964,15 @@ func (d OntapAPIREST) IgroupDestroy(ctx context.Context, initiatorGroupName stri
 func (d OntapAPIREST) EnsureIgroupAdded(
 	ctx context.Context, initiatorGroupName, initiator string,
 ) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "EnsureIgroupAdded",
-			"Type":               "OntapAPIREST",
-			"InitiatorGroupName": initiatorGroupName,
-			"IQN":                initiator,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> EnsureIgroupAdded")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< EnsureIgroupAdded")
+	fields := LogFields{
+		"Method":             "EnsureIgroupAdded",
+		"Type":               "OntapAPIREST",
+		"InitiatorGroupName": initiatorGroupName,
+		"IQN":                initiator,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> EnsureIgroupAdded")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< EnsureIgroupAdded")
+
 	alreadyAdded, err := d.isIgroupAdded(ctx, initiator, initiatorGroupName)
 	if err != nil {
 		return err
@@ -2020,16 +2005,15 @@ func (d OntapAPIREST) isIgroupAdded(ctx context.Context, initiator, initiatorGro
 }
 
 func (d OntapAPIREST) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "IgroupRemove",
-			"Type":               "OntapAPIREST",
-			"InitiatorGroupName": initiatorGroupName,
-			"IQN":                initiator,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> IgroupRemove")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< IgroupRemove")
+	fields := LogFields{
+		"Method":             "IgroupRemove",
+		"Type":               "OntapAPIREST",
+		"InitiatorGroupName": initiatorGroupName,
+		"IQN":                initiator,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupRemove")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupRemove")
+
 	return d.api.IgroupRemove(ctx, initiatorGroupName, initiator)
 }
 

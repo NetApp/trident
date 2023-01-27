@@ -139,7 +139,7 @@ func TestSubvolumeDriverName(t *testing.T) {
 
 	result := driver.Name()
 
-	assert.Equal(t, drivers.AzureNASBlockStorageDriverName, result, "driver name mismatches")
+	assert.Equal(t, tridentconfig.AzureNASBlockStorageDriverName, result, "driver name mismatches")
 }
 
 func TestSubvolumeBackendName_SetInConfig(t *testing.T) {

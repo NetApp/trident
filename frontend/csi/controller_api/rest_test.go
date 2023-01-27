@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,10 +14,10 @@ import (
 	"strings"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -29,7 +28,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 

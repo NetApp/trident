@@ -9,7 +9,6 @@ import (
 	"time"
 
 	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
-	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +27,7 @@ import (
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	tridentscheme "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/scheme"
@@ -80,7 +79,7 @@ var (
 	ctx = context.Background
 )
 
-func Logx(ctx context.Context) *log.Entry {
+func Logx(ctx context.Context) LogEntry {
 	return Logc(ctx).WithField(LogSource, "trident-crd-controller")
 }
 
@@ -166,9 +165,10 @@ type TridentCrdController struct {
 func NewTridentCrdController(
 	orchestrator core.Orchestrator, masterURL, kubeConfigPath string,
 ) (*TridentCrdController, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal,
+		WorkflowCRDControllerCreate, LogLayerCRDFrontend)
 
-	Logx(ctx).Debug("Creating CRDv1 controller.")
+	Logx(ctx).Trace("Creating CRDv1 controller.")
 
 	clients, err := clik8sclient.CreateK8SClients(masterURL, kubeConfigPath, "")
 	if err != nil {
@@ -185,9 +185,11 @@ func newTridentCrdControllerImpl(
 	kubeClientset kubernetes.Interface, snapshotClientset k8ssnapshots.Interface,
 	crdClientset tridentv1clientset.Interface,
 ) (*TridentCrdController, error) {
-	log.WithFields(log.Fields{
+	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone,
+		LogLayerCRDFrontend)
+	Logx(ctx).WithFields(LogFields{
 		"namespace": tridentNamespace,
-	}).Info("Initializing Trident CRD controller frontend.")
+	}).Trace("Initializing Trident CRD controller frontend.")
 
 	// Set resync to 0 sec so that reconciliation is on demand
 	crdInformerFactory := tridentinformers.NewSharedInformerFactory(crdClientset, time.Second*0)
@@ -214,7 +216,7 @@ func newTridentCrdControllerImpl(
 	// Create event broadcaster
 	// Add our types to the default Kubernetes Scheme so Events can be logged.
 	utilruntime.Must(tridentscheme.AddToScheme(scheme.Scheme))
-	log.Info("Creating event broadcaster.")
+	Logx(ctx).Trace("Creating event broadcaster.")
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClientset.CoreV1().Events("")})
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
@@ -259,7 +261,7 @@ func newTridentCrdControllerImpl(
 	}
 
 	// Set up event handlers for when our Trident CRDs change
-	log.Info("Setting up CRD controller event handlers.")
+	Logx(ctx).Trace("Setting up CRD controller event handlers.")
 
 	_, _ = backendConfigInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    controller.addTridentBackendConfigEvent,
@@ -275,9 +277,10 @@ func newTridentCrdControllerImpl(
 			// When a CR has a finalizer those come as update events and not deletes,
 			// Do not handle any other update events other than backend deletion
 			// otherwise it may results in continuous reconcile loops.
-			ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+			ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+				LogLayerCRDFrontend)
 			if err := controller.removeFinalizers(ctx, newCrd, false); err != nil {
-				Logc(ctx).WithError(err).Error("Error removing finalizers")
+				Logx(ctx).WithError(err).Error("Error removing finalizers")
 			}
 		},
 		DeleteFunc: controller.deleteTridentBackendEvent,
@@ -316,9 +319,10 @@ func newTridentCrdControllerImpl(
 	for _, informer := range informers {
 		_, _ = informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(oldCrd, newCrd interface{}) {
-				ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+				ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD,
+					WorkflowCRReconcile, LogLayerCRDFrontend)
 				if err := controller.removeFinalizers(ctx, newCrd, false); err != nil {
-					Logc(ctx).WithError(err).Error("Error removing finalizers")
+					Logx(ctx).WithError(err).Error("Error removing finalizers")
 				}
 			},
 		})
@@ -328,17 +332,20 @@ func newTridentCrdControllerImpl(
 }
 
 func (c *TridentCrdController) Activate() error {
-	log.Info("Activating CRD frontend.")
+	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone, LogLayerCRDFrontend)
+	Logx(ctx).Trace("Activating CRD frontend.")
 	if c.crdControllerStopChan != nil {
 		c.crdInformerFactory.Start(c.crdControllerStopChan)
 		c.kubeInformerFactory.Start(c.crdControllerStopChan)
-		go c.Run(1, c.crdControllerStopChan)
+		go c.Run(ctx, 1, c.crdControllerStopChan)
 	}
 	return nil
 }
 
 func (c *TridentCrdController) Deactivate() error {
-	log.Info("Deactivating CRD frontend.")
+	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone,
+		LogLayerCRDFrontend)
+	Logx(ctx).Trace("Deactivating CRD frontend.")
 	if c.crdControllerStopChan != nil {
 		close(c.crdControllerStopChan)
 	}
@@ -357,19 +364,19 @@ func (c *TridentCrdController) Version() string {
 // as syncing informer caches and starting workers. It will block until stopCh
 // is closed, at which point it will shutdown the workqueue and wait for
 // workers to finish processing their current work items.
-func (c *TridentCrdController) Run(threadiness int, stopCh <-chan struct{}) {
-	log.WithFields(log.Fields{
+func (c *TridentCrdController) Run(ctx context.Context, threadiness int, stopCh <-chan struct{}) {
+	Logx(ctx).WithFields(LogFields{
 		"threadiness": threadiness,
-	}).Debug("TridentCrdController#Run")
+	}).Trace("TridentCrdController#Run")
 
 	defer utilruntime.HandleCrash()
 	defer c.workqueue.ShutDown()
 
 	// Start the informer factories to begin populating the informer caches
-	log.Info("Starting Trident CRD controller.")
+	Log().Info("Starting Trident CRD controller.")
 
 	// Wait for the caches to be synced before starting workers
-	log.Info("Waiting for informer caches to sync.")
+	Logx(ctx).Trace("Waiting for informer caches to sync.")
 	if ok := cache.WaitForCacheSync(stopCh,
 		c.backendsSynced,
 		c.backendConfigsSynced,
@@ -384,26 +391,28 @@ func (c *TridentCrdController) Run(threadiness int, stopCh <-chan struct{}) {
 		c.snapshotInfoSynced,
 		c.secretsSynced); !ok {
 		waitErr := fmt.Errorf("failed to wait for caches to sync")
-		log.Errorf("Error: %v", waitErr)
+		Logx(ctx).Errorf("Error: %v", waitErr)
 		return
 	}
 
 	// Launch workers to process CRD resources
-	log.Info("Starting workers.")
+	Logx(ctx).Debug("Starting workers.")
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
-	log.Info("Started workers.")
+	Logx(ctx).Debug("Started workers.")
 	<-stopCh
-	log.Info("Shutting down workers.")
+	Logx(ctx).Debug("Shutting down workers.")
 }
 
 // runWorker is a long-running function that will continually call the
 // processNextWorkItem function in order to read and process a message on the
 // workqueue.
 func (c *TridentCrdController) runWorker() {
-	log.Debug("TridentCrdController runWorker started.")
+	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone,
+		LogLayerCRDFrontend)
+	Logx(ctx).Trace("TridentCrdController runWorker started.")
 	for c.processNextWorkItem() {
 	}
 }
@@ -412,10 +421,11 @@ func (c *TridentCrdController) runWorker() {
 // string which is then put onto the work queue. This method should *not* be
 // passed resources of any type other than TridentBackendConfig.
 func (c *TridentCrdController) addTridentBackendConfigEvent(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventAdd))
 
-	Logx(ctx).Debug("TridentCrdController#addTridentBackendConfigEvent")
+	Logx(ctx).Trace("TridentCrdController#addTridentBackendConfigEvent")
 
 	var key string
 	var err error
@@ -438,10 +448,11 @@ func (c *TridentCrdController) addTridentBackendConfigEvent(obj interface{}) {
 // it into a namespace/name string which is then put onto the work queue. This method
 // should *not* be passed resources of any type other than TridentBackendConfig.
 func (c *TridentCrdController) updateTridentBackendConfigEvent(old, new interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
-	Logx(ctx).Debug("TridentCrdController#updateTridentBackendConfigEvent")
+	Logx(ctx).Trace("TridentCrdController#updateTridentBackendConfigEvent")
 
 	newBackendConfig := new.(*tridentv1.TridentBackendConfig)
 	oldBackendConfig := old.(*tridentv1.TridentBackendConfig)
@@ -449,7 +460,7 @@ func (c *TridentCrdController) updateTridentBackendConfigEvent(old, new interfac
 	// Ignore metadata and status only updates
 	if oldBackendConfig != nil && newBackendConfig != nil {
 		if newBackendConfig.GetGeneration() == oldBackendConfig.GetGeneration() && newBackendConfig.GetGeneration() != 0 {
-			Logx(ctx).Debugf("No change in the generation, nothing to do.")
+			Logx(ctx).Trace("No change in the generation, nothing to do.")
 			return
 		}
 	}
@@ -475,10 +486,11 @@ func (c *TridentCrdController) updateTridentBackendConfigEvent(old, new interfac
 // string which is then put onto the work queue. This method should *not* be
 // passed resources of any type other than TridentBackendConfig.
 func (c *TridentCrdController) deleteTridentBackendConfigEvent(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
-	Logx(ctx).Debug("TridentCrdController#deleteTridentBackendConfigEvent")
+	Logx(ctx).Trace("TridentCrdController#deleteTridentBackendConfigEvent")
 
 	var key string
 	var err error
@@ -501,10 +513,11 @@ func (c *TridentCrdController) deleteTridentBackendConfigEvent(obj interface{}) 
 // string which is then put onto the work queue. This method should *not* be
 // passed resources of any type other than TridentBackend.
 func (c *TridentCrdController) deleteTridentBackendEvent(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
-	Logx(ctx).Debug("TridentCrdController#deleteTridentBackendEvent")
+	Logx(ctx).Trace("TridentCrdController#deleteTridentBackendEvent")
 
 	var key, namespace string
 	var err error
@@ -542,10 +555,11 @@ func (c *TridentCrdController) deleteTridentBackendEvent(obj interface{}) {
 // into a namespace/name string which is then put onto the work queue.
 // This method should *not* be passed resources of any type other than Secrets.
 func (c *TridentCrdController) updateSecretEvent(old, new interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
-	Logx(ctx).Debug("TridentCrdController#updateSecretEvent")
+	Logx(ctx).Trace("TridentCrdController#updateSecretEvent")
 
 	newSecret := new.(*corev1.Secret)
 	oldSecret := old.(*corev1.Secret)
@@ -553,14 +567,14 @@ func (c *TridentCrdController) updateSecretEvent(old, new interface{}) {
 	// Ignore metadata and status only updates
 	if oldSecret != nil && newSecret != nil {
 		if newSecret.GetGeneration() == oldSecret.GetGeneration() && newSecret.GetGeneration() != 0 {
-			Logx(ctx).Debugf("No change in the generation, nothing to do.")
+			Logx(ctx).Trace("No change in the generation, nothing to do.")
 			return
 		}
 	}
 
 	if oldSecret != nil && newSecret != nil {
 		if newSecret.ResourceVersion == oldSecret.ResourceVersion {
-			Logx(ctx).Debugf("No change in the resource version, nothing to do.")
+			Logx(ctx).Trace("No change in the resource version, nothing to do.")
 			return
 		}
 	}
@@ -585,13 +599,14 @@ func (c *TridentCrdController) updateSecretEvent(old, new interface{}) {
 // processNextWorkItem will read a single work item off the workqueue and
 // attempt to process it, by calling the reconcileBackendConfig.
 func (c *TridentCrdController) processNextWorkItem() bool {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
-	Logx(ctx).Debug("TridentCrdController#processNextWorkItem")
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
+	Logx(ctx).Trace("TridentCrdController#processNextWorkItem")
 
 	obj, shutdown := c.workqueue.Get()
 
 	if shutdown {
-		Logx(ctx).Debug("TridentCrdController#processNextWorkItem shutting down")
+		Logx(ctx).Trace("TridentCrdController#processNextWorkItem shutting down")
 		return false
 	}
 
@@ -664,9 +679,9 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 		// Finally, if no error occurs we Forget this item so it does not
 		// get queued again until another change happens.
 		c.workqueue.Forget(obj)
-		Logx(keyItem.ctx).Infof("Synced '%s'", keyItemName)
-		log.Info("-------------------------------------------------")
-		log.Info("-------------------------------------------------")
+		Logx(keyItem.ctx).Tracef("Synced '%s'", keyItemName)
+		Log().Info("-------------------------------------------------")
+		Log().Info("-------------------------------------------------")
 
 		return nil
 	}(obj)
@@ -684,11 +699,11 @@ func (c *TridentCrdController) reconcileBackend(keyItem *KeyItem) {
 	eventType := keyItem.event
 	objectType := keyItem.objectType
 
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"Key":        key,
 		"eventType":  eventType,
 		"objectType": objectType,
-	}).Debug("TridentCrdController#reconcileBackend")
+	}).Trace("TridentCrdController#reconcileBackend")
 
 	if eventType != EventDelete {
 		Logx(ctx).Error("Wrong backend event triggered a reconcileBackend.")
@@ -706,7 +721,7 @@ func (c *TridentCrdController) reconcileBackend(keyItem *KeyItem) {
 	backendConfig, err := c.getBackendConfigWithBackendUUID(ctx, namespace, name)
 	if err != nil {
 		if utils.IsNotFoundError(err) {
-			Logx(ctx).Infof("No backend config is associated with the backendUUID '%v'.", name)
+			Logx(ctx).Warnf("No backend config is associated with the backendUUID '%v'.", name)
 		} else {
 			Logx(ctx).Errorf("unable to identify a backend config associated with the backendUUID '%v'.", name)
 		}
@@ -717,20 +732,20 @@ func (c *TridentCrdController) reconcileBackend(keyItem *KeyItem) {
 	var newEventType EventType
 	if backendConfig.Status.Phase == string(tridentv1.PhaseUnbound) {
 		// Ideally this should not be the case
-		Logx(ctx).Debugf("Backend Config '%v' has %v phase, nothing to do", backendConfig.Name,
+		Logx(ctx).Tracef("Backend Config '%v' has %v phase, nothing to do", backendConfig.Name,
 			tridentv1.PhaseUnbound)
 		return
 	} else if backendConfig.Status.Phase == string(tridentv1.PhaseLost) {
 		// Nothing to do here
-		Logx(ctx).Debugf("Backend Config '%v' is already in a %v phase, nothing to do", backendConfig.Name,
+		Logx(ctx).Tracef("Backend Config '%v' is already in a %v phase, nothing to do", backendConfig.Name,
 			tridentv1.PhaseLost)
 		return
 	} else if backendConfig.Status.Phase == string(tridentv1.PhaseDeleting) {
-		Logx(ctx).Debugf("Backend Config '%v' is already in a deleting phase, ensuring its deletion",
+		Logx(ctx).Tracef("Backend Config '%v' is already in a deleting phase, ensuring its deletion",
 			backendConfig.Name)
 		newEventType = EventDelete
 	} else {
-		Logx(ctx).Debugf("Backend Config '%v' has %v phase, running an update to set it to %v",
+		Logx(ctx).Tracef("Backend Config '%v' has %v phase, running an update to set it to %v",
 			backendConfig.Name, backendConfig.Status.Phase, tridentv1.PhaseLost)
 		newEventType = EventForceUpdate
 	}
@@ -753,10 +768,10 @@ func (c *TridentCrdController) reconcileSecret(keyItem *KeyItem) {
 	eventType := keyItem.event
 	objectType := keyItem.objectType
 
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"eventType":  eventType,
 		"objectType": objectType,
-	}).Debug("TridentCrdController#reconcileSecret")
+	}).Trace("TridentCrdController#reconcileSecret")
 
 	if eventType != EventUpdate {
 		Logx(ctx).Error("Wrong secret event triggered a reconcileSecret.")
@@ -774,7 +789,7 @@ func (c *TridentCrdController) reconcileSecret(keyItem *KeyItem) {
 	backendConfigs, err := c.getBackendConfigsWithSecret(ctx, namespace, secretName)
 	if err != nil {
 		if utils.IsNotFoundError(err) {
-			Logx(ctx).Infof("No backend config is associated with the secret update")
+			Logx(ctx).Warnf("No backend config is associated with the secret update")
 		} else {
 			Logx(ctx).Errorf("unable to identify a backend config associated with the secret update")
 		}
@@ -782,7 +797,7 @@ func (c *TridentCrdController) reconcileSecret(keyItem *KeyItem) {
 
 	// Add these backend configs back to the queue and run update on these backends
 	for _, backendConfig := range backendConfigs {
-		Logx(ctx).WithFields(log.Fields{
+		Logx(ctx).WithFields(LogFields{
 			"backendConfig.Name":      backendConfig.Name,
 			"backendConfig.Namespace": backendConfig.Namespace,
 		}).Info("Running update on backend due to secret update.")
@@ -804,7 +819,7 @@ func (c *TridentCrdController) reconcileSecret(keyItem *KeyItem) {
 // and attempts to converge the two.
 // It then updates the Status block of the BackendConfig resource with the current status of the resource.
 func (c *TridentCrdController) reconcileBackendConfig(keyItem *KeyItem) error {
-	Logx(keyItem.ctx).Debug("TridentCrdController#reconcileBackendConfig")
+	Logx(keyItem.ctx).Trace("TridentCrdController#reconcileBackendConfig")
 
 	// Run the reconcileBackendConfig, passing it the namespace/name string of the resource to be synced.
 	if err := c.handleTridentBackendConfig(keyItem); err != nil {
@@ -818,8 +833,8 @@ func (c *TridentCrdController) reconcileBackendConfig(keyItem *KeyItem) error {
 			c.workqueue.Forget(keyItem)
 
 			Logx(keyItem.ctx).Errorf(errMessage)
-			log.Info("-------------------------------------------------")
-			log.Info("-------------------------------------------------")
+			Log().Info("-------------------------------------------------")
+			Log().Info("-------------------------------------------------")
 
 			return fmt.Errorf(errMessage)
 		} else if utils.IsReconcileIncompleteError(err) {
@@ -831,8 +846,8 @@ func (c *TridentCrdController) reconcileBackendConfig(keyItem *KeyItem) error {
 		errMessage := fmt.Sprintf("error syncing backend configuration '%v', requeuing; %v",
 			keyItem.key, err.Error())
 		Logx(keyItem.ctx).Errorf(errMessage)
-		log.Info("-------------------------------------------------")
-		log.Info("-------------------------------------------------")
+		Log().Info("-------------------------------------------------")
+		Log().Info("-------------------------------------------------")
 
 		return fmt.Errorf(errMessage)
 	}
@@ -852,11 +867,11 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 	eventType := keyItem.event
 	objectType := keyItem.objectType
 
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"Key":        key,
 		"eventType":  eventType,
 		"objectType": objectType,
-	}).Debug("TridentCrdController#handleTridentBackendConfig")
+	}).Trace("TridentCrdController#handleTridentBackendConfig")
 
 	var backendConfig *tridentv1.TridentBackendConfig
 
@@ -872,7 +887,7 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 	if err != nil {
 		// The resource may no longer exist, in which case we stop processing.
 		if errors.IsNotFound(err) {
-			Logx(ctx).WithField("key", key).Debug("Object in work queue no longer exists.")
+			Logx(ctx).WithField("key", key).Trace("Object in work queue no longer exists.")
 			return nil
 		}
 		return err
@@ -891,16 +906,16 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 			}
 		}
 	} else {
-		Logx(ctx).WithFields(log.Fields{
+		Logx(ctx).WithFields(LogFields{
 			"backendConfig.Name":                   backendConfig.Name,
 			"backend.ObjectMeta.DeletionTimestamp": backendConfig.ObjectMeta.DeletionTimestamp,
-		}).Debug("TridentCrdController#handleTridentBackendConfig CR is being deleted, not updating.")
+		}).Trace("TridentCrdController#handleTridentBackendConfig CR is being deleted, not updating.")
 		eventType = EventDelete
 	}
 
 	// Check to see if the backend config deletion was initialized in any of the previous reconcileBackendConfig loops
 	if backendConfig.Status.Phase == string(tridentv1.PhaseDeleting) {
-		Logx(ctx).WithFields(log.Fields{
+		Logx(ctx).WithFields(LogFields{
 			"backendConfig.Name":                         backendConfig.Name,
 			"backendConfig.ObjectMeta.DeletionTimestamp": backendConfig.ObjectMeta.DeletionTimestamp,
 		}).Debugf("TridentCrdController# CR has %s phase.", string(tridentv1.PhaseDeleting))
@@ -951,9 +966,9 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 		return fmt.Errorf("encountered error while retrieving the deletion policy :%v", err)
 	}
 
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"Spec": backendConfig.Spec.ToString(),
-	}).Debug("TridentBackendConfig Spec is valid.")
+	}).Trace("TridentBackendConfig Spec is valid.")
 
 	phase := tridentv1.TridentBackendConfigPhase(backendConfig.Status.Phase)
 
@@ -994,15 +1009,15 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 func (c *TridentCrdController) addBackendConfig(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, deletionPolicy string,
 ) error {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"backendConfig.Name": backendConfig.Name,
-	}).Debug("TridentCrdController#addBackendConfig")
+	}).Trace("TridentCrdController#addBackendConfig")
 
 	rawJSONData := backendConfig.Spec.Raw
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"backendConfig.Name": backendConfig.Name,
 		"backendConfig.UID":  backendConfig.UID,
-	}).Debug("Adding backend in core.")
+	}).Trace("Adding backend in core.")
 
 	backendDetails, err := c.orchestrator.AddBackend(ctx, string(rawJSONData), string(backendConfig.UID))
 	if err != nil {
@@ -1040,14 +1055,14 @@ func (c *TridentCrdController) addBackendConfig(
 func (c *TridentCrdController) updateBackendConfig(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, deletionPolicy string,
 ) error {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"backendConfig.Name": backendConfig.Name,
 		"backendConfig.UID":  backendConfig.UID,
 		"backendName":        backendConfig.Status.BackendInfo.BackendName,
 		"backendUUID":        backendConfig.Status.BackendInfo.BackendUUID,
 	}
 
-	Logx(ctx).WithFields(logFields).Debug("TridentCrdController#updateBackendConfig")
+	Logx(ctx).WithFields(logFields).Trace("TridentCrdController#updateBackendConfig")
 
 	var phase tridentv1.TridentBackendConfigPhase
 	var backend *tridentv1.TridentBackend
@@ -1065,7 +1080,7 @@ func (c *TridentCrdController) updateBackendConfig(
 
 		phase = tridentv1.PhaseLost
 	} else {
-		Logx(ctx).WithFields(logFields).Debug("Updating backend in core.")
+		Logx(ctx).WithFields(logFields).Trace("Updating backend in core.")
 		rawJSONData := backendConfig.Spec.Raw
 
 		var backendDetails *storage.BackendExternal
@@ -1076,7 +1091,7 @@ func (c *TridentCrdController) updateBackendConfig(
 			phase = tridentv1.TridentBackendConfigPhase(backendConfig.Status.Phase)
 
 			if utils.IsNotFoundError(err) {
-				Logx(ctx).WithFields(log.Fields{
+				Logx(ctx).WithFields(LogFields{
 					"backendConfig.Name": backendConfig.Name,
 				}).Error("Could not find backend during update.")
 
@@ -1121,7 +1136,7 @@ func (c *TridentCrdController) updateBackendConfig(
 func (c *TridentCrdController) deleteBackendConfig(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, deletionPolicy string,
 ) error {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"backendConfig.Name": backendConfig.Name,
 		"backendName":        backendConfig.Status.BackendInfo.BackendName,
 		"backendUUID":        backendConfig.Status.BackendInfo.BackendUUID,
@@ -1130,14 +1145,14 @@ func (c *TridentCrdController) deleteBackendConfig(
 		"deletionTimeStamp":  backendConfig.ObjectMeta.DeletionTimestamp,
 	}
 
-	Logx(ctx).WithFields(logFields).Debug("TridentCrdController#deleteBackendConfig")
+	Logx(ctx).WithFields(logFields).Trace("TridentCrdController#deleteBackendConfig")
 
 	if backendConfig.Status.Phase == string(tridentv1.PhaseUnbound) {
 		// Originally we were doing the same for the phase=lost but it does not remove configRef
 		// from the in-memory object, thus making it hard to remove it using tridentctl
 		Logx(ctx).Debugf("Deleting the CR with the status '%v'", backendConfig.Status.Phase)
 	} else {
-		Logx(ctx).WithFields(logFields).Debug("Attempting to delete backend.")
+		Logx(ctx).WithFields(logFields).Trace("Attempting to delete backend.")
 
 		if deletionPolicy == tridentv1.BackendDeletionPolicyDelete {
 
@@ -1216,7 +1231,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 		err = fmt.Errorf("unable to identify if the backend '%v' is deleted or not; %v",
 			backendConfig.Status.BackendInfo.BackendName, err)
 	} else if backend == nil {
-		Logx(ctx).WithFields(logFields).Debug("Backend not found, proceeding with the TridentBackendConfig deletion.")
+		Logx(ctx).WithFields(logFields).Trace("Backend not found, proceeding with the TridentBackendConfig deletion.")
 
 		// In the lost case ensure the backend is deleted with deletionPolicy `delete`
 		if backendConfig.Status.Phase == string(tridentv1.PhaseLost) {
@@ -1239,7 +1254,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 		Logx(ctx).WithFields(logFields).Errorf(message + "Re-adding this work item back to the queue.")
 		err = fmt.Errorf("backend is in a deleting state, cannot proceed with the TridentBackendConfig deletion")
 	} else {
-		Logx(ctx).WithFields(logFields).Debug("Backend is present and not in a deleting state, " +
+		Logx(ctx).WithFields(logFields).Trace("Backend is present and not in a deleting state, " +
 			"proceeding with the backend deletion.")
 
 		if err = c.orchestrator.DeleteBackendByBackendUUID(ctx, backendConfig.Status.BackendInfo.BackendName,
@@ -1256,7 +1271,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 				// In the next reconcile loop the above condition `backend == nil` should be true if backend
 				// is not present in-memory as well as the tbe CR
 				message = "Could not find backend during deletion."
-				Logx(ctx).WithFields(logFields).Debug(message)
+				Logx(ctx).WithFields(logFields).Trace(message)
 			}
 		} else {
 
@@ -1282,7 +1297,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 				err = fmt.Errorf("backend '%v' still present after a deletion attempt",
 					backendConfig.Status.BackendInfo.BackendName)
 			} else {
-				Logx(ctx).WithFields(logFields).Info("Backend deleted.")
+				Logx(ctx).WithFields(logFields).Trace("Backend deleted.")
 			}
 		}
 	}
@@ -1312,14 +1327,14 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyRetain(
 		err = fmt.Errorf("unable to identify if the backend '%v' exists or not; %v",
 			backendConfig.Status.BackendInfo.BackendName, err)
 	} else if backend == nil {
-		Logx(ctx).WithFields(logFields).Debug("Backend not found, " +
+		Logx(ctx).WithFields(logFields).Trace("Backend not found, " +
 			"proceeding with the TridentBackendConfig deletion.")
 
 		Logx(ctx).WithFields(logFields).Debugf("Attempting to remove configRef from in-memory backend object.")
 		_ = c.orchestrator.RemoveBackendConfigRef(ctx, backendConfig.Status.BackendInfo.BackendUUID,
 			string(backendConfig.UID))
 	} else if backend.ConfigRef == "" {
-		Logx(ctx).WithFields(logFields).Debug("Backend found " +
+		Logx(ctx).WithFields(logFields).Trace("Backend found " +
 			"but does not contain a configRef, proceeding with the TridentBackendConfig deletion.")
 	} else {
 		if err = c.orchestrator.RemoveBackendConfigRef(ctx, backendConfig.Status.BackendInfo.BackendUUID,
@@ -1336,10 +1351,10 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyRetain(
 				// In the next reconcile loop the above condition `backend == nil` should be true if backend
 				// is not present in-memory as well as the tbe CR
 				message = "Could not find backend during configRef removal."
-				Logx(ctx).WithFields(logFields).Debug(message)
+				Logx(ctx).WithFields(logFields).Trace(message)
 			}
 		} else {
-			Logx(ctx).WithFields(logFields).Info("ConfigRef removed from the backend; backend not deleted.")
+			Logx(ctx).WithFields(logFields).Trace("ConfigRef removed from the backend; backend not deleted.")
 		}
 	}
 
@@ -1353,7 +1368,7 @@ func (c *TridentCrdController) getTridentBackend(
 	// Get list of all the backends
 	backendList, err := c.crdClientset.TridentV1().TridentBackends(namespace).List(ctx, listOpts)
 	if err != nil {
-		Logx(ctx).WithFields(log.Fields{
+		Logx(ctx).WithFields(LogFields{
 			"backendUUID": backendUUID,
 			"namespace":   namespace,
 			"err":         err,
@@ -1377,7 +1392,7 @@ func (c *TridentCrdController) getBackendConfigWithBackendUUID(
 	// Get list of all the backend configs
 	backendConfigList, err := c.crdClientset.TridentV1().TridentBackendConfigs(namespace).List(ctx, listOpts)
 	if err != nil {
-		Logx(ctx).WithFields(log.Fields{
+		Logx(ctx).WithFields(LogFields{
 			"backendUUID": backendUUID,
 			"namespace":   namespace,
 			"err":         err,
@@ -1403,7 +1418,7 @@ func (c *TridentCrdController) getBackendConfigsWithSecret(
 	// Get list of all the backend configs
 	backendConfigList, err := c.crdClientset.TridentV1().TridentBackendConfigs(namespace).List(ctx, listOpts)
 	if err != nil {
-		Logx(ctx).WithFields(log.Fields{
+		Logx(ctx).WithFields(LogFields{
 			"err": err,
 		}).Errorf("Error listing Trident backendConfig configs.")
 		return backendConfigs, fmt.Errorf("error listing Trident backendConfig configs: %v", err)
@@ -1458,13 +1473,13 @@ func (c *TridentCrdController) updateTridentBackendConfigCRStatus(
 	ctx context.Context,
 	tbcCR *tridentv1.TridentBackendConfig, newStatusDetails tridentv1.TridentBackendConfigStatus, debugMessage string,
 ) (*tridentv1.TridentBackendConfig, bool, error) {
-	logFields := log.Fields{"TridentBackendConfigCR": tbcCR.Name}
+	logFields := LogFields{"TridentBackendConfigCR": tbcCR.Name}
 
 	// Update phase of the tbcCR
-	Logx(ctx).WithFields(logFields).Debug(debugMessage)
+	Logx(ctx).WithFields(logFields).Trace(debugMessage)
 
 	if reflect.DeepEqual(tbcCR.Status, newStatusDetails) {
-		log.WithFields(logFields).Info("New status is same as the old phase, no status update needed.")
+		Logx(ctx).WithFields(logFields).Trace("New status is same as the old phase, no status update needed.")
 
 		return tbcCR, false, nil
 	}
@@ -1493,7 +1508,7 @@ func (c *TridentCrdController) checkAndHandleNewlyBoundCRDeletion(
 	ctx context.Context,
 	tbcCR *tridentv1.TridentBackendConfig, newStatusDetails tridentv1.TridentBackendConfigStatus,
 ) *tridentv1.TridentBackendConfig {
-	logFields := log.Fields{"TridentBackendConfigCR": tbcCR.Name}
+	logFields := LogFields{"TridentBackendConfigCR": tbcCR.Name}
 	var newTbcCR *tridentv1.TridentBackendConfig
 
 	// Need to handle a scenario where a new TridentBackendConfig gets deleted immediately after creation.
@@ -1541,10 +1556,10 @@ func (c *TridentCrdController) checkAndHandleNewlyBoundCRDeletion(
 func (c *TridentCrdController) updateTridentBackendConfigCR(
 	ctx context.Context, tbcCR *tridentv1.TridentBackendConfig,
 ) (*tridentv1.TridentBackendConfig, error) {
-	logFields := log.Fields{"TridentBackendConfigCR": tbcCR.Name}
+	logFields := LogFields{"TridentBackendConfigCR": tbcCR.Name}
 
 	// Update phase of the tbcCR
-	Logx(ctx).WithFields(logFields).Debug("Updating the TridentBackendConfig CR")
+	Logx(ctx).WithFields(logFields).Trace("Updating the TridentBackendConfig CR")
 
 	newTbcCR, err := c.crdClientset.TridentV1().TridentBackendConfigs(tbcCR.Namespace).Update(ctx, tbcCR, updateOpts)
 	if err != nil {
@@ -1556,12 +1571,10 @@ func (c *TridentCrdController) updateTridentBackendConfigCR(
 
 // removeFinalizers removes Trident's finalizers from Trident CRs
 func (c *TridentCrdController) removeFinalizers(ctx context.Context, obj interface{}, force bool) error {
-	/*
-		log.WithFields(log.Fields{
-			"obj":   obj,
-			"force": force,
-		}).Debug("removeFinalizers")
-	*/
+	Logx(ctx).WithFields(LogFields{
+		"obj":   obj,
+		"force": force,
+	}).Trace("removeFinalizers")
 
 	switch crd := obj.(type) {
 	case *tridentv1.TridentBackend:
@@ -1619,13 +1632,13 @@ func (c *TridentCrdController) removeFinalizers(ctx context.Context, obj interfa
 func (c *TridentCrdController) removeBackendFinalizers(
 	ctx context.Context, backend *tridentv1.TridentBackend,
 ) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"backend.ResourceVersion":              backend.ResourceVersion,
 		"backend.ObjectMeta.DeletionTimestamp": backend.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeBackendFinalizers")
+	}).Trace("removeBackendFinalizers")
 
 	if backend.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		backendCopy := backend.DeepCopy()
 		backendCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentBackends(backend.Namespace).Update(ctx, backendCopy, updateOpts)
@@ -1634,7 +1647,7 @@ func (c *TridentCrdController) removeBackendFinalizers(
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return
@@ -1644,13 +1657,13 @@ func (c *TridentCrdController) removeBackendFinalizers(
 func (c *TridentCrdController) removeBackendConfigFinalizers(
 	ctx context.Context, tbc *tridentv1.TridentBackendConfig,
 ) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"tbc.ResourceVersion":              tbc.ResourceVersion,
 		"tbc.ObjectMeta.DeletionTimestamp": tbc.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeBackendConfigFinalizers")
+	}).Trace("removeBackendConfigFinalizers")
 
 	if tbc.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		backendConfigCopy := tbc.DeepCopy()
 		backendConfigCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentBackendConfigs(tbc.Namespace).Update(ctx, backendConfigCopy,
@@ -1660,7 +1673,7 @@ func (c *TridentCrdController) removeBackendConfigFinalizers(
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return
@@ -1668,13 +1681,13 @@ func (c *TridentCrdController) removeBackendConfigFinalizers(
 
 // removeNodeFinalizers removes Trident's finalizers from TridentNode CRs
 func (c *TridentCrdController) removeNodeFinalizers(ctx context.Context, node *tridentv1.TridentNode) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"node.ResourceVersion":              node.ResourceVersion,
 		"node.ObjectMeta.DeletionTimestamp": node.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeNodeFinalizers")
+	}).Trace("removeNodeFinalizers")
 
 	if node.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		nodeCopy := node.DeepCopy()
 		nodeCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentNodes(node.Namespace).Update(ctx, nodeCopy, updateOpts)
@@ -1683,7 +1696,7 @@ func (c *TridentCrdController) removeNodeFinalizers(ctx context.Context, node *t
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return
@@ -1693,13 +1706,13 @@ func (c *TridentCrdController) removeNodeFinalizers(ctx context.Context, node *t
 func (c *TridentCrdController) removeStorageClassFinalizers(
 	ctx context.Context, sc *tridentv1.TridentStorageClass,
 ) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"sc.ResourceVersion":              sc.ResourceVersion,
 		"sc.ObjectMeta.DeletionTimestamp": sc.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeStorageClassFinalizers")
+	}).Trace("removeStorageClassFinalizers")
 
 	if sc.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		scCopy := sc.DeepCopy()
 		scCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentStorageClasses(sc.Namespace).Update(ctx, scCopy, updateOpts)
@@ -1708,7 +1721,7 @@ func (c *TridentCrdController) removeStorageClassFinalizers(
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return
@@ -1718,13 +1731,13 @@ func (c *TridentCrdController) removeStorageClassFinalizers(
 func (c *TridentCrdController) removeTransactionFinalizers(
 	ctx context.Context, tx *tridentv1.TridentTransaction,
 ) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"tx.ResourceVersion":              tx.ResourceVersion,
 		"tx.ObjectMeta.DeletionTimestamp": tx.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeTransactionFinalizers")
+	}).Trace("removeTransactionFinalizers")
 
 	if tx.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		txCopy := tx.DeepCopy()
 		txCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentTransactions(tx.Namespace).Update(ctx, txCopy, updateOpts)
@@ -1733,7 +1746,7 @@ func (c *TridentCrdController) removeTransactionFinalizers(
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return
@@ -1741,13 +1754,13 @@ func (c *TridentCrdController) removeTransactionFinalizers(
 
 // removeVersionFinalizers removes Trident's finalizers from TridentVersion CRs
 func (c *TridentCrdController) removeVersionFinalizers(ctx context.Context, v *tridentv1.TridentVersion) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"v.ResourceVersion":              v.ResourceVersion,
 		"v.ObjectMeta.DeletionTimestamp": v.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeVersionFinalizers")
+	}).Trace("removeVersionFinalizers")
 
 	if v.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		vCopy := v.DeepCopy()
 		vCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentVersions(v.Namespace).Update(ctx, vCopy, updateOpts)
@@ -1756,7 +1769,7 @@ func (c *TridentCrdController) removeVersionFinalizers(ctx context.Context, v *t
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return
@@ -1764,13 +1777,13 @@ func (c *TridentCrdController) removeVersionFinalizers(ctx context.Context, v *t
 
 // removeVolumeFinalizers removes Trident's finalizers from TridentVolume CRs
 func (c *TridentCrdController) removeVolumeFinalizers(ctx context.Context, vol *tridentv1.TridentVolume) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"vol.ResourceVersion":              vol.ResourceVersion,
 		"vol.ObjectMeta.DeletionTimestamp": vol.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeVolumeFinalizers")
+	}).Trace("removeVolumeFinalizers")
 
 	if vol.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		volCopy := vol.DeepCopy()
 		volCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentVolumes(vol.Namespace).Update(ctx, volCopy, updateOpts)
@@ -1779,7 +1792,7 @@ func (c *TridentCrdController) removeVolumeFinalizers(ctx context.Context, vol *
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return
@@ -1789,13 +1802,13 @@ func (c *TridentCrdController) removeVolumeFinalizers(ctx context.Context, vol *
 func (c *TridentCrdController) removeVolumePublicationFinalizers(
 	ctx context.Context, volPub *tridentv1.TridentVolumePublication,
 ) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"volPub.ResourceVersion":              volPub.ResourceVersion,
 		"volPub.ObjectMeta.DeletionTimestamp": volPub.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeVolumePublicationFinalizers")
+	}).Trace("removeVolumePublicationFinalizers")
 
 	if volPub.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		volCopy := volPub.DeepCopy()
 		volCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentVolumePublications(volPub.Namespace).Update(ctx, volCopy, updateOpts)
@@ -1804,7 +1817,7 @@ func (c *TridentCrdController) removeVolumePublicationFinalizers(
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return
@@ -1814,13 +1827,13 @@ func (c *TridentCrdController) removeVolumePublicationFinalizers(
 func (c *TridentCrdController) removeSnapshotFinalizers(
 	ctx context.Context, snap *tridentv1.TridentSnapshot,
 ) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"snap.ResourceVersion":              snap.ResourceVersion,
 		"snap.ObjectMeta.DeletionTimestamp": snap.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeSnapshotFinalizers")
+	}).Trace("removeSnapshotFinalizers")
 
 	if snap.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		snapCopy := snap.DeepCopy()
 		snapCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentSnapshots(snap.Namespace).Update(ctx, snapCopy, updateOpts)
@@ -1829,7 +1842,7 @@ func (c *TridentCrdController) removeSnapshotFinalizers(
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return
@@ -1839,13 +1852,13 @@ func (c *TridentCrdController) removeSnapshotFinalizers(
 func (c *TridentCrdController) removeTMRFinalizers(
 	ctx context.Context, tmr *tridentv1.TridentMirrorRelationship,
 ) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"tmr.ResourceVersion":              tmr.ResourceVersion,
 		"tmr.ObjectMeta.DeletionTimestamp": tmr.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeTMRFinalizers")
+	}).Trace("removeTMRFinalizers")
 
 	if tmr.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		tmrCopy := tmr.DeepCopy()
 		tmrCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentMirrorRelationships(tmr.Namespace).Update(ctx, tmrCopy, updateOpts)
@@ -1854,7 +1867,7 @@ func (c *TridentCrdController) removeTMRFinalizers(
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return
@@ -1864,13 +1877,13 @@ func (c *TridentCrdController) removeTMRFinalizers(
 func (c *TridentCrdController) removeTSIFinalizers(
 	ctx context.Context, tsi *tridentv1.TridentSnapshotInfo,
 ) (err error) {
-	Logx(ctx).WithFields(log.Fields{
+	Logx(ctx).WithFields(LogFields{
 		"tsi.ResourceVersion":              tsi.ResourceVersion,
 		"tsi.ObjectMeta.DeletionTimestamp": tsi.ObjectMeta.DeletionTimestamp,
-	}).Debug("removeTSIFinalizers")
+	}).Trace("removeTSIFinalizers")
 
 	if tsi.HasTridentFinalizers() {
-		Logx(ctx).Debug("Has finalizers, removing them.")
+		Logx(ctx).Trace("Has finalizers, removing them.")
 		tsiCopy := tsi.DeepCopy()
 		tsiCopy.RemoveTridentFinalizers()
 		_, err = c.crdClientset.TridentV1().TridentSnapshotInfos(tsi.Namespace).Update(ctx, tsiCopy, updateOpts)
@@ -1879,7 +1892,7 @@ func (c *TridentCrdController) removeTSIFinalizers(
 			return
 		}
 	} else {
-		Logx(ctx).Debug("No finalizers to remove.")
+		Logx(ctx).Trace("No finalizers to remove.")
 	}
 
 	return

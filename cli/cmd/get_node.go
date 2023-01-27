@@ -74,7 +74,7 @@ func nodeList(nodeNames []string) error {
 func GetNodes() ([]string, error) {
 	url := BaseURL() + "/node"
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
@@ -94,7 +94,7 @@ func GetNodes() ([]string, error) {
 func GetNode(nodeName string) (*utils.Node, error) {
 	url := BaseURL() + "/node/" + nodeName
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {

@@ -9,14 +9,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 type GCPClient interface {
 	InvokeAPI(
 		ctx context.Context, requestBody []byte, method, gcpURL string,
 	) (*http.Response, []byte, error)
-	GetVersion(ctx context.Context) (*utils.Version, *utils.Version, error)
+	GetVersion(ctx context.Context) (*versionutils.Version, *versionutils.Version, error)
 	GetServiceLevels(ctx context.Context) (map[string]string, error)
 
 	GetVolumes(ctx context.Context) (*[]Volume, error)

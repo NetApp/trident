@@ -16,10 +16,10 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
-	log "github.com/sirupsen/logrus"
 
+	"github.com/netapp/trident/config"
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -134,7 +134,7 @@ func NewFakeStorageDriverWithPools(
 		Config: drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           drivers.ConfigVersion,
-				StorageDriverName: drivers.FakeStorageDriverName,
+				StorageDriverName: config.FakeStorageDriverName,
 			},
 			Protocol:              tridentconfig.File,
 			InstanceName:          "fake-instance",
@@ -165,7 +165,7 @@ func NewFakeStorageDriverWithDebugTraceFlags(debugTraceFlags map[string]bool) *S
 		Config: drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           drivers.ConfigVersion,
-				StorageDriverName: drivers.FakeStorageDriverName,
+				StorageDriverName: config.FakeStorageDriverName,
 				DebugTraceFlags:   debugTraceFlags,
 			},
 			Protocol:     tridentconfig.File,
@@ -191,7 +191,7 @@ func NewFakeStorageDriverConfigJSON(
 		&drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
-				StorageDriverName: drivers.FakeStorageDriverName,
+				StorageDriverName: config.FakeStorageDriverName,
 				StoragePrefixRaw:  json.RawMessage("\"\""),
 				StoragePrefix:     &prefix,
 			},
@@ -216,7 +216,7 @@ func NewFakeStorageDriverConfigJSONWithVirtualPools(
 		&drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
-				StorageDriverName: drivers.FakeStorageDriverName,
+				StorageDriverName: config.FakeStorageDriverName,
 				StoragePrefixRaw:  json.RawMessage("\"\""),
 				StoragePrefix:     &prefix,
 			},
@@ -240,7 +240,7 @@ func NewFakeStorageDriverConfigJSONWithDebugTraceFlags(
 		&drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 				Version:           1,
-				StorageDriverName: drivers.FakeStorageDriverName,
+				StorageDriverName: config.FakeStorageDriverName,
 				StoragePrefixRaw:  json.RawMessage("\"\""),
 				StoragePrefix:     &storagePrefix,
 				DebugTraceFlags:   debugTraceFlags,
@@ -256,7 +256,7 @@ func NewFakeStorageDriverConfigJSONWithDebugTraceFlags(
 }
 
 func (d *StorageDriver) Name() string {
-	return drivers.FakeStorageDriverName
+	return config.FakeStorageDriverName
 }
 
 // BackendName returns the name of the backend managed by this driver instance
@@ -339,7 +339,7 @@ func (d *StorageDriver) Initialize(
 		}
 
 		newVolume := d.Volumes[volume.Name]
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"Name":          newVolume.Name,
 			"Size":          newVolume.SizeBytes,
 			"RequestedPool": newVolume.RequestedPool,
@@ -363,11 +363,9 @@ func (d *StorageDriver) Terminate(context.Context, string) {
 func (d *StorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.FakeStorageDriverConfig,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "StorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> populateConfigurationDefaults")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< populateConfigurationDefaults")
-	}
+	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "StorageDriver"}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
 	if config.StoragePrefix == nil {
 		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
@@ -388,7 +386,7 @@ func (d *StorageDriver) populateConfigurationDefaults(
 		config.VolumeAccess = "192.0.2.1"
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"Size": config.Size,
 	}).Debugf("Configuration defaults")
 
@@ -531,11 +529,9 @@ func (d *StorageDriver) initializeStoragePools() error {
 
 // validate ensures the driver configuration and execution environment are valid and working
 func (d *StorageDriver) validate(ctx context.Context) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "StorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> validate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
-	}
+	fields := LogFields{"Method": "validate", "Type": "StorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
 	// Validate driver-level attributes
 
@@ -634,7 +630,7 @@ func (d *StorageDriver) Create(
 		d.DestroyedVolumes[name] = false
 		fakePool.Bytes -= sizeBytes
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"backend":       d.Config.InstanceName,
 			"name":          name,
 			"requestedPool": storagePool.Name(),
@@ -707,7 +703,7 @@ func (d *StorageDriver) BootstrapVolume(ctx context.Context, volume *storage.Vol
 		}
 	}
 
-	logFields := log.Fields{
+	logFields := LogFields{
 		"backend":       d.Config.InstanceName,
 		"name":          volume.Config.Name,
 		"requestedPool": volume.Pool,
@@ -774,7 +770,7 @@ func (d *StorageDriver) CreateClone(
 	d.DestroyedVolumes[name] = false
 	fakePool.Bytes -= sizeBytes
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":       d.Config.InstanceName,
 		"Name":          name,
 		"source":        sourceVolume.Name,
@@ -788,7 +784,7 @@ func (d *StorageDriver) CreateClone(
 }
 
 func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volumeConfig": volConfig,
 		"originalName": originalName,
 	}).Debug("Import")
@@ -809,7 +805,7 @@ func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeCon
 }
 
 func (d *StorageDriver) Rename(ctx context.Context, name, newName string) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":    name,
 		"newName": newName,
 	}).Debug("Rename")
@@ -845,7 +841,7 @@ func (d *StorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeCo
 	delete(d.Volumes, name)
 	delete(d.Snapshots, name)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":       d.Config.InstanceName,
 		"Name":          name,
 		"requestedPool": volume.RequestedPool,
@@ -917,16 +913,14 @@ func (d *StorageDriver) CreateSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateSnapshot",
-			"Type":         "StorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
+	fields := LogFields{
+		"Method":       "CreateSnapshot",
+		"Type":         "StorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
 	// Ensure source volume exists
 	volume, ok := d.Volumes[internalVolName]
@@ -960,7 +954,7 @@ func (d *StorageDriver) CreateSnapshot(
 	d.Snapshots[internalVolName][internalSnapName] = snapshot
 	d.DestroyedSnapshots[snapConfig.ID()] = false
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":      d.Config.InstanceName,
 		"snapshotName": internalSnapName,
 		"sourceVolume": internalVolName,
@@ -972,7 +966,7 @@ func (d *StorageDriver) CreateSnapshot(
 func (d *StorageDriver) BootstrapSnapshot(
 	ctx context.Context, snapshot *storage.Snapshot, volConfig *storage.VolumeConfig,
 ) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"backend":      d.Config.InstanceName,
 		"snapshotName": snapshot.Config.InternalName,
 		"sourceVolume": snapshot.Config.VolumeInternalName,
@@ -1300,15 +1294,14 @@ func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
 	}
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "ReconcileNodeAccess",
-			"Type":   "StorageDriver",
-			"Nodes":  nodeNames,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+
+	fields := LogFields{
+		"Method": "ReconcileNodeAccess",
+		"Type":   "StorageDriver",
+		"Nodes":  nodeNames,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
 	return nil
 }

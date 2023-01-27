@@ -5,8 +5,7 @@ package installer
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
+	"io"
 	"os"
 	"reflect"
 	"testing"
@@ -27,13 +26,14 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	. "github.com/netapp/trident/logging"
 	mockK8sClient "github.com/netapp/trident/mocks/mock_cli/mock_k8s_client"
-	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 
@@ -3057,13 +3057,13 @@ func TestPutDaemonSet(t *testing.T) {
 			Name: daemonSetName,
 		},
 	}
-	version, _ := utils.ParseSemantic("1.21.3")
+	version, _ := versionutils.ParseSemantic("1.21.3")
 	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
 		DaemonsetName:        daemonSetName,
 		ImagePullSecrets:     make([]string, 0),
 		Labels:               make(map[string]string),
 		ControllingCRDetails: make(map[string]string),
-		Debug:                false,
+		LogLevel:             "info",
 		Version:              version,
 	}
 	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAMLLinux(daemonSetArgs)
@@ -3203,13 +3203,13 @@ func TestPutDaemonSet_Windows(t *testing.T) {
 			Name: daemonSetName,
 		},
 	}
-	version, _ := utils.ParseSemantic("1.21.3")
+	version, _ := versionutils.ParseSemantic("1.21.3")
 	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
 		DaemonsetName:        daemonSetName,
 		ImagePullSecrets:     make([]string, 0),
 		Labels:               make(map[string]string),
 		ControllingCRDetails: make(map[string]string),
-		Debug:                false,
+		LogLevel:             "info",
 		Version:              version,
 	}
 	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAMLWindows(daemonSetArgs)
@@ -3666,13 +3666,13 @@ func TestPutDeployment(t *testing.T) {
 		},
 	}
 	appLabel := TridentCSILabel
-	version, _ := utils.ParseSemantic("1.21.3")
+	version, _ := versionutils.ParseSemantic("1.21.3")
 	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
 		DeploymentName:       deploymentName,
 		ImagePullSecrets:     make([]string, 0),
 		Labels:               make(map[string]string),
 		ControllingCRDetails: make(map[string]string),
-		Debug:                false,
+		LogLevel:             "info",
 		UseIPv6:              false,
 		SilenceAutosupport:   true,
 		Version:              version,

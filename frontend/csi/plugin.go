@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -22,7 +21,7 @@ import (
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -71,7 +70,8 @@ type Plugin struct {
 func NewControllerPlugin(
 	nodeName, endpoint, aesKeyFile string, orchestrator core.Orchestrator, helper *controllerhelpers.ControllerHelper,
 ) (*Plugin, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
+		LogLayerCSIFrontend)
 
 	p := &Plugin{
 		orchestrator:     orchestrator,
@@ -91,7 +91,7 @@ func NewControllerPlugin(
 	}
 
 	// Define controller capabilities
-	p.addControllerServiceCapabilities([]csi.ControllerServiceCapability_RPC_Type{
+	p.addControllerServiceCapabilities(ctx, []csi.ControllerServiceCapability_RPC_Type{
 		csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME,
 		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
 		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
@@ -103,7 +103,7 @@ func NewControllerPlugin(
 	})
 
 	// Define volume capabilities
-	p.addVolumeCapabilityAccessModes([]csi.VolumeCapability_AccessMode_Mode{
+	p.addVolumeCapabilityAccessModes(ctx, []csi.VolumeCapability_AccessMode_Mode{
 		csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
 		csi.VolumeCapability_AccessMode_SINGLE_NODE_READER_ONLY,
 		csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY,
@@ -119,7 +119,8 @@ func NewNodePlugin(
 	unsafeDetach bool, helper *nodehelpers.NodeHelper, enableForceDetach bool,
 	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime time.Duration,
 ) (*Plugin, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
+		LogLayerCSIFrontend)
 
 	msg := "Force detach feature %s"
 	if enableForceDetach {
@@ -183,7 +184,7 @@ func NewNodePlugin(
 		return nil, err
 	}
 	// Define volume capabilities
-	p.addVolumeCapabilityAccessModes(
+	p.addVolumeCapabilityAccessModes(ctx,
 		[]csi.VolumeCapability_AccessMode_Mode{
 			csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
 			csi.VolumeCapability_AccessMode_SINGLE_NODE_READER_ONLY,
@@ -204,7 +205,8 @@ func NewAllInOnePlugin(
 	controllerHelper *controllerhelpers.ControllerHelper, nodeHelper *nodehelpers.NodeHelper, unsafeDetach bool,
 	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime time.Duration,
 ) (*Plugin, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
+		LogLayerCSIFrontend)
 
 	p := &Plugin{
 		orchestrator:             orchestrator,
@@ -222,7 +224,7 @@ func NewAllInOnePlugin(
 	}
 
 	// Define controller capabilities
-	p.addControllerServiceCapabilities([]csi.ControllerServiceCapability_RPC_Type{
+	p.addControllerServiceCapabilities(ctx, []csi.ControllerServiceCapability_RPC_Type{
 		csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME,
 		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
 		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
@@ -259,7 +261,7 @@ func NewAllInOnePlugin(
 	}
 
 	// Define volume capabilities
-	p.addVolumeCapabilityAccessModes([]csi.VolumeCapability_AccessMode_Mode{
+	p.addVolumeCapabilityAccessModes(ctx, []csi.VolumeCapability_AccessMode_Mode{
 		csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
 		csi.VolumeCapability_AccessMode_SINGLE_NODE_READER_ONLY,
 		csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY,
@@ -272,7 +274,8 @@ func NewAllInOnePlugin(
 
 func (p *Plugin) Activate() error {
 	go func() {
-		ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
+		ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginActivate,
+			LogLayerCSIFrontend)
 		p.grpc = NewNonBlockingGRPCServer()
 
 		Logc(ctx).Info("Activating CSI frontend.")
@@ -286,7 +289,8 @@ func (p *Plugin) Activate() error {
 }
 
 func (p *Plugin) Deactivate() error {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginDeactivate,
+		LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Deactivating CSI frontend.")
 	p.grpc.GracefulStop()
@@ -305,11 +309,11 @@ func (p *Plugin) Version() string {
 	return tridentconfig.OrchestratorVersion.String()
 }
 
-func (p *Plugin) addControllerServiceCapabilities(cl []csi.ControllerServiceCapability_RPC_Type) {
+func (p *Plugin) addControllerServiceCapabilities(ctx context.Context, cl []csi.ControllerServiceCapability_RPC_Type) {
 	var csCap []*csi.ControllerServiceCapability
 
 	for _, c := range cl {
-		log.WithField("capability", c.String()).Info("Enabling controller service capability.")
+		Logc(ctx).WithField("capability", c.String()).Info("Enabling controller service capability.")
 		csCap = append(csCap, NewControllerServiceCapability(c))
 	}
 
@@ -320,18 +324,18 @@ func (p *Plugin) addNodeServiceCapabilities(cl []csi.NodeServiceCapability_RPC_T
 	var nsCap []*csi.NodeServiceCapability
 
 	for _, c := range cl {
-		log.WithField("capability", c.String()).Info("Enabling node service capability.")
+		Log().WithField("capability", c.String()).Info("Enabling node service capability.")
 		nsCap = append(nsCap, NewNodeServiceCapability(c))
 	}
 
 	p.nsCap = nsCap
 }
 
-func (p *Plugin) addVolumeCapabilityAccessModes(vc []csi.VolumeCapability_AccessMode_Mode) {
+func (p *Plugin) addVolumeCapabilityAccessModes(ctx context.Context, vc []csi.VolumeCapability_AccessMode_Mode) {
 	var vCap []*csi.VolumeCapability_AccessMode
 
 	for _, c := range vc {
-		log.WithField("mode", c.String()).Info("Enabling volume access mode.")
+		Logc(ctx).WithField("mode", c.String()).Info("Enabling volume access mode.")
 		vCap = append(vCap, NewVolumeCapabilityAccessMode(c))
 	}
 
@@ -391,7 +395,7 @@ func (p *Plugin) startISCSISelfHealingThread(ctx context.Context) {
 		p.iSCSISelfHealingWaitTime = time.Duration(1.5 * float64(p.iSCSISelfHealingInterval))
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"iSCSISelfHealingInterval": p.iSCSISelfHealingInterval,
 		"iSCSISelfHealingWaitTime": p.iSCSISelfHealingWaitTime,
 	}).Debugf(

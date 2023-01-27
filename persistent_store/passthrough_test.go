@@ -27,7 +27,7 @@ func getFakeBackendWithName(name string) *storage.StorageBackend {
 	fakeConfig := drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:           drivers.ConfigVersion,
-			StorageDriverName: drivers.FakeStorageDriverName,
+			StorageDriverName: config.FakeStorageDriverName,
 		},
 		Protocol:     config.File,
 		Pools:        testutils.GenerateFakePools(2),

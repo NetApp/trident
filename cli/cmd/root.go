@@ -22,6 +22,7 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 
 	// Load all auth plugins
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -86,6 +87,8 @@ var (
 	ExitCode            int
 
 	Debug                bool
+	useDebug             bool
+	LogLevel             string
 	Server               string
 	AutosupportCollector string
 	OutputFormat         string
@@ -94,21 +97,25 @@ var (
 	updateOpts = metav1.UpdateOptions{}
 	deleteOpts = metav1.DeleteOptions{}
 
-	ctx = context.TODO
+	ctx = context.Background
 )
+
+func init() {
+	RootCmd.PersistentFlags().StringVarP(&LogLevel, "log-level", "", "info", "Log level (trace, debug, warn, info, error, fatal")
+	RootCmd.PersistentFlags().BoolVarP(&useDebug, "debug", "d", false, "Set the log level to debug")
+	RootCmd.PersistentFlags().StringVarP(&Server, "server", "s", "", "Address/port of Trident REST interface (127.0.0.1 or [::1] only)")
+	RootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", "", "Output format. One of json|yaml|name|wide|ps (default)")
+	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
+}
 
 var RootCmd = &cobra.Command{
 	SilenceUsage: true,
 	Use:          "tridentctl",
 	Short:        "A CLI tool for NetApp Trident",
 	Long:         `A CLI tool for managing the NetApp Trident external storage provisioner for Kubernetes`,
-}
-
-func init() {
-	RootCmd.PersistentFlags().BoolVarP(&Debug, "debug", "d", false, "Debug output")
-	RootCmd.PersistentFlags().StringVarP(&Server, "server", "s", "", "Address/port of Trident REST interface (127.0.0.1 or [::1] only)")
-	RootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", "", "Output format. One of json|yaml|name|wide|ps (default)")
-	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initCmdLogging()
+	},
 }
 
 func discoverOperatingMode(_ *cobra.Command) error {
@@ -504,6 +511,7 @@ func TunnelCommand(commandArgs []string) {
 	if Debug {
 		cliCommand = append(cliCommand, "--debug")
 	}
+
 	if OutputFormat != "" {
 		cliCommand = append(cliCommand, []string{"--output", OutputFormat}...)
 	}
@@ -627,4 +635,16 @@ func kubeConfigPath() string {
 	}
 
 	return ""
+}
+
+func initCmdLogging() {
+	if useDebug {
+		LogLevel = "debug"
+	}
+
+	if err := InitLogLevel(LogLevel); err != nil {
+		Log().Fatalf("Could not initialize logging with level: %s.", LogLevel)
+	}
+
+	Debug = useDebug || IsLogLevelDebugOrHigher(LogLevel)
 }

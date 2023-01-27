@@ -8,10 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/zcalusic/sysinfo"
 	"golang.org/x/sys/unix"
+
+	. "github.com/netapp/trident/logging"
 )
 
 var chrootPath string
@@ -32,7 +33,7 @@ var systemCmd = &cobra.Command{
 		if chrootPath != "" {
 			err := unix.Chroot(chrootPath)
 			if err != nil {
-				log.WithFields(log.Fields{
+				Log().WithFields(LogFields{
 					"chrootPath": chrootPath,
 					"err":        err,
 				}).Error("Could not change root.")
@@ -45,7 +46,7 @@ var systemCmd = &cobra.Command{
 		si.GetSysInfo()
 		data, err := json.MarshalIndent(&si.OS, "", "  ")
 		if err != nil {
-			log.WithError(err).Error("Could not retrieve system info.")
+			Log().WithError(err).Error("Could not retrieve system info.")
 			return err
 		}
 		fmt.Println(string(data))

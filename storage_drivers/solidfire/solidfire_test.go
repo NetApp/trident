@@ -4,13 +4,12 @@ package solidfire
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
-
+	. "github.com/netapp/trident/logging"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
 	"github.com/netapp/trident/utils"
@@ -26,7 +25,7 @@ var ctx = context.Background
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 

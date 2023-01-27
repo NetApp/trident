@@ -12,13 +12,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	fakesnapshots "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned/fake"
-	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8s_fake "k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
@@ -70,25 +70,25 @@ func (o *TestingCache) addBackend(backend *tridentv1.TridentBackend) {
 }
 
 func (o *TestingCache) updateBackend(updatedBackend *tridentv1.TridentBackend) {
-	log.Debug(">>>> updateBackend")
-	defer log.Debug("<<<< updateBackend")
+	Log().Debug(">>>> updateBackend")
+	defer Log().Debug("<<<< updateBackend")
 	currentBackend := o.backendCache[updatedBackend.Name]
 	if !cmp.Equal(updatedBackend, currentBackend) {
 		if diff := cmp.Diff(currentBackend, updatedBackend); diff != "" {
-			log.Debugf("updated object fields (-old +new):%s", diff)
+			Log().Debugf("updated object fields (-old +new):%s", diff)
 			if currentBackend.ResourceVersion == "" {
 				currentBackend.ResourceVersion = "1"
 			}
 			if currentResourceVersion, err := strconv.Atoi(currentBackend.ResourceVersion); err == nil {
 				updatedBackend.ResourceVersion = strconv.Itoa(currentResourceVersion + 1)
 			}
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"currentBackend.ResourceVersion": currentBackend.ResourceVersion,
 				"updatedBackend.ResourceVersion": updatedBackend.ResourceVersion,
 			}).Debug("Incremented ResourceVersion.")
 		}
 	} else {
-		log.Debug("No difference, leaving ResourceVersion unchanged.")
+		Log().Debug("No difference, leaving ResourceVersion unchanged.")
 	}
 	o.backendCache[updatedBackend.Name] = updatedBackend
 }
@@ -317,13 +317,13 @@ func TestCrdController(t *testing.T) {
 	}
 	var crdName string
 	for _, backend := range backendList.Items {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"backend.Name":        backend.Name,
 			"backend.BackendName": backend.BackendName,
 			"backend.BackendUUID": backend.BackendUUID,
 		}).Debug("Checking.")
 		if backend.BackendName == fakeBackend.Name() {
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"backend.Name":        backend.Name,
 				"backend.BackendName": backend.BackendName,
 				"backend.BackendUUID": backend.BackendUUID,
@@ -370,7 +370,7 @@ func TestCrdController(t *testing.T) {
 
 	// validate it's gone
 	crdByName, getErr = crdClient.TridentV1().TridentBackends(tridentNamespace).Get(ctx(), crdName, getOpts)
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"crdByName": crdByName,
 		"getErr":    getErr,
 	}).Debug("Checking if backend CRD was deleted.")

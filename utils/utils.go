@@ -19,12 +19,11 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"go.uber.org/multierr"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 const (
@@ -254,7 +253,7 @@ func GetVolumeSizeBytes(ctx context.Context, opts map[string]string, defaultVolu
 	}
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"sizeBytes":         sizeBytes,
 		"size":              size,
 		"usingDefaultSize":  usingDefaultSize,
@@ -340,15 +339,20 @@ func StringInSlice(s string, list []string) bool {
 	return false
 }
 
-func LogHTTPRequest(request *http.Request, requestBody []byte, redactBody bool) {
+func LogHTTPRequest(request *http.Request, requestBody []byte, driverName string, redactBody, isDriverLog bool) {
 	header := ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	footer := "--------------------------------------------------------------------------------"
 
 	ctx := request.Context()
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	requestURL, err := url.Parse(request.URL.String())
 	if err != nil {
-		Logc(ctx).WithError(err).Errorf("Unable to parse URL '%s'", request.URL.String())
+		if isDriverLog {
+			Logd(ctx, driverName, true).WithError(err).Errorf("Unable to parse URL '%s'", request.URL.String())
+		} else {
+			Logc(ctx).WithError(err).Errorf("Unable to parse URL '%s'", request.URL.String())
+		}
 	}
 	requestURL.User = nil
 
@@ -369,11 +373,20 @@ func LogHTTPRequest(request *http.Request, requestBody []byte, redactBody bool) 
 		body = string(requestBody)
 	}
 
-	Logc(ctx).Debugf("\n%s\n%s %s\nHeaders: %v\nBody: %s\n%s",
-		header, request.Method, requestURL, headers, body, footer)
+	if isDriverLog {
+		Logd(ctx, driverName, true).Tracef("\n%s\n%s %s\nHeaders: %v\nBody: %s\n%s",
+			header, request.Method, requestURL, headers, body, footer)
+	} else {
+		Logc(ctx).Tracef("\n%s\n%s %s\nHeaders: %v\nBody: %s\n%s",
+			header, request.Method, requestURL, headers, body, footer)
+	}
 }
 
-func LogHTTPResponse(ctx context.Context, response *http.Response, responseBody []byte, redactBody bool) {
+func LogHTTPResponse(
+	ctx context.Context, response *http.Response, responseBody []byte, driverName string, redactBody, isDriverLog bool,
+) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	header := "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 	footer := "================================================================================"
 
@@ -393,8 +406,14 @@ func LogHTTPResponse(ctx context.Context, response *http.Response, responseBody 
 	} else {
 		body = string(responseBody)
 	}
-	Logc(ctx).Debugf("\n%s\nStatus: %s\nHeaders: %v\nBody: %s\n%s",
-		header, response.Status, headers, body, footer)
+
+	if isDriverLog {
+		Logd(ctx, driverName, true).Tracef("\n%s\nStatus: %s\nHeaders: %v\nBody: %s\n%s", header,
+			response.Status, headers, body, footer)
+	} else {
+		Logc(ctx).Tracef("\n%s\nStatus: %s\nHeaders: %v\nBody: %s\n%s", header,
+			response.Status, headers, body, footer)
+	}
 }
 
 type HTTPError struct {
@@ -567,7 +586,7 @@ func FilterIPs(ctx context.Context, ips, cidrs []string) ([]string, error) {
 	for _, ip := range ips {
 		parsedIP := net.ParseIP(ip)
 		for _, network := range networks {
-			fields := log.Fields{
+			fields := LogFields{
 				"IP":      ip,
 				"Network": network.String(),
 			}
@@ -846,7 +865,7 @@ func GenerateVolumePublishName(volumeID, nodeID string) string {
 func ToStringRedacted(structPointer interface{}, redactList []string, configVal interface{}) (out string) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Errorf("Panic in utils#ToStringRedacted; err: %v", r)
+			Log().Errorf("Panic in utils#ToStringRedacted; err: %v", r)
 			out = "<panic>"
 		}
 	}()

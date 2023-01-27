@@ -5,17 +5,19 @@ package utils
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+
+	. "github.com/netapp/trident/logging"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 // MockFs is a struct that embeds the afero in-memory filesystem, so that we can
@@ -64,12 +66,12 @@ var testCustomStringSlice = []CustomString{
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 
 func TestPow(t *testing.T) {
-	log.Debug("Running TestPow...")
+	Log().Debug("Running TestPow...")
 
 	if Pow(1024, 0) != 1 {
 		t.Error("Expected 1024^0 == 1")
@@ -89,7 +91,7 @@ func TestPow(t *testing.T) {
 }
 
 func TestConvertSizeToBytes(t *testing.T) {
-	log.Debug("Running TestConvertSizeToBytes...")
+	Log().Debug("Running TestConvertSizeToBytes...")
 
 	d := make(map[string]string)
 	d["512"] = "512"
@@ -114,7 +116,7 @@ func TestConvertSizeToBytes(t *testing.T) {
 }
 
 func TestGetV(t *testing.T) {
-	log.Debug("Running TestGetV...")
+	Log().Debug("Running TestGetV...")
 
 	d := make(map[string]string)
 	d["key1"] = "value1"
@@ -129,7 +131,7 @@ func TestGetV(t *testing.T) {
 }
 
 func TestVolumeSizeWithinTolerance(t *testing.T) {
-	log.Debug("Running TestVolumeSizeWithinTolerance...")
+	Log().Debug("Running TestVolumeSizeWithinTolerance...")
 
 	delta := int64(50000000) // 50mb
 
@@ -159,7 +161,7 @@ func TestVolumeSizeWithinTolerance(t *testing.T) {
 }
 
 func TestSliceContainsString(t *testing.T) {
-	log.Debug("Running TestSliceContainsString...")
+	Log().Debug("Running TestSliceContainsString...")
 
 	testCases := []struct {
 		Text           string
@@ -184,7 +186,7 @@ func TestSliceContainsString(t *testing.T) {
 }
 
 func TestSliceContains(t *testing.T) {
-	log.Debug("Running TestSliceContains...")
+	Log().Debug("Running TestSliceContains...")
 
 	testCases := []struct {
 		SliceName  interface{}
@@ -226,7 +228,7 @@ func TestSliceContains(t *testing.T) {
 }
 
 func TestSliceContainElements(t *testing.T) {
-	log.Debug("Running TestSliceContainElements...")
+	Log().Debug("Running TestSliceContainElements...")
 
 	testCases := []struct {
 		SliceName    interface{}
@@ -331,7 +333,7 @@ func TestSliceContainElements(t *testing.T) {
 }
 
 func TestRemoveStringFromSlice(t *testing.T) {
-	log.Debug("Running TestRemoveStringFromSlice...")
+	Log().Debug("Running TestRemoveStringFromSlice...")
 
 	slice := []string{
 		"foo",
@@ -361,7 +363,7 @@ func TestRemoveStringFromSlice(t *testing.T) {
 }
 
 func TestRemoveStringFromSliceConditionally(t *testing.T) {
-	log.Debug("Running TestRemoveStringFromSlice...")
+	Log().Debug("Running TestRemoveStringFromSlice...")
 
 	updatedSlice := make([]string, len(testStringSlice))
 	copy(updatedSlice, testStringSlice)
@@ -413,7 +415,7 @@ func TestRemoveStringFromSliceConditionally(t *testing.T) {
 }
 
 func TestSliceContainsStringCaseInsensitive(t *testing.T) {
-	log.Debug("Running TestSliceContainsStringCaseInsensitive...")
+	Log().Debug("Running TestSliceContainsStringCaseInsensitive...")
 
 	testCases := []struct {
 		Text           string
@@ -438,7 +440,7 @@ func TestSliceContainsStringCaseInsensitive(t *testing.T) {
 }
 
 func TestSliceContainsStringConditionally(t *testing.T) {
-	log.Debug("Running TestSliceContainsStringConditionally...")
+	Log().Debug("Running TestSliceContainsStringConditionally...")
 
 	testCases := []struct {
 		Text           string
@@ -467,7 +469,7 @@ func TestSliceContainsStringConditionally(t *testing.T) {
 }
 
 func TestSplitImageDomain(t *testing.T) {
-	log.Debug("Running TestSplitImageDomain...")
+	Log().Debug("Running TestSplitImageDomain...")
 
 	domain, remainder := SplitImageDomain("netapp/trident:19.10.0")
 	assert.Equal(t, "", domain)
@@ -483,7 +485,7 @@ func TestSplitImageDomain(t *testing.T) {
 }
 
 func TestReplaceImageRegistry(t *testing.T) {
-	log.Debug("Running ReplaceImageRegistry...")
+	Log().Debug("Running ReplaceImageRegistry...")
 
 	image := ReplaceImageRegistry("netapp/trident:19.10.0", "")
 	assert.Equal(t, "netapp/trident:19.10.0", image)
@@ -496,7 +498,7 @@ func TestReplaceImageRegistry(t *testing.T) {
 }
 
 func TestFilterIPs(t *testing.T) {
-	log.Debug("Running TestFilterIPs...")
+	Log().Debug("Running TestFilterIPs...")
 
 	inputIPs := []string{
 		"10.100.0.2", "192.168.0.1", "192.168.0.2", "10.100.0.1",
@@ -577,7 +579,7 @@ text
 `
 
 func TestGetYAMLTagWithSpaceCount(t *testing.T) {
-	log.Debug("Running TestGetYAMLTagWithSpaceCount...")
+	Log().Debug("Running TestGetYAMLTagWithSpaceCount...")
 
 	tagWithSpaces, spaces := GetYAMLTagWithSpaceCount(inputString, "REPLACE-1")
 	assert.Equal(t, tagWithSpaces, "{REPLACE-1}\n")
@@ -603,7 +605,7 @@ func TestGetYAMLTagWithSpaceCount(t *testing.T) {
 }
 
 func TestCountSpacesBeforeText(t *testing.T) {
-	log.Debug("Running TestCountSpacesBeforeText...")
+	Log().Debug("Running TestCountSpacesBeforeText...")
 
 	type TextWithSpaces struct {
 		Text   string
@@ -625,7 +627,7 @@ func TestCountSpacesBeforeText(t *testing.T) {
 }
 
 func TestGetNFSVersionFromMountOptions(t *testing.T) {
-	log.Debug("Running TestGetNFSVersionFromMountOptions...")
+	Log().Debug("Running TestGetNFSVersionFromMountOptions...")
 
 	defaultVersion := "3"
 	supportedVersions := []string{"3", "4", "4.1"}
@@ -669,7 +671,7 @@ func TestGetNFSVersionFromMountOptions(t *testing.T) {
 }
 
 func TestGetNFSVersionMountOptions(t *testing.T) {
-	log.Debug("Running TestGetNFSVersionMountOptions...")
+	Log().Debug("Running TestGetNFSVersionMountOptions...")
 
 	tests := []struct {
 		mountOptions    string
@@ -702,7 +704,7 @@ func TestGetNFSVersionMountOptions(t *testing.T) {
 }
 
 func TestSetNFSVersionMountOptions(t *testing.T) {
-	log.Debug("Running TestSetNFSVersionMountOptions...")
+	Log().Debug("Running TestSetNFSVersionMountOptions...")
 
 	tests := []struct {
 		mountOptions      string
@@ -746,7 +748,7 @@ defaults {
 `
 
 func TestGetFindMultipathValue(t *testing.T) {
-	log.Debug("Running TestGetFindMultipathValue...")
+	Log().Debug("Running TestGetFindMultipathValue...")
 
 	findMultipathsValue := GetFindMultipathValue(multipathConf)
 	assert.Equal(t, "no", findMultipathsValue)
@@ -813,7 +815,7 @@ func TestGetFindMultipathValue(t *testing.T) {
 }
 
 func TestSplitString(t *testing.T) {
-	log.Debug("Running TestSplitString...")
+	Log().Debug("Running TestSplitString...")
 
 	ctx := context.TODO()
 
@@ -869,7 +871,7 @@ func TestReplaceAtIndex(t *testing.T) {
 }
 
 func TestMinInt64(t *testing.T) {
-	log.Debug("Running TestMinInt64...")
+	Log().Debug("Running TestMinInt64...")
 	assert.Equal(t, int64(2), MinInt64(2, 3))
 	assert.Equal(t, int64(2), MinInt64(3, 2))
 	assert.Equal(t, int64(-2), MinInt64(-2, 3))
@@ -978,14 +980,14 @@ func TestValidateOctalUnixPermissions(t *testing.T) {
 
 func TestMustParseMajorMinorVersion(t *testing.T) {
 	majorMinor := "v1.23"
-	majorMinorVersion := MustParseSemantic(majorMinor + ".0").ToMajorMinorVersion()
+	majorMinorVersion := versionutils.MustParseSemantic(majorMinor + ".0").ToMajorMinorVersion()
 	invalid := "v1.23.0"
 	majorOnly := "v1"
 
-	assert.Equal(t, majorMinorVersion, MustParseMajorMinorVersion(majorMinor))
-	assert.Panics(t, func() { MustParseMajorMinorVersion(invalid) }, "a version including the patch version"+
+	assert.Equal(t, majorMinorVersion, versionutils.MustParseMajorMinorVersion(majorMinor))
+	assert.Panics(t, func() { versionutils.MustParseMajorMinorVersion(invalid) }, "a version including the patch version"+
 		" should cause a panic")
-	assert.Panics(t, func() { MustParseMajorMinorVersion(majorOnly) }, "a version consisting of only the"+
+	assert.Panics(t, func() { versionutils.MustParseMajorMinorVersion(majorOnly) }, "a version consisting of only the"+
 		" major version should cause a panic")
 }
 
@@ -1075,7 +1077,7 @@ func TestRedactSecretsFromString(t *testing.T) {
 }
 
 func TestGetVerifiedBlockFsType(t *testing.T) {
-	log.Debug("Running TestGetVerifiedBlockFsType...")
+	Log().Debug("Running TestGetVerifiedBlockFsType...")
 
 	tests := []struct {
 		blockFsType string
@@ -1105,7 +1107,7 @@ func TestGetVerifiedBlockFsType(t *testing.T) {
 }
 
 func TestVerifyFilesystemSupport(t *testing.T) {
-	log.Debug("Running TestVerifyFilesystemSupport...")
+	Log().Debug("Running TestVerifyFilesystemSupport...")
 
 	tests := []struct {
 		fsType       string
@@ -1139,7 +1141,7 @@ func TestVerifyFilesystemSupport(t *testing.T) {
 }
 
 func TestAppendToStringList(t *testing.T) {
-	log.Debug("Running TestAppendToStringList...")
+	Log().Debug("Running TestAppendToStringList...")
 
 	tests := []struct {
 		stringList    string
@@ -1181,7 +1183,7 @@ func TestAppendToStringList(t *testing.T) {
 }
 
 func TestSanitizeMountOptions(t *testing.T) {
-	log.Debug("Running TestSanitizeMountOptions...")
+	Log().Debug("Running TestSanitizeMountOptions...")
 
 	tests := []struct {
 		mountOptions          string
@@ -1206,7 +1208,7 @@ func TestSanitizeMountOptions(t *testing.T) {
 }
 
 func TestAreMountOptionsInList(t *testing.T) {
-	log.Debug("Running TestAreMountOptionsInList...")
+	Log().Debug("Running TestAreMountOptionsInList...")
 
 	tests := []struct {
 		mountOptions string
@@ -1435,7 +1437,7 @@ func TestEnsureHostportFormatted(t *testing.T) {
 }
 
 func TestTitle(t *testing.T) {
-	log.Debug("Running TestTitle...")
+	Log().Debug("Running TestTitle...")
 
 	testCases := []struct {
 		Text           string

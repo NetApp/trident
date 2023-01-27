@@ -71,7 +71,7 @@ func triggerAutosupport(since string) error {
 		url += "?since=" + since
 	}
 
-	response, responseBody, err := api.InvokeRESTAPI("POST", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("POST", url, nil)
 	if err != nil {
 		return err
 	} else if response.StatusCode != http.StatusCreated {

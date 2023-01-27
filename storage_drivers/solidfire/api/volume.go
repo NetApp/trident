@@ -12,7 +12,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 

@@ -3,10 +3,12 @@
 package cmd
 
 import (
+	"context"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	. "github.com/netapp/trident/logging"
 )
 
 func init() {
@@ -46,7 +48,7 @@ func deleteAlphaSnapshotCRDs() error {
 
 	for _, crdName := range crdNames {
 
-		logFields := log.Fields{"CRD": crdName}
+		logFields := LogFields{"CRD": crdName}
 
 		// See if CRD exists
 		exists, err := k8sClient.CheckCRDExists(crdName)
@@ -54,7 +56,7 @@ func deleteAlphaSnapshotCRDs() error {
 			return err
 		}
 		if !exists {
-			log.WithFields(logFields).Info("CRD not present.")
+			Logc(context.Background()).WithFields(logFields).Info("CRD not present.")
 			continue
 		}
 
@@ -74,15 +76,15 @@ func deleteAlphaSnapshotCRDs() error {
 		}
 
 		if !alpha {
-			log.WithFields(logFields).Info("CRD is not alpha")
+			Log().WithFields(logFields).Info("CRD is not alpha")
 			continue
 		}
 
-		log.WithFields(logFields).Debug("Deleting CRD.")
+		Log().WithFields(logFields).Debug("Deleting CRD.")
 
 		// Try deleting CRD
 		if err = k8sClient.DeleteCRD(crdName); err != nil {
-			log.WithFields(logFields).Errorf("Could not delete CRD; %v", err)
+			Log().WithFields(logFields).Errorf("Could not delete CRD; %v", err)
 			return err
 		}
 
@@ -90,28 +92,28 @@ func deleteAlphaSnapshotCRDs() error {
 		if exists, err = k8sClient.CheckCRDExists(crdName); err != nil {
 			return err
 		} else if !exists {
-			log.WithFields(logFields).Info("CRD deleted.")
+			Log().WithFields(logFields).Info("CRD deleted.")
 			continue
 		}
 
-		log.WithFields(logFields).Debug("CRD still present, must remove finalizers.")
+		Log().WithFields(logFields).Debug("CRD still present, must remove finalizers.")
 
 		// Remove finalizer
 		if err = k8sClient.RemoveFinalizerFromCRD(crdName); err != nil {
-			log.WithFields(logFields).Errorf("Could not remove finalizer from CRD; %v", err)
+			Log().WithFields(logFields).Errorf("Could not remove finalizer from CRD; %v", err)
 			return err
 		} else {
-			log.WithFields(logFields).Debug("Removed finalizer from CRD.")
+			Log().WithFields(logFields).Debug("Removed finalizer from CRD.")
 		}
 
 		// Check if removing the finalizer allowed the CRD to be deleted
 		if exists, err = k8sClient.CheckCRDExists(crdName); err != nil {
 			return err
 		} else if !exists {
-			log.WithFields(logFields).Info("CRD deleted after removing finalizers.")
+			Log().WithFields(logFields).Info("CRD deleted after removing finalizers.")
 			continue
 		} else {
-			log.WithFields(logFields).Error("CRD still not deleted after removing finalizers.")
+			Log().WithFields(logFields).Error("CRD still not deleted after removing finalizers.")
 		}
 	}
 

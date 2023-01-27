@@ -5,15 +5,14 @@ package v1
 import (
 	"testing"
 
-	log "github.com/sirupsen/logrus"
-
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
 func init() {
 	testing.Init()
 	if *debug {
-		log.SetLevel(log.DebugLevel)
+		_ = InitLogLevel("debug")
 	}
 }
 

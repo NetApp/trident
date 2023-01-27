@@ -6,8 +6,7 @@ import (
 	"fmt"
 
 	"github.com/netapp/trident/config"
-
-	tridentutils "github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 type Platform string
@@ -40,7 +39,7 @@ var (
 	// BuildImage is the Trident Operator image that was built
 	BuildImage = "docker.io/netapp/trident-operator:" + operatorVersion + "-custom.0"
 
-	OperatorVersion = tridentutils.MustParseDate(Version())
+	OperatorVersion = versionutils.MustParseDate(Version())
 )
 
 func Version() string {

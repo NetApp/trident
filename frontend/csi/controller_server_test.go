@@ -108,9 +108,9 @@ func TestControllerPublishVolume(t *testing.T) {
 	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
 	fakeNode := generateFakeNode(req.NodeId)
 
-	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
-	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
-	mockOrchestrator.EXPECT().PublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil)
+	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), req.VolumeId).Return(fakeVolumeExternal, nil)
+	mockOrchestrator.EXPECT().GetNode(gomock.Any(), req.NodeId).Return(fakeNode, nil)
+	mockOrchestrator.EXPECT().PublishVolume(gomock.Any(), req.VolumeId, gomock.Any()).Return(nil)
 
 	publishResponse, err := controllerServer.ControllerPublishVolume(ctx, req)
 	assert.Nilf(t, err, "unexpected error publishing volume; %v", err)
@@ -135,9 +135,9 @@ func TestControllerPublishVolume_BlockProtocol(t *testing.T) {
 	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
 	fakeVolumeExternal.Config.Protocol = tridentconfig.Block
 
-	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
-	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
-	mockOrchestrator.EXPECT().PublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil)
+	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), req.VolumeId).Return(fakeVolumeExternal, nil)
+	mockOrchestrator.EXPECT().GetNode(gomock.Any(), req.NodeId).Return(fakeNode, nil)
+	mockOrchestrator.EXPECT().PublishVolume(gomock.Any(), req.VolumeId, gomock.Any()).Return(nil)
 
 	publishResponse, err := controllerServer.ControllerPublishVolume(ctx, req)
 	assert.Nilf(t, err, "unexpected error publishing volume; %v", err)
@@ -172,7 +172,7 @@ func TestControllerUnpublishVolume(t *testing.T) {
 	// Create fake objects for this test
 	req := generateFakeUnpublishVolumeRequest()
 
-	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil)
+	mockOrchestrator.EXPECT().UnpublishVolume(gomock.Any(), req.VolumeId, gomock.Any()).Return(nil)
 
 	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
 	assert.Nil(t, err, "unexpected error unpublishing volume")
@@ -191,7 +191,7 @@ func TestControllerUnpublishVolume_NotFoundErrors(t *testing.T) {
 	req := generateFakeUnpublishVolumeRequest()
 
 	// Simulate an error during volume unpublishing
-	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(utils.NotFoundError("not found"))
+	mockOrchestrator.EXPECT().UnpublishVolume(gomock.Any(), req.VolumeId, gomock.Any()).Return(utils.NotFoundError("not found"))
 
 	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
 	assert.Nil(t, err, "unexpected error unpublishing volume")

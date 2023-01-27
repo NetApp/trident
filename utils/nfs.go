@@ -6,9 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
-
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // AttachNFSVolume attaches the volume to the local host.
@@ -21,7 +19,7 @@ func AttachNFSVolume(ctx context.Context, name, mountpoint string, publishInfo *
 	exportPath := fmt.Sprintf("%s:%s", publishInfo.NfsServerIP, publishInfo.NfsPath)
 	options := publishInfo.MountOptions
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volume":     name,
 		"exportPath": exportPath,
 		"mountpoint": mountpoint,

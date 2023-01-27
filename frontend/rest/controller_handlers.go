@@ -13,13 +13,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
+	"github.com/netapp/trident/frontend/common"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	k8shelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
@@ -73,7 +73,7 @@ func writeHTTPResponse(ctx context.Context, w http.ResponseWriter, response inte
 	// we're already marshaling the json, so just use the resulting byte array later
 	b, err := json.Marshal(response)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"response": response,
 			"error":    err,
 		}).Error("Failed to marshal HTTP response.")
@@ -83,7 +83,7 @@ func writeHTTPResponse(ctx context.Context, w http.ResponseWriter, response inte
 
 	w.WriteHeader(httpStatusCode)
 	if _, err := w.Write(b); err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"response": response,
 			"error":    err,
 		}).Error("Failed to write HTTP response.")
@@ -230,14 +230,14 @@ func (r *AddBackendResponse) isError() bool {
 }
 
 func (r *AddBackendResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend": r.BackendID,
 		"handler": "AddBackend",
 	}).Info("Added a new backend.")
 }
 
 func (r *AddBackendResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend": r.BackendID,
 		"handler": "AddBackend",
 	}).Error(r.Error)
@@ -254,7 +254,9 @@ func GetVersion(w http.ResponseWriter, r *http.Request) {
 	GetGeneric(w, r, response,
 		func(map[string]string) int {
 			response.GoVersion = runtime.Version()
-			version, err := orchestrator.GetVersion(r.Context())
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowCoreVersion,
+				LogLayerRESTFrontend)
+			version, err := orchestrator.GetVersion(ctx)
 			if err != nil {
 				response.Error = err.Error()
 			}
@@ -268,7 +270,9 @@ func AddBackend(w http.ResponseWriter, r *http.Request) {
 	response := &AddBackendResponse{}
 	AddGeneric(w, r, response,
 		func(body []byte) int {
-			backend, err := orchestrator.AddBackend(r.Context(), string(body), "")
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendCreate,
+				LogLayerRESTFrontend)
+			backend, err := orchestrator.AddBackend(ctx, string(body), "")
 			if err != nil {
 				response.setError(err)
 			}
@@ -294,14 +298,14 @@ func (r *UpdateBackendResponse) isError() bool {
 }
 
 func (r *UpdateBackendResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend": r.BackendID,
 		"handler": "UpdateBackend",
 	}).Info("Updated a backend.")
 }
 
 func (r *UpdateBackendResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend": r.BackendID,
 		"handler": "UpdateBackend",
 	}).Error(r.Error)
@@ -311,12 +315,14 @@ func UpdateBackend(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateBackendResponse{}
 	UpdateGeneric(w, r, response,
 		func(w http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte) int {
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendUpdate,
+				LogLayerRESTFrontend)
 			updateResponse, ok := response.(*UpdateBackendResponse)
 			if !ok {
 				response.setError(fmt.Errorf("response object must be of type UpdateBackendResponse"))
 				return http.StatusInternalServerError
 			}
-			backend, err := orchestrator.UpdateBackend(r.Context(), vars["backend"], string(body), "")
+			backend, err := orchestrator.UpdateBackend(ctx, vars["backend"], string(body), "")
 			if err != nil {
 				updateResponse.Error = err.Error()
 			}
@@ -343,7 +349,9 @@ func UpdateBackendState(w http.ResponseWriter, r *http.Request) {
 				updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
 				return httpStatusCodeForGetUpdateList(err)
 			}
-			backend, err := orchestrator.UpdateBackendState(r.Context(), vars["backend"], request.State)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendUpdate,
+				LogLayerRESTFrontend)
+			backend, err := orchestrator.UpdateBackendState(ctx, vars["backend"], request.State)
 			if err != nil {
 				updateResponse.Error = err.Error()
 			}
@@ -369,7 +377,9 @@ func ListBackends(w http.ResponseWriter, r *http.Request) {
 	ListGeneric(w, r, response,
 		func(_ map[string]string) int {
 			backendNames := make([]string, 0)
-			backends, err := orchestrator.ListBackends(r.Context())
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendList,
+				LogLayerRESTFrontend)
+			backends, err := orchestrator.ListBackends(ctx)
 			if err != nil {
 				Logc(r.Context()).Errorf("ListBackends: %v", err)
 				response.Error = err.Error()
@@ -403,10 +413,12 @@ func GetBackend(w http.ResponseWriter, r *http.Request) {
 			backend := vars["backend"]
 			var result *storage.BackendExternal
 			var err error
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendGet,
+				LogLayerRESTFrontend)
 			if IsValidUUID(backend) {
-				result, err = orchestrator.GetBackendByBackendUUID(r.Context(), backend)
+				result, err = orchestrator.GetBackendByBackendUUID(ctx, backend)
 			} else {
-				result, err = orchestrator.GetBackend(r.Context(), backend)
+				result, err = orchestrator.GetBackend(ctx, backend)
 			}
 
 			if err != nil {
@@ -424,6 +436,8 @@ func GetBackend(w http.ResponseWriter, r *http.Request) {
 // conditions and the additional bookkeeping that would be required.
 func DeleteBackend(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
+		ctx = GenerateRequestContext(r.Context(), "", "", WorkflowBackendDelete,
+			LogLayerRESTFrontend)
 		return orchestrator.DeleteBackend(ctx, vars["backend"])
 	})
 }
@@ -442,14 +456,14 @@ func (a *AddVolumeResponse) isError() bool {
 }
 
 func (a *AddVolumeResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "AddVolume",
 		"backend": a.BackendID,
 	}).Info("Added a new volume.")
 }
 
 func (a *AddVolumeResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "AddVolume",
 	}).Error(a.Error)
 }
@@ -468,7 +482,9 @@ func AddVolume(w http.ResponseWriter, r *http.Request) {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			volume, err := orchestrator.AddVolume(r.Context(), volumeConfig)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeCreate,
+				LogLayerRESTFrontend)
+			volume, err := orchestrator.AddVolume(ctx, volumeConfig)
 			if err != nil {
 				response.setError(err)
 			}
@@ -501,14 +517,16 @@ func ListVolumes(w http.ResponseWriter, r *http.Request) {
 
 			volumeNames := make([]string, 0)
 
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeList,
+				LogLayerRESTFrontend)
+
 			if r.URL.Query().Has("subordinateOf") {
-				volumes, err = orchestrator.ListSubordinateVolumes(r.Context(), r.URL.Query().Get("subordinateOf"))
+				volumes, err = orchestrator.ListSubordinateVolumes(ctx, r.URL.Query().Get("subordinateOf"))
 			} else if r.URL.Query().Has("parentOfSubordinate") {
-				volume, err = orchestrator.GetSubordinateSourceVolume(r.Context(),
-					r.URL.Query().Get("parentOfSubordinate"))
+				volume, err = orchestrator.GetSubordinateSourceVolume(ctx, r.URL.Query().Get("parentOfSubordinate"))
 				volumes = append(volumes, volume)
 			} else {
-				volumes, err = orchestrator.ListVolumes(r.Context())
+				volumes, err = orchestrator.ListVolumes(ctx)
 			}
 
 			if err != nil {
@@ -534,7 +552,9 @@ func GetVolume(w http.ResponseWriter, r *http.Request) {
 	response := &GetVolumeResponse{}
 	GetGeneric(w, r, response,
 		func(vars map[string]string) int {
-			volume, err := orchestrator.GetVolume(r.Context(), vars["volume"])
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeGet,
+				LogLayerRESTFrontend)
+			volume, err := orchestrator.GetVolume(ctx, vars["volume"])
 			if err != nil {
 				response.Error = err.Error()
 			} else {
@@ -547,6 +567,8 @@ func GetVolume(w http.ResponseWriter, r *http.Request) {
 
 func DeleteVolume(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
+		ctx = GenerateRequestContext(r.Context(), "", "", WorkflowVolumeDelete,
+			LogLayerRESTFrontend)
 		return orchestrator.DeleteVolume(ctx, vars["volume"])
 	})
 }
@@ -565,13 +587,13 @@ func (r *UpdateVolumeResponse) isError() bool {
 }
 
 func (r *UpdateVolumeResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "UpdateVolume",
 	}).Info("Updated a volume.")
 }
 
 func (r *UpdateVolumeResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "UpdateVolume",
 	}).Error(r.Error)
 }
@@ -632,20 +654,20 @@ func (i *ImportVolumeResponse) isError() bool {
 
 func (i *ImportVolumeResponse) logSuccess(ctx context.Context) {
 	if i.Volume != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"handler":     "ImportVolume",
 			"backendUUID": i.Volume.BackendUUID,
 			"volume":      i.Volume.Config.Name,
 		}).Info("Imported an existing volume.")
 	} else {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"handler": "ImportVolume",
 		}).Info("Imported an existing volume.")
 	}
 }
 
 func (i *ImportVolumeResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "ImportVolume",
 	}).Error(i.Error)
 }
@@ -664,7 +686,9 @@ func ImportVolume(w http.ResponseWriter, r *http.Request) {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			k8sFrontend, err := orchestrator.GetFrontend(r.Context(), controllerhelpers.KubernetesHelper)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeImport,
+				LogLayerRESTFrontend)
+			k8sFrontend, err := orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
 			if err != nil {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
@@ -675,7 +699,7 @@ func ImportVolume(w http.ResponseWriter, r *http.Request) {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			volume, err := k8s.ImportVolume(r.Context(), importVolumeRequest)
+			volume, err := k8s.ImportVolume(ctx, importVolumeRequest)
 			if err != nil {
 				response.setError(err)
 			}
@@ -701,14 +725,14 @@ func (i *UpgradeVolumeResponse) isError() bool {
 }
 
 func (i *UpgradeVolumeResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "UpgradeVolume",
 		"volume":  i.Volume.Config.Name,
 	}).Info("Upgraded an existing volume.")
 }
 
 func (i *UpgradeVolumeResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "UpgradeVolume",
 	}).Error(i.Error)
 }
@@ -732,7 +756,9 @@ func UpgradeVolume(w http.ResponseWriter, r *http.Request) {
 				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			k8sHelperFrontend, err := orchestrator.GetFrontend(r.Context(), controllerhelpers.KubernetesHelper)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeUpgrade,
+				LogLayerRESTFrontend)
+			k8sHelperFrontend, err := orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
 			if err != nil {
 				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
@@ -744,7 +770,7 @@ func UpgradeVolume(w http.ResponseWriter, r *http.Request) {
 				return httpStatusCodeForAdd(err)
 			}
 
-			volume, err := k8sHelper.UpgradeVolume(r.Context(), upgradeVolumeRequest)
+			volume, err := k8sHelper.UpgradeVolume(ctx, upgradeVolumeRequest)
 			if err != nil {
 				updateResponse.Error = err.Error()
 			}
@@ -770,14 +796,14 @@ func (a *AddStorageClassResponse) isError() bool {
 }
 
 func (a *AddStorageClassResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler":      "AddStorageClass",
 		"storageClass": a.StorageClassID,
 	}).Info("Added a new storage class.")
 }
 
 func (a *AddStorageClassResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler":      "AddStorageClass",
 		"storageClass": a.StorageClassID,
 	}).Error(a.Error)
@@ -796,7 +822,10 @@ func AddStorageClass(w http.ResponseWriter, r *http.Request) {
 				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
 				return httpStatusCodeForAdd(err)
 			}
-			sc, err := orchestrator.AddStorageClass(r.Context(), scConfig)
+
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassCreate,
+				LogLayerRESTFrontend)
+			sc, err := orchestrator.AddStorageClass(ctx, scConfig)
 			if err != nil {
 				response.setError(err)
 			}
@@ -822,7 +851,9 @@ func ListStorageClasses(w http.ResponseWriter, r *http.Request) {
 	ListGeneric(w, r, response,
 		func(_ map[string]string) int {
 			storageClassNames := make([]string, 0)
-			storageClasses, err := orchestrator.ListStorageClasses(r.Context())
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassList,
+				LogLayerRESTFrontend)
+			storageClasses, err := orchestrator.ListStorageClasses(ctx)
 			if err != nil {
 				response.Error = err.Error()
 			} else if len(storageClasses) > 0 {
@@ -846,7 +877,9 @@ func GetStorageClass(w http.ResponseWriter, r *http.Request) {
 	response := &GetStorageClassResponse{}
 	GetGeneric(w, r, response,
 		func(vars map[string]string) int {
-			storageClass, err := orchestrator.GetStorageClass(r.Context(), vars["storageClass"])
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassList,
+				LogLayerRESTFrontend)
+			storageClass, err := orchestrator.GetStorageClass(ctx, vars["storageClass"])
 			if err != nil {
 				response.Error = err.Error()
 			} else {
@@ -859,6 +892,8 @@ func GetStorageClass(w http.ResponseWriter, r *http.Request) {
 
 func DeleteStorageClass(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
+		ctx = GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassDelete,
+			LogLayerRESTFrontend)
 		return orchestrator.DeleteStorageClass(ctx, vars["storageClass"])
 	})
 }
@@ -882,14 +917,14 @@ func (a *AddNodeResponse) setTopologyLabels(payload map[string]string) {
 }
 
 func (a *AddNodeResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "AddOrUpdateNode",
 		"node":    a.Name,
 	}).Info("Added a new node.")
 }
 
 func (a *AddNodeResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "AddOrUpdateNode",
 		"node":    a.Name,
 	}).Error(a.Error)
@@ -919,9 +954,11 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 			}
 
 			var csiFrontend frontend.Plugin
-			csiFrontend, err = orchestrator.GetFrontend(r.Context(), controllerhelpers.KubernetesHelper)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowNodeCreate,
+				LogLayerRESTFrontend)
+			csiFrontend, err = orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
 			if err != nil {
-				csiFrontend, err = orchestrator.GetFrontend(r.Context(), controllerhelpers.PlainCSIHelper)
+				csiFrontend, err = orchestrator.GetFrontend(ctx, controllerhelpers.PlainCSIHelper)
 			}
 			if err != nil {
 				err = fmt.Errorf("could not get CSI helper frontend")
@@ -935,7 +972,7 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			topologyLabels, err := helper.GetNodeTopologyLabels(r.Context(), node.Name)
+			topologyLabels, err := helper.GetNodeTopologyLabels(ctx, node.Name)
 			if err != nil {
 				updateResponse.setError(err)
 				return httpStatusCodeForAdd(err)
@@ -947,9 +984,9 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 				topologyLabels)
 
 			nodeEventCallback := func(eventType, reason, message string) {
-				helper.RecordNodeEvent(r.Context(), node.Name, eventType, reason, message)
+				helper.RecordNodeEvent(ctx, node.Name, eventType, reason, message)
 			}
-			err = orchestrator.AddNode(r.Context(), node, nodeEventCallback)
+			err = orchestrator.AddNode(ctx, node, nodeEventCallback)
 			if err != nil {
 				response.setError(err)
 			}
@@ -1048,13 +1085,13 @@ func (r *VolumePublicationsResponse) isError() bool {
 }
 
 func (r *VolumePublicationsResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "UpdateVolumePublication",
 	}).Info("Updated a volume publication.")
 }
 
 func (r *VolumePublicationsResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "UpdateVolumePublication",
 	}).Error(r.Error)
 }
@@ -1144,13 +1181,13 @@ func (r *UpdateVolumePublicationResponse) isError() bool {
 }
 
 func (r *UpdateVolumePublicationResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "UpdateVolumePublication",
 	}).Info("Updated a volume publication.")
 }
 
 func (r *UpdateVolumePublicationResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"handler": "UpdateVolumePublication",
 	}).Error(r.Error)
 }
@@ -1263,14 +1300,14 @@ func (r *AddSnapshotResponse) isError() bool {
 }
 
 func (r *AddSnapshotResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshot": r.SnapshotID,
 		"handler":  "AddSnapshot",
 	}).Info("Added a new volume snapshot.")
 }
 
 func (r *AddSnapshotResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshot": r.SnapshotID,
 		"handler":  "AddSnapshot",
 	}).Error(r.Error)
@@ -1321,6 +1358,165 @@ func GetCHAP(w http.ResponseWriter, r *http.Request) {
 				response.Error = err.Error()
 			}
 			response.CHAP = chapInfo
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+func GetCurrentLogLevel(w http.ResponseWriter, r *http.Request) {
+	response := &common.GetLogLevelResponse{}
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			logLevel, err := orchestrator.GetLogLevel(r.Context())
+			if err != nil {
+				response.Error = err.Error()
+			}
+			response.LogLevel = logLevel
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+type ConfigureLoggingResponse struct {
+	Error string `json:"error"`
+}
+
+func (r *ConfigureLoggingResponse) setError(err error) {
+	r.Error = err.Error()
+}
+
+func (r *ConfigureLoggingResponse) isError() bool {
+	return r.Error != ""
+}
+
+func (r *ConfigureLoggingResponse) logSuccess(ctx context.Context) {
+	Logc(ctx).Info("Successfully updated logging configuration.")
+}
+
+func (r *ConfigureLoggingResponse) logFailure(ctx context.Context) {
+	Logc(ctx).Info("Successfully updated logging configuration.")
+}
+
+func SetLogLevel(w http.ResponseWriter, r *http.Request) {
+	response := &ConfigureLoggingResponse{}
+	UpdateGeneric(w, r, response,
+		func(w http.ResponseWriter, r *http.Request, _ httpResponse, vars map[string]string, _ []byte) int {
+			err := orchestrator.SetLogLevel(r.Context(), vars["level"])
+			if err != nil {
+				response.Error = err.Error()
+			}
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+func GetLoggingWorkflows(w http.ResponseWriter, r *http.Request) {
+	response := &common.GetLoggingWorkflowsResponse{}
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			logWorkflows, err := orchestrator.GetSelectedLoggingWorkflows(r.Context())
+			if err != nil {
+				response.Error = err.Error()
+			}
+			response.LogWorkflows = logWorkflows
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+type ListLoggingWorkflowsResponse struct {
+	AvailableLoggingWorkflows []string `json:"availableLoggingWorkflows"`
+	Error                     string   `json:"error,omitempty"`
+}
+
+func ListLoggingWorkflows(w http.ResponseWriter, r *http.Request) {
+	response := &ListLoggingWorkflowsResponse{}
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			logWorkflows, err := orchestrator.ListLoggingWorkflows(r.Context())
+			if err != nil {
+				response.Error = err.Error()
+			}
+			response.AvailableLoggingWorkflows = logWorkflows
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+type SetLoggingWorkflowsRequest struct {
+	LoggingWorkflows string `json:"logWorkflows"`
+}
+
+func SetLoggingWorkflows(w http.ResponseWriter, r *http.Request) {
+	response := &ConfigureLoggingResponse{}
+	UpdateGeneric(w, r, response,
+		func(w http.ResponseWriter, r *http.Request, _ httpResponse, _ map[string]string, body []byte) int {
+			flows := &SetLoggingWorkflowsRequest{}
+			err := json.Unmarshal(body, flows)
+			if err != nil {
+				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				return httpStatusCodeForAdd(err)
+			}
+			err = orchestrator.SetLoggingWorkflows(r.Context(), flows.LoggingWorkflows)
+			if err != nil {
+				response.Error = err.Error()
+			}
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+func GetLoggingLayers(w http.ResponseWriter, r *http.Request) {
+	response := &common.GetLoggingLayersResponse{}
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			logLayers, err := orchestrator.GetSelectedLogLayers(r.Context())
+			if err != nil {
+				response.Error = err.Error()
+			}
+			response.LogLayers = logLayers
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+type ListLoggingLayersResponse struct {
+	AvailableLogLayers []string `json:"availableLogLayers"`
+	Error              string   `json:"error,omitempty"`
+}
+
+func ListLoggingLayers(w http.ResponseWriter, r *http.Request) {
+	response := &ListLoggingLayersResponse{}
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			logLayers, err := orchestrator.ListLogLayers(r.Context())
+			if err != nil {
+				response.Error = err.Error()
+			}
+			response.AvailableLogLayers = logLayers
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+type SetLoggingLayersRequest struct {
+	LogLayers string `json:"logLayers"`
+}
+
+func SetLoggingLayers(w http.ResponseWriter, r *http.Request) {
+	response := &ConfigureLoggingResponse{}
+	UpdateGeneric(w, r, response,
+		func(w http.ResponseWriter, r *http.Request, _ httpResponse, _ map[string]string, body []byte) int {
+			layers := &SetLoggingLayersRequest{}
+			err := json.Unmarshal(body, layers)
+			if err != nil {
+				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+				return httpStatusCodeForAdd(err)
+			}
+			err = orchestrator.SetLogLayers(r.Context(), layers.LogLayers)
+			if err != nil {
+				response.Error = err.Error()
+			}
 			return httpStatusCodeForGetUpdateList(err)
 		},
 	)

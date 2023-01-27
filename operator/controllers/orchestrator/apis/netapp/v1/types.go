@@ -35,7 +35,6 @@ type TridentOrchestratorList struct {
 type TridentOrchestratorSpec struct {
 	EnableForceDetach            bool              `json:"enableForceDetach"`
 	DisableAuditLog              *bool             `json:"disableAuditLog"`
-	Debug                        bool              `json:"debug"`
 	Namespace                    string            `json:"namespace"`
 	IPv6                         bool              `json:"IPv6,omitempty"`
 	K8sTimeout                   int               `json:"k8sTimeout,omitempty"`
@@ -47,6 +46,10 @@ type TridentOrchestratorSpec struct {
 	AutosupportHostname          string            `json:"autosupportHostname,omitempty"`
 	Uninstall                    bool              `json:"uninstall,omitempty"`
 	LogFormat                    string            `json:"logFormat,omitempty"`
+	LogLevel                     string            `json:"logLevel,omitempty"`
+	Debug                        bool              `json:"debug,omitempty"`
+	LogWorkflows                 string            `json:"logWorkflows,omitempty"`
+	LogLayers                    string            `json:"logLayers,omitempty"`
 	ProbePort                    *int64            `json:"probePort,omitempty"`
 	TridentImage                 string            `json:"tridentImage,omitempty"`
 	ImageRegistry                string            `json:"imageRegistry,omitempty"`
@@ -108,7 +111,6 @@ type TridentOrchestratorStatus struct {
 type TridentOrchestratorSpecValues struct {
 	EnableForceDetach       string            `json:"enableForceDetach"`
 	DisableAuditLog         string            `json:"disableAuditLog"`
-	Debug                   string            `json:"debug"`
 	IPv6                    string            `json:"IPv6"`
 	SilenceAutosupport      string            `json:"silenceAutosupport"`
 	AutosupportImage        string            `json:"autosupportImage"`
@@ -118,6 +120,10 @@ type TridentOrchestratorSpecValues struct {
 	K8sTimeout              string            `json:"k8sTimeout"`
 	HTTPRequestTimeout      string            `json:"httpRequestTimeout"`
 	LogFormat               string            `json:"logFormat"`
+	LogLevel                string            `json:"logLevel"`
+	Debug                   string            `json:"debug"`
+	LogWorkflows            string            `json:"logWorkflows"`
+	LogLayers               string            `json:"logLayers"`
 	ProbePort               string            `json:"probePort"`
 	TridentImage            string            `json:"tridentImage"`
 	ImageRegistry           string            `json:"imageRegistry"`

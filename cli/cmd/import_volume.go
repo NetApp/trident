@@ -110,7 +110,7 @@ func volumeImport(backendName, internalVolumeName string, noManage bool, pvcData
 	// Send the request to Trident
 	url := BaseURL() + "/volume/import"
 
-	response, responseBody, err := api.InvokeRESTAPI("POST", url, requestBytes, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("POST", url, requestBytes)
 	if err != nil {
 		return err
 	} else if response.StatusCode != http.StatusCreated {

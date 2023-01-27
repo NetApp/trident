@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -93,14 +93,14 @@ func (c *ControllerRestClient) InvokeAPI(
 		}
 	}
 
-	utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes(), redactRequestBody)
+	utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes(), "", redactRequestBody, false)
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {
 		err = fmt.Errorf("error communicating with Trident CSI Controller; %v", err)
 		return nil, nil, err
 	}
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) { _ = Body.Close() }(response.Body)
 
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -112,7 +112,7 @@ func (c *ControllerRestClient) InvokeAPI(
 			return nil, nil, fmt.Errorf("error formating response body; %v", err)
 		}
 	}
-	utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), redactResponseBody)
+	utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), "", redactResponseBody, false)
 
 	return response, responseBody, err
 }
@@ -249,3 +249,48 @@ func (c *ControllerRestClient) UpdateVolumeLUKSPassphraseNames(
 	}
 	return nil
 }
+
+/*TODO (bpresnel) Enable with rate-limiting later?
+// GetLoggingConfig retrieves the current logging configuration for Trident.
+func (c *ControllerRestClient) GetLoggingConfig(ctx context.Context) (string, string, string, error) {
+	urlFmt := "%s/%s"
+
+	logLevelUrl := fmt.Sprintf(urlFmt, config.LoggingConfigURL, "level")
+	resp, respBody, err := c.InvokeAPI(ctx, nil, "GET", logLevelUrl, false, false)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		Logc(ctx).WithError(err).Error("Error getting controller's log level.")
+		return "", "", "", err
+	}
+	logLevelResp := &common.GetLogLevelResponse{}
+	if err = json.Unmarshal(respBody, logLevelResp); err != nil {
+		Logc(ctx).WithError(err).Error("Error getting unmarshalling GetLogLevel response.")
+		return "", "", "", err
+	}
+
+	logWorkflowsUrl := fmt.Sprintf(urlFmt, config.LoggingConfigURL, "workflows")
+	resp, respBody, err = c.InvokeAPI(ctx, nil, "GET", logWorkflowsUrl, false, false)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		Logc(ctx).WithError(err).Error("Error getting controller's selected logging workflows.")
+		return "", "", "", err
+	}
+	getWorkflowsResp := &common.GetLoggingWorkflowsResponse{}
+	if err = json.Unmarshal(respBody, getWorkflowsResp); err != nil {
+		Logc(ctx).WithError(err).Error("Error getting unmarshalling GetSelectedLoggingWorkflows response.")
+		return "", "", "", err
+	}
+
+	logLayersUrl := fmt.Sprintf(urlFmt, config.LoggingConfigURL, "layers")
+	resp, respBody, err = c.InvokeAPI(ctx, nil, "GET", logLayersUrl, false, false)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		Logc(ctx).WithError(err).Error("Error getting controller's selected logging layers.")
+		return "", "", "", err
+	}
+	getLayersResp := &common.GetLoggingLayersResponse{}
+	if err = json.Unmarshal(respBody, getLayersResp); err != nil {
+		Logc(ctx).WithError(err).Error("Error getting unmarshalling GetSelectedLoggingLayers response.")
+		return "", "", "", err
+	}
+
+	return logLevelResp.LogLevel, getWorkflowsResp.LogWorkflows, getLayersResp.LogLayers, nil
+}
+*/

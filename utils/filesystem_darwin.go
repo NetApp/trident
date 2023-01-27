@@ -7,7 +7,7 @@ package utils
 import (
 	"golang.org/x/net/context"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // GetFilesystemStats unused stub function

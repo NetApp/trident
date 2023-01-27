@@ -7,13 +7,12 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
@@ -28,7 +27,8 @@ type (
 // addMirrorRelationship is the add handler for the TridentMirrorRelationship watcher.
 // This is called for every TMR when Trident starts
 func (c *TridentCrdController) addMirrorRelationship(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventAdd))
 
 	Logx(ctx).Debug("TridentCrdController#addMirrorRelationship")
@@ -55,7 +55,8 @@ func (c *TridentCrdController) addMirrorRelationship(obj interface{}) {
 
 // updateMirrorRelationship is the update handler for the TridentMirrorRelationship watcher.
 func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
 	Logx(ctx).Debug("TridentCrdController#updateMirrorRelationship")
@@ -78,22 +79,22 @@ func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
 
 	currentState := ""
 	needsUpdate := false
-	logFields := log.Fields{}
+	logFields := LogFields{}
 
 	if newRelationship != nil {
 		if len(newRelationship.Status.Conditions) > 0 {
 			currentState = newRelationship.Status.Conditions[0].MirrorState
 		}
 
-		logFields = log.Fields{"TridentMirrorRelationship": newRelationship.Name}
-		Logx(ctx).WithFields(logFields).Debugf("Checking if update is needed %v", currentState)
+		logFields = LogFields{"TridentMirrorRelationship": newRelationship.Name}
+		Logx(ctx).WithFields(logFields).Tracef("Checking if update is needed %v", currentState)
 
 		// Ensure localPVCName and remoteVolumeHandle (if already set) are not being changed
 		if oldRelationship != nil && len(newRelationship.Status.Conditions) > 0 && len(newRelationship.Spec.VolumeMappings) > 0 {
 			oldPVCName := newRelationship.Status.Conditions[0].LocalPVCName
 			newPVCName := newRelationship.Spec.VolumeMappings[0].LocalPVCName
 			if oldPVCName != "" && oldPVCName != newPVCName {
-				Logx(ctx).WithFields(logFields).WithFields(log.Fields{
+				Logx(ctx).WithFields(logFields).WithFields(LogFields{
 					"oldLocalPVCName": oldPVCName,
 					"newLocalPVCName": newPVCName,
 				}).Error("localPVCName cannot be changed.")
@@ -109,7 +110,7 @@ func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
 			oldRemoteHandle := newRelationship.Status.Conditions[0].RemoteVolumeHandle
 			newRemoteHandle := newRelationship.Spec.VolumeMappings[0].RemoteVolumeHandle
 			if oldRemoteHandle != "" && newRemoteHandle != oldRemoteHandle {
-				Logx(ctx).WithFields(logFields).WithFields(log.Fields{
+				Logx(ctx).WithFields(logFields).WithFields(LogFields{
 					"oldRemoteVolumeHandle": oldRemoteHandle,
 					"newRemoteVolumeHandle": newRemoteHandle,
 				}).Error("remoteVolumeHandle cannot be changed once set.")
@@ -161,13 +162,14 @@ func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
 	if needsUpdate {
 		c.workqueue.Add(keyItem)
 	} else {
-		Logx(ctx).WithFields(logFields).Debugf("No required update for TridentMirrorRelationship")
+		Logx(ctx).WithFields(logFields).Tracef("No required update for TridentMirrorRelationship")
 	}
 }
 
 // deleteMirrorRelationship is the delete handler for the TridentMirrorRelationship watcher.
 func (c *TridentCrdController) deleteMirrorRelationship(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
+		LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
 	Logx(ctx).Debug("TridentCrdController#deleteMirrorRelationship")
@@ -234,10 +236,10 @@ func (c *TridentCrdController) updateTMRCR(
 	ctx context.Context,
 	tmr *netappv1.TridentMirrorRelationship,
 ) (*netappv1.TridentMirrorRelationship, error) {
-	logFields := log.Fields{"TridentMirrorRelationship": tmr.Name}
+	logFields := LogFields{"TridentMirrorRelationship": tmr.Name}
 
 	// Update phase of the tmrCR
-	Logx(ctx).WithFields(logFields).Debug("Updating the TridentMirrorRelationship CR")
+	Logx(ctx).WithFields(logFields).Trace("Updating the TridentMirrorRelationship CR")
 
 	newTMR, err := c.crdClientset.TridentV1().TridentMirrorRelationships(tmr.Namespace).Update(ctx, tmr, updateOpts)
 	if err != nil {
@@ -249,7 +251,7 @@ func (c *TridentCrdController) updateTMRCR(
 
 func (c *TridentCrdController) reconcileTMR(keyItem *KeyItem) error {
 	Logx(keyItem.ctx).Debug("TridentCrdController#reconcileTMR")
-	logFields := log.Fields{"TridentMirrorRelationship": keyItem.key}
+	logFields := LogFields{"TridentMirrorRelationship": keyItem.key}
 
 	// Pass the namespace/name string of the resource to be synced.
 	if err := c.handleTridentMirrorRelationship(keyItem); err != nil {
@@ -258,14 +260,14 @@ func (c *TridentCrdController) reconcileTMR(keyItem *KeyItem) error {
 			errMessage := fmt.Sprintf(
 				"deferred syncing TridentMirrorRelationship, requeuing; %v", err.Error(),
 			)
-			Logx(keyItem.ctx).WithFields(logFields).Info(errMessage)
+			Logx(keyItem.ctx).WithFields(logFields).Error(errMessage)
 			return err
 		} else if utils.IsReconcileIncompleteError(err) {
 			c.workqueue.Add(*keyItem)
 			errMessage := fmt.Sprintf(
 				"syncing TridentMirrorRelationship in progress, requeuing; %v", err.Error(),
 			)
-			Logx(keyItem.ctx).WithFields(logFields).Info(errMessage)
+			Logx(keyItem.ctx).WithFields(logFields).Error(errMessage)
 
 			return err
 		} else {
@@ -286,7 +288,7 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 	key := keyItem.key
 	ctx := keyItem.ctx
 
-	logFields := log.Fields{"TridentMirrorRelationship": keyItem.key}
+	logFields := LogFields{"TridentMirrorRelationship": keyItem.key}
 	// Convert the namespace/name string into a distinct namespace and name
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
@@ -316,7 +318,7 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 	mirrorRCopy.Status.Conditions = []*netappv1.TridentMirrorRelationshipCondition{statusCondition}
 	// Ensure TMR is not deleting, then ensure it has a finalizer
 	if mirrorRCopy.ObjectMeta.DeletionTimestamp.IsZero() && !mirrorRCopy.HasTridentFinalizers() {
-		Logx(ctx).WithFields(logFields).Debugf("Adding finalizer.")
+		Logx(ctx).WithFields(logFields).Tracef("Adding finalizer.")
 		mirrorRCopy.AddTridentFinalizers()
 
 		if mirrorRCopy, err = c.updateTMRCR(ctx, mirrorRCopy); err != nil {
@@ -335,7 +337,7 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 			return utils.ConvertToReconcileIncompleteError(fmt.Errorf("deleting TridentMirrorRelationship"))
 		}
 
-		Logx(ctx).WithFields(logFields).Debugf("Removing TridentMirrorRelationship finalizers.")
+		Logx(ctx).WithFields(logFields).Tracef("Removing TridentMirrorRelationship finalizers.")
 		return c.removeFinalizers(ctx, mirrorRCopy, false)
 	}
 
@@ -474,7 +476,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	volumeMapping *netappv1.TridentMirrorRelationshipVolumeMapping,
 	currentCondition *netappv1.TridentMirrorRelationshipCondition,
 ) (*netappv1.TridentMirrorRelationshipCondition, error) {
-	logFields := log.Fields{"TridentMirrorRelationship": relationship.Name}
+	logFields := LogFields{"TridentMirrorRelationship": relationship.Name}
 	// Clear the status condition message
 	statusCondition := currentCondition.DeepCopy()
 	statusCondition.Message = ""
@@ -487,7 +489,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	statusErr, ok := err.(*errors.StatusError)
 	if (ok && statusErr.Status().Reason == metav1.StatusReasonNotFound) || localPVC == nil {
 		message := fmt.Sprintf("Local PVC for TridentMirrorRelationship does not yet exist.")
-		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Debug(message)
+		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Trace(message)
 		// If PVC does not yet exist, do not update the TMR and retry later
 		return nil, utils.ReconcileDeferredError(fmt.Errorf(message))
 	} else if err != nil {
@@ -498,21 +500,21 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	localPV, _ := c.kubeClientset.CoreV1().PersistentVolumes().Get(ctx, localPVC.Spec.VolumeName, metav1.GetOptions{})
 	if localPV == nil || localPV.Spec.CSI == nil || localPV.Spec.CSI.VolumeAttributes == nil {
 		message := fmt.Sprintf("PV for local PVC for TridentMirrorRelationship does not yet exist.")
-		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Debug(message)
+		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Trace(message)
 		return nil, utils.ReconcileDeferredError(fmt.Errorf(message))
 	}
 	// Check if PV has internal name set
 	if localPV.Spec.CSI.VolumeAttributes["internalName"] == "" {
 		message := fmt.Sprintf(
 			"PV for local PVC for TridentMirrorRelationship does not yet have an internal volume name set.")
-		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Debug(message)
+		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Trace(message)
 		return nil, utils.ReconcileDeferredError(fmt.Errorf(message))
 	}
 
 	existingVolume, err := c.orchestrator.GetVolume(ctx, localPV.Spec.CSI.VolumeHandle)
 	if err != nil {
 		statusCondition.MirrorState = netappv1.MirrorStateFailed
-		Logx(ctx).WithFields(logFields).Debugf("Failed to apply TridentMirrorRelationship update.")
+		Logx(ctx).WithFields(logFields).Errorf("Failed to apply TridentMirrorRelationship update.")
 
 		if utils.IsNotFoundError(err) {
 			Logx(ctx).WithError(err).WithFields(logFields).WithField(
@@ -551,7 +553,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 		} else if !mirrorCapable {
 			statusCondition.MirrorState = netappv1.MirrorStateInvalid
 			statusCondition.Message = "localPVC's backend does not support mirroring"
-			Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Debug(statusCondition.Message)
+			Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Warn(statusCondition.Message)
 			c.recorder.Eventf(
 				relationship, corev1.EventTypeWarning, netappv1.MirrorStateInvalid, statusCondition.Message)
 			return updateTMRConditionLocalFields(statusCondition, "", localPVCName, volumeMapping.RemoteVolumeHandle)
@@ -594,7 +596,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 		if desiredMirrorState == netappv1.MirrorStateEstablished &&
 			remoteVolumeHandle != "" &&
 			currentMirrorState != netappv1.MirrorStateEstablished {
-			Logc(ctx).WithFields(logFields).Debugf("Attempting to establish mirror")
+			Logx(ctx).WithFields(logFields).Debugf("Attempting to establish mirror")
 
 			// Pass in the replicationPolicy and replicationSchedule to establish mirror
 			// Initialize snapmirror relationship
@@ -604,7 +606,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			if err != nil && !api.IsNotReadyError(err) {
 				currentMirrorState = netappv1.MirrorStateFailed
 				statusCondition.Message = "Could not establish mirror"
-				Logx(ctx).WithFields(logFields).WithError(err).Info(statusCondition.Message)
+				Logx(ctx).WithFields(logFields).WithError(err).Error(statusCondition.Message)
 				c.recorder.Eventf(
 					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message,
 				)
@@ -621,7 +623,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 		} else if desiredMirrorState == netappv1.MirrorStateReestablished &&
 			remoteVolumeHandle != "" &&
 			currentMirrorState != netappv1.MirrorStateReestablished {
-			Logc(ctx).WithFields(logFields).Debugf("Attempting to reestablish mirror")
+			Logx(ctx).WithFields(logFields).Debugf("Attempting to reestablish mirror")
 			// Resync snapmirror relationship
 			err = c.orchestrator.ReestablishMirror(
 				ctx, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
@@ -629,7 +631,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			if err != nil {
 				currentMirrorState = netappv1.MirrorStateFailed
 				statusCondition.Message = "Could not reestablish mirror"
-				Logx(ctx).WithFields(logFields).WithError(err).Info(statusCondition.Message)
+				Logx(ctx).WithFields(logFields).WithError(err).Error(statusCondition.Message)
 				c.recorder.Eventf(
 					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message,
 				)
@@ -641,7 +643,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			}
 		} else if desiredMirrorState == netappv1.MirrorStatePromoted &&
 			currentMirrorState != netappv1.MirrorStatePromoted {
-			Logc(ctx).WithFields(logFields).WithField("PVC", localPVCName).Debugf(
+			Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Debugf(
 				"Attempting to promote volume for mirror",
 			)
 			waitingForSnapshot, err := c.orchestrator.PromoteMirror(
@@ -651,7 +653,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			if err != nil && !api.IsNotReadyError(err) {
 				currentMirrorState = netappv1.MirrorStateFailed
 				statusCondition.Message = "Could not promote mirror"
-				Logx(ctx).WithFields(logFields).WithError(err).Info(statusCondition.Message)
+				Logx(ctx).WithFields(logFields).WithError(err).Error(statusCondition.Message)
 				c.recorder.Eventf(
 					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message,
 				)
@@ -674,7 +676,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	if utils.IsUnsupportedError(err) {
 		statusCondition.MirrorState = netappv1.MirrorStateInvalid
 		statusCondition.Message = err.Error()
-		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Debug(err)
+		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Error(err)
 		c.recorder.Eventf(relationship, corev1.EventTypeWarning, netappv1.MirrorStateInvalid, statusCondition.Message)
 		return updateTMRConditionLocalFields(statusCondition, "", localPVCName, volumeMapping.RemoteVolumeHandle)
 	}
@@ -695,7 +697,7 @@ func (c *TridentCrdController) updateTMRConditionReplicationSettings(
 	policy, schedule, err := c.orchestrator.GetReplicationDetails(ctx, volume.BackendUUID,
 		localVolumeHandle, remoteVolumeHandle)
 	if err != nil {
-		Logc(ctx).Debugf("Error getting replication details: %v", err)
+		Logx(ctx).Errorf("Error getting replication details: %v", err)
 	} else {
 		conditionCopy.ReplicationPolicy = policy
 		conditionCopy.ReplicationSchedule = schedule
@@ -710,8 +712,8 @@ func (c *TridentCrdController) validateTMRUpdate(
 	ctx context.Context, oldRelationship,
 	newRelationship *netappv1.TridentMirrorRelationship,
 ) (*netappv1.TridentMirrorRelationship, *netappv1.TridentMirrorRelationshipCondition, error) {
-	logFields := log.Fields{}
-	logFields = log.Fields{"TridentMirrorRelationship": newRelationship.Name}
+	logFields := LogFields{}
+	logFields = LogFields{"TridentMirrorRelationship": newRelationship.Name}
 
 	// Ignore changes if relationship is going to promoted (or deleted)
 	if oldRelationship != nil && len(newRelationship.Status.Conditions) > 0 && newRelationship.Spec.
@@ -726,7 +728,7 @@ func (c *TridentCrdController) validateTMRUpdate(
 			// And old replication policy in spec must be equal to the new policy in spec to allow change
 			if oldReplicationPolicyStatus != newReplicationPolicySpec &&
 				newReplicationPolicySpec != oldReplicationPolicySpec {
-				Logx(ctx).WithFields(logFields).WithFields(log.Fields{
+				Logx(ctx).WithFields(logFields).WithFields(LogFields{
 					"oldReplicationPolicySpec":   oldReplicationPolicySpec,
 					"newReplicationPolicySpec":   newReplicationPolicySpec,
 					"oldReplicationPolicyStatus": oldReplicationPolicyStatus,
@@ -750,7 +752,7 @@ func (c *TridentCrdController) validateTMRUpdate(
 			// And old replication schedule in spec must be equal to the new schedule in spec to allow change
 			if oldReplicationScheduleStatus != newReplicationScheduleSpec &&
 				newReplicationScheduleSpec != oldReplicationScheduleSpec {
-				Logx(ctx).WithFields(logFields).WithFields(log.Fields{
+				Logx(ctx).WithFields(logFields).WithFields(LogFields{
 					"oldReplicationScheduleSpec":   oldReplicationScheduleSpec,
 					"newReplicationScheduleSpec":   newReplicationScheduleSpec,
 					"oldReplicationScheduleStatus": oldReplicationScheduleStatus,

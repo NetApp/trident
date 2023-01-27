@@ -18,7 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 const (
@@ -74,7 +74,7 @@ func TestYAMLFactory(t *testing.T) {
 
 	imagePullSecrets := []string{"thisisasecret"}
 
-	version := utils.MustParseSemantic("1.21.0")
+	version := versionutils.MustParseSemantic("1.21.0")
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          Name,
@@ -85,11 +85,11 @@ func TestYAMLFactory(t *testing.T) {
 		AutosupportSerialNumber: "",
 		AutosupportHostname:     "",
 		LogFormat:               LogFormat,
+		LogLevel:                "info",
 		ImageRegistry:           "",
 		ImagePullSecrets:        imagePullSecrets,
 		Labels:                  labels,
 		ControllingCRDetails:    ownerRef,
-		Debug:                   false,
 		UseIPv6:                 false,
 		SilenceAutosupport:      false,
 		Version:                 version,
@@ -153,7 +153,7 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 
 	imagePullSecrets := []string{"thisisasecret"}
 
-	version := utils.MustParseSemantic("1.26.0")
+	version := versionutils.MustParseSemantic("1.26.0")
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          "trident-csi",
@@ -165,6 +165,7 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 		AutosupportCustomURL:    "http://172.16.150.125:8888/",
 		ImageRegistry:           "registry.k8s.io",
 		LogFormat:               "text",
+		LogLevel:                "debug",
 		SnapshotCRDVersion:      "v1",
 		ImagePullSecrets:        imagePullSecrets,
 		Labels:                  labels,
@@ -172,7 +173,6 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 		Version:                 version,
 		HTTPRequestTimeout:      config.HTTPTimeoutString,
 		TopologyEnabled:         true,
-		Debug:                   true,
 		UseIPv6:                 true,
 		SilenceAutosupport:      false,
 	}
@@ -200,7 +200,7 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 
 	imagePullSecrets := []string{"thisisasecret"}
 
-	version := utils.MustParseSemantic("1.26.0")
+	version := versionutils.MustParseSemantic("1.26.0")
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          "\ntrident-csi",
@@ -212,11 +212,11 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 		AutosupportHostname:     "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
 		ImageRegistry:           "registry.k8s.io",
 		LogFormat:               "text",
+		LogLevel:                "debug",
 		SnapshotCRDVersion:      "v1beta1",
 		ImagePullSecrets:        imagePullSecrets,
 		Labels:                  labels,
 		ControllingCRDetails:    map[string]string{},
-		Debug:                   true,
 		UseIPv6:                 true,
 		SilenceAutosupport:      false,
 		Version:                 version,
@@ -241,7 +241,7 @@ func TestGetCSIDeploymentYAML(t *testing.T) {
 	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
 	for _, versionString := range versions {
-		version := utils.MustParseSemantic(versionString)
+		version := versionutils.MustParseSemantic(versionString)
 		deploymentArgs := &DeploymentYAMLArguments{Version: version, SnapshotCRDVersion: "v1"}
 
 		yamlData := GetCSIDeploymentYAML(deploymentArgs)
@@ -392,7 +392,7 @@ func TestGetCSIDeploymentYAMLImagePullPolicy(t *testing.T) {
 
 	for _, args := range testArgs {
 		for _, versionString := range versions {
-			version := utils.MustParseSemantic(versionString)
+			version := versionutils.MustParseSemantic(versionString)
 			daemonsetArgs := &DeploymentYAMLArguments{Version: version, ImagePullPolicy: args.imagePullPolicy}
 
 			yamlData := GetCSIDeploymentYAML(daemonsetArgs)
@@ -410,7 +410,7 @@ func TestGetCSIDaemonSetYAMLLinux(t *testing.T) {
 	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
 	for _, versionString := range versions {
-		version := utils.MustParseSemantic(versionString)
+		version := versionutils.MustParseSemantic(versionString)
 		daemonsetArgs := &DaemonsetYAMLArguments{Version: version}
 
 		yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
@@ -425,8 +425,8 @@ func TestGetCSIDaemonSetYAMLLinux_DebugIsTrue(t *testing.T) {
 	versions := []string{"1.17.0"}
 
 	for _, versionString := range versions {
-		version := utils.MustParseSemantic(versionString)
-		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, Debug: true}
+		version := versionutils.MustParseSemantic(versionString)
+		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, LogLevel: "debug"}
 
 		yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
@@ -471,7 +471,7 @@ func TestGetCSIDaemonSetYAMLLinux_ForceDetach(t *testing.T) {
 
 	for _, args := range testArgs {
 		for _, versionString := range versions {
-			version := utils.MustParseSemantic(versionString)
+			version := versionutils.MustParseSemantic(versionString)
 			daemonsetArgs := &DaemonsetYAMLArguments{Version: version, EnableForceDetach: args.Enabled}
 
 			yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
@@ -521,7 +521,7 @@ func TestGetCSIDaemonSetYAMLLinuxImagePullPolicy(t *testing.T) {
 
 	for _, args := range testArgs {
 		for _, versionString := range versions {
-			version := utils.MustParseSemantic(versionString)
+			version := versionutils.MustParseSemantic(versionString)
 			daemonsetArgs := &DaemonsetYAMLArguments{Version: version, ImagePullPolicy: args.imagePullPolicy}
 
 			yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
@@ -663,8 +663,8 @@ func TestGetCSIDaemonSetYAMLWindows(t *testing.T) {
 	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
 	for _, versionString := range versions {
-		version := utils.MustParseSemantic(versionString)
-		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, Debug: true}
+		version := versionutils.MustParseSemantic(versionString)
+		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, LogLevel: "debug"}
 
 		yamlData := GetCSIDaemonSetYAMLWindows(daemonsetArgs)
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
@@ -678,8 +678,8 @@ func TestGetCSIDaemonSetYAMLWindows_DebugIsFalse(t *testing.T) {
 	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
 	for _, versionString := range versions {
-		version := utils.MustParseSemantic(versionString)
-		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, Debug: false}
+		version := versionutils.MustParseSemantic(versionString)
+		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, LogLevel: "info"}
 
 		yamlData := GetCSIDaemonSetYAMLWindows(daemonsetArgs)
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
@@ -723,7 +723,7 @@ func TestGetCSIDaemonSetYAMLWindowsImagePullPolicy(t *testing.T) {
 
 	for _, args := range testArgs {
 		for _, versionString := range versions {
-			version := utils.MustParseSemantic(versionString)
+			version := versionutils.MustParseSemantic(versionString)
 			daemonsetArgs := &DaemonsetYAMLArguments{Version: version, ImagePullPolicy: args.imagePullPolicy}
 
 			yamlData := GetCSIDaemonSetYAMLWindows(daemonsetArgs)

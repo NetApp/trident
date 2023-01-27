@@ -13,10 +13,8 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	trident "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -52,7 +50,7 @@ func ValidateCommonSettings(ctx context.Context, configJSON string) (*CommonStor
 
 	// Warn about ignored fields in common config if any are set
 	if config.DisableDelete {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"driverName": config.StorageDriverName,
 		}).Warn("disableDelete set in backend config.  This will be ignored.")
 	}
@@ -176,7 +174,7 @@ func CheckVolumeSizeLimits(
 	requestedSize := float64(requestedSizeInt)
 	// If the user specified a limit for volume size, parse and enforce it
 	limitVolumeSize := config.LimitVolumeSize
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"limitVolumeSize": limitVolumeSize,
 	}).Debugf("Limits")
 	if limitVolumeSize == "" {
@@ -191,7 +189,7 @@ func CheckVolumeSizeLimits(
 	}
 	volumeSizeLimit, _ = strconv.ParseUint(volumeSizeLimitStr, 10, 64)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"limitVolumeSize":    limitVolumeSize,
 		"volumeSizeLimit":    volumeSizeLimit,
 		"requestedSizeBytes": requestedSize,
@@ -237,7 +235,7 @@ func Clone(ctx context.Context, source, destination interface{}) {
 func CheckSupportedFilesystem(ctx context.Context, fs, volumeInternalName string) (string, error) {
 	fsType, err := utils.VerifyFilesystemSupport(fs)
 	if err == nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"fileSystemType": fsType,
 			"name":           volumeInternalName,
 		}).Debug("Filesystem format.")

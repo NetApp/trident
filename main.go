@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -14,8 +15,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
@@ -31,18 +30,22 @@ import (
 	"github.com/netapp/trident/frontend/docker"
 	"github.com/netapp/trident/frontend/metrics"
 	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/logger"
-	"github.com/netapp/trident/logging"
+	. "github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/utils"
 )
 
 var (
 	// Logging
-	debug     = flag.Bool("debug", false, "Enable debugging output")
-	logLevel  = flag.String("log_level", "info", "Logging level (debug, info, warn, error, fatal)")
-	logFormat = flag.String("log_format", "text", "Logging format (text, json)")
 	auditLog  = flag.Bool("disable_audit_log", true, "Disable the audit logger")
+	debug     = flag.Bool("debug", false, "Enable debugging output")
+	logFormat = flag.String("log_format", "text", "Logging format (text, json)")
+	logLevel  = flag.String("log_level", "info", "Logging level (trace, debug, info, warn, "+
+		"error, fatal)")
+	logWorkflows = flag.String("log_workflows", "", "A comma-delimited list of Trident workflows "+
+		"to enable trace logging for")
+	logLayers = flag.String("log_layers", "", "A comma-delimited list of Trident layers to enable "+
+		"trace logging for")
 
 	// Kubernetes
 	k8sAPIServer = flag.String("k8s_api_server", "", "Kubernetes API server "+
@@ -52,8 +55,8 @@ var (
 		"for Kubernetes if running in a pod.")
 
 	// Docker
-	docker_plugin_mode = flag.Bool("docker_plugin_mode", false, "Enable docker plugin mode")
-	driverName         = flag.String("volume_driver", "netapp", "Register as a Docker "+
+	dockerPluginMode = flag.Bool("docker_plugin_mode", false, "Enable docker plugin mode")
+	driverName       = flag.String("volume_driver", "netapp", "Register as a Docker "+
 		"volume plugin with this driver name")
 	driverPort = flag.String("driver_port", "", "Listen on this port instead of using a "+
 		"Unix domain socket")
@@ -114,20 +117,23 @@ var (
 )
 
 func printFlag(f *flag.Flag) {
-	log.WithFields(log.Fields{
+	Logc(context.Background()).WithFields(LogFields{
 		"name":  f.Name,
 		"value": f.Value,
 	}).Debug("Flag")
 }
 
-func processCmdLineArgs() {
+func processCmdLineArgs(ctx context.Context) {
+	Logc(ctx).Trace(">>>> processCmdLineArgs")
+	defer Logc(ctx).Trace("<<<< processCmdLineArgs")
+
 	var err error
 
 	flag.Visit(printFlag)
 
 	// Infer frontend from arguments
 	enableCSI = *csiEndpoint != ""
-	enableDocker = (*docker_plugin_mode || *configPath != "") && !enableCSI
+	enableDocker = (*dockerPluginMode || *configPath != "") && !enableCSI
 
 	frontendCount := 0
 	if enableDocker {
@@ -138,10 +144,10 @@ func processCmdLineArgs() {
 	}
 
 	if frontendCount > 1 {
-		log.Fatal("Trident can only run one frontend type (Kubernetes, Docker, CSI).")
+		Logc(ctx).Fatal("Trident can only run one frontend type (Kubernetes, Docker, CSI).")
 	} else if !enableDocker && !enableCSI && !*useInMemory {
-		log.Fatal("Insufficient arguments provided for Trident to start.  Specify " +
-			"--config (for Docker) or --csi_endpoint (for CSI).")
+		Logc(ctx).Fatal("Insufficient arguments provided for Trident to start.  Specify --config (for Docker) " +
+			"or --csi_endpoint (for CSI).")
 	}
 
 	// Determine persistent store type from arguments
@@ -157,31 +163,31 @@ func processCmdLineArgs() {
 	}
 	// Infer persistent store type if not explicitly specified
 	if storeCount == 0 && enableDocker {
-		log.Debug("Inferred passthrough persistent store.")
+		Logc(ctx).Debug("Inferred passthrough persistent store.")
 		*usePassthrough = true
 		storeCount++
 	}
 	if storeCount != 1 {
-		log.Fatal("Trident must be configured with exactly one persistence type.")
+		Logc(ctx).Fatal("Trident must be configured with exactly one persistence type.")
 	}
 
 	switch {
 	case *useInMemory:
-		log.Debug("Trident is configured with an in-memory store client.")
+		Logc(ctx).Debug("Trident is configured with an in-memory store client.")
 		storeClient = persistentstore.NewInMemoryClient()
 
 	case *usePassthrough:
-		log.Debug("Trident is configured with passthrough store client.")
+		Logc(ctx).Debug("Trident is configured with passthrough store client.")
 		storeClient, err = persistentstore.NewPassthroughClient(*configPath)
 		if err != nil {
-			log.Fatalf("Unable to create the passthrough store client. %v", err)
+			Logc(ctx).Fatalf("Unable to create the passthrough store client. %v", err)
 		}
 
 	case *useCRD:
-		log.Debug("Trident is configured with a CRD client.")
+		Logc(ctx).Debug("Trident is configured with a CRD client.")
 		storeClient, err = persistentstore.NewCRDClientV1(*k8sAPIServer, *k8sConfigPath)
 		if err != nil {
-			log.Fatalf("Unable to create the Kubernetes store client. %v", err)
+			Logc(ctx).Fatalf("Unable to create the Kubernetes store client. %v", err)
 		}
 	}
 
@@ -189,7 +195,10 @@ func processCmdLineArgs() {
 }
 
 // getenvAsPointerToBool returns the key's value and defaults to false if not set
-func getenvAsPointerToBool(key string) *bool {
+func getenvAsPointerToBool(ctx context.Context, key string) *bool {
+	Logc(ctx).Trace(">>>> getenvAsPointerToBool")
+	defer Logc(ctx).Trace("<<<< getenvAsPointerToBool")
+
 	result := false
 	if v := os.Getenv(key); v != "" {
 		if strings.EqualFold("true", v) {
@@ -200,9 +209,13 @@ func getenvAsPointerToBool(key string) *bool {
 }
 
 // ensureDockerPluginExecPath ensures the docker plugin has utility path in PATH
-func ensureDockerPluginExecPath() {
+func ensureDockerPluginExecPath(ctx context.Context) {
+	Logc(ctx).Trace(">>>> ensureDockerPluginExecPath")
+	defer Logc(ctx).Trace("<<<< ensureDockerPluginExecPath")
+
 	path := os.Getenv("PATH")
 	if !strings.Contains(path, "/netapp") {
+		Logc(ctx).Trace("PATH did not contain /netapp, putting it there.")
 		path = "/netapp:" + path
 		_ = os.Setenv("PATH", path)
 	}
@@ -210,16 +223,18 @@ func ensureDockerPluginExecPath() {
 
 // processDockerPluginArgs replaces our container-launch.sh script
 // see also:  https://github.com/NetApp/trident/blob/stable/v20.07/contrib/docker/plugin/container-launch.sh
-func processDockerPluginArgs() error {
+func processDockerPluginArgs(ctx context.Context) error {
+	Logc(ctx).Trace(">>>> processDockerPluginArgs")
+	defer Logc(ctx).Trace("<<<< processDockerPluginArgs")
+
 	if os.Getenv(config.DockerPluginModeEnvVariable) == "" {
 		// not running in docker plugin mode, can stop further processing here
 		return nil
 	}
 
-	ensureDockerPluginExecPath()
+	ensureDockerPluginExecPath(ctx)
 
-	debug = getenvAsPointerToBool("debug")
-	enableREST = getenvAsPointerToBool("rest")
+	enableREST = getenvAsPointerToBool(ctx, "rest")
 	if configEnv := os.Getenv("config"); configEnv != "" {
 		configFile := configEnv
 		if !strings.HasPrefix(configFile, config.DockerPluginConfigLocation) {
@@ -243,8 +258,12 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowCoreInit,
+		LogLayerCore)
+
 	// These features are only supported on Linux.
 	if runtime.GOOS == "linux" {
+		Logc(ctx).Trace("On a Linux OS, creating force detach feature flag.")
 		enableForceDetach = flag.Bool("enable_force_detach", false, "Enable force detach feature.")
 	}
 
@@ -256,55 +275,75 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	// Process any docker plugin environment variables (after we flag.Parse() the CLI above)
-	if *docker_plugin_mode {
+	if *dockerPluginMode {
 		os.Setenv("DOCKER_PLUGIN_MODE", "1")
 		utils.SetChrootPathPrefix("/host")
 	}
-	err = processDockerPluginArgs()
+
+	err = processDockerPluginArgs(ctx)
 	if err != nil {
-		log.Fatal(err)
+		_, _ = fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	// Set log level
-	err = logging.InitLogLevel(*debug, *logLevel)
+	if *debug {
+		*logLevel = "debug"
+	}
+	err = InitLogLevel(*logLevel)
 	if err != nil {
-		log.Fatal(err)
+		_, _ = fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	// Set log format
-	err = logging.InitLogFormat(*logFormat)
+	err = InitLogFormat(*logFormat)
+	if err != nil {
+		_, _ = fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Set logging workflows.
+	err = SetWorkflows(*logWorkflows)
+	if err != nil {
+		_, _ = fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Set logging layers.
+	err = SetLogLayers(*logLayers)
 	if err != nil {
 		_, _ = fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}
 
 	// Initialize the audit logger.
-	logger.InitAuditLogger(*auditLog)
+	InitAuditLogger(*auditLog)
 
 	// Print all env variables
 	for _, element := range os.Environ() {
 		v := strings.Split(element, "=")
-		log.WithField(v[0], v[1]).Debug("Environment")
+		Log().WithField(v[0], v[1]).Debug("Environment")
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"version":    config.OrchestratorVersion.String(),
 		"build_time": config.BuildTime,
 		"binary":     os.Args[0],
 	}).Info("Running Trident storage orchestrator.")
 
-	processCmdLineArgs()
+	processCmdLineArgs(ctx)
 
 	orchestrator := core.NewTridentOrchestrator(storeClient)
 
 	// Create HTTP metrics frontend
 	if *enableMetrics {
 		if *metricsPort == "" {
-			log.Warning("HTTP metrics interface will not be available (port not specified).")
+			Log().Warning("HTTP metrics interface will not be available (port not specified).")
 		} else {
 			metricsServer := metrics.NewMetricsServer(*metricsAddress, *metricsPort)
 			preBootstrapFrontends = append(preBootstrapFrontends, metricsServer)
-			log.WithFields(log.Fields{"name": metricsServer.GetName()}).Info("Added frontend.")
+			Log().WithFields(LogFields{"name": metricsServer.GetName()}).Info("Added frontend.")
 		}
 	}
 
@@ -317,7 +356,7 @@ func main() {
 		config.CurrentDriverContext = config.ContextDocker
 
 		// Set up multi-output logging
-		err = logging.InitLoggingForDocker(*driverName, *logFormat)
+		err = InitLoggingForDocker(*driverName, *logFormat)
 		if err != nil {
 			_, _ = fmt.Fprint(os.Stderr, err)
 			os.Exit(1)
@@ -325,9 +364,9 @@ func main() {
 
 		dockerFrontend, err := docker.NewPlugin(*driverName, *driverPort, orchestrator)
 		if err != nil {
-			log.Fatalf("Unable to start the Docker frontend. %v", err)
+			Log().Fatalf("Unable to start the Docker frontend. %v", err)
 		}
-		orchestrator.AddFrontend(dockerFrontend)
+		orchestrator.AddFrontend(ctx, dockerFrontend)
 		preBootstrapFrontends = append(preBootstrapFrontends, dockerFrontend)
 
 	} else if enableCSI {
@@ -335,15 +374,15 @@ func main() {
 		config.CurrentDriverContext = config.ContextCSI
 
 		if *csiRole != csi.CSIController && *csiRole != csi.CSINode && *csiRole != csi.CSIAllInOne {
-			log.Fatalf("CSI is enabled but an unknown role has been assigned: '%s'", *csiRole)
+			Log().Fatalf("CSI is enabled but an unknown role has been assigned: '%s'", *csiRole)
 		}
 
 		if *csiEndpoint == "" {
-			log.Fatal("CSI is enabled but csi_endpoint was not specified.")
+			Log().Fatal("CSI is enabled but csi_endpoint was not specified.")
 		}
 
 		if *csiNodeName == "" {
-			log.Fatal("CSI is enabled but csi_node_name was not specified.")
+			Log().Fatal("CSI is enabled but csi_node_name was not specified.")
 		}
 
 		var hybridControllerFrontend frontend.Plugin
@@ -356,28 +395,28 @@ func main() {
 			hybridNodeFrontend = plainnodehelper.NewHelper(orchestrator)
 		}
 		if err != nil {
-			log.Fatalf("Unable to start the K8S hybrid frontend. %v", err)
+			Log().Fatalf("Unable to start the K8S hybrid frontend. %v", err)
 		}
 
 		if *csiRole == csi.CSIController || *csiRole == csi.CSIAllInOne {
-			orchestrator.AddFrontend(hybridControllerFrontend)
+			orchestrator.AddFrontend(ctx, hybridControllerFrontend)
 			postBootstrapFrontends = append(postBootstrapFrontends, hybridControllerFrontend)
 		}
 		controllerHelper, ok := hybridControllerFrontend.(controllerhelpers.ControllerHelper)
 		if !ok {
-			log.Fatalf("%v", utils.TypeAssertionError("hybridControllerFrontend.(controllerhelpers.ControllerHelper)"))
+			Log().Fatalf("%v", utils.TypeAssertionError("hybridControllerFrontend.(controllerhelpers.ControllerHelper)"))
 		}
 
 		if *csiRole == csi.CSINode || *csiRole == csi.CSIAllInOne {
-			orchestrator.AddFrontend(hybridNodeFrontend)
+			orchestrator.AddFrontend(ctx, hybridNodeFrontend)
 			postBootstrapFrontends = append(postBootstrapFrontends, hybridNodeFrontend)
 		}
 		nodeHelper, ok := hybridNodeFrontend.(nodehelpers.NodeHelper)
 		if !ok {
-			log.Fatalf("%v", utils.TypeAssertionError("hybridNodeFrontend.(nodehelpers.NodeHelper)"))
+			Log().Fatalf("%v", utils.TypeAssertionError("hybridNodeFrontend.(nodehelpers.NodeHelper)"))
 		}
 
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"name":    *csiNodeName,
 			"version": config.OrchestratorVersion,
 		}).Info("Initializing CSI frontend.")
@@ -400,17 +439,17 @@ func main() {
 				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime)
 		}
 		if err != nil {
-			log.Fatalf("Unable to start the CSI frontend. %v", err)
+			Log().Fatalf("Unable to start the CSI frontend. %v", err)
 		}
-		orchestrator.AddFrontend(csiFrontend)
+		orchestrator.AddFrontend(ctx, csiFrontend)
 		postBootstrapFrontends = append(postBootstrapFrontends, csiFrontend)
 
 		if *useCRD {
 			crdController, err := crd.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
 			if err != nil {
-				log.Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
+				Log().Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
 			}
-			orchestrator.AddFrontend(crdController)
+			orchestrator.AddFrontend(ctx, crdController)
 			postBootstrapFrontends = append(postBootstrapFrontends, crdController)
 		}
 	}
@@ -419,11 +458,11 @@ func main() {
 	if *enableREST {
 
 		if *httpRequestTimeout < 0 {
-			log.Fatalf("HTTP request timeout cannot be a negative duration, cannot continue")
+			Log().Fatalf("HTTP request timeout cannot be a negative duration, cannot continue")
 		}
 
 		if *port == "" {
-			log.Warning("HTTP REST interface will not be available (port not specified).")
+			Log().Warning("HTTP REST interface will not be available (port not specified).")
 		} else {
 
 			if *address != "127.0.0.1" && *address != "[::1]" {
@@ -431,27 +470,27 @@ func main() {
 			}
 			httpServer := rest.NewHTTPServer(orchestrator, *address, *port, *httpRequestTimeout)
 			preBootstrapFrontends = append(preBootstrapFrontends, httpServer)
-			log.WithFields(log.Fields{"name": httpServer.GetName()}).Info("Added frontend.")
+			Log().WithFields(LogFields{"name": httpServer.GetName()}).Info("Added frontend.")
 		}
 	}
 
 	// Create HTTPS REST frontend
 	if *enableHTTPSREST {
 		if *httpsPort == "" {
-			log.Warning("HTTPS REST interface will not be available (httpsPort not specified).")
+			Log().Warning("HTTPS REST interface will not be available (httpsPort not specified).")
 		} else {
 			if *httpRequestTimeout < 0 {
-				log.Fatalf("HTTP request timeout cannot be a negative duration, cannot continue")
+				Log().Fatalf("HTTP request timeout cannot be a negative duration, cannot continue")
 			}
 
 			httpsServer, err := rest.NewHTTPSServer(
 				orchestrator, *httpsAddress, *httpsPort, *httpsCACert, *httpsServerCert, *httpsServerKey,
 				enableMutualTLS, handler, *httpRequestTimeout)
 			if err != nil {
-				log.Fatalf("Unable to start the HTTPS REST frontend. %v", err)
+				Log().Fatalf("Unable to start the HTTPS REST frontend. %v", err)
 			}
 			preBootstrapFrontends = append(preBootstrapFrontends, httpsServer)
-			log.WithFields(log.Fields{"name": httpsServer.GetName()}).Info("Added frontend.")
+			Log().WithFields(LogFields{"name": httpsServer.GetName()}).Info("Added frontend.")
 		}
 	}
 
@@ -461,21 +500,21 @@ func main() {
 	// the core is ready.
 	for _, f := range preBootstrapFrontends {
 		if err := f.Activate(); err != nil {
-			log.Error(err)
+			Log().Error(err)
 		}
 	}
 
 	if err = orchestrator.Bootstrap(txnMonitor); err != nil {
-		log.Error(err.Error())
+		Log().Error(err.Error())
 	}
 	for _, f := range postBootstrapFrontends {
 		if err := f.Activate(); err != nil {
 			// If there is a terminal error during reconciliation, then the node plugin needs to be restarted so that we
 			// can try again.
 			if csi.IsTerminalReconciliationError(err) {
-				log.Fatal(err)
+				Log().Fatal(err)
 			}
-			log.Error(err)
+			Log().Error(err)
 		}
 	}
 
@@ -487,19 +526,19 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
-	log.Info("Shutting down.")
+	Log().Info("Shutting down.")
 	for _, f := range postBootstrapFrontends {
 		if err := f.Deactivate(); err != nil {
-			log.Error(err)
+			Log().Error(err)
 		}
 	}
 	orchestrator.Stop()
 	for _, f := range preBootstrapFrontends {
 		if err := f.Deactivate(); err != nil {
-			log.Error(err)
+			Log().Error(err)
 		}
 	}
 	if err = storeClient.Stop(); err != nil {
-		log.Error(err)
+		Log().Error(err)
 	}
 }

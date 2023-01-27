@@ -22,4 +22,6 @@ type TridentController interface {
 	GetChap(ctx context.Context, volume, node string) (*utils.IscsiChapInfo, error)
 	UpdateVolumePublication(ctx context.Context, publication *utils.VolumePublicationExternal) error
 	UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames []string) error
+	// TODO (bpresnel) Enable later with rate-limiting?
+	// GetLoggingConfig(ctx context.Context) (string, string, string, error)
 }

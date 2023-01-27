@@ -10,6 +10,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	utils "github.com/netapp/trident/utils"
 )
@@ -79,6 +80,23 @@ func (m *MockTridentController) GetChap(arg0 context.Context, arg1, arg2 string)
 func (mr *MockTridentControllerMockRecorder) GetChap(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChap", reflect.TypeOf((*MockTridentController)(nil).GetChap), arg0, arg1, arg2)
+}
+
+// GetLoggingConfig mocks base method.
+func (m *MockTridentController) GetLoggingConfig(arg0 context.Context) (string, string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLoggingConfig", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(string)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// GetLoggingConfig indicates an expected call of GetLoggingConfig.
+func (mr *MockTridentControllerMockRecorder) GetLoggingConfig(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLoggingConfig", reflect.TypeOf((*MockTridentController)(nil).GetLoggingConfig), arg0)
 }
 
 // GetNodes mocks base method.

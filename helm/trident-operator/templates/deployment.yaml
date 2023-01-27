@@ -45,7 +45,9 @@ spec:
       containers:
       - command:
         - /trident-operator
-        - --debug={{ include "trident-operator.debug" $ }}
+        {{- if .Values.operatorDebug }}
+        - -debug
+        {{- end }}
         env:
         - name: POD_NAME
           valueFrom:

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
@@ -16,17 +15,17 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/logging"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 // validateKubeVersion logs a warning if the detected Kubernetes version is outside the supported range.
 func (h *helper) validateKubeVersion() error {
 	// Parse Kubernetes version into a SemVer object for simple comparisons
-	if version, err := utils.ParseSemantic(h.kubeVersion.GitVersion); err != nil {
+	if version, err := versionutils.ParseSemantic(h.kubeVersion.GitVersion); err != nil {
 		return err
-	} else if !version.AtLeast(utils.MustParseMajorMinorVersion(config.KubernetesVersionMin)) {
-		log.Warnf("%s v%s may not support container orchestrator version %s.%s (%s)! Supported "+
+	} else if !version.AtLeast(versionutils.MustParseMajorMinorVersion(config.KubernetesVersionMin)) {
+		Log().Warnf("%s v%s may not support container orchestrator version %s.%s (%s)! Supported "+
 			"Kubernetes versions are %s-%s. K8S helper frontend proceeds as if you are running Kubernetes %s!",
 			config.OrchestratorName, config.OrchestratorVersion, h.kubeVersion.Major, h.kubeVersion.Minor,
 			h.kubeVersion.GitVersion, config.KubernetesVersionMin, config.KubernetesVersionMax,
@@ -183,7 +182,7 @@ func isNotManaged(ctx context.Context, annotations map[string]string, name, kind
 // convertStorageClassV1BetaToV1 accepts an older (beta) storage class and returns a v1 storage class
 // populated with the fields needed by Trident.
 func convertStorageClassV1BetaToV1(class *k8sstoragev1beta.StorageClass) *k8sstoragev1.StorageClass {
-	// For now we just copy the fields used by Trident.
+	// For now, we just copy the fields used by Trident.
 	v1Class := &k8sstoragev1.StorageClass{
 		Provisioner: class.Provisioner,
 		Parameters:  class.Parameters,
@@ -214,7 +213,7 @@ func getPVCProvisioner(pvc *v1.PersistentVolumeClaim) string {
 func (h *helper) checkValidStorageClassReceived(ctx context.Context, claim *v1.PersistentVolumeClaim) error {
 	// Filter unrelated claims
 	if claim.Spec.StorageClassName == nil || *claim.Spec.StorageClassName == "" {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"PVC": claim.Name,
 		}).Error("PVC has no storage class specified")
 		return fmt.Errorf("PVC %s has no storage class specified", claim.Name)

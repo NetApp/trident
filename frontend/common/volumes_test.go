@@ -5,15 +5,15 @@ package common
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	mockapi "github.com/netapp/trident/mocks/mock_core"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -22,7 +22,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 
@@ -50,7 +50,7 @@ func TestCombineAccessModes(t *testing.T) {
 	}
 
 	for _, tc := range accessModesTests {
-		accessMode := CombineAccessModes(tc.accessModes)
+		accessMode := CombineAccessModes(context.Background(), tc.accessModes)
 		assert.Equal(t, tc.expected, accessMode, "Access Modes not combining as expected!")
 	}
 }
@@ -128,7 +128,7 @@ func TestGetVolumeConfig(t *testing.T) {
 		PreferredTopologies: dummyMap,
 	}
 
-	vol, err := GetVolumeConfig(dummyString, dummyString, 100, map[string]string{},
+	vol, err := GetVolumeConfig(context.Background(), dummyString, dummyString, 100, map[string]string{},
 		config.Protocol(dummyString), config.AccessMode(dummyString), config.VolumeMode(dummyString),
 		dummyMap, dummyMap)
 

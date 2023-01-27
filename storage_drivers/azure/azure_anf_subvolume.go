@@ -14,10 +14,9 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
-	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -142,7 +141,7 @@ type NASBlockStorageDriver struct {
 
 // Name returns the name of this driver.
 func (d *NASBlockStorageDriver) Name() string {
-	return drivers.AzureNASBlockStorageDriverName
+	return tridentconfig.AzureNASBlockStorageDriverName
 }
 
 // defaultBackendName returns the default name of the backend managed by this driver instance.
@@ -230,11 +229,9 @@ func (d *NASBlockStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "NASBlockStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Initialize")
-	}
+	fields := LogFields{"Method": "Initialize", "Type": "NASBlockStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	commonConfig.DriverContext = context
 
@@ -285,7 +282,7 @@ func (d *NASBlockStorageDriver) Initialize(
 		Plugin:    d.Name(),
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"StoragePrefix":              *config.StoragePrefix,
 		"Size":                       config.Size,
 		"ServiceLevel":               config.ServiceLevel,
@@ -303,11 +300,9 @@ func (d *NASBlockStorageDriver) Initialized() bool {
 
 // Terminate stops the driver prior to its being unloaded.
 func (d *NASBlockStorageDriver) Terminate(ctx context.Context, _ string) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "NASBlockStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
-	}
+	fields := LogFields{"Method": "Terminate", "Type": "NASBlockStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Terminate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Terminate")
 
 	d.initialized = false
 }
@@ -316,11 +311,9 @@ func (d *NASBlockStorageDriver) Terminate(ctx context.Context, _ string) {
 func (d *NASBlockStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.AzureNASStorageDriverConfig,
 ) {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "NASBlockStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> populateConfigurationDefaults")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< populateConfigurationDefaults")
-	}
+	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "NASBlockStorageDriver"}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
 	if config.StoragePrefix == nil {
 		defaultPrefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
@@ -335,7 +328,7 @@ func (d *NASBlockStorageDriver) populateConfigurationDefaults(
 	if config.LimitVolumeSize == "" {
 		config.LimitVolumeSize = defaultLimitVolumeSize
 	}
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"StoragePrefix":   *config.StoragePrefix,
 		"Size":            config.Size,
 		"ServiceLevel":    config.ServiceLevel,
@@ -492,11 +485,9 @@ func (d *NASBlockStorageDriver) initializeAzureConfig(
 	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 	backendSecret map[string]string,
 ) (*drivers.AzureNASStorageDriverConfig, error) {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "initializeAzureConfig", "Type": "NASBlockStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> initializeAzureConfig")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< initializeAzureConfig")
-	}
+	fields := LogFields{"Method": "initializeAzureConfig", "Type": "NASBlockStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeAzureConfig")
+	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeAzureConfig")
 
 	config := &drivers.AzureNASStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
@@ -520,11 +511,9 @@ func (d *NASBlockStorageDriver) initializeAzureConfig(
 func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 	ctx context.Context, config *drivers.AzureNASStorageDriverConfig,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "initializeAzureSDKClient", "Type": "NASBlockStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> initializeAzureSDKClient")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< initializeAzureSDKClient")
-	}
+	fields := LogFields{"Method": "initializeAzureSDKClient", "Type": "NASBlockStorageDriver"}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeAzureSDKClient")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeAzureSDKClient")
 
 	sdkTimeout := api.DefaultSDKTimeout
 	if config.SDKTimeout != "" {
@@ -549,14 +538,15 @@ func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 	}
 
 	client, err := api.NewDriver(api.ClientConfig{
-		SubscriptionID:  config.SubscriptionID,
-		TenantID:        config.TenantID,
-		ClientID:        config.ClientID,
-		ClientSecret:    config.ClientSecret,
-		Location:        config.Location,
-		DebugTraceFlags: config.DebugTraceFlags,
-		SDKTimeout:      sdkTimeout,
-		MaxCacheAge:     maxCacheAge,
+		SubscriptionID:    config.SubscriptionID,
+		TenantID:          config.TenantID,
+		ClientID:          config.ClientID,
+		ClientSecret:      config.ClientSecret,
+		Location:          config.Location,
+		StorageDriverName: config.StorageDriverName,
+		DebugTraceFlags:   config.DebugTraceFlags,
+		SDKTimeout:        sdkTimeout,
+		MaxCacheAge:       maxCacheAge,
 	})
 	if err != nil {
 		return err
@@ -573,11 +563,9 @@ func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 
 // validate ensures the driver configuration and execution environment are valid and working.
 func (d *NASBlockStorageDriver) validate(ctx context.Context) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "NASBlockStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> validate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
-	}
+	fields := LogFields{"Method": "validate", "Type": "NASBlockStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
 	storagePrefix := *d.Config.StoragePrefix
 
@@ -631,17 +619,14 @@ func (d *NASBlockStorageDriver) Create(
 	storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 	creationToken := volConfig.InternalName
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":        "Create",
-			"Type":          "NASBlockStorageDriver",
-			"creationToken": creationToken,
-			"attrs":         volAttributes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Create")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Create")
+	fields := LogFields{
+		"Method":        "Create",
+		"Type":          "NASBlockStorageDriver",
+		"creationToken": creationToken,
+		"attrs":         volAttributes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
 	// Make sure we got a valid volume name
 	if err := d.validateVolumeName(volConfig.Name); err != nil {
@@ -663,7 +648,7 @@ func (d *NASBlockStorageDriver) Create(
 		volConfig.InternalName = extantSubvolume.Name
 		volConfig.InternalID = extantSubvolume.ID
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":  volConfig.InternalName,
 			"state": extantSubvolume.ProvisioningState,
 		}).Warning("Subvolume already exists.")
@@ -713,7 +698,7 @@ func (d *NASBlockStorageDriver) Create(
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"creationToken": creationToken,
 		"size":          sizeBytes,
 		"volume":        storagePool.InternalAttributes()[FilePoolVolumes],
@@ -756,17 +741,15 @@ func (d *NASBlockStorageDriver) CreateClone(
 	snapshot := volConfig.CloneSourceSnapshot
 	isFromSnapshot := snapshot != ""
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":        "CreateClone",
-			"Type":          "NASBlockStorageDriver",
-			"creationToken": creationToken,
-			"source":        source,
-			"snapshot":      snapshot,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
+	fields := LogFields{
+		"Method":        "CreateClone",
+		"Type":          "NASBlockStorageDriver",
+		"creationToken": creationToken,
+		"source":        source,
+		"snapshot":      snapshot,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateClone")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateClone")
 
 	// Make sure we got a valid name
 	if err := d.validateVolumeName(volConfig.Name); err != nil {
@@ -809,7 +792,7 @@ func (d *NASBlockStorageDriver) CreateClone(
 		volConfig.InternalName = extantSubvolume.Name
 		volConfig.InternalID = extantSubvolume.ID
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":  volConfig.InternalName,
 			"state": extantSubvolume.ProvisioningState,
 		}).Warning("Subvolume already exists.")
@@ -833,7 +816,7 @@ func (d *NASBlockStorageDriver) CreateClone(
 	filePoolVolume := api.CreateVolumeFullName(sourceSubvolume.ResourceGroup, sourceSubvolume.NetAppAccount,
 		sourceSubvolume.CapacityPool, sourceSubvolume.Volume)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"creationToken": creationToken,
 		"size":          sourceSubvolume.Size, // This may come out to be zero and has no affect on clone size
 		"volume":        filePoolVolume,
@@ -873,16 +856,14 @@ func (d *NASBlockStorageDriver) CreateClone(
 func (d *NASBlockStorageDriver) Import(
 	ctx context.Context, volConfig *storage.VolumeConfig, originalName string,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "Import",
-			"Type":         "NASBlockStorageDriver",
-			"originalName": originalName,
-			"newName":      volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Import")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Import")
+	fields := LogFields{
+		"Method":       "Import",
+		"Type":         "NASBlockStorageDriver",
+		"originalName": originalName,
+		"newName":      volConfig.InternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
 
 	// Make sure the original name is in an acceptable format
 	if err := d.validateCreationToken(originalName); err != nil {
@@ -916,16 +897,14 @@ func (d *NASBlockStorageDriver) Import(
 }
 
 func (d *NASBlockStorageDriver) Rename(ctx context.Context, name, newName string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "Rename",
-			"Type":    "NASBlockStorageDriver",
-			"name":    name,
-			"newName": newName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Rename")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Rename")
+	fields := LogFields{
+		"Method":  "Rename",
+		"Type":    "NASBlockStorageDriver",
+		"name":    name,
+		"newName": newName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Rename")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
 
 	// Rename is only needed for the import workflow, and we aren't currently renaming the
 	// ANF subvolume when importing, so do nothing here lest we set the subvolume name incorrectly
@@ -945,7 +924,7 @@ func (d *NASBlockStorageDriver) waitForSubvolumeCreate(ctx context.Context, subv
 		ctx, subvolume, api.StateAvailable, []string{api.StateError}, d.volumeCreateTimeout)
 	if err != nil {
 
-		logFields := log.Fields{"subvolume": subvolume}
+		logFields := LogFields{"subvolume": subvolume}
 
 		switch state {
 
@@ -1011,15 +990,13 @@ func (d *NASBlockStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 
 	creationToken := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Destroy",
-			"Type":   "NASBlockStorageDriver",
-			"name":   creationToken,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Destroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Destroy")
+	fields := LogFields{
+		"Method": "Destroy",
+		"Type":   "NASBlockStorageDriver",
+		"name":   creationToken,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
 	// In case where subvolume creation fails it may not contain an internalID, so clean it up using creation token
 	if volConfig.InternalID == "" {
@@ -1083,15 +1060,13 @@ func (d *NASBlockStorageDriver) Publish(
 	// Get the subvolume
 	creationToken := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Publish",
-			"Type":   "NASBlockStorageDriver",
-			"name":   volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Publish")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Publish")
+	fields := LogFields{
+		"Method": "Publish",
+		"Type":   "NASBlockStorageDriver",
+		"name":   volConfig.InternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Publish")
 
 	// Get the subvolume's parent ANF volume
 	volume, err := d.SDK.SubvolumeParentVolume(ctx, volConfig)
@@ -1151,16 +1126,14 @@ func (d *NASBlockStorageDriver) GetSnapshot(
 	internalVolName := snapConfig.VolumeInternalName
 	externalVolName := snapConfig.VolumeName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "GetSnapshot",
-			"Type":         "NASBlockStorageDriver",
-			"snapshotName": snapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
+	fields := LogFields{
+		"Method":       "GetSnapshot",
+		"Type":         "NASBlockStorageDriver",
+		"snapshotName": snapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
 	// Get the source subvolume
 	sourceSubvolumeExists, sourceSubvolume, err := d.SDK.SubvolumeExistsByID(ctx, volConfig.InternalID)
@@ -1190,7 +1163,7 @@ func (d *NASBlockStorageDriver) GetSnapshot(
 		return nil, fmt.Errorf("snapshot %s state is %s", creationToken, extantSubvolume.ProvisioningState)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshotName":         snapName,
 		"snapshotInternalName": creationToken,
 		"volumeName":           internalVolName,
@@ -1212,15 +1185,13 @@ func (d *NASBlockStorageDriver) GetSnapshots(
 	externalVolName := volConfig.Name
 	prefix := *d.Config.StoragePrefix
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "GetSnapshots",
-			"Type":       "NASBlockStorageDriver",
-			"volumeName": internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshots")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
+	fields := LogFields{
+		"Method":     "GetSnapshots",
+		"Type":       "NASBlockStorageDriver",
+		"volumeName": internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
 	// Get the source subvolume
 	sourceSubvolume, err := d.SDK.Subvolume(ctx, volConfig, false)
@@ -1286,7 +1257,7 @@ func (d *NASBlockStorageDriver) CreateSnapshot(
 
 	var poller api.PollerResponse
 
-	fields := log.Fields{
+	fields := LogFields{
 		"Method":       "CreateSnapshot",
 		"Type":         "NASBlockStorageDriver",
 		"snapshotName": snapName,
@@ -1297,6 +1268,8 @@ func (d *NASBlockStorageDriver) CreateSnapshot(
 		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
 	// Validate snapshot name
 	if err := d.validateSnapshotName(snapName); err != nil {
@@ -1333,7 +1306,7 @@ func (d *NASBlockStorageDriver) CreateSnapshot(
 		// Create name of the volume where this snapshot subvolume will live
 		filePoolVolume := api.CreateVolumeFullName(resourceGroup, netappAccount, cPoolName, volumeName)
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"creationToken": creationToken,
 			"volume":        filePoolVolume,
 			"parentPath":    internalVolName,
@@ -1372,7 +1345,7 @@ func (d *NASBlockStorageDriver) CreateSnapshot(
 	// For this driver the internal name and the name are different so set the internal name
 	snapConfig.InternalName = creationToken
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshotName": snapConfig.InternalName,
 		"volumeName":   snapConfig.VolumeInternalName,
 	}).Info("Snapshot created.")
@@ -1392,16 +1365,14 @@ func (d *NASBlockStorageDriver) RestoreSnapshot(
 	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "RestoreSnapshot",
-			"Type":         "NASBlockStorageDriver",
-			"snapshotName": snapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> RestoreSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
+	fields := LogFields{
+		"Method":       "RestoreSnapshot",
+		"Type":         "NASBlockStorageDriver",
+		"snapshotName": snapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
 	return utils.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
 }
@@ -1413,16 +1384,14 @@ func (d *NASBlockStorageDriver) DeleteSnapshot(
 	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "DeleteSnapshot",
-			"Type":         "NASBlockStorageDriver",
-			"snapshotName": snapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
+	fields := LogFields{
+		"Method":       "DeleteSnapshot",
+		"Type":         "NASBlockStorageDriver",
+		"snapshotName": snapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
 	creationToken := d.helper.GetSnapshotInternalName(snapConfig.VolumeName, snapName)
 
@@ -1467,11 +1436,9 @@ func (d *NASBlockStorageDriver) DeleteSnapshot(
 
 // Get tests for the existence of a volume
 func (d *NASBlockStorageDriver) Get(ctx context.Context, name string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "NASBlockStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Get")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
-	}
+	fields := LogFields{"Method": "Get", "Type": "NASBlockStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
 
 	if _, err := d.SDK.SubvolumeByCreationToken(ctx, name, d.getAllFilePoolVolumes(), false); err != nil {
 		return fmt.Errorf("could not get volume %s; %v", name, err)
@@ -1484,16 +1451,14 @@ func (d *NASBlockStorageDriver) Get(ctx context.Context, name string) error {
 func (d *NASBlockStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":    "Resize",
-			"Type":      "NASBlockStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Resize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
+	fields := LogFields{
+		"Method":    "Resize",
+		"Type":      "NASBlockStorageDriver",
+		"name":      name,
+		"sizeBytes": sizeBytes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
 	// Get the subvolume
 	subvolumeWithMetadata, err := d.SDK.Subvolume(ctx, volConfig, true)
@@ -1585,16 +1550,14 @@ func (d *NASBlockStorageDriver) GetInternalVolumeName(ctx context.Context, name 
 func (d *NASBlockStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	creationToken := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "CreateFollowup",
-			"Type":   "NASBlockStorageDriver",
-			"name":   creationToken,
-		}
-
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateFollowup")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateFollowup")
+	fields := LogFields{
+		"Method": "CreateFollowup",
+		"Type":   "NASBlockStorageDriver",
+		"name":   creationToken,
 	}
+
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
 
 	subvolume, err := d.SDK.Subvolume(ctx, volConfig, false)
 	if err != nil {
@@ -1676,11 +1639,9 @@ func (d *NASBlockStorageDriver) GetVolumeExternal(ctx context.Context, name stri
 func (d *NASBlockStorageDriver) GetVolumeExternalWrappers(
 	ctx context.Context, channel chan *storage.VolumeExternalWrapper,
 ) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "GetVolumeExternalWrappers", "Type": "NASBlockStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetVolumeExternalWrappers")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolumeExternalWrappers")
-	}
+	fields := LogFields{"Method": "GetVolumeExternalWrappers", "Type": "NASBlockStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetVolumeExternalWrappers")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetVolumeExternalWrappers")
 
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
@@ -1800,15 +1761,14 @@ func (d *NASBlockStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes [
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
 	}
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "ReconcileNodeAccess",
-			"Type":   "NASBlockStorageDriver",
-			"Nodes":  nodeNames,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+
+	fields := LogFields{
+		"Method": "ReconcileNodeAccess",
+		"Type":   "NASBlockStorageDriver",
+		"Nodes":  nodeNames,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
 	return nil
 }

@@ -9,12 +9,12 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	. "github.com/netapp/trident/logging"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 )
 
@@ -90,7 +90,7 @@ func obliviateCRDs() error {
 		return err
 	}
 
-	log.Infof("Reset Trident's CRD state.")
+	Log().Infof("Reset Trident's CRD state.")
 
 	return nil
 }
@@ -151,14 +151,14 @@ func deleteCRs() error {
 
 func deleteVersions() error {
 	crd := "tridentversions.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithFields(logFields).Debug("CRD not present.")
+		Log().WithFields(logFields).Debug("CRD not present.")
 		return nil
 	}
 
@@ -166,7 +166,7 @@ func deleteVersions() error {
 	if err != nil {
 		return err
 	} else if len(versions.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -189,32 +189,32 @@ func deleteVersions() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentVersions(version.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), version.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteBackends() error {
 	crd := "tridentbackends.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithFields(logFields).Debug("CRD not present.")
+		Log().WithFields(logFields).Debug("CRD not present.")
 		return nil
 	}
 
@@ -222,7 +222,7 @@ func deleteBackends() error {
 	if err != nil {
 		return err
 	} else if len(backends.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -245,32 +245,32 @@ func deleteBackends() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentBackends(backend.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), backend.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteTridentMirrorRelationships() error {
 	crd := "tridentmirrorrelationships.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithFields(logFields).Debug("CRD not present.")
+		Log().WithFields(logFields).Debug("CRD not present.")
 		return nil
 	}
 
@@ -278,7 +278,7 @@ func deleteTridentMirrorRelationships() error {
 	if err != nil {
 		return err
 	} else if len(relationships.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -303,32 +303,32 @@ func deleteTridentMirrorRelationships() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentMirrorRelationships(relationship.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), relationship.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteTridentSnapshotInfos() error {
 	crd := "tridentsnapshotinfos.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithFields(logFields).Debug("CRD not present.")
+		Log().WithFields(logFields).Debug("CRD not present.")
 		return nil
 	}
 
@@ -336,7 +336,7 @@ func deleteTridentSnapshotInfos() error {
 	if err != nil {
 		return err
 	} else if len(snapshotInfos.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -361,32 +361,32 @@ func deleteTridentSnapshotInfos() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentSnapshotInfos(snapshotInfo.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), snapshotInfo.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteBackendConfigs() error {
 	crd := "tridentbackendconfigs.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithFields(logFields).Debug("CRD not present.")
+		Log().WithFields(logFields).Debug("CRD not present.")
 		return nil
 	}
 
@@ -394,7 +394,7 @@ func deleteBackendConfigs() error {
 	if err != nil {
 		return err
 	} else if len(backendConfigs.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -419,32 +419,32 @@ func deleteBackendConfigs() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentBackendConfigs(backendConfig.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), backendConfig.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteStorageClasses() error {
 	crd := "tridentstorageclasses.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithField("CRD", crd).Debug("CRD not present.")
+		Log().WithField("CRD", crd).Debug("CRD not present.")
 		return nil
 	}
 
@@ -452,7 +452,7 @@ func deleteStorageClasses() error {
 	if err != nil {
 		return err
 	} else if len(storageclasses.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -475,32 +475,32 @@ func deleteStorageClasses() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentStorageClasses(sc.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), sc.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteVolumes() error {
 	crd := "tridentvolumes.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithField("CRD", crd).Debug("CRD not present.")
+		Log().WithField("CRD", crd).Debug("CRD not present.")
 		return nil
 	}
 
@@ -508,7 +508,7 @@ func deleteVolumes() error {
 	if err != nil {
 		return err
 	} else if len(volumes.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -531,32 +531,32 @@ func deleteVolumes() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentVolumes(volume.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), volume.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteNodes() error {
 	crd := "tridentnodes.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithField("CRD", crd).Debug("CRD not present.")
+		Log().WithField("CRD", crd).Debug("CRD not present.")
 		return nil
 	}
 
@@ -564,7 +564,7 @@ func deleteNodes() error {
 	if err != nil {
 		return err
 	} else if len(nodes.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -587,32 +587,32 @@ func deleteNodes() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentNodes(node.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), node.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteVolumePublications() error {
 	crd := "tridentvolumepublications.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithField("CRD", crd).Debug("CRD not present.")
+		Log().WithField("CRD", crd).Debug("CRD not present.")
 		return nil
 	}
 
@@ -620,7 +620,7 @@ func deleteVolumePublications() error {
 	if err != nil {
 		return err
 	} else if len(publications.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -645,32 +645,32 @@ func deleteVolumePublications() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentVolumePublications(publication.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), publication.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteTransactions() error {
 	crd := "tridenttransactions.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithField("CRD", crd).Debug("CRD not present.")
+		Log().WithField("CRD", crd).Debug("CRD not present.")
 		return nil
 	}
 
@@ -678,7 +678,7 @@ func deleteTransactions() error {
 	if err != nil {
 		return err
 	} else if len(transactions.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -701,32 +701,32 @@ func deleteTransactions() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentTransactions(txn.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), txn.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteSnapshots() error {
 	crd := "tridentsnapshots.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithField("CRD", crd).Debug("CRD not present.")
+		Log().WithField("CRD", crd).Debug("CRD not present.")
 		return nil
 	}
 
@@ -734,7 +734,7 @@ func deleteSnapshots() error {
 	if err != nil {
 		return err
 	} else if len(snapshots.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -757,32 +757,32 @@ func deleteSnapshots() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentSnapshots(snapshot.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), snapshot.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
 func deleteVolumeReferences() error {
 	crd := "tridentvolumereferences.trident.netapp.io"
-	logFields := log.Fields{"CRD": crd}
+	logFields := LogFields{"CRD": crd}
 
 	// See if CRD exists
 	exists, err := k8sClient.CheckCRDExists(crd)
 	if err != nil {
 		return err
 	} else if !exists {
-		log.WithField("CRD", crd).Debug("CRD not present.")
+		Log().WithField("CRD", crd).Debug("CRD not present.")
 		return nil
 	}
 
@@ -790,7 +790,7 @@ func deleteVolumeReferences() error {
 	if err != nil {
 		return err
 	} else if len(vrefs.Items) == 0 {
-		log.WithFields(logFields).Info("Resources not present.")
+		Log().WithFields(logFields).Info("Resources not present.")
 		return nil
 	}
 
@@ -813,19 +813,19 @@ func deleteVolumeReferences() error {
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
-				log.Errorf("Problem removing finalizers: %v", err)
+				Log().Errorf("Problem removing finalizers: %v", err)
 				return err
 			}
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentVolumeReferences(vref.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), vref.Name, nil); err != nil {
-			log.Errorf("Problem deleting resource: %v", err)
+			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
 	}
 
-	log.WithFields(logFields).Info("Resources deleted.")
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
@@ -847,7 +847,7 @@ func deleteCRDs() error {
 
 	for _, crdName := range crdNames {
 
-		logFields := log.Fields{"CRD": crdName}
+		logFields := LogFields{"CRD": crdName}
 
 		// See if CRD exists
 		exists, err := k8sClient.CheckCRDExists(crdName)
@@ -855,52 +855,52 @@ func deleteCRDs() error {
 			return err
 		}
 		if !exists {
-			log.WithFields(logFields).Info("CRD not present.")
+			Log().WithFields(logFields).Info("CRD not present.")
 			continue
 		}
 
 		// Get the CRD and check for finalizers
 		crd, err := k8sClient.GetCRD(crdName)
 		if isNotFoundError(err) {
-			log.WithFields(logFields).Info("CRD not found.")
+			Log().WithFields(logFields).Info("CRD not found.")
 			continue
 		}
 
 		// Remove finalizers if present
 		if len(crd.Finalizers) > 0 {
 			if err := k8sClient.RemoveFinalizerFromCRD(crdName); err != nil {
-				log.WithFields(logFields).Errorf("Could not remove finalizer from CRD; %v", err)
+				Log().WithFields(logFields).Errorf("Could not remove finalizer from CRD; %v", err)
 				return err
 			} else {
-				log.WithFields(logFields).Debug("Removed finalizers from CRD.")
+				Log().WithFields(logFields).Debug("Removed finalizers from CRD.")
 			}
 		} else {
-			log.WithFields(logFields).Debug("No finalizers found on CRD.")
+			Log().WithFields(logFields).Debug("No finalizers found on CRD.")
 		}
 
 		// Try deleting CRD
 		if crd.DeletionTimestamp.IsZero() {
-			log.WithFields(logFields).Debug("Deleting CRD.")
+			Log().WithFields(logFields).Debug("Deleting CRD.")
 
 			err := k8sClient.DeleteCRD(crdName)
 			if isNotFoundError(err) {
-				log.WithFields(logFields).Info("CRD not found during deletion.")
+				Log().WithFields(logFields).Info("CRD not found during deletion.")
 				continue
 			} else if err != nil {
-				log.WithFields(logFields).Errorf("Could not delete CRD; %v", err)
+				Log().WithFields(logFields).Errorf("Could not delete CRD; %v", err)
 				return err
 			}
 		} else {
-			log.WithFields(logFields).Debug("CRD already has deletion timestamp.")
+			Log().WithFields(logFields).Debug("CRD already has deletion timestamp.")
 		}
 
 		// Give the CRD some time to disappear.  We removed any finalizers, so this should always work.
 		if err := waitForCRDDeletion(crdName, k8sTimeout); err != nil {
-			log.WithFields(logFields).Error(err)
+			Log().WithFields(logFields).Error(err)
 			return err
 		}
 
-		log.WithFields(logFields).Info("CRD deleted.")
+		Log().WithFields(logFields).Info("CRD deleted.")
 		continue
 	}
 
@@ -935,7 +935,7 @@ func deleteWithRetry(deleteFunc crDeleter, c context.Context, name string, delet
 	}
 
 	doDeleteNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"name": name,
 			"err":  err,
 		}).Debug("Object not yet deleted, waiting.")
@@ -950,13 +950,13 @@ func deleteWithRetry(deleteFunc crDeleter, c context.Context, name string, delet
 	deleteBackoff.MaxInterval = 5 * time.Second
 	deleteBackoff.MaxElapsedTime = timeout
 
-	log.WithField("name", name).Trace("Waiting for object to be deleted.")
+	Log().WithField("name", name).Trace("Waiting for object to be deleted.")
 
 	if err := backoff.RetryNotify(doDelete, deleteBackoff, doDeleteNotify); err != nil {
 		return fmt.Errorf("object %s was not deleted after %3.2f seconds", name, timeout.Seconds())
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"name":        name,
 		"retries":     retries,
 		"waitSeconds": fmt.Sprintf("%3.2f", deleteBackoff.GetElapsedTime().Seconds()),
@@ -978,7 +978,7 @@ func waitForCRDDeletion(name string, timeout time.Duration) error {
 	}
 
 	checkDeletedNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"CRD": name,
 			"err": err,
 		}).Debug("CRD not yet deleted, waiting.")
@@ -993,13 +993,13 @@ func waitForCRDDeletion(name string, timeout time.Duration) error {
 	deleteBackoff.MaxInterval = 5 * time.Second
 	deleteBackoff.MaxElapsedTime = timeout
 
-	log.WithField("CRD", name).Trace("Waiting for CRD to be deleted.")
+	Log().WithField("CRD", name).Trace("Waiting for CRD to be deleted.")
 
 	if err := backoff.RetryNotify(checkDeleted, deleteBackoff, checkDeletedNotify); err != nil {
 		return fmt.Errorf("CRD %s was not deleted after %3.2f seconds", name, timeout.Seconds())
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"CRD":         name,
 		"retries":     retries,
 		"waitSeconds": fmt.Sprintf("%3.2f", deleteBackoff.GetElapsedTime().Seconds()),

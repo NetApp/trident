@@ -9,10 +9,9 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // GetFilesystemStats returns the size of the filesystem for the given path.
@@ -53,7 +52,7 @@ func GetFilesystemStats(
 
 	buf := result.Output
 	size := int64(buf.Blocks) * buf.Bsize
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"path":   path,
 		"size":   size,
 		"bsize":  buf.Bsize,

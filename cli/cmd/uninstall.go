@@ -10,6 +10,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 )
 
 func init() {
@@ -23,16 +24,16 @@ var uninstallCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initInstallerLogging()
 		if err := discoverUninstallationEnvironment(); err != nil {
-			log.Fatalf("Uninstall pre-checks failed; %v", err)
+			Log().Fatalf("Uninstall pre-checks failed; %v", err)
 		}
 		if err := validateUninstallationArguments(); err != nil {
-			log.Fatalf("Invalid arguments; %v", err)
+			Log().Fatalf("Invalid arguments; %v", err)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		// Run the uninstaller directly using the Kubernetes client
 		if err := uninstallTrident(); err != nil {
-			log.Fatalf("Uninstall failed; %v", err)
+			Log().Fatalf("Uninstall failed; %v", err)
 		}
 	},
 }
@@ -64,7 +65,7 @@ func discoverUninstallationEnvironment() error {
 	// Direct all subsequent client commands to the chosen namespace
 	client.SetNamespace(TridentPodNamespace)
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"kubernetesVersion": client.Version().String(),
 	}).Debug("Validated uninstallation environment.")
 
@@ -133,7 +134,7 @@ func uninstallTrident() error {
 	}
 
 	if legacyTridentInstalled && csiPreviewTridentInstalled {
-		log.Warning("Both legacy and CSI Trident are installed.  CSI Trident will be uninstalled, and " +
+		Log().Warning("Both legacy and CSI Trident are installed.  CSI Trident will be uninstalled, and " +
 			"you must run the uninstaller again to remove legacy Trident before running the Trident installer.")
 	}
 
@@ -156,7 +157,7 @@ func uninstallTrident() error {
 	if csiPreviewTridentInstalled {
 		// Delete Trident statefulset
 		if statefulset, err := client.GetStatefulSetByLabel(appLabel, true); err != nil {
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"label": appLabel,
 				"error": err,
 			}).Warn("Trident statefulset not found.")
@@ -167,14 +168,14 @@ func uninstallTrident() error {
 					"not in specified namespace '%s'", statefulset.Namespace, TridentPodNamespace)
 			}
 
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"statefulset": statefulset.Name,
 				"namespace":   statefulset.Namespace,
 			}).Debug("Trident statefulset found by label.")
 
 			// Delete the statefulset
 			if err = client.DeleteStatefulSetByLabel(appLabel); err != nil {
-				log.WithFields(log.Fields{
+				Log().WithFields(LogFields{
 					"statefulset": statefulset.Name,
 					"namespace":   statefulset.Namespace,
 					"label":       appLabel,
@@ -182,13 +183,13 @@ func uninstallTrident() error {
 				}).Warning("Could not delete Trident statefulset.")
 				anyErrors = true
 			} else {
-				log.Info("Deleted Trident statefulset.")
+				Log().Info("Deleted Trident statefulset.")
 			}
 		}
 	} else {
 		// Delete Trident deployment
 		if deployment, err := client.GetDeploymentByLabel(appLabel, true); err != nil {
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"label": appLabel,
 				"error": err,
 			}).Warn("Trident deployment not found.")
@@ -199,14 +200,14 @@ func uninstallTrident() error {
 					"not in specified namespace '%s'", deployment.Namespace, TridentPodNamespace)
 			}
 
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"deployment": deployment.Name,
 				"namespace":  deployment.Namespace,
 			}).Debug("Trident deployment found by label.")
 
 			// Delete the deployment
 			if err = client.DeleteDeploymentByLabel(appLabel); err != nil {
-				log.WithFields(log.Fields{
+				Log().WithFields(LogFields{
 					"deployment": deployment.Name,
 					"namespace":  deployment.Namespace,
 					"label":      appLabel,
@@ -214,7 +215,7 @@ func uninstallTrident() error {
 				}).Warning("Could not delete Trident deployment.")
 				anyErrors = true
 			} else {
-				log.Info("Deleted Trident deployment.")
+				Log().Info("Deleted Trident deployment.")
 			}
 		}
 	}
@@ -223,7 +224,7 @@ func uninstallTrident() error {
 	// not be present if uninstalling legacy Trident or preview CSI Trident, in which case we log
 	// warnings only.
 	if daemonsets, err := client.GetDaemonSetsByLabel(TridentNodeLabel, true); err != nil {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"label": TridentNodeLabel,
 			"error": err,
 		}).Warning("Trident DaemonSet(s) not found.")
@@ -235,14 +236,14 @@ func uninstallTrident() error {
 					"not in specified namespace '%s'", daemonsets[i].Namespace, TridentPodNamespace)
 			}
 
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"DaemonSet": daemonsets[i].Name,
 				"namespace": daemonsets[i].Namespace,
 			}).Debug("Trident DaemonSet found by label.")
 
 			// Delete the DaemonSet
 			if err = client.DeleteDaemonSetByLabelAndName(TridentNodeLabel, daemonsets[i].Name); err != nil {
-				log.WithFields(log.Fields{
+				Log().WithFields(LogFields{
 					"DaemonSet": daemonsets[i].Name,
 					"namespace": daemonsets[i].Namespace,
 					"label":     TridentNodeLabel,
@@ -250,13 +251,13 @@ func uninstallTrident() error {
 				}).Warning("Could not delete Trident daemonset.")
 				anyErrors = true
 			} else {
-				log.Info("Deleted Trident daemonset.")
+				Log().Info("Deleted Trident daemonset.")
 			}
 		}
 	}
 
 	if service, err := client.GetServiceByLabel(TridentCSILabel, true); err != nil {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"label": TridentCSILabel,
 			"error": err,
 		}).Warning("Trident service not found.")
@@ -268,14 +269,14 @@ func uninstallTrident() error {
 				"not in specified namespace '%s'", service.Namespace, TridentPodNamespace)
 		}
 
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"service":   service.Name,
 			"namespace": service.Namespace,
 		}).Debug("Trident service found by label.")
 
 		// Delete the service
 		if err = client.DeleteServiceByLabel(TridentCSILabel); err != nil {
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"service":   service.Name,
 				"namespace": service.Namespace,
 				"label":     TridentCSILabel,
@@ -283,12 +284,12 @@ func uninstallTrident() error {
 			}).Warning("Could not delete service.")
 			anyErrors = true
 		} else {
-			log.Info("Deleted Trident service.")
+			Log().Info("Deleted Trident service.")
 		}
 	}
 
 	if resourceQuota, err := client.GetResourceQuotaByLabel(TridentNodeLabel); err != nil {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"label": TridentNodeLabel,
 			"error": err,
 		}).Warning("Trident resource quota not found by label.")
@@ -300,14 +301,14 @@ func uninstallTrident() error {
 				"not in specified namespace '%s'", resourceQuota.Namespace, TridentPodNamespace)
 		}
 
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"resourcequota": resourceQuota.Name,
 			"namespace":     resourceQuota.Namespace,
 		}).Debug("Trident resource quota found by label.")
 
 		// Delete the resource quota
 		if err = client.DeleteResourceQuotaByLabel(TridentNodeLabel); err != nil {
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"resourcequota": resourceQuota.Name,
 				"namespace":     resourceQuota.Namespace,
 				"label":         TridentNodeLabel,
@@ -315,19 +316,19 @@ func uninstallTrident() error {
 			}).Warning("Could not delete resource quota.")
 			anyErrors = true
 		} else {
-			log.Info("Deleted Trident resource quota.")
+			Log().Info("Deleted Trident resource quota.")
 		}
 	}
 
 	if secrets, err := client.GetSecretsByLabel(TridentCSILabel, false); err != nil {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"label": TridentCSILabel,
 			"error": err,
 		}).Warning("Trident secrets not found.")
 	} else {
 		for _, secret := range secrets {
 
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"secret":    secret.Name,
 				"namespace": secret.Namespace,
 			}).Debug("Trident secret found by label.")
@@ -335,7 +336,7 @@ func uninstallTrident() error {
 			// Check if the secret has our persistent object label and value. If so, don't remove it.
 			if value, ok := secret.GetLabels()[TridentPersistentObjectLabelKey]; ok {
 				if value == TridentPersistentObjectLabelValue {
-					log.WithFields(log.Fields{
+					Log().WithFields(LogFields{
 						"secret":    secret.Name,
 						"namespace": secret.Namespace,
 						"label":     TridentPersistentObjectLabel,
@@ -346,7 +347,7 @@ func uninstallTrident() error {
 
 			// Deleting the secret by name should be safe since namespaced objects have unique names.
 			if err = client.DeleteSecret(secret.Name, TridentPodNamespace); err != nil {
-				log.WithFields(log.Fields{
+				Log().WithFields(LogFields{
 					"secret":    secret.Name,
 					"namespace": secret.Namespace,
 					"label":     TridentCSILabel,
@@ -354,7 +355,7 @@ func uninstallTrident() error {
 				}).Warning("Could not delete secret.")
 				anyErrors = true
 			} else {
-				log.Info("Deleted Trident secret.")
+				Log().Info("Deleted Trident secret.")
 			}
 		}
 	}
@@ -368,10 +369,10 @@ func uninstallTrident() error {
 			podSecurityPolicyYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
 		}
 		if err = client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
-			log.WithField("error", err).Warning("Could not delete pod security policy.")
+			Log().WithField("error", err).Warning("Could not delete pod security policy.")
 			anyErrors = true
 		} else {
-			log.WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
+			Log().WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
 		}
 
 		labels := make(map[string]string)
@@ -382,27 +383,27 @@ func uninstallTrident() error {
 		// Delete PodSecurityPolicy for controller, linux & windows nodes
 		pspYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(true), labels, nil)
 		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
-			log.WithField("error", err).Warning("Could not delete controller pod security policy.")
+			Log().WithField("error", err).Warning("Could not delete controller pod security policy.")
 			anyErrors = true
 		} else {
-			log.WithField("podSecurityPolicy", getControllerRBACResourceName(true)).Info("Deleted controller pod security policy.")
+			Log().WithField("podSecurityPolicy", getControllerRBACResourceName(true)).Info("Deleted controller pod security policy.")
 		}
 		// Deletion of Linux node PSP
 		pspYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)
 		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
-			log.WithField("error", err).Warning("Could not delete linux node pod security policy.")
+			Log().WithField("error", err).Warning("Could not delete linux node pod security policy.")
 			anyErrors = true
 		} else {
-			log.WithField("podSecurityPolicy", getNodeRBACResourceName(false)).Info("Deleted linux node pod security policy.")
+			Log().WithField("podSecurityPolicy", getNodeRBACResourceName(false)).Info("Deleted linux node pod security policy.")
 		}
 
 		// Deletion of Windows node PSP
 		pspYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(true), daemonSetlabels, nil)
 		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
-			log.WithField("error", err).Warning("Could not delete windows node pod security policy.")
+			Log().WithField("error", err).Warning("Could not delete windows node pod security policy.")
 			anyErrors = true
 		} else {
-			log.WithField("podSecurityPolicy", getNodeRBACResourceName(true)).Info("Deleted windows node pod security policy.")
+			Log().WithField("podSecurityPolicy", getNodeRBACResourceName(true)).Info("Deleted windows node pod security policy.")
 		}
 	}
 
@@ -410,19 +411,19 @@ func uninstallTrident() error {
 		CSIDriverYAML := k8sclient.GetCSIDriverYAML(getCSIDriverName(), nil, nil)
 
 		if err = client.DeleteObjectByYAML(CSIDriverYAML, true); err != nil {
-			log.WithField("error", err).Warning("Could not delete csidriver custom resource.")
+			Log().WithField("error", err).Warning("Could not delete csidriver custom resource.")
 			anyErrors = true
 		} else {
-			log.WithField("CSIDriver", getCSIDriverName()).Info("Deleted csidriver custom resource.")
+			Log().WithField("CSIDriver", getCSIDriverName()).Info("Deleted csidriver custom resource.")
 		}
 	}
 
-	log.Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")
+	Log().Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")
 
 	if !anyErrors {
-		log.Info("Trident uninstallation succeeded.")
+		Log().Info("Trident uninstallation succeeded.")
 	} else {
-		log.Error("Trident uninstallation completed with errors. " +
+		Log().Error("Trident uninstallation completed with errors. " +
 			"Please resolve those and run the uninstaller again.")
 	}
 

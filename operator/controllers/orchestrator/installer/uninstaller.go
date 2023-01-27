@@ -5,12 +5,11 @@ package installer
 import (
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/netapp/trident/cli/cmd"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/utils"
+	. "github.com/netapp/trident/logging"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 func (i *Installer) UninstallTrident() error {
@@ -36,7 +35,7 @@ func (i *Installer) UninstallTrident() error {
 	}
 
 	if legacyTridentInstalled && csiPreviewTridentInstalled {
-		log.Warning("Both legacy and CSI Trident are installed.  CSI Trident will be uninstalled, and " +
+		Log().Warning("Both legacy and CSI Trident are installed.  CSI Trident will be uninstalled, and " +
 			"the uninstaller will run again to remove legacy Trident before running the Trident installer.")
 	}
 
@@ -97,14 +96,14 @@ func (i *Installer) UninstallTrident() error {
 		return fmt.Errorf("could not delete all Trident's RBAC objects; %v", err)
 	}
 
-	pspRemovedVersion := utils.MustParseMajorMinorVersion(config.PodSecurityPoliciesRemovedKubernetesVersion)
+	pspRemovedVersion := versionutils.MustParseMajorMinorVersion(config.PodSecurityPoliciesRemovedKubernetesVersion)
 	if i.client.ServerVersion().LessThan(pspRemovedVersion) {
 		if err := i.client.DeleteTridentPodSecurityPolicy(getPSPName(), appLabel); err != nil {
 			return err
 		}
 	}
 
-	log.Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")
+	Log().Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")
 
 	return nil
 }

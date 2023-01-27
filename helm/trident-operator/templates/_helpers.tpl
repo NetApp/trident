@@ -52,14 +52,17 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Trident operator level
+*/}}
+{{- define "trident-operator.logLevel" -}}
+{{- .Values.operatorLogLevel }}
+{{- end }}
+
+{{/*
 Trident operator debug
 */}}
 {{- define "trident-operator.debug" -}}
-{{- if .Values.operatorDebug | printf "%v" | eq "true" }}
-{{- "true" }}
-{{- else }}
-{{- "false" }}
-{{- end }}
+{{- .Values.operatorDebug }}
 {{- end }}
 
 {{/*
@@ -72,17 +75,6 @@ Trident operator image
 {{- .Values.imageRegistry }}/trident-operator:{{ .Values.operatorImageTag | default .Chart.AppVersion }}
 {{- else }}
 {{- "" }}docker.io/netapp/trident-operator:{{ .Values.operatorImageTag | default .Chart.AppVersion }}
-{{- end }}
-{{- end }}
-
-{{/*
-Trident debug
-*/}}
-{{- define "trident.debug" -}}
-{{- if .Values.tridentDebug | printf "%v" | eq "true" }}
-{{- "true" }}
-{{- else }}
-{{- "false" }}
 {{- end }}
 {{- end }}
 
@@ -129,6 +121,34 @@ Trident AutoSupport image
 {{- else }}
 {{- "" }}docker.io/netapp/trident-autosupport:{{ .Values.tridentAutosupportImageTag | default .Chart.AppVersion | trunc 5}}
 {{- end }}
+{{- end }}
+
+{{/*
+Trident log level
+*/}}
+{{- define "trident.logLevel" -}}
+{{- .Values.tridentLogLevel }}
+{{- end }}
+
+{{/*
+Trident debug (equivalent to debug level)
+*/}}
+{{- define "trident.debug" -}}
+{{- .Values.tridentDebug }}
+{{- end }}
+
+{{/*
+Trident logging workflows
+*/}}
+{{- define "trident.logWorkflows" -}}
+{{- .Values.tridentLogWorkflows }}
+{{- end }}
+
+{{/*
+Trident logging layers
+*/}}
+{{- define "trident.logLayers" -}}
+{{- .Values.tridentLogLayers }}
 {{- end }}
 
 {{/*

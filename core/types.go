@@ -15,7 +15,7 @@ import (
 
 type Orchestrator interface {
 	Bootstrap(monitorTransactions bool) error
-	AddFrontend(f frontend.Plugin)
+	AddFrontend(ctx context.Context, f frontend.Plugin)
 	GetFrontend(ctx context.Context, name string) (frontend.Plugin, error)
 	GetVersion(ctx context.Context) (string, error)
 
@@ -114,6 +114,15 @@ type Orchestrator interface {
 	) (string, string, error)
 
 	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
+
+	GetLogLevel(ctx context.Context) (string, error)
+	SetLogLevel(ctx context.Context, level string) error
+	GetSelectedLoggingWorkflows(ctx context.Context) (string, error)
+	ListLoggingWorkflows(ctx context.Context) ([]string, error)
+	SetLoggingWorkflows(ctx context.Context, workflows string) error
+	GetSelectedLogLayers(ctx context.Context) (string, error)
+	ListLogLayers(ctx context.Context) ([]string, error)
+	SetLogLayers(ctx context.Context, workflows string) error
 }
 
 type (

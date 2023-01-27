@@ -13,11 +13,10 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/crypto"
 )
 
 const httpContentType = "json-rpc"
@@ -97,12 +96,12 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 	request.Header.Set("Content-Type", httpContentType)
 
 	// Log the request
-	if c.Config.DebugTraceFlags["api"] {
-		if err := json.Indent(&prettyRequestBuffer, requestBody, "", "  "); err != nil {
-			Logc(ctx).Errorf("Could not format API request for logging; %v", err)
-		}
-		utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes(), false)
+	if err := json.Indent(&prettyRequestBuffer, requestBody, "", "  "); err != nil {
+		Logd(ctx, tridentconfig.SolidfireSANStorageDriverName, c.Config.DebugTraceFlags["api"]).
+			Errorf("Could not format API request for logging; %v", err)
 	}
+	utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes(), LogLayerSolidfireDriver.String(), false,
+		c.Config.DebugTraceFlags["api"])
 
 	// Send the request
 	tr := &http.Transport{
@@ -121,7 +120,7 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 	// Handle HTTP errors such as 401 (Unauthorized)
 	httpError := utils.NewHTTPError(response)
 	if httpError != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"request":        method,
 			"responseCode":   response.StatusCode,
 			"responseStatus": response.Status,
@@ -136,16 +135,17 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 	}
 
 	// Log the response
-	if c.Config.DebugTraceFlags["api"] {
-		if c.shouldLogResponseBody(method) {
-			if err := json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
-				Logc(ctx).Errorf("Could not format API request for logging; %v", err)
-			} else {
-				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), false)
-			}
+	if c.shouldLogResponseBody(method) {
+		if err := json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
+			Logd(ctx, tridentconfig.SolidfireSANStorageDriverName, c.Config.DebugTraceFlags["api"]).
+				Errorf("Could not format API request for logging; %v", err)
 		} else {
-			utils.LogHTTPResponse(ctx, response, []byte("<suppressed>"), true)
+			utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), LogLayerSolidfireDriver.String(),
+				false, c.Config.DebugTraceFlags["api"])
 		}
+	} else {
+		utils.LogHTTPResponse(ctx, response, []byte("<suppressed>"), LogLayerSolidfireDriver.String(), true,
+			c.Config.DebugTraceFlags["api"])
 	}
 
 	// Look for any errors returned from the controller
@@ -153,10 +153,10 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 	if err = json.Unmarshal(responseBody, &apiError); err != nil {
 		Logc(ctx).Errorf("Could not format API request for logging; %v", err)
 	} else {
-		utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes(), false)
+		utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes(), "", false, false)
 	}
 	if apiError.Fields.Code != 0 {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"ID":      apiError.ID,
 			"code":    apiError.Fields.Code,
 			"message": apiError.Fields.Message,
@@ -183,5 +183,5 @@ func (c *Client) shouldLogResponseBody(method string) bool {
 
 // NewReqID generates a random id for a request
 func NewReqID() int {
-	return utils.GetRandomNumber(1000-1) + 1
+	return crypto.GetRandomNumber(1000-1) + 1
 }

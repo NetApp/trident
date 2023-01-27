@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+
 	core "github.com/netapp/trident/core"
 	frontend "github.com/netapp/trident/frontend"
 	storage "github.com/netapp/trident/storage"
@@ -55,15 +56,15 @@ func (mr *MockOrchestratorMockRecorder) AddBackend(arg0, arg1, arg2 interface{})
 }
 
 // AddFrontend mocks base method.
-func (m *MockOrchestrator) AddFrontend(arg0 frontend.Plugin) {
+func (m *MockOrchestrator) AddFrontend(arg0 context.Context, arg1 frontend.Plugin) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddFrontend", arg0)
+	m.ctrl.Call(m, "AddFrontend", arg0, arg1)
 }
 
 // AddFrontend indicates an expected call of AddFrontend.
-func (mr *MockOrchestratorMockRecorder) AddFrontend(arg0 interface{}) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) AddFrontend(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFrontend", reflect.TypeOf((*MockOrchestrator)(nil).AddFrontend), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFrontend", reflect.TypeOf((*MockOrchestrator)(nil).AddFrontend), arg0, arg1)
 }
 
 // AddNode mocks base method.
@@ -411,6 +412,21 @@ func (mr *MockOrchestratorMockRecorder) GetFrontend(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFrontend", reflect.TypeOf((*MockOrchestrator)(nil).GetFrontend), arg0, arg1)
 }
 
+// GetLogLevel mocks base method.
+func (m *MockOrchestrator) GetLogLevel(arg0 context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLogLevel", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLogLevel indicates an expected call of GetLogLevel.
+func (mr *MockOrchestratorMockRecorder) GetLogLevel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLogLevel", reflect.TypeOf((*MockOrchestrator)(nil).GetLogLevel), arg0)
+}
+
 // GetMirrorStatus mocks base method.
 func (m *MockOrchestrator) GetMirrorStatus(arg0 context.Context, arg1, arg2, arg3 string) (string, error) {
 	m.ctrl.T.Helper()
@@ -455,6 +471,36 @@ func (m *MockOrchestrator) GetReplicationDetails(arg0 context.Context, arg1, arg
 func (mr *MockOrchestratorMockRecorder) GetReplicationDetails(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReplicationDetails", reflect.TypeOf((*MockOrchestrator)(nil).GetReplicationDetails), arg0, arg1, arg2, arg3)
+}
+
+// GetSelectedLogLayers mocks base method.
+func (m *MockOrchestrator) GetSelectedLogLayers(arg0 context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSelectedLogLayers", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSelectedLogLayers indicates an expected call of GetSelectedLogLayers.
+func (mr *MockOrchestratorMockRecorder) GetSelectedLogLayers(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSelectedLogLayers", reflect.TypeOf((*MockOrchestrator)(nil).GetSelectedLogLayers), arg0)
+}
+
+// GetSelectedLoggingWorkflows mocks base method.
+func (m *MockOrchestrator) GetSelectedLoggingWorkflows(arg0 context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSelectedLoggingWorkflows", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSelectedLoggingWorkflows indicates an expected call of GetSelectedLoggingWorkflows.
+func (mr *MockOrchestratorMockRecorder) GetSelectedLoggingWorkflows(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSelectedLoggingWorkflows", reflect.TypeOf((*MockOrchestrator)(nil).GetSelectedLoggingWorkflows), arg0)
 }
 
 // GetSnapshot mocks base method.
@@ -635,6 +681,36 @@ func (m *MockOrchestrator) ListBackends(arg0 context.Context) ([]*storage.Backen
 func (mr *MockOrchestratorMockRecorder) ListBackends(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBackends", reflect.TypeOf((*MockOrchestrator)(nil).ListBackends), arg0)
+}
+
+// ListLogLayers mocks base method.
+func (m *MockOrchestrator) ListLogLayers(arg0 context.Context) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListLogLayers", arg0)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListLogLayers indicates an expected call of ListLogLayers.
+func (mr *MockOrchestratorMockRecorder) ListLogLayers(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLogLayers", reflect.TypeOf((*MockOrchestrator)(nil).ListLogLayers), arg0)
+}
+
+// ListLoggingWorkflows mocks base method.
+func (m *MockOrchestrator) ListLoggingWorkflows(arg0 context.Context) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListLoggingWorkflows", arg0)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListLoggingWorkflows indicates an expected call of ListLoggingWorkflows.
+func (mr *MockOrchestratorMockRecorder) ListLoggingWorkflows(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLoggingWorkflows", reflect.TypeOf((*MockOrchestrator)(nil).ListLoggingWorkflows), arg0)
 }
 
 // ListNodes mocks base method.
@@ -911,6 +987,48 @@ func (m *MockOrchestrator) ResizeVolume(arg0 context.Context, arg1, arg2 string)
 func (mr *MockOrchestratorMockRecorder) ResizeVolume(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolume", reflect.TypeOf((*MockOrchestrator)(nil).ResizeVolume), arg0, arg1, arg2)
+}
+
+// SetLogLayers mocks base method.
+func (m *MockOrchestrator) SetLogLayers(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetLogLayers", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetLogLayers indicates an expected call of SetLogLayers.
+func (mr *MockOrchestratorMockRecorder) SetLogLayers(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLogLayers", reflect.TypeOf((*MockOrchestrator)(nil).SetLogLayers), arg0, arg1)
+}
+
+// SetLogLevel mocks base method.
+func (m *MockOrchestrator) SetLogLevel(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetLogLevel", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetLogLevel indicates an expected call of SetLogLevel.
+func (mr *MockOrchestratorMockRecorder) SetLogLevel(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLogLevel", reflect.TypeOf((*MockOrchestrator)(nil).SetLogLevel), arg0, arg1)
+}
+
+// SetLoggingWorkflows mocks base method.
+func (m *MockOrchestrator) SetLoggingWorkflows(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetLoggingWorkflows", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetLoggingWorkflows indicates an expected call of SetLoggingWorkflows.
+func (mr *MockOrchestratorMockRecorder) SetLoggingWorkflows(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLoggingWorkflows", reflect.TypeOf((*MockOrchestrator)(nil).SetLoggingWorkflows), arg0, arg1)
 }
 
 // SetVolumeState mocks base method.

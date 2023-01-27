@@ -26,7 +26,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cluster"
@@ -38,6 +38,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,6 +78,7 @@ type RestClient struct {
 	api          *client.ONTAPRESTAPIOnlineReference
 	authInfo     runtime.ClientAuthInfoWriter
 	OntapVersion string
+	driverName   string
 	svmUUID      string
 	svmName      string
 }
@@ -102,7 +104,7 @@ func (c *RestClient) SVMName() string {
 }
 
 // NewRestClient is a factory method for creating a new instance
-func NewRestClient(ctx context.Context, config ClientConfig, SVM string) (*RestClient, error) {
+func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName string) (*RestClient, error) {
 	var cert tls.Certificate
 	caCertPool := x509.NewCertPool()
 	skipVerify := true
@@ -139,8 +141,9 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM string) (*RestC
 	}
 
 	result := &RestClient{
-		config:  config,
-		svmName: SVM,
+		config:     config,
+		svmName:    SVM,
+		driverName: driverName,
 	}
 
 	result.tr = &http.Transport{
@@ -169,7 +172,7 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM string) (*RestC
 	}
 
 	if rClient, ok := result.api.Transport.(*runtime_client.Runtime); ok {
-		rClient.SetLogger(Logc(ctx).Logger)
+		rClient.SetLogger(log.New())
 		rClient.SetDebug(config.DebugTraceFlags["api"])
 	}
 
@@ -189,7 +192,7 @@ func EnsureSVMWithRest(
 		restClient.SetSVMUUID(vserver.UUID)
 
 		Logc(ctx).WithFields(
-			log.Fields{
+			LogFields{
 				"SVM":  ontapConfig.SVM,
 				"UUID": vserver.UUID,
 			},
@@ -221,7 +224,7 @@ func EnsureSVMWithRest(
 		restClient.SetSVMUUID(svmUUID)
 
 		Logc(ctx).WithFields(
-			log.Fields{
+			LogFields{
 				"SVM":  ontapConfig.SVM,
 				"UUID": svmUUID,
 			},
@@ -242,7 +245,7 @@ func NewRestClientFromOntapConfig(
 		ClientCertificate:    ontapConfig.ClientCertificate,
 		TrustedCACertificate: ontapConfig.TrustedCACertificate,
 		DebugTraceFlags:      ontapConfig.DebugTraceFlags,
-	}, ontapConfig.SVM)
+	}, ontapConfig.SVM, ontapConfig.StorageDriverName)
 	if err != nil {
 		return nil, fmt.Errorf("could not instantiate REST client; %s", err.Error())
 	}
@@ -255,7 +258,7 @@ func NewRestClientFromOntapConfig(
 		return nil, err
 	}
 
-	apiREST, err := NewOntapAPIREST(restClient)
+	apiREST, err := NewOntapAPIREST(restClient, ontapConfig.StorageDriverName)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get REST API client for ontap: %v", err)
 	}
@@ -263,7 +266,7 @@ func NewRestClientFromOntapConfig(
 	return apiREST, nil
 }
 
-var MinimumONTAPVersion = utils.MustParseSemantic("9.11.1")
+var MinimumONTAPVersion = versionutils.MustParseSemantic("9.11.1")
 
 // SupportsFeature returns true if the Ontap version supports the supplied feature
 func (c RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
@@ -272,13 +275,13 @@ func (c RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
 		return false
 	}
 
-	ontapSemVer, err := utils.ParseSemantic(ontapVersion)
+	ontapSemVer, err := versionutils.ParseSemantic(ontapVersion)
 	if err != nil {
 		return false
 	}
 
 	if feature == LunGeometrySkip {
-		return !ontapSemVer.AtLeast(utils.MustParseSemantic("9.11.0"))
+		return !ontapSemVer.AtLeast(versionutils.MustParseSemantic("9.11.0"))
 	}
 
 	if minVersion, ok := featuresByVersion[feature]; ok {
@@ -1968,7 +1971,7 @@ func (d RestClient) LunOptions(
 		d.config.ManagementLIF,
 	)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"url": url,
 	}).Debug("LunOptions request")
 
@@ -1999,14 +2002,14 @@ func (d RestClient) LunOptions(
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"body": string(body),
 	}).Debug("LunOptions")
 
 	result := &LunOptionsResult{}
 	unmarshalErr := json.Unmarshal(body, result)
 	if unmarshalErr != nil {
-		log.WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
+		Log().WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
 		return nil, unmarshalErr
 	}
 
@@ -2048,19 +2051,19 @@ func (c RestClient) pollLunCreate(ctx context.Context, lunPath string) error {
 func (c RestClient) LunCloneCreate(
 	ctx context.Context, lunPath, sourcePath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup,
 ) error {
-	if c.config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":         "LunCloneCreate",
-			"Type":           "ontap_rest",
-			"lunPath":        lunPath,
-			"sourcePath":     sourcePath,
-			"sizeInBytes":    sizeInBytes,
-			"osType":         osType,
-			"qosPolicyGroup": qosPolicyGroup,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunCloneCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCloneCreate")
+	fields := LogFields{
+		"Method":         "LunCloneCreate",
+		"Type":           "ontap_rest",
+		"lunPath":        lunPath,
+		"sourcePath":     sourcePath,
+		"sizeInBytes":    sizeInBytes,
+		"osType":         osType,
+		"qosPolicyGroup": qosPolicyGroup,
 	}
+	Logd(ctx, c.driverName, c.config.DebugTraceFlags["method"]).WithFields(fields).
+		Trace(">>>> LunCloneCreate")
+	defer Logd(ctx, c.driverName, c.config.DebugTraceFlags["method"]).WithFields(fields).
+		Trace("<<<< LunCloneCreate")
 
 	if strings.Contains(lunPath, failureLUNCreate) {
 		return errors.New("injected error")
@@ -2810,7 +2813,7 @@ func (c RestClient) IsJobFinished(ctx context.Context, payload *models.JobLinkRe
 	job := payload.Job
 	jobUUID := job.UUID
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"payload": payload,
 		"job":     payload.Job,
 		"jobUUID": jobUUID,
@@ -2899,7 +2902,7 @@ func (c RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkRe
 	// 	"start_time": "2021-04-30T07:21:00-04:00",
 	// 	"end_time": "2021-04-30T07:21:10-04:00",
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"uuid":        job.UUID,
 		"description": jobResult.Payload.Description,
 		"state":       jobResult.Payload.State,
@@ -3264,7 +3267,7 @@ func (c RestClient) NodeListSerialNumbers(ctx context.Context) ([]string, error)
 		return serialNumbers, errors.New("could not get node serial numbers")
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"Count":         len(serialNumbers),
 		"SerialNumbers": strings.Join(serialNumbers, ","),
 	}).Debug("Read serial numbers.")

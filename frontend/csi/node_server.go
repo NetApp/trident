@@ -14,12 +14,11 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -46,7 +45,10 @@ func (p *Plugin) NodeStageVolume(
 	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
 
-	fields := log.Fields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
+	fields := LogFields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
+	ctx = SetContextWorkflow(ctx, WorkflowNodeStage)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeStageVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeStageVolume")
 
@@ -69,6 +71,8 @@ func (p *Plugin) NodeStageVolume(
 func (p *Plugin) NodeUnstageVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
 ) (*csi.NodeUnstageVolumeResponse, error) {
+	ctx = SetContextWorkflow(ctx, WorkflowNodeUnstage)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
 	return p.nodeUnstageVolume(ctx, req, false)
 }
 
@@ -80,7 +84,7 @@ func (p *Plugin) nodeUnstageVolume(
 	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
 
-	fields := log.Fields{
+	fields := LogFields{
 		"Method": "NodeUnstageVolume",
 		"Type":   "CSI_Node",
 		"Force":  force,
@@ -159,7 +163,10 @@ func (p *Plugin) NodePublishVolume(
 	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
 
-	fields := log.Fields{"Method": "NodePublishVolume", "Type": "CSI_Node"}
+	ctx = SetContextWorkflow(ctx, WorkflowNodePublish)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+
+	fields := LogFields{"Method": "NodePublishVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodePublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodePublishVolume")
 
@@ -194,7 +201,8 @@ func (p *Plugin) NodeUnpublishVolume(
 	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
 
-	fields := log.Fields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}
+	ctx = SetContextWorkflow(ctx, WorkflowNodeUnpublish)
+	fields := LogFields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeUnpublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeUnpublishVolume")
 
@@ -241,7 +249,7 @@ func (p *Plugin) NodeUnpublishVolume(
 		Logc(ctx).Debug("Volume not mounted, proceeding to unpublish volume")
 	} else {
 		if err = utils.Umount(ctx, targetPath); err != nil {
-			Logc(ctx).WithFields(log.Fields{"path": targetPath, "error": err}).Error("unable to unmount volume.")
+			Logc(ctx).WithFields(LogFields{"path": targetPath, "error": err}).Error("unable to unmount volume.")
 			return nil, status.Errorf(codes.InvalidArgument, "unable to unmount volume; %s", err)
 		}
 	}
@@ -260,7 +268,7 @@ func (p *Plugin) NodeUnpublishVolume(
 
 		if utils.IsNotFoundError(err) {
 			warnStr := fmt.Sprintf(fmtStr, targetPath, req.VolumeId, err.Error())
-			Logc(ctx).WithFields(log.Fields{"targetPath": targetPath, "volumeId": req.VolumeId}).Warning(warnStr)
+			Logc(ctx).WithFields(LogFields{"targetPath": targetPath, "volumeId": req.VolumeId}).Warning(warnStr)
 			return &csi.NodeUnpublishVolumeResponse{}, nil
 		}
 
@@ -280,6 +288,8 @@ func (p *Plugin) NodeGetVolumeStats(
 	if req.GetVolumePath() == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty volume path provided")
 	}
+
+	ctx = SetContextWorkflow(ctx, WorkflowVolumeGetStats)
 
 	// Ensure volume is published at path
 	exists, err := utils.PathExists(req.GetVolumePath())
@@ -340,7 +350,7 @@ func (p *Plugin) NodeGetVolumeStats(
 func (p *Plugin) NodeExpandVolume(
 	ctx context.Context, req *csi.NodeExpandVolumeRequest,
 ) (*csi.NodeExpandVolumeResponse, error) {
-	fields := log.Fields{"Method": "NodeExpandVolume", "Type": "CSI_Node"}
+	fields := LogFields{"Method": "NodeExpandVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeExpandVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeExpandVolume")
 
@@ -354,15 +364,17 @@ func (p *Plugin) NodeExpandVolume(
 		return nil, status.Error(codes.InvalidArgument, "no volume path provided")
 	}
 
+	ctx = SetContextWorkflow(ctx, WorkflowVolumeResize)
+
 	requiredBytes := req.GetCapacityRange().GetRequiredBytes()
 	limitBytes := req.GetCapacityRange().GetLimitBytes()
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volumeId":      volumeId,
 		"volumePath":    volumePath,
 		"requiredBytes": requiredBytes,
 		"limitBytes":    limitBytes,
-	}).Debug("NodeExpandVolumeRequest values")
+	}).Trace("NodeExpandVolumeRequest values")
 
 	// VolumePublishInfo is stored in the volume tracking file as of Trident 23.01.
 	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeId)
@@ -380,11 +392,11 @@ func (p *Plugin) NodeExpandVolume(
 	// Current K8S behavior is to send the volumePath as the stagingTargetPath. Log what is received if the
 	// two variables don't match.
 	if stagingTargetPath != volumePath {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"stagingTargetPath": stagingTargetPath,
 			"volumePath":        volumePath,
 			"volumeId":          volumeId,
-		}).Info("Received something other than the expected stagingTargetPath.")
+		}).Warn("Received something other than the expected stagingTargetPath.")
 	}
 
 	err = p.nodeExpandVolume(ctx, &trackingInfo.VolumePublishInfo, requiredBytes, stagingTargetPath, volumeId, req.GetSecrets())
@@ -460,13 +472,13 @@ func (p *Plugin) nodeExpandVolume(
 		filesystemSize, err := utils.ExpandFilesystemOnNode(ctx, publishInfo, stagingTargetPath, fsType,
 			mountOptions)
 		if err != nil {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"device":         publishInfo.DevicePath,
 				"filesystemType": fsType,
 			}).WithError(err).Error("Unable to expand filesystem.")
 			return status.Error(codes.Internal, err.Error())
 		}
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"filesystemSize": filesystemSize,
 			"requiredBytes":  requiredBytes,
 		}).Debug("Filesystem size after expand.")
@@ -482,7 +494,7 @@ func nodePrepareISCSIVolumeForExpansion(
 ) error {
 	lunID := int(publishInfo.IscsiLunNumber)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"targetIQN":      publishInfo.IscsiTargetIQN,
 		"lunID":          lunID,
 		"devicePath":     publishInfo.DevicePath,
@@ -497,7 +509,7 @@ func nodePrepareISCSIVolumeForExpansion(
 		// Rescan device to detect increased size.
 		if err = utils.ISCSIRescanDevices(
 			ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunNumber, requiredBytes); err != nil {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"device": publishInfo.DevicePath,
 				"error":  err,
 			}).Error("Unable to scan device.")
@@ -516,12 +528,12 @@ func nodePrepareISCSIVolumeForExpansion(
 func nodePrepareBlockOnFileVolumeForExpansion(
 	ctx context.Context, publishInfo *utils.VolumePublishInfo, requiredBytes int64,
 ) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"nfsUniqueID":   publishInfo.NfsUniqueID,
 		"nfsPath":       publishInfo.NfsPath,
 		"subvolumeName": publishInfo.SubvolumeName,
 		"devicePath":    publishInfo.DevicePath,
-	}).Debug("PublishInfo for device to expand.")
+	}).Trace("PublishInfo for device to expand.")
 
 	nfsMountpoint := publishInfo.NFSMountpoint
 	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
@@ -553,7 +565,9 @@ func nodePrepareBlockOnFileVolumeForExpansion(
 func (p *Plugin) NodeGetCapabilities(
 	ctx context.Context, _ *csi.NodeGetCapabilitiesRequest,
 ) (*csi.NodeGetCapabilitiesResponse, error) {
-	fields := log.Fields{"Method": "NodeGetCapabilities", "Type": "CSI_Node"}
+	fields := LogFields{"Method": "NodeGetCapabilities", "Type": "CSI_Node"}
+	ctx = SetContextWorkflow(ctx, WorkflowNodeGetCapabilities)
+
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeGetCapabilities")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeGetCapabilities")
 
@@ -563,7 +577,9 @@ func (p *Plugin) NodeGetCapabilities(
 func (p *Plugin) NodeGetInfo(
 	ctx context.Context, _ *csi.NodeGetInfoRequest,
 ) (*csi.NodeGetInfoResponse, error) {
-	fields := log.Fields{"Method": "NodeGetInfo", "Type": "CSI_Node"}
+	fields := LogFields{"Method": "NodeGetInfo", "Type": "CSI_Node"}
+	ctx = SetContextWorkflow(ctx, WorkflowNodeGetInfo)
+
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeGetInfo")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeGetInfo")
 
@@ -584,7 +600,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 		} else {
 			p.hostInfo = host
 			Logc(ctx).WithFields(
-				log.Fields{
+				LogFields{
 					"distro":  host.OS.Distro,
 					"version": host.OS.Version,
 				}).Debug("Discovered host info.")
@@ -666,7 +682,7 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 	}
 
 	registerNodeNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"increment": duration,
 			"error":     err,
 		}).Warn("Could not update Trident controller with node registration, will retry.")
@@ -948,7 +964,7 @@ func (p *Plugin) populatePublishedISCSISessions(ctx context.Context) {
 	for _, volumeID := range volumeIDs {
 		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeID)
 		if err != nil {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"VolumeID": volumeID,
 				"Error":    err.Error(),
 			}).Error("Volume tracking file info not found.")
@@ -1440,7 +1456,7 @@ func (p *Plugin) nodeUnstageNFSBlockVolume(
 			}
 		} else {
 			// We shall never be in this state, so error out.
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"loopFile":   loopFile,
 				"loopDevice": loopDevice.Name,
 			}).Error("Loop device is still mounted, skipping detach.")
@@ -1569,7 +1585,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 	if portal == "" {
 		return fmt.Errorf("portal value is empty")
 	}
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"portal": portal,
 		"action": action,
 	}).Debug("ISCSI self-healing rectify session is invoked.")
@@ -1746,3 +1762,74 @@ func (p *Plugin) fixISCSISessions(ctx context.Context, portals []string, portalT
 		}
 	}
 }
+
+/*TODO (bpresnel) Enable later, with rate limiting?
+func (p *Plugin) startLoggingConfigReconcile() {
+	ticker := time.NewTicker(LoggingConfigReconcilePeriod)
+	done := make(chan bool)
+
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case <-ticker.C:
+				p.updateNodeLoggingConfig()
+			}
+		}
+	}()
+}
+
+func (p *Plugin) updateNodeLoggingConfig() {
+	bgCtx := context.Background()
+	logLevel, loggingWorkflows, loggingLayers, err := p.restClient.GetLoggingConfig(bgCtx)
+	if err != nil {
+		warnMsg := "Could not retrieve the current log level, logging workflows and logging layers from the controller."
+		Log().WithError(err).Warnf(warnMsg)
+		return
+	}
+
+	levelNeededUpdate, workflowsNeededUpdate, layersNeededUpdate := false, false, false
+
+	if GetDefaultLogLevel() != logLevel {
+		levelNeededUpdate = true
+		if err = SetDefaultLogLevel(logLevel); err != nil {
+			msg := "Could not set node log level to the controller's level: %s"
+			Log().Warnf(msg, logLevel)
+			return
+		}
+	}
+
+	if GetSelectedWorkFlows() != loggingWorkflows {
+		if err = SetWorkflows(loggingWorkflows); err != nil {
+			msg := "Could not set node logging workflows to the controller's selected workflows: %s\n"
+			Log().Warnf(msg, loggingWorkflows)
+			return
+		}
+		workflowsNeededUpdate = true
+	}
+
+	if GetSelectedLogLayers() != loggingLayers {
+		if err = SetLogLayers(loggingLayers); err != nil {
+			msg := "Could not set node logging layers to the controller's selected log layers: %s\n"
+			Log().Warnf(msg, loggingWorkflows)
+			return
+		}
+		layersNeededUpdate = true
+	}
+
+	levelFmt := `Log level updated to: "%s" based on the controller's current configuration.`
+	workflowsFmt := `Selected logging workflows updated to: "%s" based on the controller's current configuration.'`
+	layersFmt := `Selected logging layers updated to: "%s" based on the controller's current configuration.'`
+
+	if levelNeededUpdate {
+		Log().Infof(levelFmt, logLevel)
+	}
+	if workflowsNeededUpdate {
+		Log().Infof(workflowsFmt, loggingWorkflows)
+	}
+	if layersNeededUpdate {
+		Log().Infof(layersFmt, loggingLayers)
+	}
+}
+*/

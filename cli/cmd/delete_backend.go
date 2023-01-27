@@ -66,7 +66,7 @@ func backendDelete(backendNames []string) error {
 
 		url := BaseURL() + "/backend/" + backendName
 
-		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
+		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil)
 		if err != nil {
 			return err
 		} else if response.StatusCode != http.StatusOK {

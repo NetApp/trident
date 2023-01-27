@@ -11,7 +11,6 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/ghodss/yaml"
-	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -20,9 +19,12 @@ import (
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	commonconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/crypto"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 const (
@@ -57,6 +59,9 @@ var (
 	silenceAutosupport bool
 	windows            bool
 
+	logLevel        string
+	logWorkflows    string
+	logLayers       string
 	logFormat       string
 	probePort       string
 	tridentImage    string
@@ -130,7 +135,7 @@ func NewInstaller(kubeConfig *rest.Config, namespace string, timeout int) (Tride
 		return nil, fmt.Errorf("failed to initialize Trident's CRD client; %v", err)
 	}
 
-	log.WithField("namespace", namespace).Debugf("Initialized installer.")
+	Log().WithField("namespace", namespace).Debugf("Initialized installer.")
 
 	return &Installer{
 		client:           kubeClient,
@@ -175,17 +180,17 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 	}
 
 	if currentDeployment == nil {
-		log.Debugf("No Trident deployment exists.")
+		Log().Debugf("No Trident deployment exists.")
 		performImageVersionCheck = true
 	} else {
-		log.Debugf("Trident deployment exists.")
+		Log().Debugf("Trident deployment exists.")
 
 		containers := currentDeployment.Spec.Template.Spec.Containers
 
 		for _, container := range containers {
 			if container.Name == "trident-main" {
 				if container.Image != tridentImage {
-					log.WithFields(log.Fields{
+					Log().WithFields(LogFields{
 						"currentTridentImage": container.Image,
 						"newTridentImage":     tridentImage,
 					}).Debugf("Current Trident installation image is not same as the new Trident Image.")
@@ -196,20 +201,20 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 
 		// Contingency plan to recover Trident version information
 		if currentDeployment.Labels[TridentVersionLabelKey] == "" {
-			log.Errorf("Deployment is missing the version information; fixing it.")
+			Log().Errorf("Deployment is missing the version information; fixing it.")
 			performImageVersionCheck = true
 		} else {
 			identifiedImageVersion = currentDeployment.Labels[TridentVersionLabelKey]
 
 			// Check if deployed Trident image matches the version this Operator supports
-			if supportedVersion, err := utils.ParseDate(DefaultTridentVersion); err != nil {
-				log.WithField("version", DefaultTridentVersion).Error("Could not parse default version.")
+			if supportedVersion, err := versionutils.ParseDate(DefaultTridentVersion); err != nil {
+				Log().WithField("version", DefaultTridentVersion).Error("Could not parse default version.")
 				performImageVersionCheck = true
-			} else if deploymentVersion, err := utils.ParseDate(identifiedImageVersion); err != nil {
-				log.WithField("version", identifiedImageVersion).Error("Could not parse deployment version.")
+			} else if deploymentVersion, err := versionutils.ParseDate(identifiedImageVersion); err != nil {
+				Log().WithField("version", identifiedImageVersion).Error("Could not parse deployment version.")
 				performImageVersionCheck = true
 			} else if supportedVersion.ShortString() != deploymentVersion.ShortString() {
-				log.Debugf("Current Trident deployment image '%s' is not same as the supported Trident image '%s'.",
+				Log().Debugf("Current Trident deployment image '%s' is not same as the supported Trident image '%s'.",
 					deploymentVersion.String(), supportedVersion.String())
 				performImageVersionCheck = true
 			}
@@ -217,7 +222,7 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 	}
 
 	if performImageVersionCheck {
-		log.Debugf("Image version check needed.")
+		Log().Debugf("Image version check needed.")
 
 		// Create the RBAC objects for the trident version pod
 		if _, err = i.createRBACObjects(controllingCRDetails, labels, false); err != nil {
@@ -230,17 +235,17 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 				"Trident image has been provided; err: %v", err)
 		}
 
-		tridentImageVersion, err := utils.ParseDate(tridentClientVersion.Client.Version)
+		tridentImageVersion, err := versionutils.ParseDate(tridentClientVersion.Client.Version)
 		if err != nil {
 			errMessage := fmt.Sprintf("unexpected parse error during Trident client version retrieval; err: %v", err)
-			log.Errorf(errMessage)
+			Log().Errorf(errMessage)
 			return "", fmt.Errorf(errMessage)
 		}
 
-		supportedTridentVersion, err := utils.ParseDate(DefaultTridentVersion)
+		supportedTridentVersion, err := versionutils.ParseDate(DefaultTridentVersion)
 		if err != nil {
 			errMessage := fmt.Sprintf("unexpected parse error during supported Trident version; err: %v", err)
-			log.Errorf(errMessage)
+			Log().Errorf(errMessage)
 			return "", fmt.Errorf(errMessage)
 		}
 
@@ -250,13 +255,13 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 		if tridentImageShortVersion != supportedTridentShortVersion {
 			errMessage := fmt.Sprintf("unsupported Trident image version '%s', supported Trident version is '%s'",
 				tridentImageVersion.ShortStringWithRelease(), supportedTridentVersion.ShortStringWithRelease())
-			log.Errorf(errMessage)
+			Log().Errorf(errMessage)
 			return "", fmt.Errorf(errMessage)
 		}
 
 		// need to append 'v', so that it can be stores in trident version label later
 		identifiedImageVersion = "v" + tridentImageVersion.ShortStringWithRelease()
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"tridentImage": tridentImage,
 			"version":      tridentImageVersion.ShortStringWithRelease(),
 		}).Debugf("New Trident image is supported.")
@@ -295,7 +300,6 @@ func (i *Installer) setInstallationParams(
 		disableAuditLog = *cr.Spec.DisableAuditLog
 	}
 
-	debug = cr.Spec.Debug
 	useIPv6 = cr.Spec.IPv6
 	windows = cr.Spec.Windows
 	silenceAutosupport = cr.Spec.SilenceAutosupport
@@ -311,6 +315,20 @@ func (i *Installer) setInstallationParams(
 	if cr.Spec.LogFormat != "" {
 		logFormat = cr.Spec.LogFormat
 	}
+	if cr.Spec.Debug || cr.Spec.LogLevel == "debug" {
+		logLevel = "debug"
+		debug = true
+	} else if cr.Spec.LogLevel != "" {
+		logLevel = cr.Spec.LogLevel
+		debug = false
+	} else {
+		logLevel = "info"
+		debug = false
+	}
+
+	logWorkflows = cr.Spec.LogWorkflows
+	logLayers = cr.Spec.LogLayers
+
 	if cr.Spec.ProbePort != nil {
 		probePort = strconv.FormatInt(*cr.Spec.ProbePort, 10)
 	}
@@ -401,14 +419,14 @@ func (i *Installer) setInstallationParams(
 			return nil, nil, false, returnError
 		}
 
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"tridentImage": tridentImage,
 			"version":      identifiedImageVersion,
 		}).Debugf("Identified Trident image's version.")
 	} else {
 		identifiedImageVersion = TridentVersionLabelValue
 
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"tridentImage": tridentImage,
 			"version":      identifiedImageVersion,
 		}).Debugf("Using default Trident image.")
@@ -416,7 +434,7 @@ func (i *Installer) setInstallationParams(
 
 	// Identify if this is an update scenario, i.e. Trident version has changed
 	if currentInstallationVersion != identifiedImageVersion {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"currentVersion": currentInstallationVersion,
 			"newVersion":     identifiedImageVersion,
 		}).Infof("Current installed Trident version is not same as the new Trident image version; need" +
@@ -455,7 +473,7 @@ func (i *Installer) InstallOrPatchTrident(
 	versionPodLabel := TridentVersionPodLabel
 	err = i.client.DeleteTransientVersionPod(versionPodLabel)
 	if err != nil {
-		log.WithError(err).Warn("Could not remove transient Trident pods.")
+		Log().WithError(err).Warn("Could not remove transient Trident pods.")
 	}
 
 	// Identify if update is required because of change in K8s version or Trident Operator version
@@ -464,7 +482,7 @@ func (i *Installer) InstallOrPatchTrident(
 	// Begin Trident installation logic...
 
 	// All checks succeeded, so proceed with installation
-	log.WithField("namespace", i.namespace).Info("Starting Trident installation.")
+	Log().WithField("namespace", i.namespace).Info("Starting Trident installation.")
 
 	// Create namespace, if one does not exist
 	if returnError = i.createOrPatchTridentInstallationNamespace(); returnError != nil {
@@ -578,8 +596,11 @@ func (i *Installer) InstallOrPatchTrident(
 	identifiedSpecValues := netappv1.TridentOrchestratorSpecValues{
 		EnableForceDetach:       strconv.FormatBool(enableForceDetach),
 		DisableAuditLog:         strconv.FormatBool(disableAuditLog),
-		Debug:                   strconv.FormatBool(debug),
 		LogFormat:               logFormat,
+		Debug:                   strconv.FormatBool(debug),
+		LogLevel:                determineLogLevel(),
+		LogWorkflows:            logWorkflows,
+		LogLayers:               logLayers,
 		TridentImage:            tridentImage,
 		ImageRegistry:           imageRegistry,
 		IPv6:                    strconv.FormatBool(useIPv6),
@@ -598,7 +619,7 @@ func (i *Installer) InstallOrPatchTrident(
 		ImagePullPolicy:         imagePullPolicy,
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"namespace": i.namespace,
 		"version":   labels[TridentVersionLabelKey],
 	}).Info("Trident is installed.")
@@ -667,7 +688,7 @@ func (i *Installer) CreateOrPatchCRD(crdName, crdYAML string, performOperationOn
 	if crdExists {
 		// Avoid patching the CRD iff the CRD already exists and performOperationOnce is false.
 		if !performOperationOnce {
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"CRD":       crdName,
 				"crdExists": crdExists,
 			}).Debugf("Found existing %s CRD; creation or patch is not required.", crdName)
@@ -762,16 +783,16 @@ func (i *Installer) createOrPatchTridentInstallationNamespace() error {
 
 	namespaceExists, returnError := i.client.CheckNamespaceExists(i.namespace)
 	if returnError != nil {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"namespace": i.namespace,
 			"err":       returnError,
 		}).Errorf("Unable to check if namespace exists.")
 		return fmt.Errorf("unable to check if namespace %s exists; %v", i.namespace, returnError)
 	} else if namespaceExists {
-		log.WithField("namespace", i.namespace).Debug("Namespace exists.")
+		Log().WithField("namespace", i.namespace).Debug("Namespace exists.")
 		createNamespace = false
 	} else {
-		log.WithField("namespace", i.namespace).Debug("Namespace does not exist.")
+		Log().WithField("namespace", i.namespace).Debug("Namespace does not exist.")
 	}
 
 	if createNamespace {
@@ -780,7 +801,7 @@ func (i *Installer) createOrPatchTridentInstallationNamespace() error {
 		if err != nil {
 			return fmt.Errorf("failed to create Trident installation namespace %s; %v", i.namespace, err)
 		}
-		log.WithField("namespace", i.namespace).Info("Created Trident installation namespace.")
+		Log().WithField("namespace", i.namespace).Info("Created Trident installation namespace.")
 	} else {
 		// Patch namespace
 		err := i.client.PatchNamespaceLabels(i.namespace, map[string]string{
@@ -789,7 +810,7 @@ func (i *Installer) createOrPatchTridentInstallationNamespace() error {
 		if err != nil {
 			return fmt.Errorf("failed to patch Trident installation namespace %s; %v", i.namespace, err)
 		}
-		log.WithField("namespace", i.namespace).Info("Patched Trident installation namespace")
+		Log().WithField("namespace", i.namespace).Info("Patched Trident installation namespace")
 	}
 
 	return nil
@@ -1049,7 +1070,7 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 	currentOpenShiftSCCJSONMap, reuseOpenShiftSCCMap, removeExistingSCCMap, err := i.client.GetMultipleTridentOpenShiftSCCInformation(
 		openShiftSCCUserNames, openShiftSCCNames, shouldUpdate)
 	if err != nil {
-		log.WithFields(nil).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
+		Log().WithFields(nil).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
 		return fmt.Errorf("failed to get Trident OpenShift SCC; %v", err)
 	}
 
@@ -1057,9 +1078,9 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 		var err error
 		err = i.client.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCQueryYAML(sccName), true)
 		if err != nil {
-			logFields := log.Fields{"sccName": sccName}
+			logFields := LogFields{"sccName": sccName}
 			logFields["err"] = err
-			log.WithFields(logFields).Errorf("Unable to delete OpenShift SCC.")
+			Log().WithFields(logFields).Errorf("Unable to delete OpenShift SCC.")
 			return fmt.Errorf("unable to delete OpenShift SCC name %v got error: %v", sccName, err)
 		}
 		return err
@@ -1205,7 +1226,7 @@ func (i *Installer) createOrPatchTridentProtocolSecret(
 
 	if createSecret {
 		// Create the certificates for the CSI controller's HTTPS REST interface
-		certInfo, err := utils.MakeHTTPCertInfo(commonconfig.CACertName, commonconfig.ServerCertName,
+		certInfo, err := crypto.MakeHTTPCertInfo(commonconfig.CACertName, commonconfig.ServerCertName,
 			commonconfig.ClientCertName)
 		if err != nil {
 			return fmt.Errorf("failed to create Trident X509 certificates; %v", err)
@@ -1248,7 +1269,7 @@ func (i *Installer) createOrConsumeTridentEncryptionSecret(
 	if !secretExists {
 
 		// Generate a fresh AES Key because the Trident Crypto Secret doesn't exist.
-		aesKey, err := utils.GenerateAESKey()
+		aesKey, err := crypto.GenerateAESKey()
 		if err != nil {
 			return fmt.Errorf("failed to generate secure AES key; %v", err)
 		}
@@ -1367,13 +1388,16 @@ func (i *Installer) createOrPatchTridentDeployment(
 		AutosupportSerialNumber: autosupportSerialNumber,
 		AutosupportHostname:     autosupportHostname,
 		ImageRegistry:           imageRegistry,
+		Debug:                   debug,
+		LogLevel:                determineLogLevel(),
+		LogWorkflows:            logWorkflows,
+		LogLayers:               logLayers,
 		LogFormat:               logFormat,
 		DisableAuditLog:         disableAuditLog,
 		SnapshotCRDVersion:      snapshotCRDVersion,
 		ImagePullSecrets:        imagePullSecrets,
 		Labels:                  labels,
 		ControllingCRDetails:    controllingCRDetails,
-		Debug:                   debug,
 		UseIPv6:                 useIPv6,
 		SilenceAutosupport:      silenceAutosupport,
 		Version:                 i.client.ServerVersion(),
@@ -1445,12 +1469,15 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		KubeletDir:           kubeletDir,
 		LogFormat:            logFormat,
 		DisableAuditLog:      disableAuditLog,
+		Debug:                debug,
+		LogLevel:             determineLogLevel(),
+		LogWorkflows:         logWorkflows,
+		LogLayers:            logLayers,
 		ProbePort:            probePort,
 		ImagePullSecrets:     imagePullSecrets,
 		Labels:               labels,
 		ControllingCRDetails: controllingCRDetails,
 		EnableForceDetach:    enableForceDetach,
-		Debug:                debug,
 		Version:              i.client.ServerVersion(),
 		HTTPRequestTimeout:   httpTimeout,
 		NodeSelector:         nodePluginNodeSelector,
@@ -1493,7 +1520,7 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 	// Add sleep to make sure we get the pod name, esp. in case where we kill one deployment and the
 	// create a new one.
 	waitTime := 7 * time.Second
-	log.Debugf("Waiting for %v after the patch to make sure we get the right trident-pod name.", waitTime)
+	Log().Debugf("Waiting for %v after the patch to make sure we get the right trident-pod name.", waitTime)
 	time.Sleep(waitTime)
 
 	checkPodRunning := func() error {
@@ -1523,12 +1550,12 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 			}
 
 			if tempError {
-				log.Debug("Containers are still in creating state.")
+				Log().Debug("Containers are still in creating state.")
 				return utils.TempOperatorError(fmt.Errorf(
 					"pod provisioning in progress; containers are still in creating state"))
 			}
 
-			log.WithField("err", containerErrors).Errorf("Encountered error while creating container(s).")
+			Log().WithField("err", containerErrors).Errorf("Encountered error while creating container(s).")
 			return fmt.Errorf("unable to provision pod; encountered error while creating container(s): %v",
 				containerErrors)
 		}
@@ -1536,21 +1563,21 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 		// If DeletionTimestamp is set this pod is in a terminating state
 		// and may be related to a terminating deployment.
 		if pod.DeletionTimestamp != nil {
-			log.Debug("Unable to find Trident pod; found a pod in terminating state.")
+			Log().Debug("Unable to find Trident pod; found a pod in terminating state.")
 			return utils.TempOperatorError(fmt.Errorf("unable to find Trident pod; found a pod in terminating state"))
 		}
 
 		return nil
 	}
 	podNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"increment": duration,
 		}).Debugf("Trident pod not yet running, waiting.")
 	}
 	podBackoff := backoff.NewExponentialBackOff()
 	podBackoff.MaxElapsedTime = k8sTimeout
 
-	log.Info("Waiting for Trident pod to start.")
+	Log().Info("Waiting for Trident pod to start.")
 
 	if err := backoff.RetryNotify(checkPodRunning, podBackoff, podNotify); err != nil {
 		totalWaitTime := k8sTimeout
@@ -1561,7 +1588,7 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 			totalWaitTime = totalWaitTime + extraWaitTime
 			podBackoff.MaxElapsedTime = extraWaitTime
 
-			log.Debugf("Pod is still provisioning after %3.2f seconds, "+
+			Log().Debugf("Pod is still provisioning after %3.2f seconds, "+
 				"waiting %3.2f seconds extra.", k8sTimeout.Seconds(), extraWaitTime.Seconds())
 			err = backoff.RetryNotify(checkPodRunning, podBackoff, podNotify)
 		}
@@ -1584,12 +1611,12 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 						i.client.CLI(), pod.Name, i.client.Namespace()))
 			}
 
-			log.Error(strings.Join(errMessages, " "))
+			Log().Error(strings.Join(errMessages, " "))
 			return nil, err
 		}
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"pod":       pod.Name,
 		"namespace": i.namespace,
 	}).Info("Trident pod started.")
@@ -1620,14 +1647,14 @@ func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 		return nil
 	}
 	restNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"increment": duration,
 		}).Debugf("REST interface not yet up, waiting.")
 	}
 	restBackoff := backoff.NewExponentialBackOff()
 	restBackoff.MaxElapsedTime = k8sTimeout
 
-	log.Info("Waiting for Trident REST interface.")
+	Log().Info("Waiting for Trident REST interface.")
 
 	if err := backoff.RetryNotify(checkRESTInterface, restBackoff, restNotify); err != nil {
 		totalWaitTime := k8sTimeout
@@ -1638,27 +1665,27 @@ func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 			totalWaitTime = totalWaitTime + extraWaitTime
 			restBackoff.MaxElapsedTime = extraWaitTime
 
-			log.Debugf("Encountered HTTP 503 error, REST interface is not up after 30 seconds, "+
+			Log().Debugf("Encountered HTTP 503 error, REST interface is not up after 30 seconds, "+
 				"waiting %3.2f seconds extra.", extraWaitTime.Seconds())
 			err = backoff.RetryNotify(checkRESTInterface, restBackoff, restNotify)
 		}
 
 		if err != nil {
-			log.Errorf("Trident REST interface was not available after %3.2f seconds; err: %v", totalWaitTime.Seconds(),
+			Log().Errorf("Trident REST interface was not available after %3.2f seconds; err: %v", totalWaitTime.Seconds(),
 				err)
 			return err
 		}
 	}
 
-	versionInfo, err := utils.ParseDate(versionWithMetadata)
+	versionInfo, err := versionutils.ParseDate(versionWithMetadata)
 	if err != nil {
-		log.WithField("version", versionWithMetadata).Errorf("unable to parse version with metadata")
+		Log().WithField("version", versionWithMetadata).Errorf("unable to parse version with metadata")
 		version = versionWithMetadata
 	} else {
 		version = versionInfo.ShortStringWithRelease()
 	}
 
-	log.WithField("version", version).Info("Trident REST interface is up.")
+	Log().WithField("version", version).Info("Trident REST interface is up.")
 
 	return nil
 }
@@ -1672,17 +1699,17 @@ func (i *Installer) getTridentClientVersionInfo(
 		return nil, err
 	}
 
-	log.WithField("image", imageName).Debugf("Successfully retrieved version information in YAML format: \n%s",
+	Log().WithField("image", imageName).Debugf("Successfully retrieved version information in YAML format: \n%s",
 		string(clientVersionYAML))
 	clientVersion := api.ClientVersionResponse{}
 	if err := yaml.Unmarshal(clientVersionYAML, &clientVersion); err != nil {
 		errMessage := fmt.Sprintf("unable to umarshall client version YAML to Version struct; err: %v", err)
-		log.WithField("image", imageName).Errorf(errMessage)
+		Log().WithField("image", imageName).Errorf(errMessage)
 
 		return nil, fmt.Errorf(errMessage)
 	}
 
-	log.WithField("version", clientVersion).Debugf("Successfully found Trident image version information.")
+	Log().WithField("version", clientVersion).Debugf("Successfully found Trident image version information.")
 
 	return &clientVersion, nil
 }
@@ -1712,10 +1739,10 @@ func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails
 	if err != nil {
 		errMessage := fmt.Sprintf("failed to exec Trident version pod '%s' (image: '%s') for the information; err: %v",
 			podName, imageName, err)
-		log.Error(errMessage)
+		Log().Error(errMessage)
 
 		if err := i.client.DeletePodByLabel(TridentVersionPodLabel); err != nil {
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"image": imageName,
 				"pod":   podName,
 				"err":   err,
@@ -1730,14 +1757,14 @@ func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails
 	clientVersionYAML := []byte(outputString)
 
 	if err := i.client.DeletePodByLabel(TridentVersionPodLabel); err != nil {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"image": imageName,
 			"pod":   podName,
 			"err":   err,
 		}).Errorf("Could not delete Trident version pod.")
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"image": imageName,
 	}).Debug("Found Trident version yaml.")
 
@@ -1767,7 +1794,7 @@ func (i *Installer) createTridentVersionPod(
 		err = fmt.Errorf("failed to create Trident version pod; %v", err)
 		return err
 	}
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"pod":       podName,
 		"namespace": i.namespace,
 	}).Info("Created Trident version pod.")
@@ -1790,10 +1817,22 @@ func getAppLabelForResource(resourceName string) (map[string]string, string) {
 }
 
 func (i *Installer) isPSPSupported() bool {
-	pspRemovedVersion := utils.MustParseMajorMinorVersion(commonconfig.PodSecurityPoliciesRemovedKubernetesVersion)
+	pspRemovedVersion := versionutils.MustParseMajorMinorVersion(commonconfig.PodSecurityPoliciesRemovedKubernetesVersion)
 	return i.client.ServerVersion().LessThan(pspRemovedVersion)
 }
 
 func isLinuxNodeSCCUser(user string) bool {
 	return user == TridentNodeLinuxResourceName
+}
+
+func determineLogLevel() string {
+	if debug {
+		return "debug"
+	}
+
+	if logLevel == "" {
+		return "info"
+	}
+
+	return logLevel
 }

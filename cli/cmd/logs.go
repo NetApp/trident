@@ -65,6 +65,7 @@ var logsCmd = &cobra.Command{
 		tridentOperatorPodNamespace = ""
 		var operatorErr error
 
+		initCmdLogging()
 		err := discoverOperatingMode(cmd)
 
 		switch logType {

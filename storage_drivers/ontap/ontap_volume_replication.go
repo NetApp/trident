@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
 	storagedrivers "github.com/netapp/trident/storage_drivers"

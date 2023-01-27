@@ -1,10 +1,9 @@
 // Copyright 2019 NetApp, Inc. All Rights Reserved.
 
-package utils
+package crypto
 
 import (
 	"bytes"
-	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/ecdsa"
@@ -23,7 +22,8 @@ import (
 	mathRand "math/rand"
 	"time"
 
-	. "github.com/netapp/trident/logger"
+	// Logrus is directly imported here because importing Trident's logging package will cause an import cycle.
+	log "github.com/sirupsen/logrus"
 )
 
 type CertInfo struct {
@@ -295,7 +295,7 @@ func PKCS7Unpad(input []byte) ([]byte, error) {
 func GetRandomNumber(max int) int {
 	randomNo, err := cryptoRand.Int(cryptoRand.Reader, big.NewInt(int64(max)))
 	if err != nil {
-		Logc(context.Background()).WithError(err).Error("Unable to generate secure random number")
+		log.WithError(err).Error("Unable to generate secure random number")
 		// fallback to math/rand if the crypto/rand secure random number generation fails
 		return mathRand.Intn(max) //nolint:gosec
 	}

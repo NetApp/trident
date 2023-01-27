@@ -22,9 +22,8 @@ import (
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 )
@@ -54,11 +53,12 @@ var (
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
 	// Azure API authentication parameters
-	SubscriptionID string
-	TenantID       string
-	ClientID       string
-	ClientSecret   string
-	Location       string
+	SubscriptionID    string
+	TenantID          string
+	ClientID          string
+	ClientSecret      string
+	Location          string
+	StorageDriverName string
 
 	// Options
 	DebugTraceFlags map[string]bool
@@ -651,7 +651,7 @@ func (c Client) getLabelsFromVolume(vol *netapp.Volume) map[string]string {
 // getVolumesFromPool gets a set of volumes belonging to a single capacity pool.  As pools can come and go
 // in between cache updates, we ignore any 404 errors here.
 func (c Client) getVolumesFromPool(ctx context.Context, cPool *CapacityPool) (*[]*FileSystem, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":          "VolumesClient.NewListPager",
 		"capacityPool": cPool.FullName,
 	}
@@ -777,7 +777,7 @@ func (c Client) VolumeExistsByCreationToken(ctx context.Context, creationToken s
 
 // VolumeByID returns a Filesystem based on its Azure-style ID.
 func (c Client) VolumeByID(ctx context.Context, id string) (*FileSystem, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API": "VolumesClient.Get",
 		"ID":  id,
 	}
@@ -870,7 +870,7 @@ func (c Client) WaitForVolumeState(
 	}
 
 	stateNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"increment": duration.Truncate(10 * time.Millisecond),
 			"message":   err.Error(),
 		}).Debugf("Waiting for volume state.")
@@ -953,7 +953,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 		newVol.Properties.UnixPermissions = &request.UnixPermissions
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"resourceGroup": resourceGroup,
@@ -964,7 +964,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 		"snapshotDir":   request.SnapshotDirectory,
 	}).Debug("Issuing create request.")
 
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":           "VolumesClient.BeginCreateOrUpdate",
 		"volume":        volumeFullName,
 		"creationToken": request.CreationToken,
@@ -996,7 +996,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 func (c Client) ModifyVolume(
 	ctx context.Context, filesystem *FileSystem, labels map[string]string, unixPermissions *string,
 ) error {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":    "VolumesClient.Get",
 		"volume": filesystem.FullName,
 	}
@@ -1051,12 +1051,12 @@ func (c Client) ModifyVolume(
 	anfVolume.Properties.ThroughputMibps = nil
 	anfVolume.Properties.BaremetalTenantID = nil
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":          anfVolume.Name,
 		"creationToken": anfVolume.Properties.CreationToken,
 	}).Debug("Modifying volume.")
 
-	logFields = log.Fields{
+	logFields = LogFields{
 		"API":    "VolumesClient.BeginCreateOrUpdate",
 		"volume": filesystem.FullName,
 	}
@@ -1078,7 +1078,7 @@ func (c Client) ModifyVolume(
 
 // ResizeVolume sends a VolumePatch to update a volume's quota.
 func (c Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSizeBytes int64) error {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":    "VolumesClient.BeginUpdate",
 		"volume": filesystem.FullName,
 	}
@@ -1120,7 +1120,7 @@ func (c Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSiz
 
 // DeleteVolume deletes a volume.
 func (c Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":    "VolumesClient.BeginDelete",
 		"volume": filesystem.FullName,
 	}
@@ -1194,7 +1194,7 @@ func (c Client) newSnapshotFromANFSnapshot(_ context.Context, anfSnapshot *netap
 
 // SnapshotsForVolume returns a list of snapshots on a volume.
 func (c Client) SnapshotsForVolume(ctx context.Context, filesystem *FileSystem) (*[]*Snapshot, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":    "SnapshotsClient.NewListPager",
 		"volume": filesystem.FullName,
 	}
@@ -1236,7 +1236,7 @@ func (c Client) SnapshotsForVolume(ctx context.Context, filesystem *FileSystem) 
 func (c Client) SnapshotForVolume(
 	ctx context.Context, filesystem *FileSystem, snapshotName string,
 ) (*Snapshot, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":      "SnapshotsClient.Get",
 		"volume":   filesystem.FullName,
 		"snapshot": snapshotName,
@@ -1300,7 +1300,7 @@ func (c Client) WaitForSnapshotState(
 	}
 
 	stateNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"increment": duration.Truncate(10 * time.Millisecond),
 			"message":   err.Error(),
 		}).Debugf("Waiting for snapshot state.")
@@ -1332,7 +1332,7 @@ func (c Client) WaitForSnapshotState(
 
 // CreateSnapshot creates a new snapshot.
 func (c Client) CreateSnapshot(ctx context.Context, filesystem *FileSystem, name string) (*Snapshot, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":      "SnapshotsClient.BeginCreate",
 		"volume":   filesystem.FullName,
 		"snapshot": name,
@@ -1372,7 +1372,7 @@ func (c Client) CreateSnapshot(ctx context.Context, filesystem *FileSystem, name
 
 // DeleteSnapshot deletes a snapshot.
 func (c Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snapshot *Snapshot) error {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":      "SnapshotsClient.BeginDelete",
 		"volume":   filesystem.FullName,
 		"snapshot": snapshot.Name,
@@ -1467,7 +1467,7 @@ func (c Client) updateSubvolumeFromSubvolumeModel(
 
 // SubvolumesForVolume returns a list of subvolume on a volume.
 func (c Client) SubvolumesForVolume(ctx context.Context, filesystem *FileSystem) (*[]*Subvolume, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":    "SubvolumesClient.NewListByVolumePager",
 		"volume": filesystem.FullName,
 	}
@@ -1653,7 +1653,7 @@ func (c Client) SubvolumeByCreationToken(
 
 // SubvolumeByID returns a Subvolume based on its Azure-style ID.
 func (c Client) SubvolumeByID(ctx context.Context, subvolumeID string, queryMetadata bool) (*Subvolume, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API": "SubvolumesClient.Get",
 		"ID":  subvolumeID,
 	}
@@ -1702,7 +1702,7 @@ func (c Client) SubvolumeByID(ctx context.Context, subvolumeID string, queryMeta
 
 // SubvolumeMetadata fetches a Subvolume metadata, melds it into the supplied subvolume, and returns the result.
 func (c Client) SubvolumeMetadata(ctx context.Context, subvolume *Subvolume) (*Subvolume, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API": "SubvolumesClient.BeginGetMetadata",
 		"ID":  subvolume.ID,
 	}
@@ -1765,7 +1765,7 @@ func (c Client) WaitForSubvolumeState(
 ) (string, error) {
 	subvolumeState := ""
 
-	logFields := log.Fields{
+	logFields := LogFields{
 		"ID":           subvolume.ID,
 		"desiredState": desiredState,
 	}
@@ -1810,7 +1810,7 @@ func (c Client) WaitForSubvolumeState(
 		return err
 	}
 	stateNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"increment": duration.Truncate(10 * time.Millisecond),
 			"message":   err.Error(),
 		}).Debugf("Waiting for subvolume state.")
@@ -1865,7 +1865,7 @@ func (c Client) CreateSubvolume(ctx context.Context, request *SubvolumeCreateReq
 		newSubvol.Properties.ParentPath = &parentPath
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":          subvolumeName,
 		"resourceGroup": resourceGroup,
 		"netAppAccount": netappAccount,
@@ -1873,7 +1873,7 @@ func (c Client) CreateSubvolume(ctx context.Context, request *SubvolumeCreateReq
 		"volumeName":    volumeName,
 	}).Debug("Issuing subvolume create request.")
 
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API":    "SubvolumesClient.BeginCreate",
 		"volume": volumeName,
 		"name":   subvolumeName,
@@ -1907,7 +1907,7 @@ func (c Client) CreateSubvolume(ctx context.Context, request *SubvolumeCreateReq
 
 // ResizeSubvolume sends a SubvolumePatchRequest to update a subvolume's size.
 func (c Client) ResizeSubvolume(ctx context.Context, subvolume *Subvolume, newSizeBytes int64) error {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API": "SubvolumesClient.BeginUpdate",
 		"ID":  subvolume.ID,
 	}
@@ -1950,7 +1950,7 @@ func (c Client) ResizeSubvolume(ctx context.Context, subvolume *Subvolume, newSi
 
 // DeleteSubvolume deletes a subvolume.
 func (c Client) DeleteSubvolume(ctx context.Context, subvolume *Subvolume) (PollerResponse, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API": "SubvolumesClient.BeginDelete",
 		"ID":  subvolume.ID,
 	}

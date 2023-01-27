@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+
 	api "github.com/netapp/trident/storage_drivers/ontap/api"
 )
 

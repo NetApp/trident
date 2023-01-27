@@ -17,14 +17,14 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 // Sample curl command to invoke the REST interface:
@@ -126,7 +126,7 @@ func (d *Client) refreshToken(ctx context.Context) error {
 	// If we have a valid token, just return
 	if d.token != nil && d.token.Valid() {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"type":    d.token.Type(),
 			"expires": d.token.Expiry.String(),
 		}).Trace("Token still valid.")
@@ -140,7 +140,7 @@ func (d *Client) refreshToken(ctx context.Context) error {
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"type":    d.token.Type(),
 		"expires": d.token.Expiry.String(),
 	}).Debug("Got fresh token.")
@@ -197,9 +197,7 @@ func (d *Client) InvokeAPI(
 		tr.TLSClientConfig.InsecureSkipVerify = false
 	}
 
-	if d.config.DebugTraceFlags["api"] {
-		utils.LogHTTPRequest(request, requestBody, false)
-	}
+	utils.LogHTTPRequest(request, requestBody, LogLayerGCPNASDriver.String(), false, d.config.DebugTraceFlags["api"])
 
 	// Send the request
 	client := &http.Client{
@@ -223,9 +221,7 @@ func (d *Client) InvokeAPI(
 	var responseBody []byte
 
 	responseBody, err = ioutil.ReadAll(response.Body)
-	if d.config.DebugTraceFlags["api"] {
-		utils.LogHTTPResponse(ctx, response, responseBody, false)
-	}
+	utils.LogHTTPResponse(ctx, response, responseBody, "", false, d.config.DebugTraceFlags["api"])
 
 	return response, responseBody, err
 }
@@ -256,7 +252,7 @@ func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) 
 		return nil
 	}
 	invokeNotify := func(err error, duration time.Duration) {
-		Logc(request.Context()).WithFields(log.Fields{
+		Logc(request.Context()).WithFields(LogFields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Retrying API.")
@@ -273,7 +269,7 @@ func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) 
 	return response, nil
 }
 
-func (d *Client) GetVersion(ctx context.Context) (*utils.Version, *utils.Version, error) {
+func (d *Client) GetVersion(ctx context.Context) (*versionutils.Version, *versionutils.Version, error) {
 	resourcePath := "/version"
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -292,17 +288,17 @@ func (d *Client) GetVersion(ctx context.Context) (*utils.Version, *utils.Version
 		return nil, nil, fmt.Errorf("could not parse version data: %s; %v", string(responseBody), err)
 	}
 
-	apiVersion, err := utils.ParseSemantic(version.APIVersion)
+	apiVersion, err := versionutils.ParseSemantic(version.APIVersion)
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid semantic version for API version (%s): %v", version.APIVersion, err)
 	}
 
-	sdeVersion, err := utils.ParseSemantic(version.SdeVersion)
+	sdeVersion, err := versionutils.ParseSemantic(version.SdeVersion)
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid semantic version for SDE version (%s): %v", version.SdeVersion, err)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"apiVersion": apiVersion.String(),
 		"sdeVersion": sdeVersion.String(),
 	}).Info("Read CVS version.")
@@ -334,7 +330,7 @@ func (d *Client) GetServiceLevels(ctx context.Context) (map[string]string, error
 		serviceLevelMap[serviceLevel.Name] = serviceLevel.Performance
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"count":  len(serviceLevels),
 		"levels": serviceLevelMap,
 	}).Info("Read service levels.")
@@ -502,7 +498,7 @@ func (d *Client) WaitForVolumeStates(
 		return err
 	}
 	stateNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Waiting for volume state.")
@@ -555,7 +551,7 @@ func (d *Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest)
 	//	return fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	// }
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -595,7 +591,7 @@ func (d *Client) RenameVolume(ctx context.Context, volume *Volume, newName strin
 		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -636,7 +632,7 @@ func (d *Client) ChangeVolumeUnixPermissions(ctx context.Context, volume *Volume
 		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":            volume.Name,
 		"unixPermissions": newUnixPermissions,
 		"creationToken":   request.CreationToken,
@@ -677,7 +673,7 @@ func (d *Client) RelabelVolume(ctx context.Context, volume *Volume, labels []str
 		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -720,7 +716,7 @@ func (d *Client) RenameRelabelVolume(
 		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -760,7 +756,7 @@ func (d *Client) ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes 
 		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"size":          newSizeBytes,
 		"creationToken": request.CreationToken,
 		"statusCode":    response.StatusCode,
@@ -782,7 +778,7 @@ func (d *Client) DeleteVolume(ctx context.Context, volume *Volume) error {
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volume": volume.CreationToken,
 	}).Info("Volume deleted.")
 
@@ -822,7 +818,7 @@ func (d *Client) GetSnapshotForVolume(ctx context.Context, volume *Volume, snaps
 	for _, snapshot := range *snapshots {
 		if snapshot.Name == snapshotName {
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"snapshot": snapshotName,
 				"volume":   volume.CreationToken,
 			}).Debug("Found volume snapshot.")
@@ -831,7 +827,7 @@ func (d *Client) GetSnapshotForVolume(ctx context.Context, volume *Volume, snaps
 		}
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshot": snapshotName,
 		"volume":   volume.CreationToken,
 	}).Error("Snapshot not found.")
@@ -891,7 +887,7 @@ func (d *Client) WaitForSnapshotState(
 		return err
 	}
 	stateNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Waiting for snapshot state.")
@@ -938,7 +934,7 @@ func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequ
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":       request.Name,
 		"statusCode": response.StatusCode,
 	}).Info("Volume snapshot created.")
@@ -968,7 +964,7 @@ func (d *Client) RestoreSnapshot(ctx context.Context, volume *Volume, snapshot *
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshot": snapshot.Name,
 		"volume":   volume.CreationToken,
 	}).Info("Volume reverted to snapshot.")
@@ -989,7 +985,7 @@ func (d *Client) DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *S
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshot": snapshot.Name,
 		"volume":   volume.CreationToken,
 	}).Info("Deleted volume snapshot.")
@@ -1030,7 +1026,7 @@ func (d *Client) GetBackupForVolume(ctx context.Context, volume *Volume, backupN
 	for _, backup := range *backups {
 		if backup.Name == backupName {
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"backup": backupName,
 				"volume": volume.CreationToken,
 			}).Debug("Found volume backup.")
@@ -1039,7 +1035,7 @@ func (d *Client) GetBackupForVolume(ctx context.Context, volume *Volume, backupN
 		}
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backup": backupName,
 		"volume": volume.CreationToken,
 	}).Error("Backup not found.")
@@ -1102,7 +1098,7 @@ func (d *Client) WaitForBackupStates(
 		return err
 	}
 	stateNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"increment": duration,
 			"message":   err.Error(),
 		}).Debugf("Waiting for backup state.")
@@ -1126,7 +1122,7 @@ func (d *Client) WaitForBackupStates(
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"state":         b.LifeCycleState,
 		"desiredStates": desiredStates,
 	}).Debug("Desired backup state reached.")
@@ -1152,7 +1148,7 @@ func (d *Client) CreateBackup(ctx context.Context, request *BackupCreateRequest)
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":       request.Name,
 		"statusCode": response.StatusCode,
 	}).Info("Volume backup created.")
@@ -1173,7 +1169,7 @@ func (d *Client) DeleteBackup(ctx context.Context, volume *Volume, backup *Backu
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backup": backup.Name,
 		"volume": volume.CreationToken,
 	}).Info("Deleted volume backup.")

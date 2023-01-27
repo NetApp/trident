@@ -11,10 +11,8 @@ import (
 	"sort"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 )
@@ -85,7 +83,7 @@ func (s *StorageClass) regexMatcherImpl(
 	for _, storagePoolName := range storagePoolList {
 		backendMatch, err := regexp.MatchString(storagePoolBackendName, storagePool.Backend().Name())
 		if err != nil {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"storagePoolName":          storagePoolName,
 				"storagePool.Name":         storagePool.Name(),
 				"storagePool.Backend.Name": storagePool.Backend().Name(),
@@ -94,7 +92,7 @@ func (s *StorageClass) regexMatcherImpl(
 			}).Warning("Error comparing backend names in regexMatcher.")
 			continue
 		}
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"storagePool.Backend.Name": storagePool.Backend().Name(),
 			"storagePoolBackendName":   storagePoolBackendName,
 			"backendMatch":             backendMatch,
@@ -105,7 +103,7 @@ func (s *StorageClass) regexMatcherImpl(
 
 		matched, err := regexp.MatchString(storagePoolName, storagePool.Name())
 		if err != nil {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"storagePoolName":          storagePoolName,
 				"storagePool.Name":         storagePool.Name(),
 				"storagePool.Backend.Name": storagePool.Backend().Name(),
@@ -117,7 +115,7 @@ func (s *StorageClass) regexMatcherImpl(
 		if matched {
 			poolsMatch = true
 		}
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"storagePoolName":          storagePoolName,
 			"storagePool.Name":         storagePool.Name(),
 			"storagePool.Backend.Name": storagePool.Backend().Name(),
@@ -141,7 +139,7 @@ func (s *StorageClass) regexMatcher(ctx context.Context, storagePool storage.Poo
 }
 
 func (s *StorageClass) Matches(ctx context.Context, storagePool storage.Pool) bool {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"storageClass": s.GetName(),
 		"config":       s.config,
 		"pool":         storagePool.Name(),
@@ -165,7 +163,7 @@ func (s *StorageClass) Matches(ctx context.Context, storagePool storage.Pool) bo
 		// there are no attributes or storagePools specified in the storage class.  This should
 		// always return false.
 		if len(s.config.Attributes) == 0 && len(s.config.Pools) == 0 {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"storageClass": s.GetName(),
 				"pool":         storagePool.Name(),
 			}).Debug("Pool failed to match storage class additionalStoragePools attribute.")
@@ -185,7 +183,7 @@ func (s *StorageClass) Matches(ctx context.Context, storagePool storage.Pool) bo
 		}
 
 		if offer, ok := storagePool.Attributes()[name]; !ok || !offer.Matches(request) {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"offer":        offer,
 				"request":      request,
 				"storageClass": s.GetName(),
@@ -208,7 +206,7 @@ func (s *StorageClass) Matches(ctx context.Context, storagePool storage.Pool) bo
 
 	result := attributesMatch && poolsMatch
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"attributesMatch": attributesMatch,
 		"poolsMatch":      poolsMatch,
 		"match":           result,
@@ -223,7 +221,7 @@ func (s *StorageClass) Matches(ctx context.Context, storagePool storage.Pool) bo
 // for a given backend.  If the pool satisfies the storage class, it
 // adds that pool.  Returns the number of storage pools added.
 func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b storage.Backend) int {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":      b.Name(),
 		"storageClass": s.GetName(),
 	}).Debug("Checking backend for storage class")
@@ -239,7 +237,7 @@ func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b storage.Backend
 			s.pools = append(s.pools, storagePool)
 			storagePool.AddStorageClass(s.GetName())
 			added++
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"pool":         storagePool.Name(),
 				"storageClass": s.GetName(),
 			}).Debug("Storage class added to the storage pool.")
@@ -484,7 +482,7 @@ func (s *StorageClass) ConstructExternal(ctx context.Context) *External {
 	for _, storagePool := range s.pools {
 		backendName := storagePool.Backend().Name()
 		if storagePoolList, ok := ret.StoragePools[backendName]; ok {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"storageClass": s.GetName(),
 				"pool":         storagePool.Name(),
 				"Backend":      backendName,
@@ -492,7 +490,7 @@ func (s *StorageClass) ConstructExternal(ctx context.Context) *External {
 			}).Debug("Appending to existing storage pool list for backend.")
 			ret.StoragePools[backendName] = append(storagePoolList, storagePool.Name())
 		} else {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"storageClass": s.GetName(),
 				"pool":         storagePool.Name(),
 				"Backend":      backendName,

@@ -17,16 +17,16 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/mitchellh/copystructure"
-	log "github.com/sirupsen/logrus"
 	"go.uber.org/multierr"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 const (
@@ -75,8 +75,8 @@ type NFSStorageDriver struct {
 	Config              drivers.GCPNFSStorageDriverConfig
 	API                 api.GCPClient
 	telemetry           *Telemetry
-	apiVersion          *utils.Version
-	sdeVersion          *utils.Version
+	apiVersion          *versionutils.Version
+	sdeVersion          *versionutils.Version
 	tokenRegexp         *regexp.Regexp
 	csiRegexp           *regexp.Regexp
 	apiRegions          []string
@@ -103,7 +103,7 @@ func (d *NFSStorageDriver) getTelemetry() *Telemetry {
 
 // Name returns the name of this driver
 func (d *NFSStorageDriver) Name() string {
-	return drivers.GCPNFSStorageDriverName
+	return tridentconfig.GCPNFSStorageDriverName
 }
 
 // defaultBackendName returns the default name of the backend managed by this driver instance
@@ -178,11 +178,9 @@ func (d *NFSStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Initialize")
-	}
+	fields := LogFields{"Method": "Initialize", "Type": "NFSStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	commonConfig.DriverContext = context
 	d.tokenRegexp = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{0,79}$`)
@@ -232,11 +230,9 @@ func (d *NFSStorageDriver) Initialized() bool {
 
 // Terminate stops the driver prior to its being unloaded
 func (d *NFSStorageDriver) Terminate(ctx context.Context, _ string) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
-	}
+	fields := LogFields{"Method": "Terminate", "Type": "NFSStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Terminate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Terminate")
 
 	d.initialized = false
 }
@@ -245,11 +241,9 @@ func (d *NFSStorageDriver) Terminate(ctx context.Context, _ string) {
 func (d *NFSStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.GCPNFSStorageDriverConfig,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> populateConfigurationDefaults")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< populateConfigurationDefaults")
-	}
+	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "NFSStorageDriver"}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
 	if config.StoragePrefix == nil {
 		defaultPrefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
@@ -314,7 +308,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 	}
 	d.volumeCreateTimeout = volumeCreateTimeout
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"StoragePrefix":              *config.StoragePrefix,
 		"Size":                       config.Size,
 		"ServiceLevel":               config.ServiceLevel,
@@ -477,11 +471,9 @@ func (d *NFSStorageDriver) initializeGCPConfig(
 	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 	backendSecret map[string]string,
 ) (*drivers.GCPNFSStorageDriverConfig, error) {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "initializeGCPConfig", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> initializeGCPConfig")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< initializeGCPConfig")
-	}
+	fields := LogFields{"Method": "initializeGCPConfig", "Type": "NFSStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeGCPConfig")
+	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeGCPConfig")
 
 	config := &drivers.GCPNFSStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
@@ -507,11 +499,9 @@ func (d *NFSStorageDriver) initializeGCPConfig(
 func (d *NFSStorageDriver) initializeGCPAPIClient(
 	ctx context.Context, config *drivers.GCPNFSStorageDriverConfig,
 ) (api.GCPClient, error) {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "initializeGCPAPIClient", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> initializeGCPAPIClient")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< initializeGCPAPIClient")
-	}
+	fields := LogFields{"Method": "initializeGCPAPIClient", "Type": "NFSStorageDriver"}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeGCPAPIClient")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeGCPAPIClient")
 
 	client := api.NewDriver(api.ClientConfig{
 		ProjectNumber:   config.ProjectNumber,
@@ -528,11 +518,9 @@ func (d *NFSStorageDriver) initializeGCPAPIClient(
 
 // validate ensures the driver configuration and execution environment are valid and working
 func (d *NFSStorageDriver) validate(ctx context.Context) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> validate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
-	}
+	fields := LogFields{"Method": "validate", "Type": "NFSStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
 	var err error
 
@@ -553,10 +541,10 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 		return fmt.Errorf("could not read volumes in %s region; %v", d.Config.APIRegion, err)
 	}
 
-	if d.apiVersion.LessThan(utils.MustParseSemantic(MinimumAPIVersion)) {
+	if d.apiVersion.LessThan(versionutils.MustParseSemantic(MinimumAPIVersion)) {
 		return fmt.Errorf("API version is %s, at least %s is required", d.apiVersion.String(), MinimumAPIVersion)
 	}
-	if d.sdeVersion.LessThan(utils.MustParseSemantic(MinimumSDEVersion)) {
+	if d.sdeVersion.LessThan(versionutils.MustParseSemantic(MinimumSDEVersion)) {
 		return fmt.Errorf("SDE version is %s, at least %s is required", d.sdeVersion.String(), MinimumSDEVersion)
 	}
 
@@ -638,16 +626,14 @@ func (d *NFSStorageDriver) Create(
 ) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Create",
-			"Type":   "NFSStorageDriver",
-			"name":   name,
-			"attrs":  volAttributes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Create")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Create")
+	fields := LogFields{
+		"Method": "Create",
+		"Type":   "NFSStorageDriver",
+		"name":   name,
+		"attrs":  volAttributes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
 	// Make sure we got a valid name
 	if err := d.validateName(name); err != nil {
@@ -721,7 +707,7 @@ func (d *NFSStorageDriver) Create(
 
 	if requestedSizeBytes < sizeBytes {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":          name,
 			"requestedSize": requestedSizeBytes,
 			"minimumSize":   sizeBytes,
@@ -796,7 +782,7 @@ func (d *NFSStorageDriver) Create(
 		return fmt.Errorf("software volumes require zone")
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"creationToken":    name,
 		"size":             sizeBytes,
 		"network":          network,
@@ -942,7 +928,7 @@ func (d *NFSStorageDriver) ensureTopologyRegionAndZone(
 	if len(volConfig.PreferredTopologies) > 0 {
 		if r, ok := volConfig.PreferredTopologies[0][topologyRegionLabel]; ok {
 			if d.Config.APIRegion != r {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"configuredRegion": d.Config.APIRegion,
 					"topologyRegion":   r,
 				}).Warn("configured region does not match topology region")
@@ -951,7 +937,7 @@ func (d *NFSStorageDriver) ensureTopologyRegionAndZone(
 		if storageClass == api.StorageClassSoftware {
 			if z, ok := volConfig.PreferredTopologies[0][topologyZoneLabel]; ok {
 				if configuredZone != "" && configuredZone != z {
-					Logc(ctx).WithFields(log.Fields{
+					Logc(ctx).WithFields(LogFields{
 						"configuredZone": configuredZone,
 						"topologyZone":   z,
 					}).Warn("configured zone does not match topology zone")
@@ -973,17 +959,15 @@ func (d *NFSStorageDriver) CreateClone(
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	snapshot := cloneVolConfig.CloneSourceSnapshot
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":   "CreateClone",
-			"Type":     "NFSStorageDriver",
-			"name":     name,
-			"source":   source,
-			"snapshot": snapshot,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
+	fields := LogFields{
+		"Method":   "CreateClone",
+		"Type":     "NFSStorageDriver",
+		"name":     name,
+		"source":   source,
+		"snapshot": snapshot,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateClone")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateClone")
 
 	// ensure new volume doesn't exist, fail if so
 	// get source volume, fail if nonexistent or if wrong region
@@ -1050,7 +1034,7 @@ func (d *NFSStorageDriver) CreateClone(
 				sourceSnapshot.LifeCycleState, api.StateAvailable)
 		}
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshot": snapshot,
 			"source":   sourceVolume.Name,
 		}).Debug("Found source snapshot.")
@@ -1059,7 +1043,7 @@ func (d *NFSStorageDriver) CreateClone(
 		// No source snapshot specified, so create one
 		snapName := time.Now().UTC().Format(storage.SnapshotNameFormat)
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshot": snapName,
 			"source":   sourceVolume.Name,
 		}).Debug("Creating source snapshot.")
@@ -1083,7 +1067,7 @@ func (d *NFSStorageDriver) CreateClone(
 			return err
 		}
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshot": sourceSnapshot.Name,
 			"source":   sourceVolume.Name,
 		}).Debug("Created source snapshot.")
@@ -1100,7 +1084,7 @@ func (d *NFSStorageDriver) CreateClone(
 		return fmt.Errorf("software volumes require zone")
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"creationToken":  name,
 		"sourceVolume":   sourceVolume.CreationToken,
 		"sourceSnapshot": sourceSnapshot.Name,
@@ -1171,16 +1155,14 @@ func (d *NFSStorageDriver) CreateClone(
 }
 
 func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "Import",
-			"Type":         "NFSStorageDriver",
-			"originalName": originalName,
-			"newName":      volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Import")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Import")
+	fields := LogFields{
+		"Method":       "Import",
+		"Type":         "NFSStorageDriver",
+		"originalName": originalName,
+		"newName":      volConfig.InternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
 
 	// Get the volume
 	creationToken := originalName
@@ -1250,16 +1232,14 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 }
 
 func (d *NFSStorageDriver) Rename(ctx context.Context, name, newName string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "Rename",
-			"Type":    "NFSStorageDriver",
-			"name":    name,
-			"newName": newName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Rename")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Rename")
+	fields := LogFields{
+		"Method":  "Rename",
+		"Type":    "NFSStorageDriver",
+		"name":    name,
+		"newName": newName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Rename")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
 
 	// Rename is only needed for the import workflow, and we aren't currently renaming the
 	// CVS volume when importing, so do nothing here lest we set the volume name incorrectly
@@ -1314,7 +1294,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 	if err != nil {
 
 		if state == api.StateCreating || state == api.StateRestoring {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"volume": volumeName,
 			}).Debugf("Volume is in %s state.", state)
 			return utils.VolumeCreatingError(err.Error())
@@ -1324,7 +1304,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 		if !api.IsTransitionalState(state) {
 			errDelete := d.API.DeleteVolume(ctx, volume)
 			if errDelete != nil {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"volume": volumeName,
 				}).Warnf("Volume could not be cleaned up and must be manually deleted: %v.", errDelete)
 			} else {
@@ -1332,7 +1312,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 				_, errDeleteWait := d.API.WaitForVolumeStates(
 					ctx, volume, []string{api.StateDeleted}, []string{api.StateError}, d.defaultTimeout())
 				if errDeleteWait != nil {
-					Logc(ctx).WithFields(log.Fields{
+					Logc(ctx).WithFields(LogFields{
 						"volume": volumeName,
 					}).Warnf("Volume could not be cleaned up and must be manually deleted: %v.", errDeleteWait)
 				}
@@ -1348,16 +1328,13 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 // Destroy deletes a volume.
 func (d *NFSStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	name := volConfig.InternalName
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Destroy",
-			"Type":   "NFSStorageDriver",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Destroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Destroy")
+	fields := LogFields{
+		"Method": "Destroy",
+		"Type":   "NFSStorageDriver",
+		"name":   name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
 	// If volume doesn't exist, return success
 	volumeExists, extantVolume, err := d.API.VolumeExistsByCreationToken(ctx, name)
@@ -1398,16 +1375,13 @@ func (d *NFSStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Publish",
-			"Type":   "NFSStorageDriver",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Publish")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Publish")
+	fields := LogFields{
+		"Method": "Publish",
+		"Type":   "NFSStorageDriver",
+		"name":   name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Publish")
 
 	// Get the volume
 	creationToken := name
@@ -1454,16 +1428,14 @@ func (d *NFSStorageDriver) GetSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "GetSnapshot",
-			"Type":         "NFSStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
+	fields := LogFields{
+		"Method":       "GetSnapshot",
+		"Type":         "NFSStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
 	// Get the volume
 	creationToken := internalVolName
@@ -1496,7 +1468,7 @@ func (d *NFSStorageDriver) getSnapshot(
 
 			created := snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat)
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"snapshotName": internalSnapName,
 				"volumeName":   internalVolName,
 				"created":      created,
@@ -1520,15 +1492,13 @@ func (d *NFSStorageDriver) GetSnapshots(
 ) ([]*storage.Snapshot, error) {
 	internalVolName := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "GetSnapshots",
-			"Type":       "NFSStorageDriver",
-			"volumeName": internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshots")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
+	fields := LogFields{
+		"Method":     "GetSnapshots",
+		"Type":       "NFSStorageDriver",
+		"volumeName": internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
 	// Get the volume
 	creationToken := internalVolName
@@ -1582,16 +1552,14 @@ func (d *NFSStorageDriver) CreateSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateSnapshot",
-			"Type":         "NFSStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
+	fields := LogFields{
+		"Method":       "CreateSnapshot",
+		"Type":         "NFSStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
 	// Check if volume exists
 	volumeExists, sourceVolume, err := d.API.VolumeExistsByCreationToken(ctx, internalVolName)
@@ -1637,7 +1605,7 @@ func (d *NFSStorageDriver) createSnapshot(
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshotName": snapConfig.InternalName,
 		"volumeName":   snapConfig.VolumeInternalName,
 	}).Info("Snapshot created.")
@@ -1657,16 +1625,14 @@ func (d *NFSStorageDriver) RestoreSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "RestoreSnapshot",
-			"Type":         "NFSStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> RestoreSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
+	fields := LogFields{
+		"Method":       "RestoreSnapshot",
+		"Type":         "NFSStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
 	// Get the volume
 	creationToken := internalVolName
@@ -1695,16 +1661,14 @@ func (d *NFSStorageDriver) DeleteSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "DeleteSnapshot",
-			"Type":         "NFSStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
+	fields := LogFields{
+		"Method":       "DeleteSnapshot",
+		"Type":         "NFSStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
 	// Get the volume
 	creationToken := internalVolName
@@ -1741,11 +1705,9 @@ func (d *NFSStorageDriver) deleteSnapshot(
 
 // List returns the list of volumes associated with this tenant
 func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "List", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> List")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< List")
-	}
+	fields := LogFields{"Method": "List", "Type": "NFSStorageDriver"}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> List")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< List")
 
 	volumes, err := d.API.GetVolumes(ctx)
 	if err != nil {
@@ -1776,11 +1738,9 @@ func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
 
 // Get tests for the existence of a volume
 func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Get")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
-	}
+	fields := LogFields{"Method": "Get", "Type": "NFSStorageDriver"}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
 
 	_, err := d.API.GetVolumeByCreationToken(ctx, name)
 
@@ -1790,16 +1750,14 @@ func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
 // Resize increases a volume's quota
 func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 	name := volConfig.InternalName
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":    "Resize",
-			"Type":      "NFSStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Resize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
+	fields := LogFields{
+		"Method":    "Resize",
+		"Type":      "NFSStorageDriver",
+		"name":      name,
+		"sizeBytes": sizeBytes,
 	}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
 	// Get the volume
 	creationToken := name
@@ -1892,15 +1850,13 @@ func (d *NFSStorageDriver) GetInternalVolumeName(ctx context.Context, name strin
 }
 
 func (d *NFSStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "CreateFollowup",
-			"Type":   "NFSStorageDriver",
-			"name":   volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateFollowup")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateFollowup")
+	fields := LogFields{
+		"Method": "CreateFollowup",
+		"Type":   "NFSStorageDriver",
+		"name":   volConfig.InternalName,
 	}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
 
 	// Get the volume
 	creationToken := volConfig.InternalName
@@ -2083,15 +2039,14 @@ func (d *NFSStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*uti
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
 	}
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "ReconcileNodeAccess",
-			"Type":   "NFSStorageDriver",
-			"Nodes":  nodeNames,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+
+	fields := LogFields{
+		"Method": "ReconcileNodeAccess",
+		"Type":   "NFSStorageDriver",
+		"Nodes":  nodeNames,
 	}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
 	return nil
 }

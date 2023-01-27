@@ -16,10 +16,10 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/golang/mock/gomock"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_azure"
 	"github.com/netapp/trident/storage"
 	storagefake "github.com/netapp/trident/storage/fake"
@@ -32,7 +32,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(io.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 
@@ -73,7 +73,7 @@ func TestName(t *testing.T) {
 
 	result := driver.Name()
 
-	assert.Equal(t, drivers.AzureNASStorageDriverName, result, "driver name mismatch")
+	assert.Equal(t, tridentconfig.AzureNASStorageDriverName, result, "driver name mismatch")
 }
 
 func TestBackendName_SetInConfig(t *testing.T) {

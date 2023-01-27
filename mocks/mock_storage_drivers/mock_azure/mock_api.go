@@ -10,6 +10,7 @@ import (
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
+
 	storage "github.com/netapp/trident/storage"
 	api "github.com/netapp/trident/storage_drivers/azure/api"
 )

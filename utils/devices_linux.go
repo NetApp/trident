@@ -13,12 +13,13 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/cenkalti/backoff/v4"
 	"golang.org/x/net/context"
 	"golang.org/x/sys/unix"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 const (
@@ -31,14 +32,14 @@ const (
 
 // flushOneDevice flushes any outstanding I/O to a disk
 func flushOneDevice(ctx context.Context, devicePath string) error {
-	fields := log.Fields{"rawDevicePath": devicePath}
+	fields := LogFields{"rawDevicePath": devicePath}
 	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.flushOneDevice")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.flushOneDevice")
 
 	out, err := execCommandWithTimeout(ctx, "blockdev", deviceOperationsTimeout, true, "--flushbufs", devicePath)
 	if err != nil {
 		Logc(ctx).WithFields(
-			log.Fields{
+			LogFields{
 				"error":  err,
 				"output": string(out),
 				"device": devicePath,
@@ -51,7 +52,7 @@ func flushOneDevice(ctx context.Context, devicePath string) error {
 
 // getISCSIDiskSize queries the current block size in bytes
 func getISCSIDiskSize(ctx context.Context, devicePath string) (int64, error) {
-	fields := log.Fields{"rawDevicePath": devicePath}
+	fields := LogFields{"rawDevicePath": devicePath}
 	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.getISCSIDiskSize")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.getISCSIDiskSize")
 
@@ -75,13 +76,15 @@ func getISCSIDiskSize(ctx context.Context, devicePath string) (int64, error) {
 
 // IsLUKSFormatted returns whether LUKS headers have been placed on the device
 func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	if d.RawDevicePath() == "" {
 		return false, fmt.Errorf("no device path for LUKS device")
 	}
 	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "isLuks", d.RawDevicePath())
 	if err != nil {
 		if _, ok := err.(*exec.ExitError); !ok {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"device": d.RawDevicePath(),
 				"error":  err.Error(),
 				"output": string(output),
@@ -95,21 +98,25 @@ func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
 
 // IsOpen returns whether the device is an active luks device on the host
 func (d *LUKSDevice) IsOpen(ctx context.Context) (bool, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	return IsLUKSDeviceOpen(ctx, d.MappedDevicePath())
 }
 
 // LUKSFormat sets up LUKS headers on the device with the specified passphrase, this destroys data on the device
 func (d *LUKSDevice) LUKSFormat(ctx context.Context, luksPassphrase string) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	if d.RawDevicePath() == "" {
 		return fmt.Errorf("no device path for LUKS device")
 	}
 	device := d.RawDevicePath()
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"rawDevicePath": device,
 	}).Debug("Formatting LUKS device.")
 	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "luksFormat", device, "--type", "luks2", "-c", "aes-xts-plain64")
 	if nil != err {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"device": device,
 			"error":  err.Error(),
 			"output": string(output),
@@ -121,17 +128,19 @@ func (d *LUKSDevice) LUKSFormat(ctx context.Context, luksPassphrase string) erro
 
 // Open makes the device accessible on the host
 func (d *LUKSDevice) Open(ctx context.Context, luksPassphrase string) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	if d.RawDevicePath() == "" {
 		return fmt.Errorf("no device path for LUKS device")
 	}
 	device := d.RawDevicePath()
 	luksDeviceName := d.MappedDeviceName()
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"rawDevicePath": device,
 	}).Debug("Opening LUKS device.")
 	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device, luksDeviceName, "--type", "luks2")
 	if nil != err {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"device": device,
 			"error":  err.Error(),
 			"output": string(output),
@@ -158,11 +167,11 @@ func closeLUKSDevice(ctx context.Context, luksDevicePath string) error {
 	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "luksClose",
 		luksDevicePath)
 	if nil != err {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"MappedDeviceName": luksDevicePath,
 			"error":            err.Error(),
 			"output":           string(output),
-		}).Debug("Failed to Close LUKS device.")
+		}).Debug("Failed to Close LUKS device")
 		return fmt.Errorf("failed to Close LUKS device %s; %v", luksDevicePath, err)
 	}
 	return nil
@@ -170,6 +179,8 @@ func closeLUKSDevice(ctx context.Context, luksDevicePath string) error {
 
 // IsLUKSDeviceOpen returns whether the specific LUKS device is currently open
 func IsLUKSDeviceOpen(ctx context.Context, luksDevicePath string) (bool, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	_, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "status", luksDevicePath)
 	if err != nil {
 		if _, ok := err.(*exec.ExitError); !ok {
@@ -182,16 +193,18 @@ func IsLUKSDeviceOpen(ctx context.Context, luksDevicePath string) (bool, error) 
 
 // EnsureLUKSDeviceClosed ensures there is not an open LUKS device at the specified path
 func EnsureLUKSDeviceClosed(ctx context.Context, luksDevicePath string) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	_, err := osFs.Stat(luksDevicePath)
 	if err == nil {
 		// Need to Close the LUKS device
 		return closeLUKSDevice(ctx, luksDevicePath)
 	} else if os.IsNotExist(err) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"device": luksDevicePath,
 		}).Debug("LUKS device not found.")
 	} else {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"device": luksDevicePath,
 			"error":  err.Error(),
 		}).Debug("Failed to stat device")
@@ -247,7 +260,7 @@ func getDeviceFSType(ctx context.Context, device string) (string, error) {
 
 		//  Read the device to see if it is in fact formatted
 		if unformatted, err := isDeviceUnformatted(ctx, device); err != nil {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"device": device,
 				"err":    err,
 			}).Debugf("Unable to identify if the device is not unformatted.")
@@ -303,7 +316,7 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 	if d.RawDevicePath() == "" {
 		return fmt.Errorf("no device path for LUKS device")
 	}
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volume":           volumeId,
 		"device":           d.RawDevicePath(),
 		"mappedDevicePath": d.MappedDevicePath(),
@@ -321,7 +334,7 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 	tempFileName := fmt.Sprintf("luks_key_%s", volumeId)
 	fd, err := generateAnonymousMemFile(tempFileName, previousLUKSPassphrase)
 	if err != nil {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"error": err,
 		}).Error("Failed to create passphrase file for LUKS.")
 		return fmt.Errorf("failed to create passphrase files for LUKS; %v", err)
@@ -335,7 +348,7 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 	if err != nil {
 		return fmt.Errorf("could not change LUKS passphrase; %v", err)
 	}
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volume":           volumeId,
 		"device":           d.RawDevicePath(),
 		"mappedDevicePath": d.MappedDevicePath(),

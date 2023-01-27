@@ -14,10 +14,9 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/cenkalti/backoff/v4"
 	"github.com/mitchellh/copystructure"
-	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
@@ -251,7 +250,7 @@ func NewFailedStorageBackend(ctx context.Context, driver Driver) Backend {
 		volumes: make(map[string]*Volume),
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backendUUID": backend.BackendUUID(),
 		"backendName": backend.Name(),
 		"driver":      driver.Name(),
@@ -290,7 +289,7 @@ func (b *StorageBackend) AddVolume(
 ) (*Volume, error) {
 	var err error
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
 		"backendUUID":    b.backendUUID,
 		"volume":         volConfig.Name,
@@ -318,7 +317,7 @@ func (b *StorageBackend) AddVolume(
 			// Implement idempotency by ignoring the error if the volume exists already
 			volumeExists = true
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"backend": b.name,
 				"volume":  volConfig.InternalName,
 			}).Warning("Volume already exists.")
@@ -332,7 +331,7 @@ func (b *StorageBackend) AddVolume(
 	// Always perform the follow-up steps
 	if err = b.driver.CreateFollowup(ctx, volConfig); err != nil {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"backend":      b.name,
 			"volume":       volConfig.InternalName,
 			"volumeExists": volumeExists,
@@ -342,14 +341,14 @@ func (b *StorageBackend) AddVolume(
 		// If follow-up fails and we just created the volume, clean up by deleting it
 		if !volumeExists || retry {
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"backend": b.name,
 				"volume":  volConfig.InternalName,
 			}).Errorf("CreateFollowup failed for newly created volume, deleting the volume.")
 
 			errDestroy := b.driver.Destroy(ctx, volConfig)
 			if errDestroy != nil {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"backend": b.name,
 					"volume":  volConfig.InternalName,
 				}).Warnf("Mapping the created volume failed and %s wasn't able to delete it afterwards: %s. "+
@@ -394,7 +393,7 @@ func (b *StorageBackend) GetDebugTraceFlags(ctx context.Context) map[string]bool
 func (b *StorageBackend) CloneVolume(
 	ctx context.Context, sourceVolConfig, cloneVolConfig *VolumeConfig, storagePool Pool, retry bool,
 ) (*Volume, error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":                cloneVolConfig.Name,
 		"backendUUID":            b.backendUUID,
 		"storage_class":          cloneVolConfig.StorageClass,
@@ -431,7 +430,7 @@ func (b *StorageBackend) CloneVolume(
 			// Implement idempotency by ignoring the error if the volume exists already
 			volumeExists = true
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"backend": b.name,
 				"volume":  cloneVolConfig.InternalName,
 			}).Warning("Volume already exists.")
@@ -469,7 +468,7 @@ func (b *StorageBackend) CloneVolume(
 		if !volumeExists || retry {
 			errDestroy := b.driver.Destroy(ctx, cloneVolConfig)
 			if errDestroy != nil {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"backend": b.name,
 					"volume":  cloneVolConfig.InternalName,
 				}).Warnf("Mapping the created volume failed and %s wasn't able to delete it afterwards: %s. "+
@@ -498,7 +497,7 @@ func (b *StorageBackend) CloneVolume(
 func (b *StorageBackend) PublishVolume(
 	ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
 		"backendUUID":    b.backendUUID,
 		"volume":         volConfig.Name,
@@ -522,7 +521,7 @@ func (b *StorageBackend) PublishVolume(
 func (b *StorageBackend) UnpublishVolume(
 	ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
 		"backendUUID":    b.backendUUID,
 		"volume":         volConfig.Name,
@@ -564,7 +563,7 @@ func (b *StorageBackend) GetVolumeExternal(ctx context.Context, volumeName strin
 }
 
 func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConfig) (*Volume, error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":    b.name,
 		"volume":     volConfig.ImportOriginalName,
 		"NotManaged": volConfig.ImportNotManaged,
@@ -619,7 +618,7 @@ func (b *StorageBackend) ResizeVolume(ctx context.Context, volConfig *VolumeConf
 		return fmt.Errorf("%v is an invalid volume size: %v", newSize, err)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":     b.name,
 		"volume":      volConfig.InternalName,
 		"volume_size": newSizeBytes,
@@ -636,7 +635,7 @@ func (b *StorageBackend) RenameVolume(ctx context.Context, volConfig *VolumeConf
 	}
 
 	if b.state != Online {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"state":         b.state,
 			"expectedState": string(Online),
 		}).Error("Invalid backend state.")
@@ -653,7 +652,7 @@ func (b *StorageBackend) RenameVolume(ctx context.Context, volConfig *VolumeConf
 }
 
 func (b *StorageBackend) RemoveVolume(ctx context.Context, volConfig *VolumeConfig) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
 		"volume":         volConfig.Name,
 		"volumeInternal": volConfig.InternalName,
@@ -691,7 +690,7 @@ func (b *StorageBackend) CanSnapshot(ctx context.Context, snapConfig *SnapshotCo
 func (b *StorageBackend) GetSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) (*Snapshot, error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
 		"volume":         snapConfig.Name,
 		"volumeInternal": snapConfig.InternalName,
@@ -709,7 +708,7 @@ func (b *StorageBackend) GetSnapshot(
 	} else if snapshot == nil {
 		// No error and no snapshot means the snapshot doesn't exist.
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshotName": snapConfig.Name,
 			"volumeName":   snapConfig.VolumeInternalName,
 		}).Debug("Snapshot not found.")
@@ -721,7 +720,7 @@ func (b *StorageBackend) GetSnapshot(
 }
 
 func (b *StorageBackend) GetSnapshots(ctx context.Context, volConfig *VolumeConfig) ([]*Snapshot, error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
 		"volume":         volConfig.Name,
 		"volumeInternal": volConfig.InternalName,
@@ -738,7 +737,7 @@ func (b *StorageBackend) GetSnapshots(ctx context.Context, volConfig *VolumeConf
 func (b *StorageBackend) CreateSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) (*Snapshot, error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
 		"volume":         snapConfig.Name,
 		"volumeInternal": snapConfig.InternalName,
@@ -765,7 +764,7 @@ func (b *StorageBackend) CreateSnapshot(
 		return nil, err
 	} else if existingSnapshot != nil {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"backend":      b.name,
 			"volumeName":   snapConfig.VolumeName,
 			"snapshotName": snapConfig.Name,
@@ -782,7 +781,7 @@ func (b *StorageBackend) CreateSnapshot(
 func (b *StorageBackend) RestoreSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
 		"volume":         snapConfig.Name,
 		"volumeInternal": snapConfig.InternalName,
@@ -806,7 +805,7 @@ func (b *StorageBackend) RestoreSnapshot(
 func (b *StorageBackend) DeleteSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
 		"volume":         snapConfig.Name,
 		"volumeInternal": snapConfig.InternalName,
@@ -829,7 +828,7 @@ func (b *StorageBackend) DeleteSnapshot(
 		return err
 	} else if existingSnapshot == nil {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"backend":      b.name,
 			"volumeName":   snapConfig.VolumeName,
 			"snapshotName": snapConfig.Name,
@@ -871,7 +870,7 @@ func (b *StorageBackend) HasVolumes() bool {
 // and will not be called again.  This may be a signal to the storage
 // driver to clean up and stop any ongoing operations.
 func (b *StorageBackend) Terminate(ctx context.Context) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"backend":     b.name,
 		"backendUUID": b.backendUUID,
 		"driver":      b.GetDriverName(),
@@ -913,7 +912,7 @@ func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*utils
 
 func (b *StorageBackend) ensureOnline(ctx context.Context) error {
 	if b.state != Online {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"state":         b.state,
 			"expectedState": string(Online),
 		}).Error("Invalid backend state.")
@@ -924,7 +923,7 @@ func (b *StorageBackend) ensureOnline(ctx context.Context) error {
 
 func (b *StorageBackend) ensureOnlineOrDeleting(ctx context.Context) error {
 	if b.state != Online && b.state != Deleting {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"state":         b.state,
 			"expectedState": string(Online) + "/" + string(Deleting),
 		}).Error("Invalid backend state.")
@@ -1087,7 +1086,7 @@ func (p *BackendPersistent) ExtractBackendSecrets(
 
 	// Check if user-provided credentials field is set
 	if backendSecretName, backendSecretType, err := p.GetBackendCredentials(); err != nil {
-		log.Errorf("Could not determined if backend credentials field exist; %v", err)
+		Log().Errorf("Could not determined if backend credentials field exist; %v", err)
 		return nil, nil, usingTridentSecretName, err
 	} else if backendSecretName != "" {
 		if backendSecretName == secretName {

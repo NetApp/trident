@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	"github.com/netapp/trident/logging"
+	. "github.com/netapp/trident/logging"
 )
 
 var forceObliviate bool
@@ -40,19 +40,20 @@ var obliviateCmd = &cobra.Command{
 // initLogging configures logging. Logs are written to stdout.
 func initLogging() {
 	// Log to stdout only
-	log.SetOutput(os.Stdout)
-	log.SetFormatter(&log.TextFormatter{DisableTimestamp: true})
+	InitLogOutput(os.Stdout)
+	InitLogFormatter(&log.TextFormatter{DisableTimestamp: true})
 
-	logLevel := "info"
+	initCmdLogging()
+	logLevel := GetDefaultLogLevel()
 	if silent {
 		logLevel = "fatal"
-	}
-	err := logging.InitLogLevel(Debug, logLevel)
-	if err != nil {
-		log.WithField("error", err).Fatal("Failed to initialize logging.")
+		err := InitLogLevel(logLevel)
+		if err != nil {
+			Log().WithField("error", err).Fatal("Failed to initialize logging.")
+		}
 	}
 
-	log.WithField("logLevel", log.GetLevel().String()).Debug("Initialized logging.")
+	Log().WithField("logLevel", GetLogLevel()).Debug("Initialized logging.")
 }
 
 func initClients() error {
@@ -71,10 +72,10 @@ func initClients() error {
 			return errors.New("obliviation canceled")
 		}
 
-		log.Debug("Running in a pod.")
+		Log().Debug("Running in a pod.")
 
 	} else {
-		log.Debug("Running outside a pod.")
+		Log().Debug("Running outside a pod.")
 	}
 
 	return nil

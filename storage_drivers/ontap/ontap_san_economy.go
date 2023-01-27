@@ -12,15 +12,15 @@ import (
 	"strings"
 
 	"github.com/RoaringBitmap/roaring"
-	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/crypto"
 )
 
 const (
@@ -217,7 +217,7 @@ func (d *SANEconomyStorageDriver) GetTelemetry() *Telemetry {
 
 // Name is for returning the name of this driver
 func (d *SANEconomyStorageDriver) Name() string {
-	return drivers.OntapSANEconomyStorageDriverName
+	return tridentconfig.OntapSANEconomyStorageDriverName
 }
 
 // BackendName returns the name of the backend managed by this driver instance
@@ -243,11 +243,9 @@ func (d *SANEconomyStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "SANEconomyStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Initialize")
-	}
+	fields := LogFields{"Method": "Initialize", "Type": "SANEconomyStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig
@@ -312,7 +310,7 @@ func (d *SANEconomyStorageDriver) Initialize(
 	}
 
 	Logc(ctx).WithFields(
-		log.Fields{
+		LogFields{
 			"FlexvolNamePrefix": d.flexvolNamePrefix,
 			"LUNsPerFlexvol":    d.lunsPerFlexvol,
 		},
@@ -353,11 +351,9 @@ func (d *SANEconomyStorageDriver) Initialized() bool {
 }
 
 func (d *SANEconomyStorageDriver) Terminate(ctx context.Context, _ string) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "SANEconomyStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
-	}
+	fields := LogFields{"Method": "Terminate", "Type": "SANEconomyStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Terminate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Terminate")
 
 	if d.Config.DriverContext == tridentconfig.ContextCSI {
 		// clean up igroup for terminated driver
@@ -376,11 +372,9 @@ func (d *SANEconomyStorageDriver) Terminate(ctx context.Context, _ string) {
 
 // Validate the driver configuration and execution environment
 func (d *SANEconomyStorageDriver) validate(ctx context.Context) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "SANEconomyStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> validate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
-	}
+	fields := LogFields{"Method": "validate", "Type": "SANEconomyStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
 	if err := ValidateSANDriver(ctx, &d.Config, d.ips); err != nil {
 		return fmt.Errorf("error driver validation failed: %v", err)
@@ -402,16 +396,14 @@ func (d *SANEconomyStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 	name := volConfig.InternalName
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Create",
-			"Type":   "SANEconomyStorageDriver",
-			"name":   name,
-			"attrs":  volAttributes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Create")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Create")
+	fields := LogFields{
+		"Method": "Create",
+		"Type":   "SANEconomyStorageDriver",
+		"name":   name,
+		"attrs":  volAttributes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
 	// Generic user-facing message
 	createError := errors.New("error volume creation failed")
@@ -423,7 +415,7 @@ func (d *SANEconomyStorageDriver) Create(
 		return createError
 	}
 	if exists {
-		Logc(ctx).WithFields(log.Fields{"LUN": name, "bucketVol": existsInFlexvol}).Debug("LUN already exists.")
+		Logc(ctx).WithFields(LogFields{"LUN": name, "bucketVol": existsInFlexvol}).Debug("LUN already exists.")
 		return drivers.NewVolumeExistsError(name)
 	}
 
@@ -672,7 +664,7 @@ func (d *SANEconomyStorageDriver) Create(
 				err = d.resizeFlexvol(ctx, bucketVol, 0)
 				if err != nil {
 					Logc(ctx).WithFields(
-						log.Fields{
+						LogFields{
 							"name":               bucketVol,
 							"initialVolumeSize":  initialVolumeSize,
 							"adjustedVolumeSize": initialVolumeSize + actualSize - sizeBytes,
@@ -684,7 +676,7 @@ func (d *SANEconomyStorageDriver) Create(
 							Warning("Failed to get volume size after the second resize operation.")
 					} else {
 						Logc(ctx).WithFields(
-							log.Fields{
+							LogFields{
 								"name":               bucketVol,
 								"initialVolumeSize":  initialVolumeSize,
 								"adjustedVolumeSize": adjustedVolumeSize,
@@ -713,20 +705,18 @@ func (d *SANEconomyStorageDriver) CreateClone(
 	adaptiveQosPolicy := cloneVolConfig.AdaptiveQosPolicy
 	luksEncryption := cloneVolConfig.LUKSEncryption
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":            "CreateClone",
-			"Type":              "SANEconomyStorageDriver",
-			"name":              name,
-			"source":            source,
-			"snapshot":          snapshot,
-			"qosPolicy":         qosPolicy,
-			"adaptiveQosPolicy": adaptiveQosPolicy,
-			"LUKSEncryption":    luksEncryption,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
+	fields := LogFields{
+		"Method":            "CreateClone",
+		"Type":              "SANEconomyStorageDriver",
+		"name":              name,
+		"source":            source,
+		"snapshot":          snapshot,
+		"qosPolicy":         qosPolicy,
+		"adaptiveQosPolicy": adaptiveQosPolicy,
+		"LUKSEncryption":    luksEncryption,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateClone")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateClone")
 
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
 	if err != nil {
@@ -743,20 +733,18 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 	ctx context.Context, lunName, source, snapshot string, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, prefix string, isLunCreateFromSnapshot bool, qosPolicyGroup api.QosPolicyGroup,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":                  "createLUNClone",
-			"Type":                    "ontap_san_economy",
-			"lunName":                 lunName,
-			"source":                  source,
-			"snapshot":                snapshot,
-			"prefix":                  prefix,
-			"isLunCreateFromSnapshot": isLunCreateFromSnapshot,
-			"qosPolicyGroup":          qosPolicyGroup,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> createLUNClone")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< createLUNClone")
+	fields := LogFields{
+		"Method":                  "createLUNClone",
+		"Type":                    "ontap_san_economy",
+		"lunName":                 lunName,
+		"source":                  source,
+		"snapshot":                snapshot,
+		"prefix":                  prefix,
+		"isLunCreateFromSnapshot": isLunCreateFromSnapshot,
+		"qosPolicyGroup":          qosPolicyGroup,
 	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> createLUNClone")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< createLUNClone")
 
 	// If the specified LUN copy already exists, return an error
 	destinationLunExists, _, err := d.LUNExists(ctx, lunName, prefix)
@@ -794,32 +782,28 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 func (d *SANEconomyStorageDriver) Import(
 	ctx context.Context, volConfig *storage.VolumeConfig, originalName string,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "Import",
-			"Type":         "SANEconomyStorageDriver",
-			"originalName": originalName,
-			"newName":      volConfig.InternalName,
-			"notManaged":   volConfig.ImportNotManaged,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Import")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Import")
+	fields := LogFields{
+		"Method":       "Import",
+		"Type":         "SANEconomyStorageDriver",
+		"originalName": originalName,
+		"newName":      volConfig.InternalName,
+		"notManaged":   volConfig.ImportNotManaged,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
 
 	return errors.New("import is not implemented")
 }
 
 func (d *SANEconomyStorageDriver) Rename(ctx context.Context, name, newName string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "Rename",
-			"Type":    "SANEconomyStorageDriver",
-			"name":    name,
-			"newName": newName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Rename")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Rename")
+	fields := LogFields{
+		"Method":  "Rename",
+		"Type":    "SANEconomyStorageDriver",
+		"name":    name,
+		"newName": newName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Rename")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
 
 	return errors.New("rename is not implemented")
 }
@@ -828,15 +812,13 @@ func (d *SANEconomyStorageDriver) Rename(ctx context.Context, name, newName stri
 func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Destroy",
-			"Type":   "SANEconomyStorageDriver",
-			"Name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Destroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Destroy")
+	fields := LogFields{
+		"Method": "Destroy",
+		"Type":   "SANEconomyStorageDriver",
+		"Name":   name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
 	var (
 		err           error
@@ -902,7 +884,7 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 	}
 
 	if err = d.API.LunDestroy(ctx, lunPathEco); err != nil {
-		fields := log.Fields{
+		fields := LogFields{
 			"Method": "Destroy",
 			"Type":   "SANEconomyStorageDriver",
 			"LUN":    lunPathEco,
@@ -919,15 +901,13 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 // DeleteBucketIfEmpty will check if the given bucket volume is empty, if the bucket is empty it will be deleted.
 // Otherwise, it will be resized.
 func (d *SANEconomyStorageDriver) DeleteBucketIfEmpty(ctx context.Context, bucketVol string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":    "Destroy",
-			"Type":      "SANEconomyStorageDriver",
-			"bucketVol": bucketVol,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> DeleteBucketIfEmpty")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteBucketIfEmpty")
+	fields := LogFields{
+		"Method":    "Destroy",
+		"Type":      "SANEconomyStorageDriver",
+		"bucketVol": bucketVol,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteBucketIfEmpty")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteBucketIfEmpty")
 
 	lunPathPattern := fmt.Sprintf("/vol/%s/*", bucketVol)
 	luns, err := d.API.LunList(ctx, lunPathPattern)
@@ -960,16 +940,14 @@ func (d *SANEconomyStorageDriver) Publish(
 ) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":      "Publish",
-			"Type":        "SANEconomyStorageDriver",
-			"name":        name,
-			"publishInfo": publishInfo,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Publish")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Publish")
+	fields := LogFields{
+		"Method":      "Publish",
+		"Type":        "SANEconomyStorageDriver",
+		"name":        name,
+		"publishInfo": publishInfo,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Publish")
 
 	exists, bucketVol, err := d.LUNExists(ctx, name, d.FlexvolNamePrefix())
 	if err != nil {
@@ -1009,16 +987,14 @@ func (d *SANEconomyStorageDriver) CanSnapshot(
 func (d *SANEconomyStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "GetSnapshot",
-			"Type":         "SANEconomyStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
+	fields := LogFields{
+		"Method":       "GetSnapshot",
+		"Type":         "SANEconomyStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
 	return d.getSnapshotEconomy(ctx, snapConfig, &d.Config)
 }
@@ -1029,16 +1005,14 @@ func (d *SANEconomyStorageDriver) getSnapshotEconomy(
 	internalSnapName := snapConfig.InternalName
 	internalVolumeName := snapConfig.VolumeInternalName
 
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "getSnapshotEconomy",
-			"Type":         "SANEconomyStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolumeName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> getSnapshotEconomy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< getSnapshotEconomy")
+	fields := LogFields{
+		"Method":       "getSnapshotEconomy",
+		"Type":         "SANEconomyStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolumeName,
 	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getSnapshotEconomy")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getSnapshotEconomy")
 
 	fullSnapshotName := d.helper.GetSnapshotName(internalVolumeName, internalSnapName)
 	exists, bucketVol, err := d.LUNExists(ctx, fullSnapshotName, d.FlexvolNamePrefix())
@@ -1072,16 +1046,14 @@ func (d *SANEconomyStorageDriver) getSnapshotEconomy(
 func (d *SANEconomyStorageDriver) GetSnapshots(
 	ctx context.Context, volConfig *storage.VolumeConfig,
 ) ([]*storage.Snapshot, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "GetSnapshots",
-			"Type":               "SANEconomyStorageDriver",
-			"internalVolumeName": volConfig.InternalName,
-			"volumeName":         volConfig.Name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshots")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
+	fields := LogFields{
+		"Method":             "GetSnapshots",
+		"Type":               "SANEconomyStorageDriver",
+		"internalVolumeName": volConfig.InternalName,
+		"volumeName":         volConfig.Name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
 	exists, _, err := d.LUNExists(ctx, volConfig.InternalName, d.FlexvolNamePrefix())
 	if err != nil {
@@ -1098,16 +1070,14 @@ func (d *SANEconomyStorageDriver) GetSnapshots(
 func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 	ctx context.Context, internalVolumeName, externalVolumeName string,
 ) ([]*storage.Snapshot, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":          "getSnapshotsEconomy",
-			"Type":            "SANEconomyStorageDriver",
-			"internalVolName": internalVolumeName,
-			"externalVolName": externalVolumeName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> getSnapshotsEconomy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< getSnapshotsEconomy")
+	fields := LogFields{
+		"Method":          "getSnapshotsEconomy",
+		"Type":            "SANEconomyStorageDriver",
+		"internalVolName": internalVolumeName,
+		"externalVolName": externalVolumeName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getSnapshotsEconomy")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getSnapshotsEconomy")
 
 	snapPathPattern := d.helper.GetSnapPathPatternForVolume(externalVolumeName)
 
@@ -1151,17 +1121,15 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 func (d *SANEconomyStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateSnapshot",
-			"Type":         "SANEconomyStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-			"snapConfig":   snapConfig,
-		}
-		Logc(ctx).WithFields(fields).Info(">>>> CreateSnapshot")
-		defer Logc(ctx).WithFields(fields).Info("<<<< CreateSnapshot")
+	fields := LogFields{
+		"Method":       "CreateSnapshot",
+		"Type":         "SANEconomyStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+		"snapConfig":   snapConfig,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Info(">>>> CreateSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Info("<<<< CreateSnapshot")
 
 	internalSnapName := snapConfig.InternalName
 	internalVolumeName := snapConfig.VolumeInternalName
@@ -1205,7 +1173,7 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 	}
 
 	for _, snap := range snapListResponse {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshotName": snapConfig.InternalName,
 			"volumeName":   snapConfig.VolumeInternalName,
 		}).Info("Snapshot created.")
@@ -1229,16 +1197,14 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "RestoreSnapshot",
-			"Type":         "SANEconomyStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> RestoreSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
+	fields := LogFields{
+		"Method":       "RestoreSnapshot",
+		"Type":         "SANEconomyStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
 	return utils.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
 }
@@ -1247,17 +1213,15 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 func (d *SANEconomyStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":                "DeleteSnapshot",
-			"Type":                  "SANEconomyStorageDriver",
-			"snapshotName":          snapConfig.InternalName,
-			"volumeName":            snapConfig.VolumeInternalName,
-			"snapConfig.VolumeName": snapConfig.VolumeName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
+	fields := LogFields{
+		"Method":                "DeleteSnapshot",
+		"Type":                  "SANEconomyStorageDriver",
+		"snapshotName":          snapConfig.InternalName,
+		"volumeName":            snapConfig.VolumeInternalName,
+		"snapConfig.VolumeName": snapConfig.VolumeName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
 	internalSnapName := snapConfig.InternalName
 	// Creating the path string pattern
@@ -1287,11 +1251,9 @@ func (d *SANEconomyStorageDriver) DeleteSnapshot(
 
 // Get tests for the existence of a volume
 func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "SANEconomyStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Get")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
-	}
+	fields := LogFields{"Method": "Get", "Type": "SANEconomyStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
 
 	// Generic user-facing message
 	getError := fmt.Errorf("volume %s not found", name)
@@ -1306,7 +1268,7 @@ func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 		return getError
 	}
 
-	Logc(ctx).WithFields(log.Fields{"LUN": name, "bucketVol": bucketVol}).Debug("Volume found.")
+	Logc(ctx).WithFields(LogFields{"LUN": name, "bucketVol": bucketVol}).Debug("Volume found.")
 
 	return nil
 }
@@ -1368,7 +1330,7 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 	}
 
 	Logc(ctx).WithFields(
-		log.Fields{
+		LogFields{
 			"name":            flexvol,
 			"aggregate":       volumeAttributes.Aggregates[0],
 			"size":            size,
@@ -1488,7 +1450,7 @@ func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 	case 1:
 		return eligibleVolumes[0], nil
 	default:
-		return eligibleVolumes[utils.GetRandomNumber(len(eligibleVolumes))], nil
+		return eligibleVolumes[crypto.GetRandomNumber(len(eligibleVolumes))], nil
 	}
 }
 
@@ -1587,16 +1549,14 @@ func (d *SANEconomyStorageDriver) CreatePrepare(ctx context.Context, volConfig *
 }
 
 func (d *SANEconomyStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateFollowup",
-			"Type":         "SANEconomyStorageDriver",
-			"name":         volConfig.Name,
-			"internalName": volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateFollowup")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateFollowup")
+	fields := LogFields{
+		"Method":       "CreateFollowup",
+		"Type":         "SANEconomyStorageDriver",
+		"name":         volConfig.Name,
+		"internalName": volConfig.InternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
 
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		Logc(ctx).Debug("No follow-up create actions for Docker.")
@@ -1798,7 +1758,7 @@ func (d *SANEconomyStorageDriver) GetUpdateType(_ context.Context, driverOrig st
 // actual LUN name, i.e. the internal volume name or snap-LUN name.
 func (d *SANEconomyStorageDriver) LUNExists(ctx context.Context, name, bucketPrefix string) (bool, string, error) {
 	Logc(ctx).WithFields(
-		log.Fields{
+		LogFields{
 			"name":         name,
 			"bucketPrefix": bucketPrefix,
 		},
@@ -1812,7 +1772,7 @@ func (d *SANEconomyStorageDriver) LUNExists(ctx context.Context, name, bucketPre
 
 	for _, lun := range luns {
 		Logc(ctx).WithFields(
-			log.Fields{
+			LogFields{
 				"lun.Name": lun.Name,
 			},
 		).Debug("LUNExists")
@@ -1828,16 +1788,14 @@ func (d *SANEconomyStorageDriver) LUNExists(ctx context.Context, name, bucketPre
 // Resize a LUN with the specified options and find (or create) a bucket volume for the LUN
 func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 	name := volConfig.InternalName
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":    "Resize",
-			"Type":      "SANEconomyStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Resize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
+	fields := LogFields{
+		"Method":    "Resize",
+		"Type":      "SANEconomyStorageDriver",
+		"name":      name,
+		"sizeBytes": sizeBytes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
 	// Generic user-facing message
 	resizeError := errors.New("storage driver failed to resize the volume")
@@ -1881,7 +1839,7 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 
 	if sameSize {
 		Logc(ctx).WithFields(
-			log.Fields{
+			LogFields{
 				"requestedSize":     flexvolSize,
 				"currentVolumeSize": totalLunSize,
 				"name":              name,
@@ -1923,7 +1881,7 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 
 		if lunMaxSize < sizeBytes {
 			Logc(ctx).WithFields(
-				log.Fields{
+				LogFields{
 					"error":      err,
 					"sizeBytes":  sizeBytes,
 					"lunMaxSize": lunMaxSize,
@@ -1958,7 +1916,7 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 		err = d.resizeFlexvol(ctx, bucketVol, 0)
 		if err != nil {
 			Logc(ctx).WithFields(
-				log.Fields{
+				LogFields{
 					"name":               bucketVol,
 					"initialVolumeSize":  flexvolSize,
 					"adjustedVolumeSize": flexvolSize + returnSize - sizeBytes,
@@ -1970,7 +1928,7 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 					Warning("Failed to get volume size after the second resize operation.")
 			} else {
 				Logc(ctx).WithFields(
-					log.Fields{
+					LogFields{
 						"name":               bucketVol,
 						"initialVolumeSize":  flexvolSize,
 						"adjustedVolumeSize": adjustedVolumeSize,
@@ -2021,15 +1979,14 @@ func (d *SANEconomyStorageDriver) ReconcileNodeAccess(
 			nodeIQNs = append(nodeIQNs, node.IQN)
 		}
 	}
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "ReconcileNodeAccess",
-			"Type":   "SANEconomyStorageDriver",
-			"Nodes":  nodeNames,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+
+	fields := LogFields{
+		"Method": "ReconcileNodeAccess",
+		"Type":   "SANEconomyStorageDriver",
+		"Nodes":  nodeNames,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
 	return reconcileSANNodeAccess(ctx, d.API, d.Config.IgroupName, nodeIQNs)
 }

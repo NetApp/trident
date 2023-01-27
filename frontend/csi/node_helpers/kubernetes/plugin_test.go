@@ -6,17 +6,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	. "github.com/netapp/trident/logging"
 	mockOrchestrator "github.com/netapp/trident/mocks/mock_core"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	"github.com/netapp/trident/utils"
@@ -29,7 +29,7 @@ var (
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 

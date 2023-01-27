@@ -12,9 +12,7 @@ import (
 
 	drivers "github.com/netapp/trident/storage_drivers"
 
-	log "github.com/sirupsen/logrus"
-
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
 )
 
@@ -162,7 +160,7 @@ func (p *StoragePool) GetLabelsJSON(ctx context.Context, key string, labelLimit 
 	labelsJSON := labelsJsonBytes.String()
 
 	if labelLimit != 0 && len(labelsJSON) > labelLimit {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"labelsJSON":       labelsJSON,
 			"labelsJSONLength": len(labelsJSON),
 			"maxLabelLength":   labelLimit,

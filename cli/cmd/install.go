@@ -27,9 +27,11 @@ import (
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
-	"github.com/netapp/trident/logging"
+	. "github.com/netapp/trident/logging"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/crypto"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 const (
@@ -93,6 +95,7 @@ const (
 
 var (
 	// CLI flags
+	debugFlag               bool
 	generateYAML            bool
 	useYAML                 bool
 	silent                  bool
@@ -116,6 +119,8 @@ var (
 	imageRegistry           string
 	logFormat               string
 	imagePullPolicy         string
+	logWorkflows            string
+	logLayers               string
 	probePort               int64
 	k8sTimeout              time.Duration
 	httpRequestTimeout      time.Duration
@@ -205,6 +210,10 @@ func init() {
 	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "Trident container image. When installing Trident "+
 		"from a private image registry, this flag must be set to the path of the container image.")
 	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
+	installCmd.Flags().StringVar(&logWorkflows, "log-workflows", "", "A comma-delimited list of Trident "+
+		"workflows for which to enable trace logging.")
+	installCmd.Flags().StringVar(&logLayers, "log-layers", "", "A comma-delimited list of Trident "+
+		"log layers for which to enable trace logging.")
 	installCmd.Flags().Int64Var(&probePort, "probe-port", 17546,
 		"The port used by the node pods for liveness/readiness probes. Must not already be in use on the worker hosts.")
 	installCmd.Flags().StringVar(&kubeletDir, "kubelet-dir", "/var/lib/kubelet",
@@ -255,11 +264,11 @@ var installCmd = &cobra.Command{
 		initInstallerLogging()
 
 		if err := discoverInstallationEnvironment(); err != nil {
-			log.Fatalf("Install pre-checks failed; %v", err)
+			Log().Fatalf("Install pre-checks failed; %v", err)
 		}
 		processInstallationArguments(cmd)
 		if err := validateInstallationArguments(); err != nil {
-			log.Fatalf("Invalid arguments; %v", err)
+			Log().Fatalf("Invalid arguments; %v", err)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -267,19 +276,19 @@ var installCmd = &cobra.Command{
 
 			// Ensure the setup directory exists
 			if err := ensureSetupDirExists(); err != nil {
-				log.Fatalf("Could not find or create setup directory; %v", err)
+				Log().Fatalf("Could not find or create setup directory; %v", err)
 			}
 
 			// If generate-custom-yaml was specified, write the YAML files to the setup directory
 			if err := prepareYAMLFiles(); err != nil {
-				log.Fatalf("YAML generation failed; %v", err)
+				Log().Fatalf("YAML generation failed; %v", err)
 			}
-			log.WithField("setupPath", setupPath).Info("Wrote installation YAML files.")
+			Log().WithField("setupPath", setupPath).Info("Wrote installation YAML files.")
 
 		} else {
 			// Run the installer directly using the Kubernetes client
 			if err := installTrident(); err != nil {
-				log.Fatalf("Install failed; %v.  Resolve the issue; use 'tridentctl uninstall' "+
+				Log().Fatalf("Install failed; %v.  Resolve the issue; use 'tridentctl uninstall' "+
 					"to clean up; and try again.", err)
 			}
 		}
@@ -288,20 +297,31 @@ var installCmd = &cobra.Command{
 
 // initInstallerLogging configures logging for Trident installation. Logs are written to stdout.
 func initInstallerLogging() {
-	// Installer logs to stdout only
-	log.SetOutput(os.Stdout)
-	log.SetFormatter(&log.TextFormatter{DisableTimestamp: true})
+	var err error
+	initCmdLogging()
 
-	logLevel := "info"
+	logLevel := GetDefaultLogLevel()
 	if silent {
 		logLevel = "fatal"
-	}
-	err := logging.InitLogLevel(Debug, logLevel)
-	if err != nil {
-		log.WithField("error", err).Fatal("Failed to initialize logging.")
+		err = InitLogLevel(logLevel)
+		if err != nil {
+			Log().WithField("error", err).Fatal("Failed to initialize logging.")
+		}
 	}
 
-	log.WithField("logLevel", log.GetLevel().String()).Debug("Initialized logging.")
+	// Installer logs to stdout only
+	InitLogOutput(os.Stdout)
+	InitLogFormatter(&log.TextFormatter{DisableTimestamp: true})
+	// Set provided logging workflows.
+	if err = SetWorkflows(logWorkflows); err != nil {
+		Log().WithField("error", err).Fatal("Failed to initialize logging while setting log workflows.")
+	}
+
+	if err = SetLogLayers(logLayers); err != nil {
+		Log().WithField("error", err).Fatal("Failed to initialize logging while setting log layers.")
+	}
+
+	Log().WithField("logLevel", LogLevel).Debug("Initialized logging.")
 }
 
 // discoverInstallationEnvironment inspects the current environment and checks
@@ -321,7 +341,7 @@ func discoverInstallationEnvironment() error {
 			tridentImage = utils.ReplaceImageRegistry(tridentImage, imageRegistry)
 		}
 	}
-	log.Debugf("Trident image: %s", tridentImage)
+	Log().Debugf("Trident image: %s", tridentImage)
 
 	if autosupportImage == "" {
 		autosupportImage = tridentconfig.DefaultAutosupportImage
@@ -330,7 +350,7 @@ func discoverInstallationEnvironment() error {
 			autosupportImage = utils.ReplaceImageRegistry(autosupportImage, imageRegistry)
 		}
 	}
-	log.Debugf("Autosupport image: %s", autosupportImage)
+	Log().Debugf("Autosupport image: %s", autosupportImage)
 
 	// Create the Kubernetes client
 	if client, err = initClient(); err != nil {
@@ -340,8 +360,8 @@ func discoverInstallationEnvironment() error {
 	// Before the installation ensure K8s version is valid
 	err = tridentconfig.ValidateKubernetesVersion(tridentconfig.KubernetesVersionMin, client.ServerVersion())
 	if err != nil {
-		if utils.IsUnsupportedKubernetesVersionError(err) {
-			log.Errorf("Kubernetes version %s is an %v. NetApp will not take Support calls or "+
+		if versionutils.IsUnsupportedKubernetesVersionError(err) {
+			Log().Errorf("Kubernetes version %s is an %v. NetApp will not take Support calls or "+
 				"open Support tickets when using Trident with an unsupported Kubernetes version.",
 				client.ServerVersion().String(), err)
 		} else {
@@ -360,7 +380,7 @@ func discoverInstallationEnvironment() error {
 
 		// Warn the user if no namespace was specified and the current namespace isn't "trident"
 		if client.Namespace() != PreferredNamespace {
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"example": fmt.Sprintf("./tridentctl install -n %s", PreferredNamespace),
 			}).Warning("For maximum security, we recommend running Trident in its own namespace.")
 		}
@@ -369,7 +389,7 @@ func discoverInstallationEnvironment() error {
 	// Direct all subsequent client commands to the chosen namespace
 	client.SetNamespace(TridentPodNamespace)
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"installationNamespace": TridentPodNamespace,
 		"KubernetesVersion":     client.ServerVersion().String(),
 	}).Debug("Validated installation environment.")
@@ -597,11 +617,14 @@ func prepareYAMLFiles() error {
 		ImageRegistry:           imageRegistry,
 		LogFormat:               logFormat,
 		DisableAuditLog:         disableAuditLog,
+		Debug:                   useDebug,
+		LogLevel:                LogLevel,
+		LogLayers:               logLayers,
+		LogWorkflows:            logWorkflows,
 		SnapshotCRDVersion:      snapshotCRDVersion,
 		ImagePullSecrets:        []string{},
 		Labels:                  labels,
 		ControllingCRDetails:    nil,
-		Debug:                   Debug,
 		UseIPv6:                 useIPv6,
 		SilenceAutosupport:      silenceAutosupport,
 		Version:                 client.ServerVersion(),
@@ -622,12 +645,15 @@ func prepareYAMLFiles() error {
 		KubeletDir:           kubeletDir,
 		LogFormat:            logFormat,
 		DisableAuditLog:      disableAuditLog,
+		Debug:                useDebug,
+		LogLevel:             LogLevel,
+		LogWorkflows:         logWorkflows,
+		LogLayers:            logLayers,
 		ProbePort:            strconv.FormatInt(probePort, 10),
 		ImagePullSecrets:     []string{},
 		Labels:               daemonSetlabels,
 		ControllingCRDetails: nil,
 		EnableForceDetach:    enableForceDetach,
-		Debug:                Debug,
 		Version:              client.ServerVersion(),
 		HTTPRequestTimeout:   httpRequestTimeout.String(),
 		ServiceAccountName:   getNodeRBACResourceName(false),
@@ -678,11 +704,14 @@ func prepareYAMLFiles() error {
 			KubeletDir:           kubeletDir,
 			LogFormat:            logFormat,
 			DisableAuditLog:      disableAuditLog,
+			Debug:                useDebug,
+			LogLevel:             LogLevel,
+			LogWorkflows:         logWorkflows,
+			LogLayers:            logLayers,
 			ProbePort:            strconv.FormatInt(probePort, 10),
 			ImagePullSecrets:     []string{},
 			Labels:               daemonSetlabels,
 			ControllingCRDetails: nil,
-			Debug:                Debug,
 			Version:              client.ServerVersion(),
 			HTTPRequestTimeout:   httpRequestTimeout.String(),
 			ServiceAccountName:   getNodeRBACResourceName(true),
@@ -740,14 +769,14 @@ func ensureSetupDirExists() error {
 		if err := os.MkdirAll(setupPath, os.ModePerm); err != nil {
 			return err
 		}
-		log.WithField("path", setupPath).Info("Created setup directory.")
+		Log().WithField("path", setupPath).Info("Created setup directory.")
 	}
 	return nil
 }
 
 func installTrident() (returnError error) {
 	var (
-		logFields log.Fields
+		logFields LogFields
 		pvcExists bool
 		pvExists  bool
 		crd       *apiextensionv1.CustomResourceDefinition
@@ -795,9 +824,9 @@ func installTrident() (returnError error) {
 		return
 	}
 	if namespaceExists {
-		log.WithField("namespace", TridentPodNamespace).Debug("Namespace exists.")
+		Log().WithField("namespace", TridentPodNamespace).Debug("Namespace exists.")
 	} else {
-		log.WithField("namespace", TridentPodNamespace).Debug("Namespace does not exist.")
+		Log().WithField("namespace", TridentPodNamespace).Debug("Namespace does not exist.")
 	}
 
 	// Check for alpha snapshot CRDs
@@ -815,7 +844,7 @@ func installTrident() (returnError error) {
 			return
 		}
 		if !crdExists {
-			log.WithField("CRD", crdName).Debug("CRD not present.")
+			Log().WithField("CRD", crdName).Debug("CRD not present.")
 			continue
 		}
 
@@ -849,17 +878,17 @@ func installTrident() (returnError error) {
 			return
 		}
 		if crdExists {
-			log.WithField("CRD", crdName).Debug("CRD present.")
+			Log().WithField("CRD", crdName).Debug("CRD present.")
 			installedCRDs = append(installedCRDs, crdName)
 		} else {
-			log.WithField("CRD", crdName).Debug("CRD not present.")
+			Log().WithField("CRD", crdName).Debug("CRD not present.")
 		}
 	}
 
 	// Let TridentVersions CRD be the deciding factor if the CRDs exist, since
 	// TridentVersions is the last CRD created during installation.
 	if utils.SliceContainsString(installedCRDs, VersionCRDName) {
-		log.Debug("Trident Version CRD present, skipping PVC/PV check.")
+		Log().Debug("Trident Version CRD present, skipping PVC/PV check.")
 	} else {
 
 		// We didn't find any CRD data, so look for legacy etcd data
@@ -868,25 +897,25 @@ func installTrident() (returnError error) {
 			return
 		}
 
-		logFields = log.Fields{"pv": pvName, "pvc": pvcName}
+		logFields = LogFields{"pv": pvName, "pvc": pvcName}
 
 		if pvcExists && pvExists {
-			log.WithFields(logFields).Debug("PV and PVC exist from a pre-19.07 Trident installation.")
+			Log().WithFields(logFields).Debug("PV and PVC exist from a pre-19.07 Trident installation.")
 			returnError = errors.New("PV and PVC exist from a pre-19.07 Trident installation.  This data " +
 				"must be migrated to CRDs.  Install Trident 20.07 to accomplish this migration, and then upgrade " +
 				"to any Trident version newer than 20.07")
 			return
 		} else if !pvcExists && !pvExists {
-			log.WithFields(logFields).Debug("PV and PVC do not exist, installer will create a fresh " +
+			Log().WithFields(logFields).Debug("PV and PVC do not exist, installer will create a fresh " +
 				"CRD-based deployment.")
 		} else if pvcExists && !pvExists {
-			log.WithFields(logFields).Error("PVC exists but PV does not.")
+			Log().WithFields(logFields).Error("PVC exists but PV does not.")
 			returnError = fmt.Errorf("PVC %s exists but PV %s does not; if you have data from a previous "+
 				"Trident installation, please use the installer from that version to recreate the missing PV, "+
 				"else delete the PVC and try again", pvcName, pvName)
 			return
 		} else if !pvcExists && pvExists {
-			log.WithFields(logFields).Error("PV exists but PVC does not.")
+			Log().WithFields(logFields).Error("PV exists but PVC does not.")
 			returnError = fmt.Errorf("PV %s exists but PVC %s does not; if you have data from a previous "+
 				"Trident installation, please use the installer from that version to recreate the missing PVC, "+
 				"else delete the PV and try again", pvName, pvcName)
@@ -895,7 +924,7 @@ func installTrident() (returnError error) {
 	}
 
 	// All checks succeeded, so proceed with installation
-	log.WithField("namespace", TridentPodNamespace).Info("Starting Trident installation.")
+	Log().WithField("namespace", TridentPodNamespace).Info("Starting Trident installation.")
 
 	// Create or patch namespace
 	if namespaceExists {
@@ -921,13 +950,13 @@ func installTrident() (returnError error) {
 
 	// Create or update CRDs and ensure they are established.
 	if returnError = createAndEnsureCRDs(); returnError != nil {
-		log.Errorf("could not create or update the Trident CRDs; %v", returnError)
+		Log().Errorf("could not create or update the Trident CRDs; %v", returnError)
 		return
 	}
 
 	// Ensure we can create a CRD client.
 	if _, returnError = getCRDClient(); returnError != nil {
-		log.Errorf("Could not create CRD client; %v", returnError)
+		Log().Errorf("Could not create CRD client; %v", returnError)
 		return
 	}
 
@@ -937,14 +966,14 @@ func installTrident() (returnError error) {
 		// that it can be deleted and new YAML can be deployed
 		installPSP := func(filePath, fileContentsYAML string) error {
 			if useYAML && fileExists(filePath) {
-				logFields = log.Fields{"path": filePath}
+				logFields = LogFields{"path": filePath}
 				// Delete the object in case it already exists and we need to update it
 				if err := client.DeleteObjectByFile(filePath, true); err != nil {
 					return err
 				}
 				returnError = client.CreateObjectByFile(filePath)
 			} else {
-				logFields = log.Fields{}
+				logFields = LogFields{}
 				// Delete the object in case it already exists and we need to update it
 				if err := client.DeleteObjectByYAML(fileContentsYAML, true); err != nil {
 					return err
@@ -960,7 +989,7 @@ func installTrident() (returnError error) {
 			returnError = fmt.Errorf("could not create Trident controller pod security policy; %v", err)
 			return
 		}
-		log.WithFields(logFields).Info("Created Trident controller pod security policy.")
+		Log().WithFields(logFields).Info("Created Trident controller pod security policy.")
 
 		// Check and install node linux PSP
 		pspYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false), nodeLabels, nil)
@@ -968,7 +997,7 @@ func installTrident() (returnError error) {
 			returnError = fmt.Errorf("could not create Trident node linux pod security policy; %v", err)
 			return
 		}
-		log.WithFields(logFields).Info("Created Trident node linux pod security policy.")
+		Log().WithFields(logFields).Info("Created Trident node linux pod security policy.")
 
 		if windows {
 			pspYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(true), nodeLabels, nil)
@@ -976,7 +1005,7 @@ func installTrident() (returnError error) {
 				returnError = fmt.Errorf("could not create Trident node windows pod security policy; %v", err)
 				return
 			}
-			log.WithFields(logFields).Info("Created Trident node windows pod security policy.")
+			Log().WithFields(logFields).Info("Created Trident node windows pod security policy.")
 		}
 	}
 
@@ -1004,17 +1033,17 @@ func installTrident() (returnError error) {
 			return
 		}
 		returnError = client.CreateObjectByFile(servicePath)
-		logFields = log.Fields{"path": servicePath}
+		logFields = LogFields{"path": servicePath}
 	} else {
 		returnError = client.CreateObjectByYAML(k8sclient.GetCSIServiceYAML(getServiceName(), labels, nil))
-		logFields = log.Fields{}
+		logFields = LogFields{}
 	}
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create Trident service; %v", returnError)
 		return
 	}
-	log.WithFields(logFields).Info("Created Trident service.")
-	logFields = log.Fields{}
+	Log().WithFields(logFields).Info("Created Trident service.")
+	logFields = LogFields{}
 
 	// Check if Trident's Encryption Secret already exists in the specified namespace.
 	secretExists, err := client.CheckSecretExists(getEncryptionSecretName())
@@ -1025,7 +1054,7 @@ func installTrident() (returnError error) {
 
 	// If the encryption secret doesn't exist create a new one.
 	if !secretExists {
-		aesKey, err := utils.GenerateAESKey()
+		aesKey, err := crypto.GenerateAESKey()
 		if err != nil {
 			returnError = fmt.Errorf("could not generate secure AES key; %v", err)
 			return
@@ -1044,11 +1073,11 @@ func installTrident() (returnError error) {
 			returnError = fmt.Errorf("could not create Trident encryption secret; %v", err)
 			return
 		}
-		log.WithFields(logFields).Info("Created Trident encryption secret.")
+		Log().WithFields(logFields).Info("Created Trident encryption secret.")
 	}
 
 	// Create the certificates for the CSI controller's HTTPS REST interface
-	certInfo, err := utils.MakeHTTPCertInfo(
+	certInfo, err := crypto.MakeHTTPCertInfo(
 		tridentconfig.CACertName, tridentconfig.ServerCertName, tridentconfig.ClientCertName)
 	if err != nil {
 		returnError = fmt.Errorf("could not create Trident X509 certificates; %v", err)
@@ -1070,7 +1099,7 @@ func installTrident() (returnError error) {
 		returnError = fmt.Errorf("could not create Trident protocol secret; %v", err)
 		return
 	}
-	log.WithFields(logFields).Info("Created Trident protocol secret.")
+	Log().WithFields(logFields).Info("Created Trident protocol secret.")
 
 	err = client.CreateObjectByYAML(k8sclient.GetResourceQuotaYAML(getResourceQuotaName(), TridentPodNamespace,
 		nodeLabels, nil))
@@ -1078,7 +1107,7 @@ func installTrident() (returnError error) {
 		returnError = fmt.Errorf("could not create Trident resource quota; %v", err)
 		return
 	}
-	log.WithFields(logFields).Info("Created Trident resource quota.")
+	Log().WithFields(logFields).Info("Created Trident resource quota.")
 
 	// Remove any previous deployments found of name 'trident-csi'
 	if found, _ := client.CheckDeploymentExists(getDeploymentName(true), TridentPodNamespace); found {
@@ -1096,7 +1125,7 @@ func installTrident() (returnError error) {
 			return
 		}
 		returnError = client.CreateObjectByFile(deploymentPath)
-		logFields = log.Fields{"path": deploymentPath}
+		logFields = LogFields{"path": deploymentPath}
 	} else {
 		deploymentArgs := &k8sclient.DeploymentYAMLArguments{
 			DeploymentName:          getDeploymentName(true),
@@ -1109,11 +1138,14 @@ func installTrident() (returnError error) {
 			ImageRegistry:           imageRegistry,
 			LogFormat:               logFormat,
 			DisableAuditLog:         disableAuditLog,
+			Debug:                   useDebug,
+			LogLevel:                LogLevel,
+			LogWorkflows:            logWorkflows,
+			LogLayers:               logLayers,
 			SnapshotCRDVersion:      snapshotCRDVersion,
 			ImagePullSecrets:        []string{},
 			Labels:                  labels,
 			ControllingCRDetails:    nil,
-			Debug:                   Debug,
 			UseIPv6:                 useIPv6,
 			SilenceAutosupport:      silenceAutosupport,
 			Version:                 client.ServerVersion(),
@@ -1124,13 +1156,13 @@ func installTrident() (returnError error) {
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))
-		logFields = log.Fields{}
+		logFields = LogFields{}
 	}
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create Trident deployment; %v", returnError)
 		return
 	}
-	log.WithFields(logFields).Info("Created Trident deployment.")
+	Log().WithFields(logFields).Info("Created Trident deployment.")
 
 	// Create the DaemonSet
 	if windows {
@@ -1148,7 +1180,7 @@ func installTrident() (returnError error) {
 				return
 			}
 			returnError = client.CreateObjectByFile(windowsDaemonSetPath)
-			logFields = log.Fields{"path": windowsDaemonSetPath}
+			logFields = LogFields{"path": windowsDaemonSetPath}
 		} else {
 			daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
 				DaemonsetName:        getDaemonSetName(true),
@@ -1157,11 +1189,14 @@ func installTrident() (returnError error) {
 				KubeletDir:           kubeletDir,
 				LogFormat:            logFormat,
 				DisableAuditLog:      disableAuditLog,
+				Debug:                useDebug,
+				LogLevel:             LogLevel,
+				LogWorkflows:         logWorkflows,
+				LogLayers:            logLayers,
 				ProbePort:            strconv.FormatInt(probePort, 10),
 				ImagePullSecrets:     []string{},
 				Labels:               nodeLabels,
 				ControllingCRDetails: nil,
-				Debug:                Debug,
 				Version:              client.ServerVersion(),
 				HTTPRequestTimeout:   httpRequestTimeout.String(),
 				ServiceAccountName:   getNodeRBACResourceName(true),
@@ -1169,7 +1204,7 @@ func installTrident() (returnError error) {
 			}
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDaemonSetYAMLWindows(daemonSetArgs))
-			logFields = log.Fields{}
+			logFields = LogFields{}
 
 			if returnError != nil {
 				returnError = fmt.Errorf("could not create Trident daemonset; %v", returnError)
@@ -1194,7 +1229,7 @@ func installTrident() (returnError error) {
 			return
 		}
 		returnError = client.CreateObjectByFile(daemonsetPath)
-		logFields = log.Fields{"path": daemonsetPath}
+		logFields = LogFields{"path": daemonsetPath}
 	} else {
 		daemonSetlabels := make(map[string]string)
 		daemonSetlabels[appLabelKey] = TridentNodeLabelValue
@@ -1205,12 +1240,15 @@ func installTrident() (returnError error) {
 			KubeletDir:           kubeletDir,
 			LogFormat:            logFormat,
 			DisableAuditLog:      disableAuditLog,
+			Debug:                useDebug,
+			LogLevel:             LogLevel,
+			LogWorkflows:         logWorkflows,
+			LogLayers:            logLayers,
 			ProbePort:            strconv.FormatInt(probePort, 10),
 			ImagePullSecrets:     []string{},
 			Labels:               daemonSetlabels,
 			ControllingCRDetails: nil,
 			EnableForceDetach:    enableForceDetach,
-			Debug:                Debug,
 			Version:              client.ServerVersion(),
 			HTTPRequestTimeout:   httpRequestTimeout.String(),
 			ServiceAccountName:   getNodeRBACResourceName(false),
@@ -1218,14 +1256,14 @@ func installTrident() (returnError error) {
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDaemonSetYAMLLinux(daemonSetArgs))
-		logFields = log.Fields{}
+		logFields = LogFields{}
 	}
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create Trident daemonset; %v", returnError)
 		return
 	}
 
-	log.WithFields(logFields).Info("Created Trident daemonset.")
+	Log().WithFields(logFields).Info("Created Trident daemonset.")
 
 	// Wait for Trident pod to be running
 	var tridentPod *v1.Pod
@@ -1243,7 +1281,7 @@ func installTrident() (returnError error) {
 		return
 	}
 
-	log.Info("Trident installation succeeded.")
+	Log().Info("Trident installation succeeded.")
 	return nil
 }
 
@@ -1282,14 +1320,14 @@ func discoverLegacyEtcdData() (pvcExists, pvExists bool, returnError error) {
 			return
 		}
 
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"pvc":       pvcName,
 			"namespace": pvc.Namespace,
 			"phase":     pvc.Status.Phase,
 		}).Debug("PVC already exists.")
 
 	} else {
-		log.WithField("pvc", pvcName).Debug("PVC does not exist.")
+		Log().WithField("pvc", pvcName).Debug("PVC does not exist.")
 	}
 
 	// Check for PV
@@ -1332,13 +1370,13 @@ func discoverLegacyEtcdData() (pvcExists, pvExists bool, returnError error) {
 			return
 		}
 
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"pv":    pvName,
 			"phase": pv.Status.Phase,
 		}).Debug("PV already exists.")
 
 	} else {
-		log.WithField("pv", pvName).Debug("PV does not exist.")
+		Log().WithField("pv", pvName).Debug("PV does not exist.")
 	}
 
 	return
@@ -1352,20 +1390,20 @@ func patchNamespace() error {
 }
 
 func createNamespace() (returnError error) {
-	var logFields log.Fields
+	var logFields LogFields
 
 	if useYAML && fileExists(namespacePath) {
 		returnError = client.CreateObjectByFile(namespacePath)
-		logFields = log.Fields{"path": namespacePath}
+		logFields = LogFields{"path": namespacePath}
 	} else {
 		returnError = client.CreateObjectByYAML(k8sclient.GetNamespaceYAML(TridentPodNamespace))
-		logFields = log.Fields{"namespace": TridentPodNamespace}
+		logFields = LogFields{"namespace": TridentPodNamespace}
 	}
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create namespace %s; %v", TridentPodNamespace, returnError)
 		return
 	}
-	log.WithFields(logFields).Info("Created namespace.")
+	Log().WithFields(logFields).Info("Created namespace.")
 	return nil
 }
 
@@ -1391,7 +1429,7 @@ func createAndEnsureCRDs() error {
 		return fmt.Errorf("could not create the Trident CRDs; %v", err)
 	}
 
-	log.Info("Creating or patching the Trident CRDs.")
+	Log().Info("Creating or patching the Trident CRDs.")
 
 	// Loop through all CRDs and check if each exists; if it does, update it. Otherwise, create it.
 	for crdName, crdYAML := range crdMap {
@@ -1402,13 +1440,13 @@ func createAndEnsureCRDs() error {
 		}
 
 		if crdExists {
-			log.Debugf("%v CRD present; patching CRD to ensure it is not stale.", crdName)
+			Log().Debugf("%v CRD present; patching CRD to ensure it is not stale.", crdName)
 
 			if err = patchCRD(crdName, crdYAML); err != nil {
 				return fmt.Errorf("could not patch the Trident %s CRD; %v", crdName, err)
 			}
 		} else {
-			log.Debugf("%v CRD not present; creating a fresh CRD.", crdName)
+			Log().Debugf("%v CRD not present; creating a fresh CRD.", crdName)
 
 			if err = createCRD(crdName, crdYAML); err != nil {
 				return fmt.Errorf("could not create the Trident %s CRD; %v", crdName, err)
@@ -1416,7 +1454,7 @@ func createAndEnsureCRDs() error {
 		}
 	}
 
-	log.Info("Applied latest Trident CRDs.")
+	Log().Info("Applied latest Trident CRDs.")
 
 	return nil
 }
@@ -1475,7 +1513,7 @@ func validateCRDs(crdMap map[string]string) error {
 
 	if len(errMessages) > 0 {
 		errMsg := strings.Join(errMessages, "; ")
-		log.Errorf(errMsg)
+		Log().Errorf(errMsg)
 		return fmt.Errorf("CRD validation failed; %v", errMsg)
 	}
 
@@ -1487,7 +1525,7 @@ func createCRD(crdName, crdYAML string) error {
 	var returnError error
 
 	// Create the CRDs and wait for them to be registered in Kubernetes.
-	log.Debugf("Installer will create a fresh %v CRD.", crdName)
+	Log().Debugf("Installer will create a fresh %v CRD.", crdName)
 
 	if returnError = createCustomResourceDefinition(crdName, crdYAML); returnError != nil {
 		return returnError
@@ -1496,9 +1534,9 @@ func createCRD(crdName, crdYAML string) error {
 	// Wait for the CRD to be fully established.
 	if returnError = ensureCRDEstablished(crdName); returnError != nil {
 		// If CRD registration failed *and* we created the CRDs, clean up by deleting the CRD.
-		log.Errorf("CRD %v not established; %v", crdName, returnError)
+		Log().Errorf("CRD %v not established; %v", crdName, returnError)
 		if err := deleteCustomResourceDefinition(crdName, crdYAML); err != nil {
-			log.Errorf("Could not delete CRD %v; %v", crdName, err)
+			Log().Errorf("Could not delete CRD %v; %v", crdName, err)
 		}
 
 		return returnError
@@ -1514,7 +1552,7 @@ func createCustomResourceDefinition(crdName, crdYAML string) (returnError error)
 			returnError)
 		return
 	}
-	log.Debugf("Created custom resource definition %v.", crdName)
+	Log().Debugf("Created custom resource definition %v.", crdName)
 	return nil
 }
 
@@ -1534,7 +1572,7 @@ func patchCRD(crdName, crdYAML string) error {
 	if err = client.PatchCRD(crdName, patchBytes, types.MergePatchType); err != nil {
 		return fmt.Errorf("could not patch custom resource %v in %s; %v", crdName, TridentPodNamespace, err)
 	}
-	log.Debugf("Patched custom resource definition %v.", crdName)
+	Log().Debugf("Patched custom resource definition %v.", crdName)
 	return nil
 }
 
@@ -1559,7 +1597,7 @@ func ensureCRDEstablished(crdName string) error {
 	}
 
 	checkCRDNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"CRD": crdName,
 			"err": err,
 		}).Debug("CRD not yet established, waiting.")
@@ -1569,18 +1607,18 @@ func ensureCRDEstablished(crdName string) error {
 	checkCRDBackoff.MaxInterval = 5 * time.Second
 	checkCRDBackoff.MaxElapsedTime = k8sTimeout
 
-	log.WithField("CRD", crdName).Trace("Waiting for CRD to be established.")
+	Log().WithField("CRD", crdName).Trace("Waiting for CRD to be established.")
 
 	if err := backoff.RetryNotify(checkCRDEstablished, checkCRDBackoff, checkCRDNotify); err != nil {
 		return fmt.Errorf("CRD was not established after %3.2f seconds", k8sTimeout.Seconds())
 	}
 
-	log.WithField("CRD", crdName).Debug("CRD established.")
+	Log().WithField("CRD", crdName).Debug("CRD established.")
 	return nil
 }
 
 func deleteCustomResourceDefinition(crdName, crdYAML string) (returnError error) {
-	var logFields log.Fields
+	var logFields LogFields
 
 	returnError = client.DeleteObjectByYAML(crdYAML, true)
 	if returnError != nil {
@@ -1589,7 +1627,7 @@ func deleteCustomResourceDefinition(crdName, crdYAML string) (returnError error)
 			returnError)
 		return
 	}
-	log.WithFields(logFields).Infof("Deleted custom resource definition %v.", crdName)
+	Log().WithFields(logFields).Infof("Deleted custom resource definition %v.", crdName)
 	return nil
 }
 
@@ -1601,7 +1639,7 @@ func protectCustomResourceDefinitions() error {
 			return err
 		}
 	}
-	log.Info("Added finalizers to custom resource definitions.")
+	Log().Info("Added finalizers to custom resource definitions.")
 	return nil
 }
 
@@ -1621,7 +1659,7 @@ func createK8SCSIDriver() error {
 }
 
 func createRBACObjects() (returnError error) {
-	var logFields log.Fields
+	var logFields LogFields
 
 	labels := make(map[string]string)
 	labels[TridentCSILabelKey] = TridentCSILabelValue
@@ -1633,10 +1671,10 @@ func createRBACObjects() (returnError error) {
 	createObjectFunc := func(resourcePath, resourceYAML string) error {
 		if useYAML && fileExists(resourcePath) {
 			returnError = client.CreateObjectByFile(resourcePath)
-			logFields = log.Fields{"path": resourcePath}
+			logFields = LogFields{"path": resourcePath}
 		} else {
 			returnError = client.CreateObjectByYAML(resourceYAML)
-			logFields = log.Fields{}
+			logFields = LogFields{}
 		}
 		return returnError
 	}
@@ -1648,7 +1686,7 @@ func createRBACObjects() (returnError error) {
 		returnError = fmt.Errorf("could not create controller service account; %v", returnError)
 		return
 	}
-	log.WithFields(logFields).Info("Created controller service account.")
+	Log().WithFields(logFields).Info("Created controller service account.")
 
 	// Create role (trident-namespaced) for controller
 	if createObjectFunc(controllerRolePath,
@@ -1657,7 +1695,7 @@ func createRBACObjects() (returnError error) {
 		returnError = fmt.Errorf("could not create controller role; %v", returnError)
 		return
 	}
-	log.WithFields(logFields).Info("Created controller role.")
+	Log().WithFields(logFields).Info("Created controller role.")
 
 	// Create role binding (trident-namespaced) for controller
 	if createObjectFunc(controllerRoleBindingPath,
@@ -1666,7 +1704,7 @@ func createRBACObjects() (returnError error) {
 		returnError = fmt.Errorf("could not create controller role binding; %v", returnError)
 		return
 	}
-	log.WithFields(logFields).Info("Created controller role binding.")
+	Log().WithFields(logFields).Info("Created controller role binding.")
 
 	// Create cluster role for controller
 	if createObjectFunc(controllerClusterRolePath,
@@ -1674,7 +1712,7 @@ func createRBACObjects() (returnError error) {
 		returnError = fmt.Errorf("could not create controller cluster role; %v", returnError)
 		return
 	}
-	log.WithFields(logFields).Info("Created controller cluster role.")
+	Log().WithFields(logFields).Info("Created controller cluster role.")
 
 	// Create cluster role binding for controller
 	if createObjectFunc(controllerClusterRoleBindingPath,
@@ -1683,7 +1721,7 @@ func createRBACObjects() (returnError error) {
 		returnError = fmt.Errorf("could not create controller cluster role binding; %v", returnError)
 		return
 	}
-	log.WithFields(logFields).Info("Created controller cluster role binding.")
+	Log().WithFields(logFields).Info("Created controller cluster role binding.")
 
 	// Creating node linux RBAC Objects
 	// Create service account for node linux
@@ -1692,7 +1730,7 @@ func createRBACObjects() (returnError error) {
 		returnError = fmt.Errorf("could not create node linux service account; %v", returnError)
 		return
 	}
-	log.WithFields(logFields).Info("Created node linux service account.")
+	Log().WithFields(logFields).Info("Created node linux service account.")
 
 	// Create node role & rolebinding only if PSP is supported instead of creating an empty resource
 	// This way it is made more clear that the service account isn't supposed to have access to anything
@@ -1704,7 +1742,7 @@ func createRBACObjects() (returnError error) {
 			returnError = fmt.Errorf("could not create node linux role; %v", returnError)
 			return
 		}
-		log.WithFields(logFields).Info("Created node linux role.")
+		Log().WithFields(logFields).Info("Created node linux role.")
 
 		// Create role binding (trident-namespaced) for node linux
 		if createObjectFunc(nodeLinuxRoleBindingPath,
@@ -1713,7 +1751,7 @@ func createRBACObjects() (returnError error) {
 			returnError = fmt.Errorf("could not create node linux role binding; %v", returnError)
 			return
 		}
-		log.WithFields(logFields).Info("Created node linux role binding.")
+		Log().WithFields(logFields).Info("Created node linux role binding.")
 	}
 
 	// Creating node windows RBAC Objects
@@ -1723,7 +1761,7 @@ func createRBACObjects() (returnError error) {
 			returnError = fmt.Errorf("could not create node windows service account; %v", returnError)
 			return
 		}
-		log.WithFields(logFields).Info("Created node windows service account.")
+		Log().WithFields(logFields).Info("Created node windows service account.")
 
 		// Create node role & rolebinding only if PSP is supported instead of creating an empty resource
 		// This way it is made more clear that the service account isn't supposed to have access to anything
@@ -1734,7 +1772,7 @@ func createRBACObjects() (returnError error) {
 				returnError = fmt.Errorf("could not create node windows role; %v", returnError)
 				return
 			}
-			log.WithFields(logFields).Info("Created node windows role.")
+			Log().WithFields(logFields).Info("Created node windows role.")
 
 			// Create role binding (trident-namespaced) for node windows
 			if createObjectFunc(nodeWindowsRoleBindingPath,
@@ -1743,7 +1781,7 @@ func createRBACObjects() (returnError error) {
 				returnError = fmt.Errorf("could not create node windows role binding; %v", returnError)
 				return
 			}
-			log.WithFields(logFields).Info("Created node windows role binding.")
+			Log().WithFields(logFields).Info("Created node windows role binding.")
 		}
 	}
 
@@ -1762,7 +1800,7 @@ func createRBACObjects() (returnError error) {
 				returnError = fmt.Errorf("could not create security context constraint; %v", returnError)
 				return
 			}
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"scc":  "trident",
 				"user": user,
 			}).Info("Created Trident's security context constraint.")
@@ -1779,20 +1817,20 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	daemonSetlabels := make(map[string]string)
 	daemonSetlabels[TridentNodeLabelKey] = TridentNodeLabelValue
 
-	logFunc := func(fields log.Fields) func(args ...interface{}) {
-		if logLevel == log.DebugLevel {
-			return log.WithFields(fields).Debug
+	logFunc := func(fields LogFields) func(args ...interface{}) {
+		if logLevel >= log.DebugLevel {
+			return Log().WithFields(fields).Debug
 		} else {
-			return log.WithFields(fields).Info
+			return Log().WithFields(fields).Info
 		}
 	}
 
 	deleteObjectFunc := func(resourceYAML, deletefailMsg, deleteSuccessMsg string) {
 		if err := client.DeleteObjectByYAML(resourceYAML, true); err != nil {
-			log.WithField("error", err).Warning(deletefailMsg)
+			Log().WithField("error", err).Warning(deletefailMsg)
 			anyErrors = true
 		} else {
-			logFunc(log.Fields{})(deleteSuccessMsg)
+			logFunc(LogFields{})(deleteSuccessMsg)
 		}
 	}
 
@@ -1953,10 +1991,10 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 				label = strings.Split(label, "=")[1]
 			}
 			if err := DeleteOpenShiftTridentSCC(user, label); err != nil {
-				log.WithField("error", err).Warning("Could not delete security context constraint.")
+				Log().WithField("error", err).Warning("Could not delete security context constraint.")
 				anyErrors = true
 			} else {
-				logFunc(log.Fields{
+				logFunc(LogFields{
 					"scc":  "trident",
 					"user": user,
 				})("Deleted Trident's security context constraint.")
@@ -1996,7 +2034,7 @@ func validateTridentDeployment() error {
 	if tridentImage == "" {
 		return fmt.Errorf("the Trident deployment must define the %s container", tridentconfig.ContainerTrident)
 	} else {
-		log.WithField("image", tridentImage).Debug("Read Trident image from custom YAML.")
+		Log().WithField("image", tridentImage).Debug("Read Trident image from custom YAML.")
 	}
 
 	return nil
@@ -2138,7 +2176,7 @@ func waitForTridentPod() (*v1.Pod, error) {
 	}
 
 	podNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"status":    err,
 			"increment": duration,
 		}).Debugf("Trident pod not yet running, waiting.")
@@ -2146,7 +2184,7 @@ func waitForTridentPod() (*v1.Pod, error) {
 	podBackoff := backoff.NewExponentialBackOff()
 	podBackoff.MaxElapsedTime = k8sTimeout
 
-	log.Info("Waiting for Trident pod to start.")
+	Log().Info("Waiting for Trident pod to start.")
 
 	if err := backoff.RetryNotify(checkPodRunning, podBackoff, podNotify); err != nil {
 
@@ -2167,11 +2205,11 @@ func waitForTridentPod() (*v1.Pod, error) {
 					client.CLI(), pod.Name, client.Namespace()))
 		}
 
-		log.Error(strings.Join(errMessages, " "))
+		Log().Error(strings.Join(errMessages, " "))
 		return nil, err
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"deployment": deployment.Name,
 		"pod":        pod.Name,
 		"namespace":  TridentPodNamespace,
@@ -2203,7 +2241,7 @@ func waitForRESTInterface() error {
 		return nil
 	}
 	restNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"error":     err,
 			"increment": duration,
 		}).Debugf("REST interface not yet up, waiting.")
@@ -2211,14 +2249,14 @@ func waitForRESTInterface() error {
 	restBackoff := backoff.NewExponentialBackOff()
 	restBackoff.MaxElapsedTime = k8sTimeout
 
-	log.Info("Waiting for Trident REST interface.")
+	Log().Info("Waiting for Trident REST interface.")
 
 	if err := backoff.RetryNotify(checkRESTInterface, restBackoff, restNotify); err != nil {
-		log.Errorf("Trident REST interface was not available after %3.2f seconds.", k8sTimeout.Seconds())
+		Log().Errorf("Trident REST interface was not available after %3.2f seconds.", k8sTimeout.Seconds())
 		return err
 	}
 
-	log.WithField("version", version).Info("Trident REST interface is up.")
+	Log().WithField("version", version).Info("Trident REST interface is up.")
 
 	return nil
 }
@@ -2328,7 +2366,7 @@ func getCRDClient() (*crdclient.Clientset, error) {
 	}
 
 	createCRDClientNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"increment": duration.Truncate(100 * time.Millisecond),
 			"message":   err.Error(),
 		}).Debug("CRD client not yet created, waiting.")
@@ -2341,13 +2379,13 @@ func getCRDClient() (*crdclient.Clientset, error) {
 	createCRDClientBackoff.MaxInterval = 5 * time.Second
 	createCRDClientBackoff.MaxElapsedTime = k8sTimeout
 
-	log.Debug("Creating CRD client.")
+	Log().Debug("Creating CRD client.")
 
 	if err := backoff.RetryNotify(createCRDClient, createCRDClientBackoff, createCRDClientNotify); err != nil {
 		return nil, err
 	}
 
-	log.Debug("Created CRD client.")
+	Log().Debug("Created CRD client.")
 
 	return crdClient, nil
 }
@@ -2445,7 +2483,7 @@ func getAppLabelForResource(resourceName string) (map[string]string, string) {
 }
 
 func isPSPSupported() bool {
-	pspRemovedVersion := utils.MustParseMajorMinorVersion(tridentconfig.PodSecurityPoliciesRemovedKubernetesVersion)
+	pspRemovedVersion := versionutils.MustParseMajorMinorVersion(tridentconfig.PodSecurityPoliciesRemovedKubernetesVersion)
 	return client.ServerVersion().LessThan(pspRemovedVersion)
 }
 

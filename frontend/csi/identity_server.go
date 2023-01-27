@@ -6,19 +6,18 @@ import (
 	"context"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
 func (p *Plugin) Probe(
 	ctx context.Context, req *csi.ProbeRequest,
 ) (*csi.ProbeResponse, error) {
-	fields := log.Fields{"Method": "Probe", "Type": "CSI_Identity"}
-	Logc(ctx).WithFields(fields).Debug(">>>> Probe")
+	fields := LogFields{"Method": "Probe", "Type": "CSI_Identity"}
+	Logc(ctx).WithFields(fields).Trace(">>>> Probe")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< Probe")
 
 	// Ensure Trident bootstrapped OK.  We only return an error if Trident bootstrapping
@@ -34,7 +33,7 @@ func (p *Plugin) Probe(
 func (p *Plugin) GetPluginInfo(
 	ctx context.Context, req *csi.GetPluginInfoRequest,
 ) (*csi.GetPluginInfoResponse, error) {
-	fields := log.Fields{"Method": "GetPluginInfo", "Type": "CSI_Identity"}
+	fields := LogFields{"Method": "GetPluginInfo", "Type": "CSI_Identity"}
 	Logc(ctx).WithFields(fields).Debug(">>>> GetPluginInfo")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< GetPluginInfo")
 
@@ -47,7 +46,7 @@ func (p *Plugin) GetPluginInfo(
 func (p *Plugin) GetPluginCapabilities(
 	ctx context.Context, req *csi.GetPluginCapabilitiesRequest,
 ) (*csi.GetPluginCapabilitiesResponse, error) {
-	fields := log.Fields{"Method": "GetPluginCapabilities", "Type": "CSI_Identity"}
+	fields := LogFields{"Method": "GetPluginCapabilities", "Type": "CSI_Identity"}
 	Logc(ctx).WithFields(fields).Debug(">>>> GetPluginCapabilities")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< GetPluginCapabilities")
 

@@ -7,10 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 
-	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 type (
@@ -119,6 +118,18 @@ const (
 	StorageAPITimeoutSeconds = 90
 	SANResizeDelta           = 50000000 // 50mb
 
+	// Storage driver names specified in the config file, etc.
+	OntapNASStorageDriverName          = "ontap-nas"
+	OntapNASFlexGroupStorageDriverName = "ontap-nas-flexgroup"
+	OntapNASQtreeStorageDriverName     = "ontap-nas-economy"
+	OntapSANStorageDriverName          = "ontap-san"
+	OntapSANEconomyStorageDriverName   = "ontap-san-economy"
+	SolidfireSANStorageDriverName      = "solidfire-san"
+	AzureNASStorageDriverName          = "azure-netapp-files"
+	AzureNASBlockStorageDriverName     = "azure-netapp-files-subvolume"
+	GCPNFSStorageDriverName            = "gcp-cvs"
+	FakeStorageDriverName              = "fake"
+
 	/* REST frontend constants */
 	MaxRESTRequestSize  = 40960
 	MinServerTLSVersion = tls.VersionTLS13
@@ -137,6 +148,11 @@ const (
 	PlatformDocker     Platform = "docker"
 	PlatformKubernetes Platform = "kubernetes"
 	PlatformCSI        Platform = "csi" // plain CSI, no other CO present
+
+	// OS Types
+	Linux   = "linux"
+	Windows = "windows"
+	Darwin  = "darwin"
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin = "v1.21"
@@ -191,21 +207,21 @@ var (
 	// BuildImage is the Trident image that was built
 	BuildImage = "docker.io/netapp/trident:" + DefaultOrchestratorVersion + "-custom.0"
 
-	OrchestratorVersion = utils.MustParseDate(version())
+	OrchestratorVersion = versionutils.MustParseDate(version())
 
 	/* API Server and persistent store variables */
-	BaseURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion
-	VersionURL      = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/version"
-	BackendURL      = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backend"
-	BackendUUIDURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backendUUID"
-	VolumeURL       = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"
-	TransactionURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
-	StorageClassURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
-	NodeURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/node"
-	SnapshotURL     = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/snapshot"
-	ChapURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/chap"
-	PublicationURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/publication"
-	StoreURL        = "/" + OrchestratorName + "/store"
+	BaseURL          = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion
+	VersionURL       = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/version"
+	BackendURL       = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backend"
+	BackendUUIDURL   = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backendUUID"
+	VolumeURL        = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"
+	TransactionURL   = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
+	StorageClassURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
+	NodeURL          = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/node"
+	SnapshotURL      = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/snapshot"
+	ChapURL          = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/chap"
+	PublicationURL   = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/publication"
+	LoggingConfigURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/logging"
 
 	UsingPassthroughStore bool
 	CurrentDriverContext  DriverContext
@@ -238,22 +254,18 @@ func GetValidProtocolNames() []string {
 	return ret
 }
 
-func PlatformAtLeast(platformName, version string) bool {
+func PlatformAtLeast(platformName, version string) error {
 	if OrchestratorTelemetry.Platform == platformName {
-		platformVersion := utils.MustParseSemantic(OrchestratorTelemetry.PlatformVersion)
-		requiredVersion, err := utils.ParseSemantic(version)
+		platformVersion := versionutils.MustParseSemantic(OrchestratorTelemetry.PlatformVersion)
+		requiredVersion, err := versionutils.ParseSemantic(version)
 		if err != nil {
-			log.WithFields(log.Fields{
-				"platform": platformName,
-				"version":  version,
-			}).Errorf("Platform version check failed. %+v", err)
-			return false
+			return fmt.Errorf("platform: %s , version: %s", platformName, version)
 		}
 		if platformVersion.AtLeast(requiredVersion) {
-			return true
+			return nil
 		}
 	}
-	return false
+	return nil
 }
 
 func version() string {
@@ -272,13 +284,13 @@ func version() string {
 	return version
 }
 
-func ValidateKubernetesVersion(k8sMinVersion string, k8sVersion *utils.Version) error {
+func ValidateKubernetesVersion(k8sMinVersion string, k8sVersion *versionutils.Version) error {
 	k8sMMVersion := k8sVersion.ToMajorMinorVersion()
-	minSupportedMMVersion := utils.MustParseMajorMinorVersion(k8sMinVersion)
-	maxSupportedMMVersion := utils.MustParseMajorMinorVersion(KubernetesVersionMax)
+	minSupportedMMVersion := versionutils.MustParseMajorMinorVersion(k8sMinVersion)
+	maxSupportedMMVersion := versionutils.MustParseMajorMinorVersion(KubernetesVersionMax)
 
 	if k8sMMVersion.LessThan(minSupportedMMVersion) || k8sMMVersion.GreaterThan(maxSupportedMMVersion) {
-		return utils.UnsupportedKubernetesVersionError(
+		return versionutils.UnsupportedKubernetesVersionError(
 			fmt.Errorf("Trident supports Kubernetes versions in the range [%s, %s]",
 				minSupportedMMVersion.ToMajorMinorString(), maxSupportedMMVersion.ToMajorMinorString()))
 	}
@@ -287,7 +299,7 @@ func ValidateKubernetesVersion(k8sMinVersion string, k8sVersion *utils.Version) 
 }
 
 func ValidateKubernetesVersionFromInfo(k8sMinVersion string, versionInfo *k8sversion.Info) error {
-	k8sVersion, err := utils.ParseSemantic(versionInfo.GitVersion)
+	k8sVersion, err := versionutils.ParseSemantic(versionInfo.GitVersion)
 	if err != nil {
 		return err
 	}

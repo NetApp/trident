@@ -15,10 +15,9 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -45,7 +44,8 @@ type PassthroughClient struct {
 // use case, which doesn't easily support a separate persistence layer
 // and has no support for storage classes.
 func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowStorageClientCreate,
+		LogLayerPersistentStore)
 	client := &PassthroughClient{
 		liveBackends: make(map[string]storage.Backend),
 		bootBackends: make([]*storage.BackendPersistent, 0),
@@ -117,7 +117,7 @@ func (c *PassthroughClient) loadBackend(ctx context.Context, configPath string) 
 	// Read config file
 	fileContents, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"configPath": configPath,
 			"error":      err,
 		}).Fatal("Passthrough store could not read configuration file.")
@@ -156,20 +156,20 @@ func (c *PassthroughClient) unmarshalConfig(ctx context.Context, fileContents []
 
 	var configType string
 	switch commonConfig.StorageDriverName {
-	case drivers.OntapNASStorageDriverName,
-		drivers.OntapNASQtreeStorageDriverName,
-		drivers.OntapNASFlexGroupStorageDriverName,
-		drivers.OntapSANStorageDriverName,
-		drivers.OntapSANEconomyStorageDriverName:
+	case config.OntapNASStorageDriverName,
+		config.OntapNASQtreeStorageDriverName,
+		config.OntapNASFlexGroupStorageDriverName,
+		config.OntapSANStorageDriverName,
+		config.OntapSANEconomyStorageDriverName:
 		configType = "ontap_config"
-	case drivers.SolidfireSANStorageDriverName:
+	case config.SolidfireSANStorageDriverName:
 		configType = "solidfire_config"
-	case drivers.AzureNASStorageDriverName,
-		drivers.AzureNASBlockStorageDriverName:
+	case config.AzureNASStorageDriverName,
+		config.AzureNASBlockStorageDriverName:
 		configType = "azure_config"
-	case drivers.GCPNFSStorageDriverName:
+	case config.GCPNFSStorageDriverName:
 		configType = "gcp_config"
-	case drivers.FakeStorageDriverName:
+	case config.FakeStorageDriverName:
 		configType = "fake_config"
 	default:
 		return "", fmt.Errorf("unknown storage driver: %v", commonConfig.StorageDriverName)

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // sync.Map is like a Go map[interface{}]interface{} but is safe for concurrent use by multiple

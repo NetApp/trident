@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 func IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error) {

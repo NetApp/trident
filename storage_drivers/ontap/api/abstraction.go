@@ -8,9 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
-
-	. "github.com/netapp/trident/logger"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////

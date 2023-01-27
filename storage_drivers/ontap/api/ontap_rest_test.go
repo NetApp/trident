@@ -13,7 +13,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
-	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 var ctx = context.Background()
@@ -64,7 +64,7 @@ func TestPayload(t *testing.T) {
 }
 
 func TestMinimumONTAPVersionForREST(t *testing.T) {
-	expectedMinimumONTAPVersion := utils.MustParseSemantic("9.11.1")
+	expectedMinimumONTAPVersion := versionutils.MustParseSemantic("9.11.1")
 	assert.Equal(t, MinimumONTAPVersion, expectedMinimumONTAPVersion, "Unexpected minimum ONTAP version")
 }
 

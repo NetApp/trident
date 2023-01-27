@@ -7,7 +7,7 @@ package utils
 import (
 	"golang.org/x/net/context"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // flushOneDevice unused stub function
@@ -25,12 +25,16 @@ func getISCSIDiskSize(ctx context.Context, _ string) (int64, error) {
 }
 
 func IsOpenLUKSDevice(ctx context.Context, devicePath string) (bool, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> devices_windows.IsLUKSDeviceOpen")
 	defer Logc(ctx).Debug("<<<< devices_windows.IsLUKSDeviceOpen")
 	return false, UnsupportedError("IsLUKSDeviceOpen is not supported for windows")
 }
 
 func EnsureLUKSDeviceClosed(ctx context.Context, luksDevicePath string) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> devices_windows.EnsureLUKSDeviceClosed")
 	defer Logc(ctx).Debug("<<<< devices_windows.EnsureLUKSDeviceClosed")
 	return UnsupportedError("EnsureLUKSDeviceClosed is not supported for windows")

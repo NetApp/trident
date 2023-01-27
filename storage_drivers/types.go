@@ -7,9 +7,8 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	trident "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage/fake"
 	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
 	"github.com/netapp/trident/utils"
@@ -35,25 +34,25 @@ func GetDriverConfigByName(driverName string) (DriverConfig, error) {
 	var storageDriverConfig DriverConfig
 
 	switch driverName {
-	case OntapNASStorageDriverName:
+	case trident.OntapNASStorageDriverName:
 		fallthrough
-	case OntapNASQtreeStorageDriverName:
+	case trident.OntapNASQtreeStorageDriverName:
 		fallthrough
-	case OntapSANStorageDriverName:
+	case trident.OntapSANStorageDriverName:
 		fallthrough
-	case OntapSANEconomyStorageDriverName:
+	case trident.OntapSANEconomyStorageDriverName:
 		fallthrough
-	case OntapNASFlexGroupStorageDriverName:
+	case trident.OntapNASFlexGroupStorageDriverName:
 		storageDriverConfig = &OntapStorageDriverConfig{}
-	case SolidfireSANStorageDriverName:
+	case trident.SolidfireSANStorageDriverName:
 		storageDriverConfig = &SolidfireStorageDriverConfig{}
-	case AzureNASStorageDriverName:
+	case trident.AzureNASStorageDriverName:
 		fallthrough
-	case AzureNASBlockStorageDriverName:
+	case trident.AzureNASBlockStorageDriverName:
 		storageDriverConfig = &AzureNASStorageDriverConfig{}
-	case GCPNFSStorageDriverName:
+	case trident.GCPNFSStorageDriverName:
 		storageDriverConfig = &GCPNFSStorageDriverConfig{}
-	case FakeStorageDriverName:
+	case trident.FakeStorageDriverName:
 		storageDriverConfig = &FakeStorageDriverConfig{}
 	default:
 		return nil, fmt.Errorf("unknown storage driver: %v", driverName)
@@ -222,7 +221,7 @@ func (d *OntapStorageDriverConfig) ExtractSecrets() map[string]string {
 	secretMap["Password"] = d.Password
 
 	if d.ClientPrivateKey != "" && d.Username != "" {
-		log.Warn("Defaulting to certificate authentication, " +
+		Log().Warn("Defaulting to certificate authentication, " +
 			"it is not advised to have both certificate/key and username/password in backend file.")
 	}
 

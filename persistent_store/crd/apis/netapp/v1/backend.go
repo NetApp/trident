@@ -7,10 +7,9 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 )
@@ -41,7 +40,7 @@ func NewTridentBackend(ctx context.Context, persistent *storage.BackendPersisten
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend.Name":        backend.Name,
 		"backend.BackendName": backend.BackendName,
 		"backend.BackendUUID": backend.BackendUUID,
@@ -53,7 +52,7 @@ func NewTridentBackend(ctx context.Context, persistent *storage.BackendPersisten
 // Apply applies changes from an internal storage.BackendPersistent
 // object to its Kubernetes CRD equivalent
 func (in *TridentBackend) Apply(ctx context.Context, persistent *storage.BackendPersistent) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"persistent.Name":   persistent.Name,
 		"persistent.Online": persistent.Online,
 		"persistent.State":  string(persistent.State),

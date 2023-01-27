@@ -45,7 +45,7 @@ type ZapiClientInterface interface {
 	IgroupGet(initiatorGroupName string) (*azgo.InitiatorGroupInfoType, error)
 	// LunCreate creates a lun with the specified attributes
 	// equivalent to filer::> lun create -vserver iscsi_vs -path /vol/v/lun1 -size 1g -ostype linux -space-reserve disabled -space-allocation enabled
-	LunCreate(lunPath string, sizeInBytes int, osType string, qosPolicyGroup QosPolicyGroup, spaceReserved bool, spaceAllocated bool) (*azgo.LunCreateBySizeResponse, error)
+	LunCreate(lunPath string, sizeInBytes int, osType string, qosPolicyGroup QosPolicyGroup, spaceReserved, spaceAllocated bool) (*azgo.LunCreateBySizeResponse, error)
 	// LunCloneCreate clones a LUN from a snapshot
 	LunCloneCreate(volumeName, sourceLun, destinationLun string, qosPolicyGroup QosPolicyGroup) (*azgo.CloneCreateResponse, error)
 	// LunSetQosPolicyGroup sets the qos policy group or adaptive qos policy group on a lun; does not unset policy groups
@@ -320,7 +320,7 @@ type ZapiClientInterface interface {
 	SystemGetOntapiVersion(ctx context.Context) (string, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 	// EmsAutosupportLog generates an auto support message with the supplied parameters
-	EmsAutosupportLog(appVersion string, autoSupport bool, category string, computerName string, eventDescription string, eventID int, eventSource string, logLevel int) (*azgo.EmsAutosupportLogResponse, error)
+	EmsAutosupportLog(appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int, eventSource string, logLevel int) (*azgo.EmsAutosupportLogResponse, error)
 	TieringPolicyValue(ctx context.Context) string
 	// IscsiInitiatorAddAuth creates and sets the authorization details for a single initiator
 	//

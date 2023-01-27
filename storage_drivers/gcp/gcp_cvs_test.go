@@ -6,20 +6,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"regexp"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
+	. "github.com/netapp/trident/logging"
 	mockGCPClient "github.com/netapp/trident/mocks/mock_storage_drivers/mock_gcp"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
-	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 const (
@@ -35,7 +35,7 @@ var ctx = context.Background
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 
@@ -82,8 +82,8 @@ func newTestGCPDriver() *NFSStorageDriver {
 	GCPDriver := &NFSStorageDriver{}
 	GCPDriver.Config = *config
 	GCPDriver.API = API
-	GCPDriver.apiVersion = utils.MustParseSemantic("20.5.1")
-	GCPDriver.sdeVersion = utils.MustParseSemantic("20.6.2")
+	GCPDriver.apiVersion = versionutils.MustParseSemantic("20.5.1")
+	GCPDriver.sdeVersion = versionutils.MustParseSemantic("20.6.2")
 	GCPDriver.tokenRegexp = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{0,79}$`)
 	GCPDriver.csiRegexp = regexp.MustCompile(`^pvc-[0-9a-fA-F]{12}$`)
 	GCPDriver.apiRegions = []string{"us-central-9", "us-central-10"}

@@ -15,15 +15,15 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/crypto"
 )
 
 var QtreeInternalIDRegex = regexp.MustCompile(`^/svm/(?P<svm>[^/]+)/flexvol/(?P<flexvol>[^/]+)/qtree/(?P<qtree>[^/]+)$`)
@@ -75,7 +75,7 @@ func (d *NASQtreeStorageDriver) GetTelemetry() *Telemetry {
 
 // Name is for returning the name of this driver
 func (d *NASQtreeStorageDriver) Name() string {
-	return drivers.OntapNASQtreeStorageDriverName
+	return tridentconfig.OntapNASQtreeStorageDriverName
 }
 
 // BackendName returns the name of the backend managed by this driver instance
@@ -97,11 +97,9 @@ func (d *NASQtreeStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "NASQtreeStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Initialize")
-	}
+	fields := LogFields{"Method": "Initialize", "Type": "NASQtreeStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig
@@ -157,7 +155,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 		}
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"FlexvolNamePrefix":   d.flexvolNamePrefix,
 		"FlexvolExportPolicy": d.flexvolExportPolicy,
 		"QtreesPerFlexvol":    d.qtreesPerFlexvol,
@@ -204,11 +202,9 @@ func (d *NASQtreeStorageDriver) Initialized() bool {
 }
 
 func (d *NASQtreeStorageDriver) Terminate(ctx context.Context, backendUUID string) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "NASQtreeStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
-	}
+	fields := LogFields{"Method": "Terminate", "Type": "NASQtreeStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Terminate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Terminate")
 
 	if d.housekeepingWaitGroup != nil {
 		for _, task := range d.housekeepingTasks {
@@ -237,11 +233,9 @@ func (d *NASQtreeStorageDriver) Terminate(ctx context.Context, backendUUID strin
 
 // Validate the driver configuration and execution environment
 func (d *NASQtreeStorageDriver) validate(ctx context.Context) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "NASQtreeStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> validate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
-	}
+	fields := LogFields{"Method": "validate", "Type": "NASQtreeStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
 	if err := ValidateNASDriver(ctx, d.API, &d.Config); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
@@ -271,16 +265,14 @@ func (d *NASQtreeStorageDriver) Create(
 ) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Create",
-			"Type":   "NASQtreeStorageDriver",
-			"name":   name,
-			"attrs":  volAttributes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Create")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Create")
+	fields := LogFields{
+		"Method": "Create",
+		"Type":   "NASQtreeStorageDriver",
+		"name":   name,
+		"attrs":  volAttributes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
 	// Ensure any Flexvol we create won't be pruned before we place a qtree on it
 	utils.Lock(ctx, "create", d.sharedLockID)
@@ -301,12 +293,12 @@ func (d *NASQtreeStorageDriver) Create(
 		return createError
 	}
 	if exists {
-		Logc(ctx).WithFields(log.Fields{"qtree": name, "flexvol": existsInFlexvol}).Debug("Qtree already exists.")
+		Logc(ctx).WithFields(LogFields{"qtree": name, "flexvol": existsInFlexvol}).Debug("Qtree already exists.")
 		// If qtree exists, update the volConfig.InternalID in case it was not set
 		// This is useful for "legacy" volumes which do not have InternalID set when they were created
 		if volConfig.InternalID == "" {
 			volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, existsInFlexvol, name)
-			Logc(ctx).WithFields(log.Fields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
+			Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
 		}
 		return drivers.NewVolumeExistsError(name)
 	}
@@ -404,7 +396,7 @@ func (d *NASQtreeStorageDriver) Create(
 			continue
 		}
 		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
-		Logc(ctx).WithFields(log.Fields{"InternalID": volConfig.InternalID}).Debug("Created new qtree, setting InternalID")
+		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("Created new qtree, setting InternalID")
 
 		// Grow or shrink the Flexvol as needed
 		err = d.resizeFlexvol(ctx, flexvol, sizeBytes)
@@ -449,17 +441,15 @@ func (d *NASQtreeStorageDriver) CreateClone(
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	snapshot := cloneVolConfig.CloneSourceSnapshot
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":   "CreateClone",
-			"Type":     "NASQtreeStorageDriver",
-			"name":     name,
-			"source":   source,
-			"snapshot": snapshot,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
+	fields := LogFields{
+		"Method":   "CreateClone",
+		"Type":     "NASQtreeStorageDriver",
+		"name":     name,
+		"source":   source,
+		"snapshot": snapshot,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateClone")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateClone")
 
 	return fmt.Errorf("cloning is not supported by backend type %s", d.Name())
 }
@@ -478,15 +468,13 @@ func (d *NASQtreeStorageDriver) Rename(context.Context, string, string) error {
 func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Destroy",
-			"Type":   "NASQtreeStorageDriver",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Destroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Destroy")
+	fields := LogFields{
+		"Method": "Destroy",
+		"Type":   "NASQtreeStorageDriver",
+		"name":   name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
 	// Ensure the deleted qtree reaping job doesn't interfere with this workflow
 	utils.Lock(ctx, "destroy", d.sharedLockID)
@@ -515,7 +503,7 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 	// This is useful for "legacy" volumes which do not have InternalID set when they were created
 	if volConfig.InternalID == "" {
 		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
-		Logc(ctx).WithFields(log.Fields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
+		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
 	}
 
 	// Rename qtree so it doesn't show up in lists while ONTAP is deleting it in the background.
@@ -555,15 +543,13 @@ func (d *NASQtreeStorageDriver) Publish(
 ) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Publish",
-			"Type":   "NASQtreeStorageDriver",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Publish")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Publish")
+	fields := LogFields{
+		"Method": "Publish",
+		"Type":   "NASQtreeStorageDriver",
+		"name":   name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Publish")
 
 	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName,
 		d.FlexvolNamePrefix())
@@ -585,7 +571,7 @@ func (d *NASQtreeStorageDriver) Publish(
 	// This is useful for "legacy" volumes which do not have InternalID set when they were created
 	if volConfig.InternalID == "" {
 		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
-		Logc(ctx).WithFields(log.Fields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
+		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
 	}
 
 	// Determine mount options (volume config wins, followed by backend config)
@@ -612,15 +598,13 @@ func (d *NASQtreeStorageDriver) Publish(
 func (d *NASQtreeStorageDriver) publishQtreeShare(
 	ctx context.Context, qtree, flexvol string, publishInfo *utils.VolumePublishInfo,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "publishQtreeShare",
-			"Type":   "ontap_nas_qtree",
-			"Share":  qtree,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> publishQtreeShare")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< publishQtreeShare")
+	fields := LogFields{
+		"Method": "publishQtreeShare",
+		"Type":   "ontap_nas_qtree",
+		"Share":  qtree,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> publishQtreeShare")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< publishQtreeShare")
 
 	if !d.Config.AutoExportPolicy || publishInfo.Unmanaged {
 		return nil
@@ -635,7 +619,7 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 	err := d.API.QtreeModifyExportPolicy(ctx, qtree, flexvol, policyName)
 	if err != nil {
 		err = fmt.Errorf("error modifying qtree export policy; %v", err)
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"Qtree":        qtree,
 			"FlexVol":      flexvol,
 			"ExportPolicy": policyName,
@@ -658,16 +642,14 @@ func (d *NASQtreeStorageDriver) CanSnapshot(
 func (d *NASQtreeStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "GetSnapshot",
-			"Type":         "NASQtreeStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
+	fields := LogFields{
+		"Method":       "GetSnapshot",
+		"Type":         "NASQtreeStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
 	return nil, utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
@@ -676,15 +658,13 @@ func (d *NASQtreeStorageDriver) GetSnapshot(
 func (d *NASQtreeStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
 ) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "GetSnapshots",
-			"Type":       "NASQtreeStorageDriver",
-			"volumeName": volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshots")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
+	fields := LogFields{
+		"Method":     "GetSnapshots",
+		"Type":       "NASQtreeStorageDriver",
+		"volumeName": volConfig.InternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
 	// Qtrees can't have snapshots, so return an empty list
 	return []*storage.Snapshot{}, nil
@@ -694,16 +674,14 @@ func (d *NASQtreeStorageDriver) GetSnapshots(ctx context.Context, volConfig *sto
 func (d *NASQtreeStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateSnapshot",
-			"Type":         "NASQtreeStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"sourceVolume": snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
+	fields := LogFields{
+		"Method":       "CreateSnapshot",
+		"Type":         "NASQtreeStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"sourceVolume": snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
 	return nil, utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
@@ -712,16 +690,14 @@ func (d *NASQtreeStorageDriver) CreateSnapshot(
 func (d *NASQtreeStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "RestoreSnapshot",
-			"Type":         "NASQtreeStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"sourceVolume": snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> RestoreSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
+	fields := LogFields{
+		"Method":       "RestoreSnapshot",
+		"Type":         "NASQtreeStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"sourceVolume": snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
 	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
@@ -730,27 +706,23 @@ func (d *NASQtreeStorageDriver) RestoreSnapshot(
 func (d *NASQtreeStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "DeleteSnapshot",
-			"Type":         "NASQtreeStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
+	fields := LogFields{
+		"Method":       "DeleteSnapshot",
+		"Type":         "NASQtreeStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
 	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // Get tests for the existence of a volume
 func (d *NASQtreeStorageDriver) Get(ctx context.Context, name string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "NASQtreeStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Get")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
-	}
+	fields := LogFields{"Method": "Get", "Type": "NASQtreeStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
 
 	// Generic user-facing message
 	getError := fmt.Errorf("volume %s not found", name)
@@ -779,10 +751,10 @@ func (d *NASQtreeStorageDriver) Get(ctx context.Context, name string) error {
 	// This is useful for "legacy" volumes which do not have InternalID set when they were created
 	if volConfig.InternalID == "" {
 		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
-		Logc(ctx).WithFields(log.Fields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
+		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
 	}
 
-	Logc(ctx).WithFields(log.Fields{"qtree": name, "flexvol": flexvol}).Debug("Qtree found.")
+	Logc(ctx).WithFields(LogFields{"qtree": name, "flexvol": flexvol}).Debug("Qtree found.")
 
 	return nil
 }
@@ -856,7 +828,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 		return "", fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":            flexvol,
 		"aggregate":       aggregate,
 		"size":            size,
@@ -994,7 +966,7 @@ func (d *NASQtreeStorageDriver) getFlexvolForQtree(
 	case 1:
 		return eligibleVolumeNames[0], nil
 	default:
-		return eligibleVolumeNames[utils.GetRandomNumber(len(eligibleVolumeNames))], nil
+		return eligibleVolumeNames[crypto.GetRandomNumber(len(eligibleVolumeNames))], nil
 	}
 }
 
@@ -1168,7 +1140,7 @@ func (d *NASQtreeStorageDriver) resizeQuotas(ctx context.Context) {
 					Logc(ctx).WithField("flexvol", flexvol).Debug("Volume does not exist.")
 					delete(d.quotaResizeMap, flexvol)
 				}
-				Logc(ctx).WithFields(log.Fields{"flexvol": flexvol, "error": err}).Debug("Error resizing quotas.")
+				Logc(ctx).WithFields(LogFields{"flexvol": flexvol, "error": err}).Debug("Error resizing quotas.")
 				continue
 			}
 
@@ -1223,7 +1195,7 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 		qtreeCount, err := d.API.QtreeCount(ctx, flexvol)
 		if err != nil {
 			// Couldn't count qtrees, so remove Flexvol from deletion map as a precaution
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"flexvol": flexvol,
 				"error":   err,
 			}).Warning("Could not count qtrees in Flexvol.")
@@ -1238,7 +1210,7 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 			}
 		} else {
 			// Qtrees exist, so ensure Flexvol isn't in deletion map
-			Logc(ctx).WithFields(log.Fields{"flexvol": flexvol, "qtrees": qtreeCount}).Debug("Flexvol has qtrees.")
+			Logc(ctx).WithFields(LogFields{"flexvol": flexvol, "qtrees": qtreeCount}).Debug("Flexvol has qtrees.")
 			delete(d.emptyFlexvolMap, flexvol)
 		}
 	}
@@ -1260,12 +1232,12 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 			Logc(ctx).WithField("flexvol", flexvol).Debug("Deleting managed Flexvol with no qtrees.")
 			err := d.API.VolumeDestroy(ctx, flexvol, true)
 			if err != nil {
-				Logc(ctx).WithFields(log.Fields{"flexvol": flexvol, "error": err}).Error("Could not delete Flexvol.")
+				Logc(ctx).WithFields(LogFields{"flexvol": flexvol, "error": err}).Error("Could not delete Flexvol.")
 			} else {
 				delete(d.emptyFlexvolMap, flexvol)
 			}
 		} else {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"flexvol":          flexvol,
 				"timeToExpiration": expirationTime.Sub(now),
 			}).Debug("Flexvol with no qtrees not past expiration time.")
@@ -1388,7 +1360,7 @@ func (d *NASQtreeStorageDriver) GetInternalVolumeName(ctx context.Context, name 
 				strings.Replace(drivers.GetDefaultStoragePrefix(d.Config.DriverContext), "_", "", -1),
 				strings.Replace(uuid.New().String(), "-", "", -1))
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"Name":         name,
 				"InternalName": internal,
 			}).Debug("Created UUID-based name for ontap-nas-economy volume.")
@@ -1421,7 +1393,7 @@ func (d *NASQtreeStorageDriver) CreateFollowup(ctx context.Context, volConfig *s
 	// This is useful for "legacy" volumes which do not have InternalID set when they were created
 	if volConfig.InternalID == "" {
 		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
-		Logc(ctx).WithFields(log.Fields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
+		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
 	}
 
 	// Set export path info on the volume config
@@ -1648,7 +1620,7 @@ func (t *HousekeepingTask) Start(ctx context.Context) {
 			case tick := <-t.Ticker.C:
 				t.run(ctx, tick)
 			case <-t.Done:
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"driver": t.Driver.Name(),
 					"task":   t.Name,
 				}).Debugf("Shut down housekeeping tasks for the driver.")
@@ -1674,7 +1646,7 @@ func (t *HousekeepingTask) Stop(ctx context.Context) {
 
 func (t *HousekeepingTask) run(ctx context.Context, tick time.Time) {
 	for i, task := range t.Tasks {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"tick":   tick,
 			"driver": t.Driver.Name(),
 			"task":   t.Name,
@@ -1706,7 +1678,7 @@ func NewPruneTask(ctx context.Context, d *NASQtreeStorageDriver, tasks []func(co
 		}
 	}
 	d.emptyFlexvolDeferredDeletePeriod = time.Duration(emptyFlexvolDeferredDeletePeriodSecs) * time.Second
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"IntervalSeconds": pruneFlexvolsPeriodSecs,
 		"EmptyFlexvolTTL": emptyFlexvolDeferredDeletePeriodSecs,
 	}).Debug("Configured Flexvol pruning period.")
@@ -1735,7 +1707,7 @@ func NewResizeTask(ctx context.Context, d *NASQtreeStorageDriver, tasks []func(c
 			resizeQuotasPeriodSecs = i
 		}
 	}
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"IntervalSeconds": resizeQuotasPeriodSecs,
 	}).Debug("Configured quota resize period.")
 
@@ -1754,16 +1726,14 @@ func NewResizeTask(ctx context.Context, d *NASQtreeStorageDriver, tasks []func(c
 // Resize expands the Flexvol containing the Qtree and updates the Qtree quota.
 func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 	name := volConfig.InternalName
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":    "Resize",
-			"Type":      "NASQtreeStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Resize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
+	fields := LogFields{
+		"Method":    "Resize",
+		"Type":      "NASQtreeStorageDriver",
+		"name":      name,
+		"sizeBytes": sizeBytes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
 	// Ensure any Flexvol won't be pruned before resize is completed.
 	utils.Lock(ctx, "resize", d.sharedLockID)
@@ -1784,7 +1754,7 @@ func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 		return resizeError
 	}
 	if !exists {
-		Logc(ctx).WithFields(log.Fields{"qtree": name, "flexvol": flexvol}).Debug("Qtree does not exist.")
+		Logc(ctx).WithFields(LogFields{"qtree": name, "flexvol": flexvol}).Debug("Qtree does not exist.")
 		return fmt.Errorf("volume %s does not exist", name)
 	}
 
@@ -1792,7 +1762,7 @@ func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 	// This is useful for "legacy" volumes which do not have InternalID set when they were created
 	if volConfig.InternalID == "" {
 		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
-		Logc(ctx).WithFields(log.Fields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
+		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
 	}
 
 	// Calculate the delta size needed to resize the Qtree quota
@@ -1872,15 +1842,14 @@ func (d *NASQtreeStorageDriver) ReconcileNodeAccess(
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
 	}
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "ReconcileNodeAccess",
-			"Type":   "NASQtreeStorageDriver",
-			"Nodes":  nodeNames,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+
+	fields := LogFields{
+		"Method": "ReconcileNodeAccess",
+		"Type":   "NASQtreeStorageDriver",
+		"Nodes":  nodeNames,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
 	policyName := getExportPolicyName(backendUUID)
 
@@ -1948,7 +1917,7 @@ func (d NASQtreeStorageDriver) SetVolumePatternToFindQtree(
 			return "", "", fmt.Errorf("error in parsing Internal ID %s", internalID)
 		}
 	}
-	fields := log.Fields{
+	fields := LogFields{
 		"volumePattern": volumePattern,
 		"qtreeName":     qtreeName,
 	}

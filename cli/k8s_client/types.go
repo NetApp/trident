@@ -17,12 +17,12 @@ import (
 	"k8s.io/apimachinery/pkg/version"
 
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 type KubernetesClient interface {
 	Version() *version.Info
-	ServerVersion() *utils.Version
+	ServerVersion() *versionutils.Version
 	Namespace() string
 	SetNamespace(namespace string)
 	SetTimeout(time.Duration)
@@ -162,49 +162,55 @@ type KubernetesClient interface {
 }
 
 type DeploymentYAMLArguments struct {
-	DeploymentName          string              `json:"deploymentName"`
-	TridentImage            string              `json:"tridentImage"`
-	AutosupportImage        string              `json:"autosupportImage"`
-	AutosupportProxy        string              `json:"autosupportProxy"`
-	AutosupportCustomURL    string              `json:"autosupportCustomURL"`
-	AutosupportSerialNumber string              `json:"autosupportSerialNumber"`
-	AutosupportHostname     string              `json:"autosupportHostname"`
-	ImageRegistry           string              `json:"imageRegistry"`
-	LogFormat               string              `json:"logFormat"`
-	SnapshotCRDVersion      string              `json:"snapshotCRDVersion"`
-	ImagePullSecrets        []string            `json:"imagePullSecrets"`
-	Labels                  map[string]string   `json:"labels"`
-	ControllingCRDetails    map[string]string   `json:"controllingCRDetails"`
-	Debug                   bool                `json:"debug"`
-	UseIPv6                 bool                `json:"useIPv6"`
-	SilenceAutosupport      bool                `json:"silenceAutosupport"`
-	Version                 *utils.Version      `json:"version"`
-	TopologyEnabled         bool                `json:"topologyEnabled"`
-	DisableAuditLog         bool                `json:"disableAuditLog"`
-	HTTPRequestTimeout      string              `json:"httpRequestTimeout"`
-	NodeSelector            map[string]string   `json:"nodeSelector"`
-	Tolerations             []map[string]string `json:"tolerations"`
-	ServiceAccountName      string              `json:"serviceAccountName"`
-	ImagePullPolicy         string              `json:"imagePullPolicy"`
+	DeploymentName          string                `json:"deploymentName"`
+	TridentImage            string                `json:"tridentImage"`
+	AutosupportImage        string                `json:"autosupportImage"`
+	AutosupportProxy        string                `json:"autosupportProxy"`
+	AutosupportCustomURL    string                `json:"autosupportCustomURL"`
+	AutosupportSerialNumber string                `json:"autosupportSerialNumber"`
+	AutosupportHostname     string                `json:"autosupportHostname"`
+	ImageRegistry           string                `json:"imageRegistry"`
+	LogFormat               string                `json:"logFormat"`
+	LogLevel                string                `json:"logLevel"`
+	LogWorkflows            string                `json:"logWorkflows"`
+	LogLayers               string                `json:"logLayers"`
+	SnapshotCRDVersion      string                `json:"snapshotCRDVersion"`
+	ImagePullSecrets        []string              `json:"imagePullSecrets"`
+	Labels                  map[string]string     `json:"labels"`
+	ControllingCRDetails    map[string]string     `json:"controllingCRDetails"`
+	Debug                   bool                  `json:"debug"`
+	UseIPv6                 bool                  `json:"useIPv6"`
+	SilenceAutosupport      bool                  `json:"silenceAutosupport"`
+	Version                 *versionutils.Version `json:"version"`
+	TopologyEnabled         bool                  `json:"topologyEnabled"`
+	DisableAuditLog         bool                  `json:"disableAuditLog"`
+	HTTPRequestTimeout      string                `json:"httpRequestTimeout"`
+	NodeSelector            map[string]string     `json:"nodeSelector"`
+	Tolerations             []map[string]string   `json:"tolerations"`
+	ServiceAccountName      string                `json:"serviceAccountName"`
+	ImagePullPolicy         string                `json:"imagePullPolicy"`
 }
 
 type DaemonsetYAMLArguments struct {
-	DaemonsetName        string              `json:"daemonsetName"`
-	TridentImage         string              `json:"tridentImage"`
-	ImageRegistry        string              `json:"imageRegistry"`
-	KubeletDir           string              `json:"kubeletDir"`
-	LogFormat            string              `json:"logFormat"`
-	ProbePort            string              `json:"probePort"`
-	ImagePullSecrets     []string            `json:"imagePullSecrets"`
-	Labels               map[string]string   `json:"labels"`
-	ControllingCRDetails map[string]string   `json:"controllingCRDetails"`
-	EnableForceDetach    bool                `json:"enableForceDetach"`
-	DisableAuditLog      bool                `json:"disableAuditLog"`
-	Debug                bool                `json:"debug"`
-	Version              *utils.Version      `json:"version"`
-	HTTPRequestTimeout   string              `json:"httpRequestTimeout"`
-	NodeSelector         map[string]string   `json:"nodeSelector"`
-	Tolerations          []map[string]string `json:"tolerations"`
-	ServiceAccountName   string              `json:"serviceAccountName"`
-	ImagePullPolicy      string              `json:"imagePullPolicy"`
+	DaemonsetName        string                `json:"daemonsetName"`
+	TridentImage         string                `json:"tridentImage"`
+	ImageRegistry        string                `json:"imageRegistry"`
+	KubeletDir           string                `json:"kubeletDir"`
+	LogFormat            string                `json:"logFormat"`
+	LogLevel             string                `json:"logLevel"`
+	LogWorkflows         string                `json:"logWorkflows"`
+	LogLayers            string                `json:"logLayers"`
+	ProbePort            string                `json:"probePort"`
+	ImagePullSecrets     []string              `json:"imagePullSecrets"`
+	Labels               map[string]string     `json:"labels"`
+	ControllingCRDetails map[string]string     `json:"controllingCRDetails"`
+	EnableForceDetach    bool                  `json:"enableForceDetach"`
+	DisableAuditLog      bool                  `json:"disableAuditLog"`
+	Debug                bool                  `json:"debug"`
+	Version              *versionutils.Version `json:"version"`
+	HTTPRequestTimeout   string                `json:"httpRequestTimeout"`
+	NodeSelector         map[string]string     `json:"nodeSelector"`
+	Tolerations          []map[string]string   `json:"tolerations"`
+	ServiceAccountName   string                `json:"serviceAccountName"`
+	ImagePullPolicy      string                `json:"imagePullPolicy"`
 }

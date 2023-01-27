@@ -13,8 +13,6 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
@@ -23,6 +21,7 @@ import (
 	"github.com/netapp/trident/utils"
 
 	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
@@ -50,7 +49,7 @@ func NewTestLUNHelper(storagePrefix string, driverContext tridentconfig.DriverCo
 	// parse commonConfigJSON into a CommonStorageDriverConfig object
 	commonConfig, err := drivers.ValidateCommonSettings(context.Background(), commonConfigJSON)
 	if err != nil {
-		log.Errorf("could not decode JSON configuration: %v", err)
+		Log().Errorf("could not decode JSON configuration: %v", err)
 		return nil
 	}
 	config := &drivers.OntapStorageDriverConfig{}

@@ -14,10 +14,9 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -51,7 +50,7 @@ func (d *NASFlexGroupStorageDriver) GetTelemetry() *Telemetry {
 
 // Name is for returning the name of this driver
 func (d *NASFlexGroupStorageDriver) Name() string {
-	return drivers.OntapNASFlexGroupStorageDriverName
+	return tridentconfig.OntapNASFlexGroupStorageDriverName
 }
 
 // BackendName returns the name of the backend managed by this driver instance
@@ -69,11 +68,9 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "NASFlexGroupStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Initialize")
-	}
+	fields := LogFields{"Method": "Initialize", "Type": "NASFlexGroupStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig
@@ -116,11 +113,10 @@ func (d *NASFlexGroupStorageDriver) Initialized() bool {
 }
 
 func (d *NASFlexGroupStorageDriver) Terminate(ctx context.Context, backendUUID string) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "NASFlexGroupStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
-	}
+	fields := LogFields{"Method": "Terminate", "Type": "NASFlexGroupStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Terminate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Terminate")
+
 	if d.Config.AutoExportPolicy {
 		policyName := getExportPolicyName(backendUUID)
 		if err := d.API.ExportPolicyDestroy(ctx, policyName); err != nil {
@@ -141,7 +137,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"svm":        d.API.SVMName(),
 		"aggregates": vserverAggrs,
 	}).Debug("Read aggregates assigned to SVM.")
@@ -374,7 +370,7 @@ func (d *NASFlexGroupStorageDriver) getVserverAggrMediaType(
 			// Get the storage attributes (i.e. MediaType) corresponding to the aggregate type
 			storageAttrs, ok := ontapPerformanceClasses[ontapPerformanceClass(aggrType)]
 			if !ok {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"aggregate": aggrName,
 					"mediaType": aggrType,
 				}).Debug("Aggregate has unknown performance characteristics.")
@@ -397,11 +393,9 @@ func (d *NASFlexGroupStorageDriver) getVserverAggrMediaType(
 
 // Validate the driver configuration and execution environment
 func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "NASFlexGroupStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> validate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
-	}
+	fields := LogFields{"Method": "validate", "Type": "NASFlexGroupStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
 	if !d.API.SupportsFeature(ctx, api.NetAppFlexGroups) {
 		return fmt.Errorf("ONTAP version does not support FlexGroups")
@@ -451,16 +445,14 @@ func (d *NASFlexGroupStorageDriver) Create(
 ) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Create",
-			"Type":   "NASFlexGroupStorageDriver",
-			"name":   name,
-			"attrs":  volAttributes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Create")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Create")
+	fields := LogFields{
+		"Method": "Create",
+		"Type":   "NASFlexGroupStorageDriver",
+		"name":   name,
+		"attrs":  volAttributes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
 	// If the volume already exists, bail out
 	volExists, err := d.API.FlexgroupExists(ctx, name)
@@ -493,7 +485,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		flexGroupAggregateList = d.Config.FlexGroupAggregateList
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"aggregates": vserverAggrs,
 	}).Debug("Read aggregates assigned to SVM.")
 
@@ -568,7 +560,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":            name,
 		"size":            size,
 		"spaceReserve":    spaceReserve,
@@ -616,7 +608,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	volumeCreateNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":      name,
 			"increment": duration,
 		}).Debug("FlexGroup not yet created, waiting.")
@@ -662,18 +654,16 @@ func cloneFlexgroup(
 	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":   "cloneFlexgroup",
-			"Type":     "NASFlexgroupStorageDriver",
-			"name":     name,
-			"source":   source,
-			"snapshot": snapshot,
-			"split":    split,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> cloneFlexgroup")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< cloneFlexgroup")
+	fields := LogFields{
+		"Method":   "cloneFlexgroup",
+		"Type":     "NASFlexgroupStorageDriver",
+		"name":     name,
+		"source":   source,
+		"snapshot": snapshot,
+		"split":    split,
 	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> cloneFlexgroup")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< cloneFlexgroup")
 
 	// If the specified volume already exists, return an error
 	volExists, err := client.FlexgroupExists(ctx, name)
@@ -701,7 +691,7 @@ func cloneFlexgroup(
 		return err
 	}
 
-	if config.StorageDriverName == drivers.OntapNASStorageDriverName {
+	if config.StorageDriverName == tridentconfig.OntapNASStorageDriverName {
 		// Mount the new volume
 		if err = client.FlexgroupMount(ctx, name, "/"+name); err != nil {
 			return err
@@ -742,19 +732,19 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 		return errors.New("the ONTAPI version does not support FlexGroup cloning")
 	}
 
-	if d.GetConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":      "CreateClone",
-			"Type":        "NASStorageDriver",
-			"name":        cloneVolConfig.InternalName,
-			"source":      cloneVolConfig.CloneSourceVolumeInternal,
-			"snapshot":    cloneVolConfig.CloneSourceSnapshot,
-			"storagePool": storagePool,
-		}
-
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
+	fields := LogFields{
+		"Method":      "CreateClone",
+		"Type":        "NASStorageDriver",
+		"name":        cloneVolConfig.InternalName,
+		"source":      cloneVolConfig.CloneSourceVolumeInternal,
+		"snapshot":    cloneVolConfig.CloneSourceSnapshot,
+		"storagePool": storagePool,
 	}
+
+	Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
+		Trace(">>>> CreateClone")
+	defer Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
+		Trace("<<<< CreateClone")
 
 	opts := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
 
@@ -809,16 +799,14 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 func (d *NASFlexGroupStorageDriver) Import(
 	ctx context.Context, volConfig *storage.VolumeConfig, originalName string,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "Import",
-			"Type":         "NASFlexGroupStorageDriver",
-			"originalName": originalName,
-			"notManaged":   volConfig.ImportNotManaged,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Import")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Import")
+	fields := LogFields{
+		"Method":       "Import",
+		"Type":         "NASFlexGroupStorageDriver",
+		"originalName": originalName,
+		"notManaged":   volConfig.ImportNotManaged,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
 
 	flexgroup, err := d.API.FlexgroupInfo(ctx, originalName)
 	if err != nil {
@@ -892,15 +880,13 @@ func (d *NASFlexGroupStorageDriver) Rename(context.Context, string, string) erro
 func (d *NASFlexGroupStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Destroy",
-			"Type":   "NASFlexGroupStorageDriver",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Destroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Destroy")
+	fields := LogFields{
+		"Method": "Destroy",
+		"Type":   "NASFlexGroupStorageDriver",
+		"name":   name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
 	// This call is async, but we will receive an immediate error back for anything but very rare volume deletion
 	// failures. Failures in this category are almost certainly likely to be beyond our capability to fix or even
@@ -920,15 +906,13 @@ func (d *NASFlexGroupStorageDriver) Publish(
 ) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Publish",
-			"Type":   "NASFlexGroupStorageDriver",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Publish")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Publish")
+	fields := LogFields{
+		"Method": "Publish",
+		"Type":   "NASFlexGroupStorageDriver",
+		"name":   name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Publish")
 
 	// Determine mount options (volume config wins, followed by backend config)
 	mountOptions := d.Config.NfsMountOptions
@@ -957,16 +941,14 @@ func getFlexgroupSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI,
 ) (*storage.Snapshot, error) {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "getFlexgroupSnapshot",
-			"Type":         "NASFlexGroupStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> getFlexgroupSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< getFlexgroupSnapshot")
+	fields := LogFields{
+		"Method":       "getFlexgroupSnapshot",
+		"Type":         "NASFlexGroupStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getFlexgroupSnapshot")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getFlexgroupSnapshot")
 
 	size, err := client.FlexgroupUsedSize(ctx, snapConfig.VolumeInternalName)
 	if err != nil {
@@ -979,7 +961,7 @@ func getFlexgroupSnapshot(
 	}
 
 	for _, snap := range snapshots {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshotName": snapConfig.InternalName,
 			"volumeName":   snapConfig.VolumeInternalName,
 			"created":      snap.CreateTime,
@@ -1009,16 +991,14 @@ func (d *NASFlexGroupStorageDriver) CanSnapshot(
 func (d *NASFlexGroupStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "GetSnapshot",
-			"Type":         "NASFlexGroupStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
+	fields := LogFields{
+		"Method":       "GetSnapshot",
+		"Type":         "NASFlexGroupStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
 	return getFlexgroupSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
@@ -1027,15 +1007,13 @@ func (d *NASFlexGroupStorageDriver) GetSnapshot(
 func getFlexgroupSnapshotList(
 	ctx context.Context, volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
 ) ([]*storage.Snapshot, error) {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "getFlexgroupSnapshotList",
-			"Type":       "NASFlexGroupStorageDriver",
-			"volumeName": volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> getFlexgroupSnapshotList")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< getFlexgroupSnapshotList")
+	fields := LogFields{
+		"Method":     "getFlexgroupSnapshotList",
+		"Type":       "NASFlexGroupStorageDriver",
+		"volumeName": volConfig.InternalName,
 	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getFlexgroupSnapshotList")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getFlexgroupSnapshotList")
 
 	size, err := client.FlexgroupUsedSize(ctx, volConfig.InternalName)
 	if err != nil {
@@ -1051,7 +1029,7 @@ func getFlexgroupSnapshotList(
 
 	for _, snap := range snapshots {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":       snap.Name,
 			"accessTime": snap.CreateTime,
 		}).Debug("Snapshot")
@@ -1079,15 +1057,13 @@ func getFlexgroupSnapshotList(
 func (d *NASFlexGroupStorageDriver) GetSnapshots(
 	ctx context.Context, volConfig *storage.VolumeConfig,
 ) ([]*storage.Snapshot, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "GetSnapshots",
-			"Type":       "NASFlexGroupStorageDriver",
-			"volumeName": volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshots")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
+	fields := LogFields{
+		"Method":     "GetSnapshots",
+		"Type":       "NASFlexGroupStorageDriver",
+		"volumeName": volConfig.InternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
 	return getFlexgroupSnapshotList(ctx, volConfig, &d.Config, d.API)
 }
@@ -1100,16 +1076,14 @@ func createFlexgroupSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "createFlexgroupSnapshot",
-			"Type":         "NASFlexGroupStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> createFlexgroupSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< createFlexgroupSnapshot")
+	fields := LogFields{
+		"Method":       "createFlexgroupSnapshot",
+		"Type":         "NASFlexGroupStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> createFlexgroupSnapshot")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< createFlexgroupSnapshot")
 
 	// If the specified volume doesn't exist, return error
 	volExists, err := client.FlexgroupExists(ctx, internalVolName)
@@ -1136,7 +1110,7 @@ func createFlexgroupSnapshot(
 
 	for _, snap := range snapshots {
 		if snap.Name == internalSnapName {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"snapshotName": snapConfig.InternalName,
 				"volumeName":   snapConfig.VolumeInternalName,
 			}).Info("Snapshot created.")
@@ -1159,16 +1133,14 @@ func (d *NASFlexGroupStorageDriver) CreateSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateSnapshot",
-			"Type":         "NASFlexGroupStorageDriver",
-			"snapshotName": internalSnapName,
-			"sourceVolume": internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
+	fields := LogFields{
+		"Method":       "CreateSnapshot",
+		"Type":         "NASFlexGroupStorageDriver",
+		"snapshotName": internalSnapName,
+		"sourceVolume": internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
 	return createFlexgroupSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
@@ -1177,22 +1149,20 @@ func (d *NASFlexGroupStorageDriver) CreateSnapshot(
 func (d *NASFlexGroupStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "RestoreSnapshot",
-			"Type":         "NASFlexGroupStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> RestoreSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
+	fields := LogFields{
+		"Method":       "RestoreSnapshot",
+		"Type":         "NASFlexGroupStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
 	if err := d.API.SnapshotRestoreFlexgroup(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName); err != nil {
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshotName": snapConfig.InternalName,
 		"volumeName":   snapConfig.VolumeInternalName,
 	}).Debug("Restored snapshot.")
@@ -1204,16 +1174,14 @@ func (d *NASFlexGroupStorageDriver) RestoreSnapshot(
 func (d *NASFlexGroupStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "DeleteSnapshot",
-			"Type":         "NASFlexGroupStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
+	fields := LogFields{
+		"Method":       "DeleteSnapshot",
+		"Type":         "NASFlexGroupStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
 	if err := d.API.FlexgroupSnapshotDelete(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName); err != nil {
 		if api.IsSnapshotBusyError(err) {
@@ -1232,11 +1200,9 @@ func (d *NASFlexGroupStorageDriver) DeleteSnapshot(
 // Get tests the existence of a FlexGroup. Returns nil if the FlexGroup
 // exists and an error otherwise.
 func (d *NASFlexGroupStorageDriver) Get(ctx context.Context, name string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "NASFlexGroupStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Get")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
-	}
+	fields := LogFields{"Method": "Get", "Type": "NASFlexGroupStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
 
 	volExists, err := d.API.FlexgroupExists(ctx, name)
 	if err != nil {
@@ -1491,16 +1457,14 @@ func (d *NASFlexGroupStorageDriver) Resize(
 	ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64,
 ) error {
 	name := volConfig.InternalName
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "Resize",
-			"Type":               "NASFlexGroupStorageDriver",
-			"name":               name,
-			"requestedSizeBytes": requestedSizeBytes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Resize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
+	fields := LogFields{
+		"Method":             "Resize",
+		"Type":               "NASFlexGroupStorageDriver",
+		"name":               name,
+		"requestedSizeBytes": requestedSizeBytes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
 	flexgroupSize, err := resizeValidation(ctx, name, requestedSizeBytes, d.API.FlexgroupExists,
 		d.API.FlexgroupSize)
@@ -1535,15 +1499,14 @@ func (d *NASFlexGroupStorageDriver) ReconcileNodeAccess(
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
 	}
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "ReconcileNodeAccess",
-			"Type":   "NASFlexGroupStorageDriver",
-			"Nodes":  nodeNames,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+
+	fields := LogFields{
+		"Method": "ReconcileNodeAccess",
+		"Type":   "NASFlexGroupStorageDriver",
+		"Nodes":  nodeNames,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
 	policyName := getExportPolicyName(backendUUID)
 

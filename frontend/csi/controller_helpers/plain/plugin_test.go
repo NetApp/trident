@@ -5,17 +5,17 @@ package plain
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/csi"
 	controller_helpers "github.com/netapp/trident/frontend/csi/controller_helpers"
+	. "github.com/netapp/trident/logging"
 	mock "github.com/netapp/trident/mocks/mock_core"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -23,7 +23,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 

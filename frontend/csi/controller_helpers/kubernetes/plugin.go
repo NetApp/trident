@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
@@ -32,13 +31,14 @@ import (
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 const (
@@ -105,7 +105,8 @@ type helper struct {
 
 // NewHelper instantiates this plugin when running outside a pod.
 func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string) (frontend.Plugin, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate,
+		LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Initializing K8S helper frontend.")
 
@@ -137,7 +138,7 @@ func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 		namespace:              clients.Namespace,
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"version":    p.kubeVersion.Major + "." + p.kubeVersion.Minor,
 		"gitVersion": p.kubeVersion.GitVersion,
 	}).Info("K8S helper determined the container orchestrator version.")
@@ -315,11 +316,14 @@ func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 	)
 	p.vrefIndexer = p.vrefController.GetIndexer()
 
+	Logc(ctx).Info("K8S helper frontend initialized.")
+
 	return p, nil
 }
 
 func (h *helper) GetNode(ctx context.Context, nodeName string) (*v1.Node, error) {
-	Logc(ctx).WithField("nodeName", nodeName).Debug("GetNode")
+	Logc(ctx).WithField("nodeName", nodeName).Trace(">>>> GetNode")
+	defer Logc(ctx).Trace("<<<< GetNode")
 
 	node, err := h.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
 	return node, err
@@ -328,6 +332,9 @@ func (h *helper) GetNode(ctx context.Context, nodeName string) (*v1.Node, error)
 // MetaUIDKeyFunc is a KeyFunc which knows how to make keys for API objects
 // which implement meta.Interface.  The key is the object's UID.
 func MetaUIDKeyFunc(obj interface{}) ([]string, error) {
+	Logc(context.Background()).Trace(">>>> MetaUIDKeyFunc")
+	defer Logc(context.Background()).Trace("<<<< MetaUIDKeyFunc")
+
 	if key, ok := obj.(string); ok && uidRegex.MatchString(key) {
 		return []string{key}, nil
 	}
@@ -344,6 +351,9 @@ func MetaUIDKeyFunc(obj interface{}) ([]string, error) {
 // MetaNameKeyFunc is a KeyFunc which knows how to make keys for API objects
 // which implement meta.Interface.  The key is the object's name.
 func MetaNameKeyFunc(obj interface{}) ([]string, error) {
+	Logc(context.Background()).Trace(">>>> MetaNameKeyFunc")
+	defer Logc(context.Background()).Trace("<<<< MetaNameKeyFunc")
+
 	if key, ok := obj.(string); ok {
 		return []string{key}, nil
 	}
@@ -360,6 +370,9 @@ func MetaNameKeyFunc(obj interface{}) ([]string, error) {
 // TridentVolumeReferenceKeyFunc is a KeyFunc which knows how to make keys for TridentVolumeReference
 // CRs.  The key is of the format "<CR namespace>_<referenced PVC namespce>/<referenced PVC name>".
 func TridentVolumeReferenceKeyFunc(obj interface{}) ([]string, error) {
+	Logc(context.Background()).Trace(">>>> TridentVolumeReferenceKeyFunc")
+	defer Logc(context.Background()).Trace("<<<< TridentVolumeReferenceKeyFunc")
+
 	if key, ok := obj.(string); ok {
 		return []string{key}, nil
 	}
@@ -380,7 +393,8 @@ func TridentVolumeReferenceKeyFunc(obj interface{}) ([]string, error) {
 
 // Activate starts this Trident frontend.
 func (h *helper) Activate() error {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate,
+		LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Activating K8S helper frontend.")
 	go h.pvcController.Run(h.pvcControllerStopChan)
@@ -399,18 +413,21 @@ func (h *helper) Activate() error {
 		return fmt.Errorf("error cleaning up previously failed PV upgrades; %v", err)
 	}
 
+	Logc(ctx).Info("Activated K8S helper frontend.")
+
 	return nil
 }
 
 // Deactivate stops this Trident frontend.
 func (h *helper) Deactivate() error {
-	log.Info("Deactivating K8S helper frontend.")
+	Log().Info("Deactivating K8S helper frontend.")
 	close(h.pvcControllerStopChan)
 	close(h.pvControllerStopChan)
 	close(h.scControllerStopChan)
 	close(h.nodeControllerStopChan)
 	close(h.mrControllerStopChan)
 	close(h.vrefControllerStopChan)
+	Log().Info("Deactivated K8S helper frontend.")
 	return nil
 }
 
@@ -426,6 +443,8 @@ func (h *helper) Version() string {
 
 // listClusterNodes returns the list of worker node names as a map for kubernetes cluster
 func (h *helper) listClusterNodes(ctx context.Context) (map[string]bool, error) {
+	Logc(ctx).Trace(">>>> listClusterNodes")
+	defer Logc(ctx).Trace("<<<< listClusterNodes")
 	nodeNames := make(map[string]bool)
 	nodes, err := h.kubeClient.CoreV1().Nodes().List(ctx, listOpts)
 	if err != nil {
@@ -460,7 +479,7 @@ func (h *helper) reconcileNodes(ctx context.Context) {
 				Debug("Node not found in Kubernetes; removing from Trident.")
 			err = h.orchestrator.DeleteNode(ctx, node.Name)
 			if err != nil {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"node": node.Name,
 					"err":  err,
 				}).Error("error removing node from Trident")
@@ -472,7 +491,7 @@ func (h *helper) reconcileNodes(ctx context.Context) {
 
 // addPVC is the add handler for the PVC watcher.
 func (h *helper) addPVC(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowVolumeCreate, LogLayerCSIFrontend)
 
 	switch pvc := obj.(type) {
 	case *v1.PersistentVolumeClaim:
@@ -484,7 +503,9 @@ func (h *helper) addPVC(obj interface{}) {
 
 // updatePVC is the update handler for the PVC watcher.
 func (h *helper) updatePVC(_, newObj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowVolumeUpdate, LogLayerCSIFrontend)
+	Logc(ctx).Trace(">>>> updatePVC")
+	defer Logc(ctx).Trace("<<<< updatePVC")
 
 	switch pvc := newObj.(type) {
 	case *v1.PersistentVolumeClaim:
@@ -496,7 +517,9 @@ func (h *helper) updatePVC(_, newObj interface{}) {
 
 // deletePVC is the delete handler for the PVC watcher.
 func (h *helper) deletePVC(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowVolumeDelete, LogLayerCSIFrontend)
+	Logc(ctx).Trace(">>>> deletePVC")
+	defer Logc(ctx).Trace("<<<< deletePVC")
 
 	switch pvc := obj.(type) {
 	case *v1.PersistentVolumeClaim:
@@ -508,6 +531,8 @@ func (h *helper) deletePVC(obj interface{}) {
 
 // processPVC logs the add/update/delete PVC events.
 func (h *helper) processPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim, eventType string) {
+	Logc(ctx).Trace(">>>> processPVC")
+	defer Logc(ctx).Trace("<<<< processPVC")
 	// Validate the PVC
 	size, ok := pvc.Spec.Resources.Requests[v1.ResourceStorage]
 	if !ok {
@@ -515,7 +540,7 @@ func (h *helper) processPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim, 
 		return
 	}
 
-	logFields := log.Fields{
+	logFields := LogFields{
 		"name":         pvc.Name,
 		"phase":        pvc.Status.Phase,
 		"size":         size.String(),
@@ -527,18 +552,21 @@ func (h *helper) processPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim, 
 
 	switch eventType {
 	case eventAdd:
-		Logc(ctx).WithFields(logFields).Debug("PVC added to cache.")
+		Logc(ctx).WithFields(logFields).Trace("PVC added to cache.")
 	case eventUpdate:
-		Logc(ctx).WithFields(logFields).Debug("PVC updated in cache.")
+		Logc(ctx).WithFields(logFields).Trace("PVC updated in cache.")
 	case eventDelete:
-		Logc(ctx).WithFields(logFields).Debug("PVC deleted from cache.")
+		Logc(ctx).WithFields(logFields).Trace("PVC deleted from cache.")
 	}
 }
 
 // getCachedPVCByName returns a PVC (identified by namespace/name) from the client's cache,
 // or an error if not found.  In most cases it may be better to call waitForCachedPVCByName().
 func (h *helper) getCachedPVCByName(ctx context.Context, name, namespace string) (*v1.PersistentVolumeClaim, error) {
-	logFields := log.Fields{"name": name, "namespace": namespace}
+	logFields := LogFields{"name": name, "namespace": namespace}
+
+	Logc(ctx).Trace(">>>> getCachedPVCByName")
+	defer Logc(ctx).Trace("<<<< getCachedPVCByName")
 
 	item, exists, err := h.pvcIndexer.GetByKey(namespace + "/" + name)
 	if err != nil {
@@ -563,17 +591,24 @@ func (h *helper) waitForCachedPVCByName(
 ) (*v1.PersistentVolumeClaim, error) {
 	var pvc *v1.PersistentVolumeClaim
 
+	Logc(ctx).WithFields(LogFields{
+		"Name":           name,
+		"Namespace":      namespace,
+		"MaxElapsedTime": maxElapsedTime,
+	}).Trace(">>>> waitForCachedPVCByName")
+	defer Logc(ctx).Trace("<<<< waitForCachedPVCByName")
+
 	checkForCachedPVC := func() error {
 		var pvcError error
 		pvc, pvcError = h.getCachedPVCByName(ctx, name, namespace)
 		return pvcError
 	}
 	pvcNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":      name,
 			"namespace": namespace,
 			"increment": duration,
-		}).Debugf("PVC not yet in cache, waiting.")
+		}).Tracef("PVC not yet in cache, waiting.")
 	}
 	pvcBackoff := backoff.NewExponentialBackOff()
 	pvcBackoff.InitialInterval = CacheBackoffInitialInterval
@@ -593,6 +628,9 @@ func (h *helper) waitForCachedPVCByName(
 // getCachedPVCByUID returns a PVC (identified by UID) from the client's cache,
 // or an error if not found.  In most cases it may be better to call waitForCachedPVCByUID().
 func (h *helper) getCachedPVCByUID(ctx context.Context, uid string) (*v1.PersistentVolumeClaim, error) {
+	Logc(ctx).WithField("uid", uid).Trace(">>>> getCachedPVCByUID")
+	defer Logc(ctx).Trace("<<<< getCachedPVCByUID")
+
 	items, err := h.pvcIndexer.ByIndex(uidIndex, uid)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Could not search cache for PVC by UID.")
@@ -607,7 +645,7 @@ func (h *helper) getCachedPVCByUID(ctx context.Context, uid string) (*v1.Persist
 		Logc(ctx).WithField("uid", uid).Error("Non-PVC cached object found by UID.")
 		return nil, fmt.Errorf("non-PVC object with UID %s found in cache", uid)
 	} else {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":      pvc.Name,
 			"namespace": pvc.Namespace,
 			"uid":       pvc.UID,
@@ -623,13 +661,16 @@ func (h *helper) waitForCachedPVCByUID(
 ) (*v1.PersistentVolumeClaim, error) {
 	var pvc *v1.PersistentVolumeClaim
 
+	Logc(ctx).WithField("uid", uid).Trace(">>>> waitForCachedPVCByUID")
+	defer Logc(ctx).Trace("<<<< waitForCachedPVCByUID")
+
 	checkForCachedPVC := func() error {
 		var pvcError error
 		pvc, pvcError = h.getCachedPVCByUID(ctx, uid)
 		return pvcError
 	}
 	pvcNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"uid":       uid,
 			"increment": duration,
 		}).Debugf("PVC not yet in cache, waiting.")
@@ -649,7 +690,10 @@ func (h *helper) waitForCachedPVCByUID(
 }
 
 func (h *helper) getCachedPVByName(ctx context.Context, name string) (*v1.PersistentVolume, error) {
-	logFields := log.Fields{"name": name}
+	logFields := LogFields{"name": name}
+
+	Logc(ctx).WithFields(logFields).Trace(">>>> getCachedPVByName")
+	defer Logc(ctx).Trace("<<<< getCachedPVByName")
 
 	item, exists, err := h.pvIndexer.GetByKey(name)
 	if err != nil {
@@ -668,7 +712,9 @@ func (h *helper) getCachedPVByName(ctx context.Context, name string) (*v1.Persis
 }
 
 func (h *helper) isPVInCache(ctx context.Context, name string) (bool, error) {
-	logFields := log.Fields{"name": name}
+	logFields := LogFields{"name": name}
+	Logc(ctx).WithFields(logFields).Trace(">>>> getCachedPVByName")
+	defer Logc(ctx).Trace("<<<< getCachedPVByName")
 
 	item, exists, err := h.pvIndexer.GetByKey(name)
 	if err != nil {
@@ -691,16 +737,22 @@ func (h *helper) waitForCachedPVByName(
 ) (*v1.PersistentVolume, error) {
 	var pv *v1.PersistentVolume
 
+	Logc(ctx).WithFields(LogFields{
+		"Name":           name,
+		"MaxElapsedTime": maxElapsedTime,
+	}).Trace(">>>> waitForCachedPVByName")
+	defer Logc(ctx).Trace("<<<< waitForCachedPVByName")
+
 	checkForCachedPV := func() error {
 		var pvError error
 		pv, pvError = h.getCachedPVByName(ctx, name)
 		return pvError
 	}
 	pvNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":      name,
 			"increment": duration,
-		}).Debugf("PV not yet in cache, waiting.")
+		}).Tracef("PV not yet in cache, waiting.")
 	}
 	pvBackoff := backoff.NewExponentialBackOff()
 	pvBackoff.InitialInterval = CacheBackoffInitialInterval
@@ -718,7 +770,10 @@ func (h *helper) waitForCachedPVByName(
 
 // addStorageClass is the add handler for the storage class watcher.
 func (h *helper) addStorageClass(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassCreate,
+		LogLayerCSIFrontend)
+	Logc(ctx).Trace(">>>> addStorageClass")
+	defer Logc(ctx).Trace("<<<< addStorageClass")
 
 	switch sc := obj.(type) {
 	case *k8sstoragev1beta.StorageClass:
@@ -732,7 +787,10 @@ func (h *helper) addStorageClass(obj interface{}) {
 
 // updateStorageClass is the update handler for the storage class watcher.
 func (h *helper) updateStorageClass(_, newObj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassUpdate,
+		LogLayerCSIFrontend)
+	Logc(ctx).Trace(">>>> updateStorageClass")
+	defer Logc(ctx).Trace("<<<< updateStorageClass")
 
 	switch sc := newObj.(type) {
 	case *k8sstoragev1beta.StorageClass:
@@ -747,7 +805,10 @@ func (h *helper) updateStorageClass(_, newObj interface{}) {
 
 // deleteStorageClass is the delete handler for the storage class watcher.
 func (h *helper) deleteStorageClass(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassDelete,
+		LogLayerCSIFrontend)
+	Logc(ctx).Trace(">>>> deleteStorageClass")
+	defer Logc(ctx).Trace("<<<< deleteStorageClass")
 
 	switch sc := obj.(type) {
 	case *k8sstoragev1beta.StorageClass:
@@ -761,12 +822,14 @@ func (h *helper) deleteStorageClass(obj interface{}) {
 
 // processStorageClass logs and handles add/update/delete events for CSI Trident storage classes.
 func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass, eventType string) {
+	Logc(ctx).Trace(">>>> processStorageClass")
+	defer Logc(ctx).Trace("<<<< processStorageClass")
 	// Validate the storage class
 	if sc.Provisioner != csi.Provisioner {
 		return
 	}
 
-	logFields := log.Fields{
+	logFields := LogFields{
 		"name":        sc.Name,
 		"provisioner": sc.Provisioner,
 		"parameters":  sc.Parameters,
@@ -774,10 +837,10 @@ func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 
 	switch eventType {
 	case eventAdd:
-		Logc(ctx).WithFields(logFields).Debug("Storage class added to cache.")
+		Logc(ctx).WithFields(logFields).Trace("Storage class added to cache.")
 		h.processAddedStorageClass(ctx, sc)
 	case eventUpdate:
-		Logc(ctx).WithFields(logFields).Debug("Storage class updated in cache.")
+		Logc(ctx).WithFields(logFields).Trace("Storage class updated in cache.")
 		// Make sure Trident has a record of this storage class.
 		if storageClass, _ := h.orchestrator.GetStorageClass(ctx, sc.Name); storageClass == nil {
 			Logc(ctx).WithFields(logFields).Warn("K8S helper has no record of the updated " +
@@ -785,16 +848,19 @@ func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 			h.processAddedStorageClass(ctx, sc)
 		}
 	case eventDelete:
-		Logc(ctx).WithFields(logFields).Debug("Storage class deleted from cache.")
+		Logc(ctx).WithFields(logFields).Trace("Storage class deleted from cache.")
 		h.processDeletedStorageClass(ctx, sc)
 	}
 }
 
 func removeSCParameterPrefix(key string) string {
+	Logc(context.Background()).WithField("key", key).Trace(">>>> removeSCParameterPrefix")
+	defer Logc(context.Background()).Trace("<<<< removeSCParameterPrefix")
+
 	if strings.HasPrefix(key, annPrefix) {
 		scParamKV := strings.SplitN(key, "/", 2)
 		if len(scParamKV) != 2 || scParamKV[0] == "" || scParamKV[1] == "" {
-			log.Errorf("the storage class parameter %s does not have the right format", key)
+			Log().Errorf("the storage class parameter %s does not have the right format", key)
 			return key
 		}
 		key = scParamKV[1]
@@ -804,6 +870,8 @@ func removeSCParameterPrefix(key string) string {
 
 // processAddedStorageClass informs the orchestrator of a new storage class.
 func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass) {
+	Logc(ctx).Trace(">>>> processAddedStorageClass")
+	defer Logc(ctx).Trace("<<<< processAddedStorageClass")
 	scConfig := new(storageclass.Config)
 	scConfig.Name = sc.Name
 	scConfig.Attributes = make(map[string]storageattribute.Request)
@@ -823,7 +891,7 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 			// format:  additionalStoragePools: "backend1:pool1,pool2;backend2:pool1"
 			additionalPools, err := storageattribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"name":        sc.Name,
 					"provisioner": sc.Provisioner,
 					"parameters":  sc.Parameters,
@@ -836,7 +904,7 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 			// format:  excludeStoragePools: "backend1:pool1,pool2;backend2:pool1"
 			excludeStoragePools, err := storageattribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"name":        sc.Name,
 					"provisioner": sc.Provisioner,
 					"parameters":  sc.Parameters,
@@ -849,7 +917,7 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 			// format:  storagePools: "backend1:pool1,pool2;backend2:pool1"
 			pools, err := storageattribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"name":        sc.Name,
 					"provisioner": sc.Provisioner,
 					"parameters":  sc.Parameters,
@@ -862,7 +930,7 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 			// format:  attribute: "value"
 			req, err := storageattribute.CreateAttributeRequestFromAttributeValue(newKey, v)
 			if err != nil {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"name":        sc.Name,
 					"provisioner": sc.Provisioner,
 					"parameters":  sc.Parameters,
@@ -876,7 +944,7 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 
 	// Add the storage class
 	if _, err := h.orchestrator.AddStorageClass(ctx, scConfig); err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":        sc.Name,
 			"provisioner": sc.Provisioner,
 			"parameters":  sc.Parameters,
@@ -884,16 +952,18 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 		return
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":        sc.Name,
 		"provisioner": sc.Provisioner,
 		"parameters":  sc.Parameters,
-	}).Info("K8S helper added a storage class.")
+	}).Debug("K8S helper added a storage class.")
 }
 
 // processDeletedStorageClass informs the orchestrator of a deleted storage class.
 func (h *helper) processDeletedStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass) {
-	logFields := log.Fields{"name": sc.Name}
+	logFields := LogFields{"name": sc.Name}
+	Logc(ctx).WithFields(logFields).Trace(">>>> processDeletedStorageClass")
+	defer Logc(ctx).Trace("<<<< processDeletedStorageClass")
 
 	// Delete the storage class from Trident
 	err := h.orchestrator.DeleteStorageClass(ctx, sc.Name)
@@ -907,7 +977,9 @@ func (h *helper) processDeletedStorageClass(ctx context.Context, sc *k8sstoragev
 // getCachedStorageClassByName returns a storage class (identified by name) from the client's cache,
 // or an error if not found.  In most cases it may be better to call waitForCachedStorageClassByName().
 func (h *helper) getCachedStorageClassByName(ctx context.Context, name string) (*k8sstoragev1.StorageClass, error) {
-	logFields := log.Fields{"name": name}
+	logFields := LogFields{"name": name}
+	Logc(ctx).WithFields(logFields).Trace(">>>> getCachedStorageClassByName")
+	defer Logc(ctx).Trace("<<<< getCachedStorageClassByName")
 
 	item, exists, err := h.scIndexer.GetByKey(name)
 	if err != nil {
@@ -932,16 +1004,22 @@ func (h *helper) waitForCachedStorageClassByName(
 ) (*k8sstoragev1.StorageClass, error) {
 	var sc *k8sstoragev1.StorageClass
 
+	Logc(ctx).WithFields(LogFields{
+		"Name":           name,
+		"MaxElapsedTime": maxElapsedTime,
+	}).Trace(">>>> waitForCachedStorageClassByName")
+	defer Logc(ctx).Trace("<<<< waitForCachedStorageClassByName")
+
 	checkForCachedSC := func() error {
 		var scError error
 		sc, scError = h.getCachedStorageClassByName(ctx, name)
 		return scError
 	}
 	scNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":      name,
 			"increment": duration,
-		}).Debugf("Storage class not yet in cache, waiting.")
+		}).Tracef("Storage class not yet in cache, waiting.")
 	}
 	scBackoff := backoff.NewExponentialBackOff()
 	scBackoff.InitialInterval = CacheBackoffInitialInterval
@@ -960,7 +1038,9 @@ func (h *helper) waitForCachedStorageClassByName(
 
 // addNode is the add handler for the node watcher.
 func (h *helper) addNode(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowNodeCreate, LogLayerCSIFrontend)
+	Logc(ctx).Trace(">>>> addNode")
+	defer Logc(ctx).Trace("<<<< addNode")
 
 	switch node := obj.(type) {
 	case *v1.Node:
@@ -972,7 +1052,10 @@ func (h *helper) addNode(obj interface{}) {
 
 // updateNode is the update handler for the node watcher.
 func (h *helper) updateNode(_, newObj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowNodeUpdate,
+		LogLayerCSIFrontend)
+	Logc(ctx).Trace(">>>> updateNode")
+	defer Logc(ctx).Trace("<<<< updateNode")
 
 	switch node := newObj.(type) {
 	case *v1.Node:
@@ -984,7 +1067,9 @@ func (h *helper) updateNode(_, newObj interface{}) {
 
 // deleteNode is the delete handler for the node watcher.
 func (h *helper) deleteNode(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowNodeDelete, LogLayerCSIFrontend)
+	Logc(ctx).Trace(">>>> deleteNode")
+	defer Logc(ctx).Trace("<<<< deleteNode")
 
 	switch node := obj.(type) {
 	case *v1.Node:
@@ -996,15 +1081,17 @@ func (h *helper) deleteNode(obj interface{}) {
 
 // processNode logs and handles the add/update/delete node events.
 func (h *helper) processNode(ctx context.Context, node *v1.Node, eventType string) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"name": node.Name,
 	}
+	Logc(ctx).WithFields(logFields).Trace(">>>> processNode")
+	defer Logc(ctx).Trace("<<<< processNode")
 
 	switch eventType {
 	case eventAdd:
-		Logc(ctx).WithFields(logFields).Debug("Node added to cache.")
+		Logc(ctx).WithFields(logFields).Trace("Node added to cache.")
 	case eventUpdate:
-		Logc(ctx).WithFields(logFields).Debug("Node updated in cache.")
+		Logc(ctx).WithFields(logFields).Trace("Node updated in cache.")
 	case eventDelete:
 		err := h.orchestrator.DeleteNode(ctx, node.Name)
 		if err != nil {
@@ -1012,12 +1099,13 @@ func (h *helper) processNode(ctx context.Context, node *v1.Node, eventType strin
 				Logc(ctx).WithFields(logFields).Errorf("error deleting node from Trident's database; %v", err)
 			}
 		}
-		Logc(ctx).WithFields(logFields).Debug("Node deleted from cache.")
+		Logc(ctx).WithFields(logFields).Trace("Node deleted from cache.")
 	}
 }
 
 func (h *helper) GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error) {
-	Logc(ctx).WithField("nodeName", nodeName).Debug("GetNode")
+	Logc(ctx).WithField("nodeName", nodeName).Trace(">>>> GetNode")
+	defer Logc(ctx).Trace("<<<< GetNode")
 
 	node, err := h.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
 	if err != nil {
@@ -1037,7 +1125,9 @@ func (h *helper) GetNodeTopologyLabels(ctx context.Context, nodeName string) (ma
 func (h *helper) getCachedVolumeReference(
 	ctx context.Context, vrefNamespace, pvcName, pvcNamespace string,
 ) (*netappv1.TridentVolumeReference, error) {
-	logFields := log.Fields{"vrefNamespace": vrefNamespace, "pvcName": pvcName, "pvcNamespace": pvcNamespace}
+	logFields := LogFields{"vrefNamespace": vrefNamespace, "pvcName": pvcName, "pvcNamespace": pvcNamespace}
+	Logc(ctx).WithFields(logFields).Trace(">>>> getCachedVolumeReference")
+	defer Logc(ctx).Trace("<<<< getCachedVolumeReference")
 
 	key := vrefNamespace + "_" + pvcNamespace + "/" + pvcName
 	items, err := h.vrefIndexer.ByIndex(vrefIndex, key)
@@ -1062,9 +1152,12 @@ func (h *helper) getCachedVolumeReference(
 // SupportsFeature accepts a CSI feature and returns true if the
 // feature exists and is supported.
 func (h *helper) SupportsFeature(ctx context.Context, feature controllerhelpers.Feature) bool {
-	kubeSemVersion, err := utils.ParseSemantic(h.kubeVersion.GitVersion)
+	Logc(ctx).Trace(">>>> SupportsFeature")
+	defer Logc(ctx).Trace("<<<< SupportsFeature")
+
+	kubeSemVersion, err := versionutils.ParseSemantic(h.kubeVersion.GitVersion)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"version": h.kubeVersion.GitVersion,
 			"error":   err,
 		}).Errorf("unable to parse Kubernetes version")

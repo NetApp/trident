@@ -6,9 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
-
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // AttachSMBVolume attaches the volume to the local host. This method must be able to accomplish its task using only the data passed in.
@@ -22,7 +20,7 @@ func AttachSMBVolume(
 
 	exportPath := fmt.Sprintf("\\\\%s%s", publishInfo.SMBServer, publishInfo.SMBPath)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volume":     name,
 		"exportPath": exportPath,
 		"mountpoint": mountpoint,

@@ -12,12 +12,12 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,15 +61,16 @@ type ClientConfig struct {
 
 // Client is the object to use for interacting with ONTAP controllers
 type Client struct {
-	config  ClientConfig
-	zr      *azgo.ZapiRunner
-	m       *sync.Mutex
-	svmUUID string
-	svmMCC  bool
+	config     ClientConfig
+	zr         *azgo.ZapiRunner
+	m          *sync.Mutex
+	driverName string
+	svmUUID    string
+	svmMCC     bool
 }
 
 // NewClient is a factory method for creating a new instance
-func NewClient(config ClientConfig, SVM string) *Client {
+func NewClient(config ClientConfig, SVM, driverName string) *Client {
 	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
 	config.ContextBasedZapiRecords = DefaultZapiRecords
 	if config.DriverContext == tridentconfig.ContextDocker {
@@ -77,7 +78,8 @@ func NewClient(config ClientConfig, SVM string) *Client {
 	}
 
 	d := &Client{
-		config: config,
+		driverName: driverName,
+		config:     config,
 		zr: &azgo.ZapiRunner{
 			ManagementLIF:        config.ManagementLIF,
 			SVM:                  SVM,
@@ -191,29 +193,29 @@ const (
 )
 
 // Indicate the minimum Ontapi version for each feature here
-var features = map[Feature]*utils.Version{
-	MinimumONTAPIVersion:      utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
-	NetAppFlexGroups:          utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
-	NetAppFlexGroupsClone:     utils.MustParseSemantic("1.170.0"), // cDOT 9.7.0
-	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
-	NetAppFabricPoolFlexGroup: utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
-	LunGeometrySkip:           utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
-	FabricPoolForSVMDR:        utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
-	QosPolicies:               utils.MustParseSemantic("1.180.0"), // cDOT 9.8.0
-	LIFServices:               utils.MustParseSemantic("1.160.0"), // cDOT 9.6.0
+var features = map[Feature]*versionutils.Version{
+	MinimumONTAPIVersion:      versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	NetAppFlexGroups:          versionutils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
+	NetAppFlexGroupsClone:     versionutils.MustParseSemantic("1.170.0"), // cDOT 9.7.0
+	NetAppFabricPoolFlexVol:   versionutils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
+	NetAppFabricPoolFlexGroup: versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	LunGeometrySkip:           versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	FabricPoolForSVMDR:        versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	QosPolicies:               versionutils.MustParseSemantic("1.180.0"), // cDOT 9.8.0
+	LIFServices:               versionutils.MustParseSemantic("1.160.0"), // cDOT 9.6.0
 }
 
 // Indicate the minimum Ontap version for each feature here (non-API specific)
-var featuresByVersion = map[Feature]*utils.Version{
-	MinimumONTAPIVersion:      utils.MustParseSemantic("9.5.0"),
-	NetAppFlexGroups:          utils.MustParseSemantic("9.2.0"),
-	NetAppFlexGroupsClone:     utils.MustParseSemantic("9.7.0"),
-	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("9.2.0"),
-	NetAppFabricPoolFlexGroup: utils.MustParseSemantic("9.5.0"),
-	LunGeometrySkip:           utils.MustParseSemantic("9.5.0"),
-	FabricPoolForSVMDR:        utils.MustParseSemantic("9.5.0"),
-	QosPolicies:               utils.MustParseSemantic("9.8.0"),
-	LIFServices:               utils.MustParseSemantic("9.6.0"),
+var featuresByVersion = map[Feature]*versionutils.Version{
+	MinimumONTAPIVersion:      versionutils.MustParseSemantic("9.5.0"),
+	NetAppFlexGroups:          versionutils.MustParseSemantic("9.2.0"),
+	NetAppFlexGroupsClone:     versionutils.MustParseSemantic("9.7.0"),
+	NetAppFabricPoolFlexVol:   versionutils.MustParseSemantic("9.2.0"),
+	NetAppFabricPoolFlexGroup: versionutils.MustParseSemantic("9.5.0"),
+	LunGeometrySkip:           versionutils.MustParseSemantic("9.5.0"),
+	FabricPoolForSVMDR:        versionutils.MustParseSemantic("9.5.0"),
+	QosPolicies:               versionutils.MustParseSemantic("9.8.0"),
+	LIFServices:               versionutils.MustParseSemantic("9.6.0"),
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
@@ -223,7 +225,7 @@ func (c Client) SupportsFeature(ctx context.Context, feature Feature) bool {
 		return false
 	}
 
-	ontapiSemVer, err := utils.ParseSemantic(fmt.Sprintf("%s.0", ontapiVersion))
+	ontapiSemVer, err := versionutils.ParseSemantic(fmt.Sprintf("%s.0", ontapiVersion))
 	if err != nil {
 		return false
 	}
@@ -483,7 +485,7 @@ func (c Client) LunMapIfNotMapped(
 				lunID = igroup.LunId()
 				alreadyMapped = true
 
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"lun":    lunPath,
 					"igroup": initiatorGroupName,
 					"id":     lunID,
@@ -505,7 +507,7 @@ func (c Client) LunMapIfNotMapped(
 
 		lunID = lunMapResponse.Result.LunIdAssigned()
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"lun":    lunPath,
 			"igroup": initiatorGroupName,
 			"id":     lunID,
@@ -1096,7 +1098,7 @@ func (c *Client) checkForJobCompletion(ctx context.Context, jobId int, maxWaitTi
 		}
 
 		jobState := jobResponse.Result.AttributesListPtr.JobInfoPtr[0].JobState()
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"jobId":    jobId,
 			"jobState": jobState,
 		}).Debug("Job status for job ID")
@@ -2374,7 +2376,7 @@ func (c Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 			volSisAttrs := volAttrs.VolumeSisAttributes()
 			volAllocated := float64(volSpaceAttrs.SizeTotal())
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"volName":         volName,
 				"SizeTotal":       volSpaceAttrs.SizeTotal(),
 				"TotalSpaceSaved": volSisAttrs.TotalSpaceSaved(),
@@ -2395,7 +2397,7 @@ func (c Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 				for _, lun := range lunsResponse.Result.AttributesListPtr.LunInfoPtr {
 					lunPath := lun.Path()
 					lunSize := lun.Size()
-					Logc(ctx).WithFields(log.Fields{
+					Logc(ctx).WithFields(LogFields{
 						"lunPath": lunPath,
 						"lunSize": lunSize,
 					}).Info("Dumping LUN")
@@ -2599,7 +2601,8 @@ func (c Client) SnapmirrorResync(
 	if err != nil {
 		return response, err
 	}
-	err = c.WaitForAsyncResponse(GenerateRequestContext(context.Background(), "", ""), *response, 60)
+	err = c.WaitForAsyncResponse(GenerateRequestContext(context.Background(), "", "",
+		WorkflowNone, LogLayer(c.driverName)), *response, 60)
 	return response, err
 }
 
@@ -2876,7 +2879,7 @@ func (c Client) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 		SetMaxRecords(DefaultZapiRecords).
 		ExecuteUsing(zr)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"response":          response,
 		"info":              info,
 		"desiredAttributes": desiredAttributes,
@@ -2907,7 +2910,7 @@ func (c Client) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 		return serialNumbers, errors.New("could not get node serial numbers")
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"Count":         len(serialNumbers),
 		"SerialNumbers": strings.Join(serialNumbers, ","),
 	}).Debug("Read serial numbers.")

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -15,18 +15,19 @@ import (
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8stesting "k8s.io/client-go/testing"
+
+	. "github.com/netapp/trident/logging"
 )
 
 var mockError = fmt.Errorf("mock error")
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 
@@ -134,7 +135,7 @@ spec:
 							// in question only returns an error (nil or non-nil)
 							return true, nil, event.error
 						default:
-							log.Errorf("~~~ unhandled type: %T\n",
+							Log().Errorf("~~~ unhandled type: %T\n",
 								actionCopy) // use this to find if any unanticipated actions occurred.
 						}
 						return false, nil, nil

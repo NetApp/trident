@@ -12,9 +12,8 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // mountFilesystemForResize expands a filesystem. The xfs_growfs utility requires a mount point to expand the
@@ -22,7 +21,7 @@ import (
 func mountFilesystemForResize(
 	ctx context.Context, devicePath, stagedTargetPath, mountOptions string,
 ) (string, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"rawDevicePath":    devicePath,
 		"stagedTargetPath": stagedTargetPath,
 		"mountOptions":     mountOptions,

@@ -12,7 +12,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	api "github.com/netapp/trident/storage_drivers/gcp/api"
-	utils "github.com/netapp/trident/utils"
+	version "github.com/netapp/trident/utils/version"
 )
 
 // MockGCPClient is a mock of GCPClient interface.
@@ -258,11 +258,11 @@ func (mr *MockGCPClientMockRecorder) GetSnapshotsForVolume(arg0, arg1 interface{
 }
 
 // GetVersion mocks base method.
-func (m *MockGCPClient) GetVersion(arg0 context.Context) (*utils.Version, *utils.Version, error) {
+func (m *MockGCPClient) GetVersion(arg0 context.Context) (*version.Version, *version.Version, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVersion", arg0)
-	ret0, _ := ret[0].(*utils.Version)
-	ret1, _ := ret[1].(*utils.Version)
+	ret0, _ := ret[0].(*version.Version)
+	ret1, _ := ret[1].(*version.Version)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }

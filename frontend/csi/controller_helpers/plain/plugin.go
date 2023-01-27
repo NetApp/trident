@@ -4,7 +4,6 @@ package plain
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -14,7 +13,7 @@ import (
 	frontendcommon "github.com/netapp/trident/frontend/common"
 	"github.com/netapp/trident/frontend/csi"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 )
 
@@ -24,7 +23,9 @@ type helper struct {
 
 // NewHelper instantiates this plugin.
 func NewHelper(orchestrator core.Orchestrator) frontend.Plugin {
-	log.Info("Initializing plain CSI helper frontend.")
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate,
+		LogLayerCSIFrontend)
+	Logc(ctx).Info("Initializing plain CSI helper frontend.")
 
 	return &helper{
 		orchestrator: orchestrator,
@@ -33,7 +34,7 @@ func NewHelper(orchestrator core.Orchestrator) frontend.Plugin {
 
 // Activate starts this Trident frontend.
 func (h *helper) Activate() error {
-	log.Info("Activating plain CSI helper frontend.")
+	Log().Info("Activating plain CSI helper frontend.")
 
 	// Configure telemetry
 	config.OrchestratorTelemetry.Platform = string(config.PlatformCSI)
@@ -44,7 +45,9 @@ func (h *helper) Activate() error {
 
 // Deactivate stops this Trident frontend.
 func (h *helper) Deactivate() error {
-	log.Info("Deactivating plain CSI helper frontend.")
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginDeactivate,
+		LogLayerCSIFrontend)
+	Logc(ctx).Info("Deactivating plain CSI helper frontend.")
 	return nil
 }
 
@@ -66,7 +69,7 @@ func (h *helper) GetVolumeConfig(
 	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
 	requisiteTopology, preferredTopology, accessibleTopology []map[string]string,
 ) (*storage.VolumeConfig, error) {
-	accessMode := frontendcommon.CombineAccessModes(accessModes)
+	accessMode := frontendcommon.CombineAccessModes(ctx, accessModes)
 
 	if parameters == nil {
 		parameters = make(map[string]string)
@@ -83,7 +86,7 @@ func (h *helper) GetVolumeConfig(
 	}
 
 	// Create the volume config from all available info from the CSI request
-	return frontendcommon.GetVolumeConfig(name, scConfig.Name, sizeBytes, parameters, protocol, accessMode, volumeMode,
+	return frontendcommon.GetVolumeConfig(ctx, name, scConfig.Name, sizeBytes, parameters, protocol, accessMode, volumeMode,
 		requisiteTopology, preferredTopology)
 }
 
@@ -102,25 +105,25 @@ func (h *helper) GetNodeTopologyLabels(ctx context.Context, nodeName string) (ma
 }
 
 // RecordVolumeEvent accepts the name of a CSI volume and writes the specified
-// event message to the debug log.
+// event message to the debug Log().
 func (h *helper) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":      name,
 		"eventType": eventType,
 		"reason":    reason,
 		"message":   message,
-	}).Debug("Volume event.")
+	}).Trace("Volume event.")
 }
 
 // RecordNodeEvent accepts the name of a CSI node and writes the specified
-// event message to the debug log.
+// event message to the debug Log().
 func (h *helper) RecordNodeEvent(ctx context.Context, name, eventType, reason, message string) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":      name,
 		"eventType": eventType,
 		"reason":    reason,
 		"message":   message,
-	}).Debug("Node event.")
+	}).Trace("Node event.")
 }
 
 // SupportsFeature accepts a CSI feature and returns true if the

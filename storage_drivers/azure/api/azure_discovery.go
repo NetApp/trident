@@ -15,12 +15,12 @@ import (
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 	"go.uber.org/multierr"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/crypto"
 )
 
 const (
@@ -51,9 +51,7 @@ func (c Client) RefreshAzureResources(ctx context.Context) error {
 	discoveryErr := multierr.Combine(c.DiscoverAzureResources(ctx))
 
 	// This is noisy, hide it behind api tracing.
-	if c.config.DebugTraceFlags["api"] {
-		c.dumpAzureResources(ctx)
-	}
+	c.dumpAzureResources(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"])
 
 	// Warn about anything in the config that doesn't match any discovered resources
 	c.checkForNonexistentResourceGroups(ctx)
@@ -209,7 +207,7 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 		return errors.New("no ANF subnets discovered; volume provisioning may fail until corrected")
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"resourceGroups": numResourceGroups,
 		"capacityPools":  numCapacityPools,
 		"subnets":        numSubnets,
@@ -219,20 +217,20 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 }
 
 // dumpAzureResources writes a hierarchical representation of discovered resources to the log.
-func (c Client) dumpAzureResources(ctx context.Context) {
-	Logc(ctx).Debugf("Discovered Azure Resources:")
+func (c Client) dumpAzureResources(ctx context.Context, driverName string, discoveryTraceEnabled bool) {
+	Logd(ctx, driverName, discoveryTraceEnabled).Tracef("Discovered Azure Resources:")
 	for _, rg := range c.sdkClient.AzureResources.ResourceGroups {
-		Logc(ctx).Debugf("  Resource Group: %s", rg.Name)
+		Logd(ctx, driverName, discoveryTraceEnabled).Tracef("  Resource Group: %s", rg.Name)
 		for _, na := range rg.NetAppAccounts {
-			Logc(ctx).Debugf("    ANF Account: %s, Location: %s", na.Name, na.Location)
+			Logd(ctx, driverName, discoveryTraceEnabled).Tracef("    ANF Account: %s, Location: %s", na.Name, na.Location)
 			for _, cp := range na.CapacityPools {
-				Logc(ctx).Debugf("      CPool: %s, [%s, %s]", cp.Name, cp.ServiceLevel, cp.QosType)
+				Logd(ctx, driverName, discoveryTraceEnabled).Tracef("      CPool: %s, [%s, %s]", cp.Name, cp.ServiceLevel, cp.QosType)
 			}
 		}
 		for _, vn := range rg.VirtualNetworks {
-			Logc(ctx).Debugf("    Network: %s, Location: %s", vn.Name, vn.Location)
+			Logd(ctx, driverName, discoveryTraceEnabled).Tracef("    Network: %s, Location: %s", vn.Name, vn.Location)
 			for _, sn := range vn.Subnets {
-				Logc(ctx).Debugf("      Subnet: %s", sn.Name)
+				Logd(ctx, driverName, discoveryTraceEnabled).Tracef("      Subnet: %s", sn.Name)
 			}
 		}
 	}
@@ -284,7 +282,7 @@ func (c Client) checkForNonexistentResourceGroups(ctx context.Context) (anyMisma
 			if !utils.StringInSlice(configRG, rgNames) {
 				anyMismatches = true
 
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"pool":          sPoolName,
 					"resourceGroup": configRG,
 				}).Warning("Resource group referenced in pool not found.")
@@ -312,7 +310,7 @@ func (c Client) checkForNonexistentNetAppAccounts(ctx context.Context) (anyMisma
 			if !utils.StringInSlice(configNA, naNames) {
 				anyMismatches = true
 
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"pool":          sPoolName,
 					"netappAccount": configNA,
 				}).Warning("NetApp account referenced in pool not found.")
@@ -340,7 +338,7 @@ func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismat
 			if !utils.StringInSlice(configCP, cpNames) {
 				anyMismatches = true
 
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"pool":         sPoolName,
 					"capacityPool": configCP,
 				}).Warning("Capacity pool referenced in pool not found.")
@@ -368,7 +366,7 @@ func (c Client) checkForNonexistentVirtualNetworks(ctx context.Context) (anyMism
 		if configVN != "" && !utils.StringInSlice(configVN, vnNames) {
 			anyMismatches = true
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"pool":           sPoolName,
 				"virtualNetwork": configVN,
 			}).Warning("Virtual network referenced in pool not found.")
@@ -395,7 +393,7 @@ func (c Client) checkForNonexistentSubnets(ctx context.Context) (anyMismatches b
 		if configSN != "" && !utils.StringInSlice(configSN, snNames) {
 			anyMismatches = true
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"pool":   sPoolName,
 				"subnet": configSN,
 			}).Warning("Subnet referenced in pool not found.")
@@ -438,7 +436,7 @@ func (c Client) EnableAzureFeatures(ctx context.Context, featureNames ...string)
 func (c Client) enableAzureFeature(
 	ctx context.Context, provider, feature string, featureMap map[string]bool,
 ) (returnError error) {
-	logFields := log.Fields{"feature": feature}
+	logFields := LogFields{"feature": feature}
 
 	var rawResponse *http.Response
 	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
@@ -519,7 +517,7 @@ func (c Client) discoverCapacityPoolsWithRetry(ctx context.Context) (pools *[]*C
 	}
 
 	notify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"increment": duration.Truncate(10 * time.Millisecond),
 		}).Debugf("Retrying capacity pools resource graph query.")
 	}
@@ -538,7 +536,7 @@ func (c Client) discoverCapacityPoolsWithRetry(ctx context.Context) (pools *[]*C
 
 // discoverCapacityPools queries the Azure Resource Graph for all ANF capacity pools in the current location.
 func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API": "GraphClient.Resources",
 	}
 
@@ -667,7 +665,7 @@ func (c Client) discoverSubnetsWithRetry(ctx context.Context) (subnets *[]*Subne
 	}
 
 	notify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"increment": duration.Truncate(10 * time.Millisecond),
 		}).Debugf("Retrying subnets resource graph query.")
 	}
@@ -686,7 +684,7 @@ func (c Client) discoverSubnetsWithRetry(ctx context.Context) (subnets *[]*Subne
 
 // discoverSubnets queries the Azure Resource Graph for all ANF-delegated subnets in the current location.
 func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"API": "GraphClient.Resources",
 	}
 
@@ -821,9 +819,8 @@ func (c Client) CapacityPoolsForStoragePools(ctx context.Context) []*CapacityPoo
 func (c Client) CapacityPoolsForStoragePool(
 	ctx context.Context, sPool storage.Pool, serviceLevel string,
 ) []*CapacityPool {
-	if c.config.DebugTraceFlags["discovery"] {
-		Logc(ctx).WithField("storagePool", sPool.Name()).Debugf("Determining capacity pools for storage pool.")
-	}
+	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).WithField("storagePool", sPool.Name()).
+		Tracef("Determining capacity pools for storage pool.")
 
 	// This map tracks which capacity pools have passed the filters
 	filteredCapacityPoolMap := make(map[string]bool)
@@ -838,9 +835,8 @@ func (c Client) CapacityPoolsForStoragePool(
 	if len(rgList) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
 			if !utils.SliceContainsString(rgList, cPool.ResourceGroup) {
-				if c.config.DebugTraceFlags["discovery"] {
-					Logc(ctx).Debugf("Ignoring capacity pool %s, not in resource groups [%s].", cPoolFullName, rgList)
-				}
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in resource groups [%s].",
+					cPoolFullName, rgList)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
 		}
@@ -853,9 +849,8 @@ func (c Client) CapacityPoolsForStoragePool(
 			naName := cPool.NetAppAccount
 			naFullName := CreateNetappAccountFullName(cPool.ResourceGroup, cPool.NetAppAccount)
 			if !utils.SliceContainsString(naList, naName) && !utils.SliceContainsString(naList, naFullName) {
-				if c.config.DebugTraceFlags["discovery"] {
-					Logc(ctx).Debugf("Ignoring capacity pool %s, not in netapp accounts [%s].", cPoolFullName, naList)
-				}
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in netapp accounts [%s].",
+					cPoolFullName, naList)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
 		}
@@ -866,9 +861,8 @@ func (c Client) CapacityPoolsForStoragePool(
 	if len(cpList) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
 			if !utils.SliceContainsString(cpList, cPool.Name) && !utils.SliceContainsString(cpList, cPoolFullName) {
-				if c.config.DebugTraceFlags["discovery"] {
-					Logc(ctx).Debugf("Ignoring capacity pool %s, not in capacity pools [%s].", cPoolFullName, cpList)
-				}
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in capacity pools [%s].",
+					cPoolFullName, cpList)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
 		}
@@ -878,9 +872,8 @@ func (c Client) CapacityPoolsForStoragePool(
 	if serviceLevel != "" {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
 			if cPool.ServiceLevel != serviceLevel {
-				if c.config.DebugTraceFlags["discovery"] {
-					Logc(ctx).Debugf("Ignoring capacity pool %s, not service level %s.", cPoolFullName, serviceLevel)
-				}
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not service level %s.",
+					cPoolFullName, serviceLevel)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
 		}
@@ -908,7 +901,7 @@ func (c Client) RandomCapacityPoolForStoragePool(
 		return nil
 	}
 
-	return filteredCapacityPools[utils.GetRandomNumber(len(filteredCapacityPools))]
+	return filteredCapacityPools[crypto.GetRandomNumber(len(filteredCapacityPools))]
 }
 
 // EnsureVolumeInValidCapacityPool checks whether the specified volume exists in any capacity pool that is
@@ -946,9 +939,7 @@ func (c Client) subnet(subnetFullName string) *Subnet {
 
 // SubnetsForStoragePool returns all discovered subnets matching the specified storage pool.
 func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) []*Subnet {
-	if c.config.DebugTraceFlags["discovery"] {
-		Logc(ctx).WithField("storagePool", sPool.Name()).Debugf("Determining subnets for storage pool.")
-	}
+	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).WithField("storagePool", sPool.Name()).Tracef("Determining subnets for storage pool.")
 
 	// This map tracks which subnets have passed the filters
 	filteredSubnetMap := make(map[string]bool)
@@ -963,9 +954,8 @@ func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) [
 	if len(rgList) > 0 {
 		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
 			if !utils.SliceContainsString(rgList, subnet.ResourceGroup) {
-				if c.config.DebugTraceFlags["discovery"] {
-					Logc(ctx).Debugf("Ignoring subnet %s, not in resource groups [%s].", subnetFullName, rgList)
-				}
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring subnet %s, not in resource groups [%s].",
+					subnetFullName, rgList)
 				filteredSubnetMap[subnetFullName] = false
 			}
 		}
@@ -978,9 +968,8 @@ func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) [
 			vnName := subnet.VirtualNetwork
 			vnFullName := CreateVirtualNetworkFullName(subnet.ResourceGroup, subnet.VirtualNetwork)
 			if vn != vnName && vn != vnFullName {
-				if c.config.DebugTraceFlags["discovery"] {
-					Logc(ctx).Debugf("Ignoring subnet %s, not in virtual network %s.", subnetFullName, vn)
-				}
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring subnet %s, not in virtual network %s.",
+					subnetFullName, vn)
 				filteredSubnetMap[subnetFullName] = false
 			}
 		}
@@ -991,9 +980,8 @@ func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) [
 	if sn != "" {
 		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
 			if sn != subnet.Name && sn != subnetFullName {
-				if c.config.DebugTraceFlags["discovery"] {
-					Logc(ctx).Debugf("Ignoring subnet %s, not equal to subnet %s.", subnetFullName, sn)
-				}
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring subnet %s, not equal to subnet %s.",
+					subnetFullName, sn)
 				filteredSubnetMap[subnetFullName] = false
 			}
 		}
@@ -1019,5 +1007,5 @@ func (c Client) RandomSubnetForStoragePool(ctx context.Context, sPool storage.Po
 		return nil
 	}
 
-	return filteredSubnets[utils.GetRandomNumber(len(filteredSubnets))]
+	return filteredSubnets[crypto.GetRandomNumber(len(filteredSubnets))]
 }

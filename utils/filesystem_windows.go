@@ -9,7 +9,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
