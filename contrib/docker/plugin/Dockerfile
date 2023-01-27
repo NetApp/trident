@@ -1,4 +1,4 @@
-FROM busybox:latest as busybox
+FROM busybox:uclibc as busybox
 
 FROM gcr.io/distroless/static:f072ab8fd7e21912a30720928cce8ad562e82718
 
