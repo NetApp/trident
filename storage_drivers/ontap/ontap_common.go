@@ -702,25 +702,16 @@ func getISCSIDataLIFsForReportingNodes(
 	return reportedDataLIFs, nil
 }
 
-// ValidateBidrectionalChapCredentials validates the bidirectional CHAP settings
-func ValidateBidrectionalChapCredentials(
+// ValidateBidirectionalChapCredentials validates the bidirectional CHAP settings
+func ValidateBidirectionalChapCredentials(
 	defaultAuth api.IscsiInitiatorAuth,
 	config *drivers.OntapStorageDriverConfig,
 ) (*ChapCredentials, error) {
-	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNone(defaultAuth)
-	if err != nil {
-		return nil, fmt.Errorf("error checking default initiator's auth type: %v", err)
-	}
+	isDefaultAuthTypeNone := IsDefaultAuthTypeNone(defaultAuth)
 
-	isDefaultAuthTypeCHAP, err := IsDefaultAuthTypeCHAP(defaultAuth)
-	if err != nil {
-		return nil, fmt.Errorf("error checking default initiator's auth type: %v", err)
-	}
+	isDefaultAuthTypeCHAP := IsDefaultAuthTypeCHAP(defaultAuth)
 
-	isDefaultAuthTypeDeny, err := IsDefaultAuthTypeDeny(defaultAuth)
-	if err != nil {
-		return nil, fmt.Errorf("error checking default initiator's auth type: %v", err)
-	}
+	isDefaultAuthTypeDeny := IsDefaultAuthTypeDeny(defaultAuth)
 
 	// make sure it's one of the 3 types we understand
 	if !isDefaultAuthTypeNone && !isDefaultAuthTypeCHAP && !isDefaultAuthTypeDeny {
@@ -775,23 +766,23 @@ func ValidateBidrectionalChapCredentials(
 // isDefaultAuthTypeOfType returns true if the default initiator's auth-type field is set to the provided authType value
 func isDefaultAuthTypeOfType(
 	response api.IscsiInitiatorAuth, authType string,
-) (bool, error) {
+) bool {
 	// case insensitive compare
-	return strings.EqualFold(response.AuthType, authType), nil
+	return strings.EqualFold(response.AuthType, authType)
 }
 
 // IsDefaultAuthTypeNone returns true if the default initiator's auth-type field is set to the value "none"
-func IsDefaultAuthTypeNone(response api.IscsiInitiatorAuth) (bool, error) {
+func IsDefaultAuthTypeNone(response api.IscsiInitiatorAuth) bool {
 	return isDefaultAuthTypeOfType(response, "none")
 }
 
 // IsDefaultAuthTypeCHAP returns true if the default initiator's auth-type field is set to the value "CHAP"
-func IsDefaultAuthTypeCHAP(response api.IscsiInitiatorAuth) (bool, error) {
+func IsDefaultAuthTypeCHAP(response api.IscsiInitiatorAuth) bool {
 	return isDefaultAuthTypeOfType(response, "CHAP")
 }
 
 // IsDefaultAuthTypeDeny returns true if the default initiator's auth-type field is set to the value "deny"
-func IsDefaultAuthTypeDeny(response api.IscsiInitiatorAuth) (bool, error) {
+func IsDefaultAuthTypeDeny(response api.IscsiInitiatorAuth) bool {
 	return isDefaultAuthTypeOfType(response, "deny")
 }
 
@@ -829,15 +820,12 @@ func InitializeSANDriver(
 		return fmt.Errorf("error checking default initiator's auth type: %v", err)
 	}
 
-	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNone(getDefaultAuthResponse)
-	if err != nil {
-		return fmt.Errorf("error checking default initiator's auth type: %v", err)
-	}
+	isDefaultAuthTypeNone := IsDefaultAuthTypeNone(getDefaultAuthResponse)
 
 	if config.UseCHAP {
 
 		authType := "CHAP"
-		chapCredentials, err := ValidateBidrectionalChapCredentials(getDefaultAuthResponse, config)
+		chapCredentials, err := ValidateBidirectionalChapCredentials(getDefaultAuthResponse, config)
 		if err != nil {
 			return fmt.Errorf("error with CHAP credentials: %v", err)
 		}
