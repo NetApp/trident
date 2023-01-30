@@ -4049,7 +4049,7 @@ func TestCloneFlexvol(t *testing.T) {
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags:   map[string]bool{"method": true},
-		StorageDriverName: drivers.OntapNASStorageDriverName,
+		StorageDriverName: tridentconfig.OntapNASStorageDriverName,
 	}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
@@ -4156,7 +4156,7 @@ func TestCreateFlexvolSnapshot(t *testing.T) {
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags:   map[string]bool{"method": true},
-		StorageDriverName: drivers.OntapNASStorageDriverName,
+		StorageDriverName: tridentconfig.OntapNASStorageDriverName,
 	}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
