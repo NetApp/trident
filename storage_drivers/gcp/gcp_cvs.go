@@ -200,12 +200,11 @@ func (d *NFSStorageDriver) Initialize(
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
-	if err = d.initializeStoragePools(ctx); err != nil {
-		return fmt.Errorf("could not configure storage pools: %v", err)
-	}
+	d.initializeStoragePools(ctx)
 
-	if d.API, err = d.initializeGCPAPIClient(ctx, &d.Config); err != nil {
-		return fmt.Errorf("error initializing %s API client. %v", d.Name(), err)
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.API == nil {
+		d.API = d.initializeGCPAPIClient(ctx, &d.Config)
 	}
 
 	if err = d.validate(ctx); err != nil {
@@ -325,7 +324,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 }
 
 // initializeStoragePools defines the pools reported to Trident, whether physical or virtual.
-func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
+func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 	d.pools = make(map[string]storage.Pool)
 
 	if len(d.Config.Storage) == 0 {
@@ -462,8 +461,6 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			d.pools[pool.Name()] = pool
 		}
 	}
-
-	return nil
 }
 
 // initializeGCPConfig parses the GCP config, mixing in the specified common config.
@@ -498,7 +495,7 @@ func (d *NFSStorageDriver) initializeGCPConfig(
 // initializeGCPAPIClient returns an GCP API client.
 func (d *NFSStorageDriver) initializeGCPAPIClient(
 	ctx context.Context, config *drivers.GCPNFSStorageDriverConfig,
-) (api.GCPClient, error) {
+) api.GCPClient {
 	fields := LogFields{"Method": "initializeGCPAPIClient", "Type": "NFSStorageDriver"}
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeGCPAPIClient")
 	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeGCPAPIClient")
@@ -513,7 +510,7 @@ func (d *NFSStorageDriver) initializeGCPAPIClient(
 		DebugTraceFlags: config.DebugTraceFlags,
 	})
 
-	return client, nil
+	return client
 }
 
 // validate ensures the driver configuration and execution environment are valid and working
@@ -1136,22 +1133,8 @@ func (d *NFSStorageDriver) CreateClone(
 		createRequest.RegionalHA = true
 	}
 
-	// Clone the volume
-	if err := d.API.CreateVolume(ctx, createRequest); err != nil {
-		return err
-	}
-
-	// Get the volume
-	clone, err := d.API.GetVolumeByCreationToken(ctx, name)
-	if err != nil {
-		return err
-	}
-
-	// Always save the ID so, we can find the volume efficiently later
-	cloneVolConfig.InternalID = d.CreateGCPInternalID(clone)
-
-	// Wait for creation to complete so that the mount targets are available
-	return d.waitForVolumeCreate(ctx, clone, name)
+	// Clone the volume and wait for the creation to complete
+	return d.createVolume(ctx, createRequest, cloneVolConfig)
 }
 
 func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
@@ -2052,10 +2035,8 @@ func (d *NFSStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*uti
 }
 
 func validateStoragePrefix(storagePrefix string) error {
-	matched, err := regexp.MatchString(`^[a-zA-Z][a-zA-Z0-9-]{0,70}$`, storagePrefix)
-	if err != nil {
-		return fmt.Errorf("could not check storage prefix; %v", err)
-	} else if !matched {
+	matched, _ := regexp.MatchString(`^[a-zA-Z][a-zA-Z0-9-]{0,70}$`, storagePrefix)
+	if !matched {
 		return fmt.Errorf("storage prefix may only contain letters/digits/hyphens and must begin with a letter")
 	}
 	return nil
