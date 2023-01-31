@@ -49,14 +49,5 @@ type GCPClient interface {
 	RestoreSnapshot(ctx context.Context, volume *Volume, snapshot *Snapshot) error
 	DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *Snapshot) error
 
-	GetBackupsForVolume(ctx context.Context, volume *Volume) (*[]Backup, error)
-	GetBackupForVolume(ctx context.Context, volume *Volume, backupName string) (*Backup, error)
-	GetBackupByID(ctx context.Context, backupId string) (*Backup, error)
-	WaitForBackupStates(
-		ctx context.Context, backup *Backup, desiredStates, abortStates []string,
-		maxElapsedTime time.Duration,
-	) error
-	CreateBackup(ctx context.Context, request *BackupCreateRequest) error
-	DeleteBackup(ctx context.Context, volume *Volume, backup *Backup) error
 	GetPools(ctx context.Context) (*[]*Pool, error)
 }

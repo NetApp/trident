@@ -72,6 +72,7 @@ type Client struct {
 	tokenSource *oauth2.TokenSource
 	token       *oauth2.Token
 	m           *sync.Mutex
+	unitTestURL string // Set only in unit testing code.
 }
 
 // NewDriver is a factory method for creating a new instance.
@@ -92,8 +93,12 @@ func NewDriver(config ClientConfig) *Client {
 }
 
 func (d *Client) makeURL(resourcePath string) string {
-	return fmt.Sprintf("%s/v2/projects/%s/locations/%s%s", d.config.APIURL, d.config.ProjectNumber,
-		d.config.APIRegion, resourcePath)
+	if d.unitTestURL != "" {
+		return d.unitTestURL
+	} else {
+		return fmt.Sprintf("%s/v2/projects/%s/locations/%s%s", d.config.APIURL, d.config.ProjectNumber,
+			d.config.APIRegion, resourcePath)
+	}
 }
 
 func (d *Client) initTokenSource(ctx context.Context) error {
@@ -989,190 +994,6 @@ func (d *Client) DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *S
 		"snapshot": snapshot.Name,
 		"volume":   volume.CreationToken,
 	}).Info("Deleted volume snapshot.")
-
-	return nil
-}
-
-func (d *Client) GetBackupsForVolume(ctx context.Context, volume *Volume) (*[]Backup, error) {
-	resourcePath := fmt.Sprintf("/Volumes/%s/Backups", volume.VolumeID)
-
-	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
-	if err != nil {
-		return nil, errors.New("failed to read backups")
-	}
-
-	err = d.getErrorFromAPIResponse(response, responseBody)
-	if err != nil {
-		return nil, err
-	}
-
-	var backups []Backup
-	err = json.Unmarshal(responseBody, &backups)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse backup data: %s; %v", string(responseBody), err)
-	}
-
-	Logc(ctx).WithField("count", len(backups)).Debug("Read volume backups.")
-
-	return &backups, nil
-}
-
-func (d *Client) GetBackupForVolume(ctx context.Context, volume *Volume, backupName string) (*Backup, error) {
-	backups, err := d.GetBackupsForVolume(ctx, volume)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, backup := range *backups {
-		if backup.Name == backupName {
-
-			Logc(ctx).WithFields(LogFields{
-				"backup": backupName,
-				"volume": volume.CreationToken,
-			}).Debug("Found volume backup.")
-
-			return &backup, nil
-		}
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"backup": backupName,
-		"volume": volume.CreationToken,
-	}).Error("Backup not found.")
-
-	return nil, fmt.Errorf("backup %s not found", backupName)
-}
-
-func (d *Client) GetBackupByID(ctx context.Context, backupId string) (*Backup, error) {
-	resourcePath := fmt.Sprintf("/Backups/%s", backupId)
-
-	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
-	if err != nil {
-		return nil, errors.New("failed to get backup")
-	}
-
-	err = d.getErrorFromAPIResponse(response, responseBody)
-	if err != nil {
-		return nil, err
-	}
-
-	var backup Backup
-	err = json.Unmarshal(responseBody, &backup)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse backup data: %s; %v", string(responseBody), err)
-	}
-
-	return &backup, nil
-}
-
-func (d *Client) WaitForBackupStates(
-	ctx context.Context, backup *Backup, desiredStates, abortStates []string, maxElapsedTime time.Duration,
-) error {
-	var b *Backup
-	var err error
-
-	checkBackupState := func() error {
-		b, err = d.GetBackupByID(ctx, backup.BackupID)
-		if err != nil {
-			return fmt.Errorf("could not get backup status; %v", err)
-		}
-
-		if utils.SliceContainsString(desiredStates, b.LifeCycleState) {
-			return nil
-		}
-
-		if b.LifeCycleStateDetails != "" {
-			err = fmt.Errorf("backup state is %s, not any of %s: %s",
-				b.LifeCycleState, desiredStates, b.LifeCycleStateDetails)
-		} else {
-			err = fmt.Errorf("backup state is %s, not any of %s", b.LifeCycleState, desiredStates)
-		}
-
-		// Return a permanent error to stop retrying if we reached one of the abort states
-		for _, abortState := range abortStates {
-			if b.LifeCycleState == abortState {
-				return backoff.Permanent(TerminalState(err))
-			}
-		}
-
-		return err
-	}
-	stateNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(LogFields{
-			"increment": duration,
-			"message":   err.Error(),
-		}).Debugf("Waiting for backup state.")
-	}
-	stateBackoff := backoff.NewExponentialBackOff()
-	stateBackoff.MaxElapsedTime = maxElapsedTime
-	stateBackoff.MaxInterval = 5 * time.Second
-	stateBackoff.RandomizationFactor = 0.1
-	stateBackoff.InitialInterval = 2 * time.Second
-	stateBackoff.Multiplier = 1.414
-
-	Logc(ctx).WithField("desiredStates", desiredStates).Info("Waiting for backup state.")
-
-	if err := backoff.RetryNotify(checkBackupState, stateBackoff, stateNotify); err != nil {
-		if terminalStateErr, ok := err.(*TerminalStateError); ok {
-			Logc(ctx).Errorf("Backup reached terminal state: %v", terminalStateErr)
-		} else {
-			Logc(ctx).Errorf("Backup state was not any of %s after %3.2f seconds.",
-				desiredStates, stateBackoff.MaxElapsedTime.Seconds())
-		}
-		return err
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"state":         b.LifeCycleState,
-		"desiredStates": desiredStates,
-	}).Debug("Desired backup state reached.")
-
-	return nil
-}
-
-func (d *Client) CreateBackup(ctx context.Context, request *BackupCreateRequest) error {
-	resourcePath := "/Backups"
-
-	jsonRequest, err := json.Marshal(request)
-	if err != nil {
-		return fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
-	}
-
-	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "POST", d.makeURL(resourcePath))
-	if err != nil {
-		return err
-	}
-
-	err = d.getErrorFromAPIResponse(response, responseBody)
-	if err != nil {
-		return err
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"name":       request.Name,
-		"statusCode": response.StatusCode,
-	}).Info("Volume backup created.")
-
-	return nil
-}
-
-func (d *Client) DeleteBackup(ctx context.Context, volume *Volume, backup *Backup) error {
-	resourcePath := fmt.Sprintf("/Volumes/%s/Backups/%s", volume.VolumeID, backup.BackupID)
-
-	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
-	if err != nil {
-		return errors.New("failed to delete backup")
-	}
-
-	err = d.getErrorFromAPIResponse(response, responseBody)
-	if err != nil {
-		return err
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"backup": backup.Name,
-		"volume": volume.CreationToken,
-	}).Info("Deleted volume backup.")
 
 	return nil
 }
