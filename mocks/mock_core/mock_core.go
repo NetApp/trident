@@ -9,7 +9,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-
 	core "github.com/netapp/trident/core"
 	frontend "github.com/netapp/trident/frontend"
 	storage "github.com/netapp/trident/storage"
@@ -579,7 +578,7 @@ func (mr *MockOrchestratorMockRecorder) GetVolume(arg0, arg1 interface{}) *gomoc
 }
 
 // GetVolumeByInternalName mocks base method.
-func (m *MockOrchestrator) GetVolumeByInternalName(arg0 string, arg1 context.Context) (string, error) {
+func (m *MockOrchestrator) GetVolumeByInternalName(arg0 context.Context, arg1 string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVolumeByInternalName", arg0, arg1)
 	ret0, _ := ret[0].(string)

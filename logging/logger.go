@@ -152,6 +152,11 @@ func GenerateRequestContext(
 }
 
 func GenerateRequestContextForLayer(ctx context.Context, logLayer LogLayer) context.Context {
+	// Don't add another context if we are already at the specified layer.
+	if logLayer == ctx.Value(ContextKeyLogLayer) {
+		return ctx
+	}
+
 	if logLayer != LogLayerNone {
 		return context.WithValue(ctx, ContextKeyLogLayer, logLayer)
 	}

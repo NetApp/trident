@@ -151,8 +151,7 @@ func (o *TridentOrchestrator) transformPersistentState(ctx context.Context) erro
 }
 
 func (o *TridentOrchestrator) Bootstrap(monitorTransactions bool) error {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowCoreBootstrap,
-		LogLayerCore)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowCoreBootstrap, LogLayerCore)
 	var err error
 
 	if len(o.frontends) == 0 {
@@ -610,6 +609,8 @@ func (o *TridentOrchestrator) updateMetrics() {
 }
 
 func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *storage.VolumeTransaction) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	switch v.Op {
 	case storage.AddVolume, storage.DeleteVolume,
 		storage.ImportVolume, storage.ResizeVolume:
@@ -863,7 +864,8 @@ func (o *TridentOrchestrator) resetImportedVolumeName(ctx context.Context, volum
 }
 
 func (o *TridentOrchestrator) AddFrontend(ctx context.Context, f frontend.Plugin) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	name := f.GetName()
 	if _, ok := o.frontends[name]; ok {
 		Logc(ctx).WithField("name", name).Warn("Adding frontend already present.")
@@ -874,7 +876,8 @@ func (o *TridentOrchestrator) AddFrontend(ctx context.Context, f frontend.Plugin
 }
 
 func (o *TridentOrchestrator) GetFrontend(ctx context.Context, name string) (frontend.Plugin, error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if fe, ok := o.frontends[name]; !ok {
 		err := fmt.Errorf("requested frontend %s does not exist", name)
 		return nil, err
@@ -896,7 +899,7 @@ func (o *TridentOrchestrator) validateBackendUpdate(oldBackend, newBackend stora
 	return nil
 }
 
-func (o *TridentOrchestrator) GetVersion(context.Context) (string, error) {
+func (o *TridentOrchestrator) GetVersion(_ context.Context) (string, error) {
 	return config.OrchestratorVersion.String(), o.bootstrapError
 }
 
@@ -904,7 +907,7 @@ func (o *TridentOrchestrator) GetVersion(context.Context) (string, error) {
 func (o *TridentOrchestrator) AddBackend(
 	ctx context.Context, configJSON, configRef string,
 ) (backendExternal *storage.BackendExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1077,7 +1080,7 @@ func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(
 func (o *TridentOrchestrator) UpdateBackend(
 	ctx context.Context, backendName, configJSON, configRef string,
 ) (backendExternal *storage.BackendExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1125,7 +1128,7 @@ func (o *TridentOrchestrator) updateBackend(
 func (o *TridentOrchestrator) UpdateBackendByBackendUUID(
 	ctx context.Context, backendName, configJSON, backendUUID, configRef string,
 ) (backend *storage.BackendExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1377,7 +1380,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 func (o *TridentOrchestrator) UpdateBackendState(
 	ctx context.Context, backendName, backendState string,
 ) (backendExternal *storage.BackendExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1468,7 +1471,7 @@ func (o *TridentOrchestrator) getBackendByBackendUUID(backendUUID string) (stora
 func (o *TridentOrchestrator) GetBackend(
 	ctx context.Context, backendName string,
 ) (backendExternal *storage.BackendExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1501,7 +1504,7 @@ func (o *TridentOrchestrator) GetBackend(
 func (o *TridentOrchestrator) GetBackendByBackendUUID(
 	ctx context.Context, backendUUID string,
 ) (backendExternal *storage.BackendExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1531,7 +1534,7 @@ func (o *TridentOrchestrator) GetBackendByBackendUUID(
 func (o *TridentOrchestrator) ListBackends(
 	ctx context.Context,
 ) (backendExternals []*storage.BackendExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		Logc(ctx).WithFields(LogFields{
@@ -1554,7 +1557,7 @@ func (o *TridentOrchestrator) ListBackends(
 }
 
 func (o *TridentOrchestrator) DeleteBackend(ctx context.Context, backendName string) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		Logc(ctx).WithFields(LogFields{
@@ -1579,7 +1582,7 @@ func (o *TridentOrchestrator) DeleteBackend(ctx context.Context, backendName str
 func (o *TridentOrchestrator) DeleteBackendByBackendUUID(
 	ctx context.Context, backendName, backendUUID string,
 ) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		Logc(ctx).WithFields(LogFields{
@@ -1652,7 +1655,7 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 
 // RemoveBackendConfigRef sets backend configRef to empty and updates it.
 func (o *TridentOrchestrator) RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	defer recordTiming("backend_update", &err)()
 
@@ -1680,7 +1683,7 @@ func (o *TridentOrchestrator) RemoveBackendConfigRef(ctx context.Context, backen
 func (o *TridentOrchestrator) AddVolume(
 	ctx context.Context, volumeConfig *storage.VolumeConfig,
 ) (externalVol *storage.VolumeExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -1959,8 +1962,10 @@ func (o *TridentOrchestrator) addVolumeFinish(
 	return externalVol, nil
 }
 
-// UpdateVolumeLUKSPassphraseNames updates the LUKS passphrase names stored on a volume in the cache and persistent store
+// UpdateVolume updates the LUKS passphrase names stored on a volume in the cache and persistent store.
 func (o *TridentOrchestrator) UpdateVolume(ctx context.Context, volume string, passphraseNames *[]string) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return o.bootstrapError
 	}
@@ -1990,7 +1995,7 @@ func (o *TridentOrchestrator) UpdateVolume(ctx context.Context, volume string, p
 func (o *TridentOrchestrator) CloneVolume(
 	ctx context.Context, volumeConfig *storage.VolumeConfig,
 ) (externalVol *storage.VolumeExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -2297,7 +2302,7 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 func (o *TridentOrchestrator) GetVolumeExternal(
 	ctx context.Context, volumeName, backendName string,
 ) (volExternal *storage.VolumeExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -2332,8 +2337,10 @@ func (o *TridentOrchestrator) GetVolumeExternal(
 
 // GetVolumeByInternalName returns a volume by the given internal name
 func (o *TridentOrchestrator) GetVolumeByInternalName(
-	volumeInternal string, _ context.Context,
+	ctx context.Context, volumeInternal string,
 ) (volume string, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	defer recordTiming("volume_internal_get", &err)()
 
 	o.mutex.Lock()
@@ -2412,7 +2419,7 @@ func (o *TridentOrchestrator) LegacyImportVolume(
 	ctx context.Context, volumeConfig *storage.VolumeConfig, backendName string, notManaged bool,
 	createPVandPVC VolumeCallback,
 ) (externalVol *storage.VolumeExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -2504,7 +2511,7 @@ func (o *TridentOrchestrator) LegacyImportVolume(
 func (o *TridentOrchestrator) ImportVolume(
 	ctx context.Context, volumeConfig *storage.VolumeConfig,
 ) (externalVol *storage.VolumeExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -2607,7 +2614,7 @@ func (o *TridentOrchestrator) AddVolumeTransaction(ctx context.Context, volTxn *
 	// earlier and we need to call the bootstrap cleanup code. If this fails,
 	// return an error. If no transaction existed or the operation succeeds,
 	// log a new transaction in the persistent store and proceed.
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	oldTxn, err := o.storeClient.GetExistingVolumeTransaction(ctx, volTxn)
 	if err != nil {
@@ -2639,7 +2646,7 @@ func (o *TridentOrchestrator) AddVolumeTransaction(ctx context.Context, volTxn *
 func (o *TridentOrchestrator) GetVolumeCreatingTransaction(
 	ctx context.Context, config *storage.VolumeConfig,
 ) (*storage.VolumeTransaction, error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	volTxn := &storage.VolumeTransaction{
 		VolumeCreatingConfig: &storage.VolumeCreatingConfig{
@@ -2660,7 +2667,7 @@ func (o *TridentOrchestrator) GetVolumeCreatingTransaction(
 func (o *TridentOrchestrator) GetVolumeTransaction(
 	ctx context.Context, volTxn *storage.VolumeTransaction,
 ) (*storage.VolumeTransaction, error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	return o.storeClient.GetExistingVolumeTransaction(ctx, volTxn)
 }
@@ -2668,7 +2675,7 @@ func (o *TridentOrchestrator) GetVolumeTransaction(
 // DeleteVolumeTransaction deletes a volume transaction created by
 // addVolumeTransaction.
 func (o *TridentOrchestrator) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	return o.storeClient.DeleteVolumeTransaction(ctx, volTxn)
 }
@@ -2842,12 +2849,11 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 func (o *TridentOrchestrator) GetVolume(
 	ctx context.Context, volumeName string,
 ) (volExternal *storage.VolumeExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	defer recordTiming("volume_get", &err)()
 
@@ -2880,7 +2886,9 @@ func (o *TridentOrchestrator) driverTypeForBackend(backendUUID string) (string, 
 	return config.UnknownDriver, fmt.Errorf("unknown backend with UUID %s", backendUUID)
 }
 
-func (o *TridentOrchestrator) ListVolumes(context.Context) (volumes []*storage.VolumeExternal, err error) {
+func (o *TridentOrchestrator) ListVolumes(ctx context.Context) (volumes []*storage.VolumeExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3031,7 +3039,7 @@ func (o *TridentOrchestrator) deleteVolumeFromPersistentStoreIgnoreError(
 // of normal operation, verifying that the volume is present in Trident and
 // creating a transaction to ensure that the delete eventually completes.
 func (o *TridentOrchestrator) DeleteVolume(ctx context.Context, volumeName string) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -3093,7 +3101,7 @@ func (o *TridentOrchestrator) DeleteVolume(ctx context.Context, volumeName strin
 func (o *TridentOrchestrator) PublishVolume(
 	ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo,
 ) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -3290,7 +3298,7 @@ func (o *TridentOrchestrator) updatePublicationSyncStatus(ctx context.Context) e
 }
 
 func (o *TridentOrchestrator) UnpublishVolume(ctx context.Context, volumeName, nodeName string) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -3439,7 +3447,7 @@ func isDockerPluginMode() bool {
 func (o *TridentOrchestrator) AttachVolume(
 	ctx context.Context, volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo,
 ) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -3526,7 +3534,7 @@ func (o *TridentOrchestrator) AttachVolume(
 // which the volume will be attached.  It ensures the volume is already mounted, and it attempts to
 // delete the mount point.
 func (o *TridentOrchestrator) DetachVolume(ctx context.Context, volumeName, mountpoint string) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -3577,7 +3585,7 @@ func (o *TridentOrchestrator) DetachVolume(ctx context.Context, volumeName, moun
 func (o *TridentOrchestrator) SetVolumeState(
 	ctx context.Context, volumeName string, state storage.VolumeState,
 ) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -3750,8 +3758,10 @@ func (o *TridentOrchestrator) deleteSubordinateVolume(ctx context.Context, volum
 // ListSubordinateVolumes returns all subordinate volumes for all source volumes, or all subordinate
 // volumes for a single source volume.
 func (o *TridentOrchestrator) ListSubordinateVolumes(
-	_ context.Context, sourceVolumeName string,
+	ctx context.Context, sourceVolumeName string,
 ) (volumes []*storage.VolumeExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3793,8 +3803,10 @@ func (o *TridentOrchestrator) ListSubordinateVolumes(
 
 // GetSubordinateSourceVolume returns the parent volume for a given subordinate volume.
 func (o *TridentOrchestrator) GetSubordinateSourceVolume(
-	_ context.Context, subordinateVolumeName string,
+	ctx context.Context, subordinateVolumeName string,
 ) (volume *storage.VolumeExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -3874,7 +3886,7 @@ func (o *TridentOrchestrator) resizeSubordinateVolume(ctx context.Context, volum
 func (o *TridentOrchestrator) CreateSnapshot(
 	ctx context.Context, snapshotConfig *storage.SnapshotConfig,
 ) (externalSnapshot *storage.SnapshotExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	var (
 		ok       bool
@@ -4025,7 +4037,7 @@ func (o *TridentOrchestrator) addSnapshotCleanup(
 func (o *TridentOrchestrator) GetSnapshot(
 	ctx context.Context, volumeName, snapshotName string,
 ) (snapshotExternal *storage.SnapshotExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -4170,7 +4182,7 @@ func (o *TridentOrchestrator) deleteSnapshotFromPersistentStoreIgnoreError(
 
 // DeleteSnapshot deletes a snapshot of the given volume
 func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -4269,7 +4281,9 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 	return o.deleteSnapshot(ctx, snapshot.Config)
 }
 
-func (o *TridentOrchestrator) ListSnapshots(context.Context) (snapshots []*storage.SnapshotExternal, err error) {
+func (o *TridentOrchestrator) ListSnapshots(ctx context.Context) (snapshots []*storage.SnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -4288,8 +4302,10 @@ func (o *TridentOrchestrator) ListSnapshots(context.Context) (snapshots []*stora
 }
 
 func (o *TridentOrchestrator) ListSnapshotsByName(
-	_ context.Context, snapshotName string,
+	ctx context.Context, snapshotName string,
 ) (snapshots []*storage.SnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -4310,8 +4326,10 @@ func (o *TridentOrchestrator) ListSnapshotsByName(
 }
 
 func (o *TridentOrchestrator) ListSnapshotsForVolume(
-	_ context.Context, volumeName string,
+	ctx context.Context, volumeName string,
 ) (snapshots []*storage.SnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -4338,7 +4356,7 @@ func (o *TridentOrchestrator) ListSnapshotsForVolume(
 func (o *TridentOrchestrator) ReadSnapshotsForVolume(
 	ctx context.Context, volumeName string,
 ) (externalSnapshots []*storage.SnapshotExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -4365,7 +4383,7 @@ func (o *TridentOrchestrator) ReadSnapshotsForVolume(
 }
 
 func (o *TridentOrchestrator) ReloadVolumes(ctx context.Context) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -4409,7 +4427,7 @@ func (o *TridentOrchestrator) ReloadVolumes(ctx context.Context) (err error) {
 
 // ResizeVolume resizes a volume to the new size.
 func (o *TridentOrchestrator) ResizeVolume(ctx context.Context, volumeName, newSize string) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -4635,7 +4653,7 @@ func (o *TridentOrchestrator) getProtocol(
 func (o *TridentOrchestrator) AddStorageClass(
 	ctx context.Context, scConfig *storageclass.Config,
 ) (scExternal *storageclass.External, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -4675,7 +4693,7 @@ func (o *TridentOrchestrator) AddStorageClass(
 func (o *TridentOrchestrator) GetStorageClass(
 	ctx context.Context, scName string,
 ) (scExternal *storageclass.External, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -4698,7 +4716,7 @@ func (o *TridentOrchestrator) GetStorageClass(
 func (o *TridentOrchestrator) ListStorageClasses(ctx context.Context) (
 	scExternals []*storageclass.External, err error,
 ) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -4717,7 +4735,7 @@ func (o *TridentOrchestrator) ListStorageClasses(ctx context.Context) (
 }
 
 func (o *TridentOrchestrator) DeleteStorageClass(ctx context.Context, scName string) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -4827,10 +4845,8 @@ func (o *TridentOrchestrator) PeriodicallyReconcileNodeAccessOnBackends() {
 	}
 }
 
-func (o *TridentOrchestrator) AddNode(
-	ctx context.Context, node *utils.Node, nodeEventCallback NodeEventCallback,
-) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+func (o *TridentOrchestrator) AddNode(ctx context.Context, node *utils.Node, nodeEventCallback NodeEventCallback) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -4865,7 +4881,7 @@ func (o *TridentOrchestrator) invalidateAllBackendNodeAccess() {
 }
 
 func (o *TridentOrchestrator) GetNode(ctx context.Context, nName string) (node *utils.Node, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -4886,7 +4902,9 @@ func (o *TridentOrchestrator) GetNode(ctx context.Context, nName string) (node *
 	return node, nil
 }
 
-func (o *TridentOrchestrator) ListNodes(context.Context) (nodes []*utils.Node, err error) {
+func (o *TridentOrchestrator) ListNodes(ctx context.Context) (nodes []*utils.Node, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -4904,7 +4922,7 @@ func (o *TridentOrchestrator) ListNodes(context.Context) (nodes []*utils.Node, e
 }
 
 func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nodeName string) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -4968,7 +4986,7 @@ func (o *TridentOrchestrator) deleteNode(ctx context.Context, nodeName string) (
 func (o *TridentOrchestrator) AddVolumePublication(
 	ctx context.Context, publication *utils.VolumePublication,
 ) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -5005,7 +5023,7 @@ func (o *TridentOrchestrator) addVolumePublication(
 func (o *TridentOrchestrator) UpdateVolumePublication(
 	ctx context.Context, volumeName, nodeName string, notSafeToAttach *bool,
 ) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -5083,8 +5101,10 @@ func (o *TridentOrchestrator) updateVolumePublication(
 
 // GetVolumePublication returns the volume publication for a given volume/node pair
 func (o *TridentOrchestrator) GetVolumePublication(
-	_ context.Context, volumeName, nodeName string,
+	ctx context.Context, volumeName, nodeName string,
 ) (publication *utils.VolumePublication, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -5103,7 +5123,7 @@ func (o *TridentOrchestrator) GetVolumePublication(
 func (o *TridentOrchestrator) ListVolumePublications(
 	ctx context.Context, notSafeToAttach *bool,
 ) (publications []*utils.VolumePublicationExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	Logc(ctx).Debug(">>>>>> ListVolumePublications")
 	defer Logc(ctx).Debug("<<<<<< ListVolumePublications")
@@ -5129,7 +5149,7 @@ func (o *TridentOrchestrator) ListVolumePublications(
 func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 	ctx context.Context, volumeName string, notSafeToAttach *bool,
 ) (publications []*utils.VolumePublicationExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	fields := LogFields{"volumeName": volumeName}
 	Logc(ctx).WithFields(fields).Debug(">>>>>> ListVolumePublicationsForVolume")
@@ -5196,7 +5216,7 @@ func (o *TridentOrchestrator) listVolumePublicationsForVolumeAndSubordinates(
 func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 	ctx context.Context, nodeName string, notSafeToAttach *bool,
 ) (publications []*utils.VolumePublicationExternal, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	fields := LogFields{"nodeName": nodeName}
 	Logc(ctx).WithFields(fields).Debug(">>>>>> ListVolumePublicationsForNode")
@@ -5221,7 +5241,7 @@ func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 
 // DeleteVolumePublication deletes the record of the volume publication for a given volume/node pair
 func (o *TridentOrchestrator) DeleteVolumePublication(ctx context.Context, volumeName, nodeName string) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -5331,7 +5351,7 @@ func (o *TridentOrchestrator) EstablishMirror(
 	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
 	replicationSchedule string,
 ) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -5358,7 +5378,7 @@ func (o *TridentOrchestrator) ReestablishMirror(
 	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
 	replicationSchedule string,
 ) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -5384,7 +5404,7 @@ func (o *TridentOrchestrator) ReestablishMirror(
 func (o *TridentOrchestrator) PromoteMirror(
 	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
 ) (waitingForSnapshot bool, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return false, o.bootstrapError
@@ -5409,7 +5429,7 @@ func (o *TridentOrchestrator) PromoteMirror(
 func (o *TridentOrchestrator) GetMirrorStatus(
 	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
 ) (status string, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return "", o.bootstrapError
@@ -5430,7 +5450,9 @@ func (o *TridentOrchestrator) GetMirrorStatus(
 	return mirrorBackend.GetMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle)
 }
 
-func (o *TridentOrchestrator) CanBackendMirror(_ context.Context, backendUUID string) (capable bool, err error) {
+func (o *TridentOrchestrator) CanBackendMirror(ctx context.Context, backendUUID string) (capable bool, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return false, o.bootstrapError
 	}
@@ -5450,7 +5472,7 @@ func (o *TridentOrchestrator) CanBackendMirror(_ context.Context, backendUUID st
 func (o *TridentOrchestrator) ReleaseMirror(
 	ctx context.Context, backendUUID, localVolumeHandle string,
 ) (err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -5475,7 +5497,7 @@ func (o *TridentOrchestrator) ReleaseMirror(
 func (o *TridentOrchestrator) GetReplicationDetails(
 	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
 ) (policy, schedule string, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return "", "", o.bootstrapError
@@ -5499,7 +5521,7 @@ func (o *TridentOrchestrator) GetReplicationDetails(
 func (o *TridentOrchestrator) GetCHAP(
 	ctx context.Context, volumeName, nodeName string,
 ) (chapInfo *utils.IscsiChapInfo, err error) {
-	GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -5526,7 +5548,9 @@ func (o *TridentOrchestrator) GetCHAP(
 REST API Handlers for retrieving and setting the current logging configuration.
 ******************************************************************************/
 
-func (o *TridentOrchestrator) GetLogLevel(_ context.Context) (string, error) {
+func (o *TridentOrchestrator) GetLogLevel(ctx context.Context) (string, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return "", o.bootstrapError
 	}
@@ -5537,7 +5561,9 @@ func (o *TridentOrchestrator) GetLogLevel(_ context.Context) (string, error) {
 	return GetDefaultLogLevel(), nil
 }
 
-func (o *TridentOrchestrator) SetLogLevel(_ context.Context, level string) error {
+func (o *TridentOrchestrator) SetLogLevel(ctx context.Context, level string) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return o.bootstrapError
 	}
@@ -5552,7 +5578,9 @@ func (o *TridentOrchestrator) SetLogLevel(_ context.Context, level string) error
 	return nil
 }
 
-func (o *TridentOrchestrator) GetSelectedLoggingWorkflows(_ context.Context) (string, error) {
+func (o *TridentOrchestrator) GetSelectedLoggingWorkflows(ctx context.Context) (string, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return "", o.bootstrapError
 	}
@@ -5563,7 +5591,9 @@ func (o *TridentOrchestrator) GetSelectedLoggingWorkflows(_ context.Context) (st
 	return GetSelectedWorkFlows(), nil
 }
 
-func (o *TridentOrchestrator) ListLoggingWorkflows(_ context.Context) ([]string, error) {
+func (o *TridentOrchestrator) ListLoggingWorkflows(ctx context.Context) ([]string, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return []string{}, o.bootstrapError
 	}
@@ -5574,7 +5604,9 @@ func (o *TridentOrchestrator) ListLoggingWorkflows(_ context.Context) ([]string,
 	return ListWorkflowTypes(), nil
 }
 
-func (o *TridentOrchestrator) SetLoggingWorkflows(_ context.Context, flows string) error {
+func (o *TridentOrchestrator) SetLoggingWorkflows(ctx context.Context, flows string) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return o.bootstrapError
 	}
@@ -5590,7 +5622,9 @@ func (o *TridentOrchestrator) SetLoggingWorkflows(_ context.Context, flows strin
 	return nil
 }
 
-func (o *TridentOrchestrator) GetSelectedLogLayers(_ context.Context) (string, error) {
+func (o *TridentOrchestrator) GetSelectedLogLayers(ctx context.Context) (string, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return "", o.bootstrapError
 	}
@@ -5601,7 +5635,9 @@ func (o *TridentOrchestrator) GetSelectedLogLayers(_ context.Context) (string, e
 	return GetSelectedLogLayers(), nil
 }
 
-func (o *TridentOrchestrator) ListLogLayers(_ context.Context) ([]string, error) {
+func (o *TridentOrchestrator) ListLogLayers(ctx context.Context) ([]string, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return []string{}, o.bootstrapError
 	}
@@ -5612,7 +5648,9 @@ func (o *TridentOrchestrator) ListLogLayers(_ context.Context) ([]string, error)
 	return ListLogLayers(), nil
 }
 
-func (o *TridentOrchestrator) SetLogLayers(_ context.Context, layers string) error {
+func (o *TridentOrchestrator) SetLogLayers(ctx context.Context, layers string) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
 	if o.bootstrapError != nil {
 		return o.bootstrapError
 	}

@@ -37,7 +37,7 @@ func (h *helper) ImportVolume(
 		return nil, fmt.Errorf("the pvcData field does not contain valid base64-encoded data: %v", err)
 	}
 
-	existingVol, err := h.orchestrator.GetVolumeByInternalName(request.InternalName, ctx)
+	existingVol, err := h.orchestrator.GetVolumeByInternalName(ctx, request.InternalName)
 	if err == nil {
 		return nil, utils.FoundError(fmt.Sprintf("PV %s already exists for volume %s",
 			existingVol, request.InternalName))

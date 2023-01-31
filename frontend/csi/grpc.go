@@ -79,7 +79,10 @@ func (s *nonBlockingGRPCServer) serve(
 		"net":  listener.Addr().Network(),
 	}).Info("Listening for GRPC connections.")
 
-	if listener.Addr().Network() == "unix" {
+	// Check whether we are in a container using a variable we always set.
+	_, inCSIContainer := os.LookupEnv("CSI_ENDPOINT")
+
+	if listener.Addr().Network() == "unix" && inCSIContainer {
 		pluginDir := strings.ReplaceAll(addrString, "csi.sock", "")
 		// Plugins directory only needs to be accessed by Container Orchestrator components or Trident, so set to 600.
 		if err := os.Chmod(pluginDir, config.CSISocketDirPermissions); err != nil {

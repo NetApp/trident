@@ -128,6 +128,51 @@ func TestGenerateRequestContext(t *testing.T) {
 	}
 }
 
+func TestGenerateRequestContextForLayer(t *testing.T) {
+	type test struct {
+		name        string
+		ctx         context.Context
+		logLayer    LogLayer
+		expectedCtx context.Context
+	}
+
+	tests := []test{
+		{
+			name:        "non-recursive context",
+			ctx:         context.Background(),
+			logLayer:    LogLayerCore,
+			expectedCtx: context.WithValue(context.Background(), ContextKeyLogLayer, LogLayerCore),
+		},
+		{
+			name:        "recursive context",
+			ctx:         context.WithValue(context.Background(), ContextKeyLogLayer, LogLayerCore),
+			logLayer:    LogLayerCore,
+			expectedCtx: context.WithValue(context.Background(), ContextKeyLogLayer, LogLayerCore),
+		},
+		{
+			name:        "log layer none",
+			ctx:         context.Background(),
+			logLayer:    LogLayerNone,
+			expectedCtx: context.Background(),
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := GenerateRequestContextForLayer(tc.ctx, tc.logLayer)
+
+			switch tc.logLayer {
+			case LogLayerNone:
+				assert.Nil(t, result.Value(ContextKeyLogLayer), "log layer is not none")
+			default:
+				assert.Equal(t, tc.logLayer, result.Value(ContextKeyLogLayer), "context values don't match")
+			}
+
+			assert.Equal(t, tc.expectedCtx, result, "contexts don't match")
+		})
+	}
+}
+
 func TestGenerateRequestContext_VerifyWorkflowAndLogLayers(t *testing.T) {
 	type test struct {
 		ctx           context.Context
