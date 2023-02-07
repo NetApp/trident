@@ -1226,17 +1226,11 @@ func (d *SANStorageDriver) Resize(
 	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 	newFlexvolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexvolSize))
 
-	sameLUNSize, err := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(currentLunSize),
+	sameLUNSize := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(currentLunSize),
 		tridentconfig.SANResizeDelta)
-	if err != nil {
-		return err
-	}
 
-	sameFlexvolSize, err := utils.VolumeSizeWithinTolerance(int64(newFlexvolSize), int64(currentFlexvolSize),
+	sameFlexvolSize := utils.VolumeSizeWithinTolerance(int64(newFlexvolSize), int64(currentFlexvolSize),
 		tridentconfig.SANResizeDelta)
-	if err != nil {
-		return err
-	}
 
 	if sameLUNSize && sameFlexvolSize {
 		Logc(ctx).WithFields(LogFields{

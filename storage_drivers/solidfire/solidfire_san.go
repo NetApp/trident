@@ -1910,10 +1910,7 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	volConfig.Size = strconv.FormatUint(uint64(volume.TotalSize), 10)
-	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), volume.TotalSize, tridentconfig.SANResizeDelta)
-	if err != nil {
-		return err
-	}
+	sameSize := utils.VolumeSizeWithinTolerance(int64(sizeBytes), volume.TotalSize, tridentconfig.SANResizeDelta)
 
 	if sameSize {
 		Logc(ctx).WithFields(LogFields{

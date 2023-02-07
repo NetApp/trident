@@ -151,10 +151,7 @@ func TestVolumeSizeWithinTolerance(t *testing.T) {
 
 	for _, vst := range volSizeTests {
 
-		isSameSize, err := VolumeSizeWithinTolerance(vst.requestedSize, vst.currentSize, vst.delta)
-		if err != nil {
-			t.Errorf("Encountered '%v' running TestVolumeSizeWithinTolerance", err)
-		}
+		isSameSize := VolumeSizeWithinTolerance(vst.requestedSize, vst.currentSize, vst.delta)
 
 		assert.Equal(t, vst.expected, isSameSize)
 	}

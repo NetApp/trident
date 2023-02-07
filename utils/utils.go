@@ -284,16 +284,16 @@ func sizeHasUnits(size string) bool {
 // VolumeSizeWithinTolerance checks to see if requestedSize is within the delta of the currentSize.
 // If within the delta true is returned. If not within the delta and requestedSize is less than the
 // currentSize false is returned.
-func VolumeSizeWithinTolerance(requestedSize, currentSize, delta int64) (bool, error) {
+func VolumeSizeWithinTolerance(requestedSize, currentSize, delta int64) bool {
 	sizeDiff := requestedSize - currentSize
 	if sizeDiff < 0 {
 		sizeDiff = -sizeDiff
 	}
 
 	if sizeDiff <= delta {
-		return true, nil
+		return true
 	}
-	return false, nil
+	return false
 }
 
 // GetV takes a map, key(s), and a defaultValue; will return the value of the key or defaultValue if none is set.

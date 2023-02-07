@@ -257,9 +257,12 @@ func (d *SANEconomyStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriver(ctx, config)
-	if err != nil {
-		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.API == nil {
+		d.API, err = InitializeOntapDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+		}
 	}
 	d.Config = *config
 	d.helper = NewLUNHelper(d.Config, driverContext)
@@ -1830,12 +1833,9 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 		flexvolSize = totalLunSize + sizeBytes - currentLunSize
 	}
 
-	sameSize, err := utils.VolumeSizeWithinTolerance(
+	sameSize := utils.VolumeSizeWithinTolerance(
 		int64(flexvolSize), int64(totalLunSize), tridentconfig.SANResizeDelta,
 	)
-	if err != nil {
-		return err
-	}
 
 	if sameSize {
 		Logc(ctx).WithFields(
