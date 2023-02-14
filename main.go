@@ -389,13 +389,16 @@ func main() {
 		var hybridNodeFrontend frontend.Plugin
 		if *k8sAPIServer != "" || *k8sPod {
 			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath)
+			if err != nil {
+				Log().WithError(err).Fatal("Unable to start the K8S hybrid controller frontend.")
+			}
 			hybridNodeFrontend, err = k8snodehelper.NewHelper(orchestrator, *k8sConfigPath)
+			if err != nil {
+				Log().WithError(err).Fatal("Unable to start the K8S hybrid node frontend.")
+			}
 		} else {
 			hybridControllerFrontend = plainctrlhelper.NewHelper(orchestrator)
 			hybridNodeFrontend = plainnodehelper.NewHelper(orchestrator)
-		}
-		if err != nil {
-			Log().Fatalf("Unable to start the K8S hybrid frontend. %v", err)
 		}
 
 		if *csiRole == csi.CSIController || *csiRole == csi.CSIAllInOne {

@@ -51,7 +51,9 @@ func GetFilesystemStats(
 	}
 
 	buf := result.Output
-	size := int64(buf.Blocks) * buf.Bsize
+	//goland:noinspection GoRedundantConversion
+	size := int64(buf.Blocks) * int64(buf.Bsize)
+
 	Logc(ctx).WithFields(LogFields{
 		"path":   path,
 		"size":   size,
@@ -61,7 +63,8 @@ func GetFilesystemStats(
 		"free":   buf.Bfree,
 	}).Debug("Filesystem size information")
 
-	available = int64(buf.Bavail) * buf.Bsize
+	//goland:noinspection GoRedundantConversion
+	available = int64(buf.Bavail) * int64(buf.Bsize)
 	capacity = size
 	usage = capacity - available
 	inodes = int64(buf.Files)

@@ -104,7 +104,7 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 				Logc(ctx).Debugf("Device found: %v", sourceDevice)
 
 				if err = CheckMountOptions(ctx, procMount, mountOptions); err != nil {
-					Logc(ctx).WithFields(logFields).Errorf("checking mount options failed; %s", err)
+					Logc(ctx).WithFields(logFields).WithError(err).Warning("Checking mount options failed.")
 				}
 			}
 		}
