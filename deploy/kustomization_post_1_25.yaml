@@ -1,0 +1,13 @@
+# To regenerate bundle.yaml, from deploy directory run:
+# $ kubectl kustomize . > bundle_post_1_25.yaml
+#
+# Kustomize will merge the specified files also in the correct order.
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - serviceaccount.yaml
+  - clusterrole_post_1_25.yaml
+  - clusterrolebinding.yaml
+  - operator.yaml
