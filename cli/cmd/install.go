@@ -207,8 +207,8 @@ func init() {
 		"The name of the legacy PVC used by Trident, will ensure this does not exist.")
 	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName,
 		"The name of the legacy PV used by Trident, will ensure this does not exist.")
-	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "Trident container image. When installing Trident "+
-		"from a private image registry, this flag must be set to the path of the container image.")
+	installCmd.Flags().StringVar(&tridentImage, "trident-image", "",
+		"Trident container image. When installing Trident from a private image registry, this flag must be set to the path of the container image.")
 	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
 	installCmd.Flags().StringVar(&logWorkflows, "log-workflows", "", "A comma-delimited list of Trident "+
 		"workflows for which to enable trace logging.")
@@ -224,9 +224,9 @@ func init() {
 	installCmd.Flags().StringVar(&autosupportProxy, "autosupport-proxy", "",
 		"The address/port of a proxy for sending Autosupport Telemetry")
 	installCmd.Flags().StringVar(&autosupportCustomURL, "autosupport-custom-url", "", "Custom Autosupport endpoint")
-	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", "", "Trident Autosupport container image. When "+
-		"installing Trident from a private image registry, this flag must be set to the path of the Trident "+
-		"Autosupport container image.")
+	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", "",
+		"Trident Autosupport container image. When "+
+			"installing Trident from a private image registry, this flag must be set to the path of the Trident Autosupport container image.")
 	installCmd.Flags().StringVar(&autosupportSerialNumber, "autosupport-serial-number", "",
 		"The value to set for the serial number field in Autosupport payloads")
 	installCmd.Flags().StringVar(&autosupportHostname, "autosupport-hostname", "",
@@ -264,7 +264,7 @@ var installCmd = &cobra.Command{
 		initInstallerLogging()
 
 		if err := discoverInstallationEnvironment(); err != nil {
-			Log().Fatalf("Install pre-checks failed; %v", err)
+			Log().Fatalf("Install pre-checks failed; %v. Resolve the issue and try again.", err)
 		}
 		processInstallationArguments(cmd)
 		if err := validateInstallationArguments(); err != nil {
@@ -550,7 +550,8 @@ func prepareYAMLFiles() error {
 
 	// Creating Controller RBAC objects
 	// Creating service account for controller
-	controllerServiceAccountYAML := k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(csi), nil, labels, nil)
+	controllerServiceAccountYAML := k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(csi), nil, labels,
+		nil)
 	if err = writeFile(controllerServiceAccountPath, controllerServiceAccountYAML); err != nil {
 		return fmt.Errorf("could not write controller service account YAML file; %v", err)
 	}
@@ -562,8 +563,8 @@ func prepareYAMLFiles() error {
 	}
 
 	// Creating role (trident-namespaced) for controller
-	controllerRoleYAML := k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getControllerRBACResourceName(csi),
-		labels, nil, csi)
+	controllerRoleYAML := k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace,
+		getControllerRBACResourceName(csi), labels, nil, csi)
 	if err = writeFile(controllerRolePath, controllerRoleYAML); err != nil {
 		return fmt.Errorf("could not write controller role YAML file; %v", err)
 	}
@@ -576,8 +577,8 @@ func prepareYAMLFiles() error {
 	}
 
 	// Creating cluster role binding for controller service account
-	controllerClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getControllerRBACResourceName(true),
-		client.Flavor(), labels, nil, true)
+	controllerClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace,
+		getControllerRBACResourceName(true), client.Flavor(), labels, nil, true)
 	if err = writeFile(controllerClusterRoleBindingPath, controllerClusterRoleBindingYAML); err != nil {
 		return fmt.Errorf("could not write controller cluster role binding YAML file; %v", err)
 	}
@@ -682,7 +683,8 @@ func prepareYAMLFiles() error {
 		}
 
 		// Creating role-binding (trident-namespaced) for node linux service account
-		nodeRoleBindingYAML := k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(false),
+		nodeRoleBindingYAML := k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace,
+			getNodeRBACResourceName(false),
 			daemonSetlabels, nil, csi)
 		if err = writeFile(nodeLinuxRoleBindingPath, nodeRoleBindingYAML); err != nil {
 			return fmt.Errorf("could not write node linux role binding YAML file; %v", err)
@@ -732,7 +734,8 @@ func prepareYAMLFiles() error {
 			// Create node role & rolebinding only if PSP is supported instead of creating an empty resource
 			// This way it is made more clear that the service account isn't supposed to have access to anything
 			// Creating role (trident-namespaced) for node windows service account
-			nodeWindowsRoleYAML := k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(true),
+			nodeWindowsRoleYAML := k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace,
+				getNodeRBACResourceName(true),
 				daemonSetlabels, nil, csi)
 			if err = writeFile(nodeWindowsRolePath, nodeWindowsRoleYAML); err != nil {
 				return fmt.Errorf("could not write node windows role YAML file; %v", err)
@@ -792,6 +795,9 @@ func installTrident() (returnError error) {
 	persistentObjectLabels[appLabelKey] = appLabelValue
 	persistentObjectLabels[persistentObjectLabelKey] = persistentObjectLabelValue
 
+	if client == nil {
+		return fmt.Errorf("not able to connect to Kubernetes API server")
+	}
 	snapshotCRDVersion := client.GetSnapshotterCRDVersion()
 
 	topologyEnabled, err := client.IsTopologyInUse()
@@ -982,7 +988,6 @@ func installTrident() (returnError error) {
 			}
 			return nil
 		}
-
 		// Check and install controller PSP
 		pspYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(true), labels, nil)
 		if err := installPSP(controllerPodSecurityPolicyPath, pspYAML); err != nil {
@@ -1768,7 +1773,8 @@ func createRBACObjects() (returnError error) {
 		if isPSPSupported() {
 			// Create role (trident-namespaced) for node windows
 			if createObjectFunc(nodeWindowsRolePath,
-				k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(true), daemonSetlabels, nil, csi)) != nil {
+				k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(true),
+					daemonSetlabels, nil, csi)) != nil {
 				returnError = fmt.Errorf("could not create node windows role; %v", returnError)
 				return
 			}
@@ -1851,7 +1857,8 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 
 	// Delete cluster role binding
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getClusterRoleBindingName(true), client.Flavor(), nil, nil, csi),
+		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getClusterRoleBindingName(true), client.Flavor(), nil,
+			nil, csi),
 		"Could not delete trident-csi cluster role binding.",
 		"Deleted trident-csi cluster role binding.",
 	)
@@ -1884,7 +1891,8 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 
 	// Delete controller role
 	deleteObjectFunc(
-		k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getControllerRBACResourceName(csi), labels, nil, csi),
+		k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getControllerRBACResourceName(csi), labels, nil,
+			csi),
 		"Could not delete controller role.",
 		"Deleted controller role.",
 	)
@@ -1981,7 +1989,12 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 		if csi {
 			user = TridentCSI
 		}
-		sccUsers := []string{user, getControllerRBACResourceName(true), getNodeRBACResourceName(false), getNodeRBACResourceName(true)}
+		sccUsers := []string{
+			user,
+			getControllerRBACResourceName(true),
+			getNodeRBACResourceName(false),
+			getNodeRBACResourceName(true),
+		}
 		for _, user := range sccUsers {
 			var label string
 			if user == TridentLegacy {

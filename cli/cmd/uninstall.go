@@ -126,6 +126,10 @@ func uninstallTrident() error {
 	// else if csi, uninstall csi
 	// else if legacy, uninstall legacy
 
+	if client == nil {
+		return fmt.Errorf("not able to connect to Kubernetes API server")
+	}
+
 	anyErrors := false
 
 	legacyTridentInstalled, csiTridentInstalled, csiPreviewTridentInstalled, err := discoverTrident()
@@ -386,7 +390,8 @@ func uninstallTrident() error {
 			Log().WithField("error", err).Warning("Could not delete controller pod security policy.")
 			anyErrors = true
 		} else {
-			Log().WithField("podSecurityPolicy", getControllerRBACResourceName(true)).Info("Deleted controller pod security policy.")
+			Log().WithField("podSecurityPolicy",
+				getControllerRBACResourceName(true)).Info("Deleted controller pod security policy.")
 		}
 		// Deletion of Linux node PSP
 		pspYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)
@@ -394,7 +399,8 @@ func uninstallTrident() error {
 			Log().WithField("error", err).Warning("Could not delete linux node pod security policy.")
 			anyErrors = true
 		} else {
-			Log().WithField("podSecurityPolicy", getNodeRBACResourceName(false)).Info("Deleted linux node pod security policy.")
+			Log().WithField("podSecurityPolicy",
+				getNodeRBACResourceName(false)).Info("Deleted linux node pod security policy.")
 		}
 
 		// Deletion of Windows node PSP
@@ -403,7 +409,8 @@ func uninstallTrident() error {
 			Log().WithField("error", err).Warning("Could not delete windows node pod security policy.")
 			anyErrors = true
 		} else {
-			Log().WithField("podSecurityPolicy", getNodeRBACResourceName(true)).Info("Deleted windows node pod security policy.")
+			Log().WithField("podSecurityPolicy",
+				getNodeRBACResourceName(true)).Info("Deleted windows node pod security policy.")
 		}
 	}
 
