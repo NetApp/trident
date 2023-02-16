@@ -1625,10 +1625,15 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 }
 
 func (i *Installer) waitForRESTInterface(tridentPodName string) error {
-	var version, versionWithMetadata string
+	var version, versionWithMetadata, controllerServer string
+	if useIPv6 {
+		controllerServer = "[::1]:8000"
+	} else {
+		controllerServer = "127.0.0.1:8000"
+	}
 
 	checkRESTInterface := func() error {
-		cliCommand := []string{"tridentctl", "-s", ControllerServer, "version", "-o", "json"}
+		cliCommand := []string{"tridentctl", "-s", controllerServer, "version", "-o", "json"}
 		versionJSON, err := i.client.Exec(tridentPodName, TridentContainer, cliCommand)
 		if err != nil {
 			if len(versionJSON) > 0 {
