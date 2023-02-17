@@ -71,7 +71,6 @@ const (
 	// This is the key that stored in the objects created by the CR, value is decided based on the K8s version
 	K8sVersionLabelKey = "k8s_version"
 
-	ControllerServer = "127.0.0.1:8000"
 	TridentContainer = "trident-main"
 
 	// DefaultLogFormat is the the Trident logging format (text, json)
