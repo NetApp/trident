@@ -84,8 +84,10 @@ func (d *NASStorageDriver) Initialize(
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 	fields := LogFields{"Method": "Initialize", "Type": "NASStorageDriver"}
-	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
-	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig
@@ -667,8 +669,10 @@ func getFlexvolSnapshot(
 		"snapshotName": internalSnapName,
 		"volumeName":   internalVolName,
 	}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getFlexvolSnapshot")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getFlexvolSnapshot")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getFlexvolSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getFlexvolSnapshot")
 
 	size, err := client.VolumeUsedSize(ctx, internalVolName)
 	if err != nil {
@@ -729,8 +733,10 @@ func getFlexvolSnapshotList(
 		"Type":       "NASStorageDriver",
 		"volumeName": internalVolName,
 	}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getFlexvolSnapshotList")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getFlexvolSnapshotList")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getFlexvolSnapshotList")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getFlexvolSnapshotList")
 
 	size, err := client.VolumeUsedSize(ctx, internalVolName)
 	if err != nil {
@@ -937,6 +943,8 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 			if d.Config.NASType == sa.SMB {
 				volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
 					volConfig.InternalName)
+				// Overwriting mount path, mounting at root instead of admin share
+				volConfig.AccessInfo.SMBPath = "/" + volConfig.InternalName
 				accessPath = volConfig.AccessInfo.SMBPath
 			} else {
 				volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
@@ -1111,8 +1119,10 @@ func (d *NASStorageDriver) ReconcileNodeAccess(
 		"Type":   "NASStorageDriver",
 		"Nodes":  nodeNames,
 	}
-	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
-	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
+	Logd(ctx, d.Config.StorageDriverName,
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
+	defer Logd(ctx, d.Config.StorageDriverName,
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
 	policyName := getExportPolicyName(backendUUID)
 
