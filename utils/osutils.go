@@ -88,7 +88,7 @@ func execCommand(ctx context.Context, name string, args ...string) ([]byte, erro
 	}).Debug(">>>> osutils.execCommand.")
 
 	// create context with a cancellation
-	cancelCtx, cancel := context.WithCancel(ctx)
+	cancelCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	out, err := execCmd(cancelCtx, name, args...).CombinedOutput()
