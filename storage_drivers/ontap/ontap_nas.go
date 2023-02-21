@@ -970,6 +970,8 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 			if d.Config.NASType == sa.SMB {
 				volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
 					volConfig.InternalName)
+				// Overwriting mount path, mounting at root instead of admin share
+				volConfig.AccessInfo.SMBPath = "/" + volConfig.InternalName
 				accessPath = volConfig.AccessInfo.SMBPath
 			} else {
 				volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName

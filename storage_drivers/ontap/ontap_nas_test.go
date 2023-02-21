@@ -1324,7 +1324,7 @@ func TestOntapNasStorageDriverCreateFollowup_NASType_SMB(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(&flexVol, nil)
-	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "\\vol1").Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
 
 	result := driver.CreateFollowup(ctx, volConfig)
 

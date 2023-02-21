@@ -701,7 +701,7 @@ func cloneFlexgroup(
 		return err
 	}
 
-	if config.StorageDriverName == drivers.OntapNASStorageDriverName {
+	if config.StorageDriverName == drivers.OntapNASFlexGroupStorageDriverName {
 		// Mount the new volume
 		if err = client.FlexgroupMount(ctx, name, "/"+name); err != nil {
 			return err
@@ -1342,6 +1342,8 @@ func (d *NASFlexGroupStorageDriver) CreateFollowup(ctx context.Context, volConfi
 		if d.Config.NASType == sa.SMB {
 			volConfig.AccessInfo.SMBPath = ConstructOntapNASFlexGroupSMBVolumePath(ctx, d.Config.SMBShare,
 				volConfig.InternalName)
+			// Overwriting mount path, mounting at root instead of admin share
+			volConfig.AccessInfo.SMBPath = "/" + volConfig.InternalName
 			err = d.MountFlexgroup(ctx, volConfig.InternalName, volConfig.AccessInfo.SMBPath)
 			if err != nil {
 				return err
