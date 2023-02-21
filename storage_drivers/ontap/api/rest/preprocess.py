@@ -405,6 +405,10 @@ def add_missing_parameters(d):
         ('x-ntap-introduced', '9.10'),
     ]))
 
+def fix_snapmirror_error_code_type(d):
+    # if the error code is an integer, change it to a string
+    if d["definitions"]["snapmirror_error"]["properties"]["code"]["type"] == "integer":
+        d["definitions"]["snapmirror_error"]["properties"]["code"]["type"] = "string"
 
 # def add_go_package_names(d):
 #     d["definitions"]["application"]["properties"]["template"]["x-go-name"] = "ApplicationTemplateType"
@@ -727,6 +731,7 @@ with open('swagger_full.yaml') as input_file:
     fix_volume_encryption_enabled(dataMap)
     add_missing_properties(dataMap)
     add_missing_parameters(dataMap)
+    fix_snapmirror_error_code_type(dataMap)
 
 
     walk(dataMap)

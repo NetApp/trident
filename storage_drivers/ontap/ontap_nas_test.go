@@ -796,17 +796,24 @@ func TestOntapNasStorageDriverVolumeClone_LabelLengthExceeding(t *testing.T) {
 }
 
 func TestOntapNasStorageDriverVolumeDestroy(t *testing.T) {
+	svmName := "SVM1"
+	volName := "testVol"
+	volNameInternal := volName + "Internal"
 	mockAPI, driver := newMockOntapNASDriver(t)
 	volConfig := &storage.VolumeConfig{
-		Size:       "1g",
-		Encryption: "false",
-		FileSystem: "xfs",
+		Size:         "1g",
+		Name:         volName,
+		InternalName: volNameInternal,
+		Encryption:   "false",
+		FileSystem:   "xfs",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().VolumeExists(ctx, "").Return(true, nil)
-	mockAPI.EXPECT().SnapmirrorDeleteViaDestination("", "SVM1").Return(nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, "", true).Return(nil)
+	assert.NotNil(t, mockAPI)
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, svmName).Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -846,16 +853,20 @@ func TestOntapNasStorageDriverVolumeDestroy_VolumeNotFound(t *testing.T) {
 
 func TestOntapNasStorageDriverVolumeDestroy_SnapmirrorDeleteFail(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
+	svmName := "SVM1"
+	volName := "testVol"
+	volNameInternal := volName + "Internal"
 	volConfig := &storage.VolumeConfig{
-		Size:       "1g",
-		Encryption: "false",
-		FileSystem: "xfs",
+		Size:         "1g",
+		Name:         volName,
+		InternalName: volNameInternal,
+		Encryption:   "false",
+		FileSystem:   "xfs",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().VolumeExists(ctx, "").Return(true, nil)
-	mockAPI.EXPECT().SnapmirrorDeleteViaDestination("",
-		"SVM1").Return(fmt.Errorf("error deleting snapmirror info for volume"))
+	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(fmt.Errorf("error deleting snapmirror info for volume"))
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -864,16 +875,21 @@ func TestOntapNasStorageDriverVolumeDestroy_SnapmirrorDeleteFail(t *testing.T) {
 
 func TestOntapNasStorageDriverVolumeDestroy_Fail(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
+	svmName := "SVM1"
+	volName := "testVol"
+	volNameInternal := volName + "Internal"
 	volConfig := &storage.VolumeConfig{
-		Size:       "1g",
-		Encryption: "false",
-		FileSystem: "xfs",
+		Size:         "1g",
+		Name:         volName,
+		InternalName: volNameInternal,
+		Encryption:   "false",
+		FileSystem:   "xfs",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().VolumeExists(ctx, "").Return(true, nil)
-	mockAPI.EXPECT().SnapmirrorDeleteViaDestination("", "SVM1").Return(nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, "", true).Return(fmt.Errorf("cannot delete volume"))
+	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+	mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(fmt.Errorf("cannot delete volume"))
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -1588,12 +1604,15 @@ func TestOntapNasStorageDriverEstablishMirror_WithReplicationPolicy(t *testing.T
 func TestOntapNasStorageDriverEstablishMirror_WithReplicationPolicyAndSchedule(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 
+	svmName := "SVM1"
+	volName := "fakevolume1"
+
 	driver.Config.ReplicationPolicy = "testpolicy"
 	snapmirrorPolicy := &api.SnapmirrorPolicy{
 		Type: "async_mirror",
 	}
 	flexVol := api.Volume{
-		Name:     "flexvol",
+		Name:     volName,
 		Comment:  "flexvol",
 		DPVolume: true,
 	}
@@ -1602,11 +1621,11 @@ func TestOntapNasStorageDriverEstablishMirror_WithReplicationPolicyAndSchedule(t
 		RelationshipStatus: "idle",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, "testpolicy").Return(snapmirrorPolicy, nil).Times(2)
 	mockAPI.EXPECT().VolumeInfo(ctx, "fakevolume1").Return(&flexVol, nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
-	mockAPI.EXPECT().JobScheduleExists(ctx, "testschedule").Return(nil)
+	mockAPI.EXPECT().JobScheduleExists(ctx, "testschedule").Return(true, nil)
 
 	result := driver.EstablishMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "testpolicy", "testschedule")
 
@@ -1635,7 +1654,7 @@ func TestOntapNasStorageDriverEstablishMirror_InvalidReplicationSchedule(t *test
 	mockAPI.EXPECT().VolumeInfo(ctx, "fakevolume1").Return(&flexVol, nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 	mockAPI.EXPECT().JobScheduleExists(ctx,
-		"testschedule").Return(fmt.Errorf("specified replicationSchedule does not exist"))
+		"testschedule").Return(false, fmt.Errorf("specified replicationSchedule does not exist"))
 
 	result := driver.EstablishMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "testpolicy", "testschedule")
 
@@ -1700,7 +1719,7 @@ func TestOntapNasStorageDriverReestablishMirror_WithReplicationPolicyAndSchedule
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, "testpolicy").Return(snapmirrorPolicy, nil).Times(2)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 	mockAPI.EXPECT().JobScheduleExists(ctx,
-		"testschedule").Return(fmt.Errorf("specified replicationSchedule does not exist"))
+		"testschedule").Return(false, fmt.Errorf("specified replicationSchedule does not exist"))
 
 	result := driver.ReestablishMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "testpolicy",
 		"testschedule")
@@ -1749,7 +1768,7 @@ func TestOntapNasStorageDriverReleaseMirror(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().SnapmirrorRelease("fakevolume1", "fakesvm1").Return(nil)
+	mockAPI.EXPECT().SnapmirrorRelease(ctx, "fakevolume1", "fakesvm1").Return(nil)
 
 	result := driver.ReleaseMirror(ctx, "fakesvm1:fakevolume1")
 

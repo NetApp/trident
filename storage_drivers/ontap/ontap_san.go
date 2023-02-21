@@ -698,7 +698,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	// If flexvol has been a snapmirror destination
-	if err := d.API.SnapmirrorDeleteViaDestination(name, d.API.SVMName()); err != nil {
+	if err := d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}

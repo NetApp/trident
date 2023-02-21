@@ -2524,6 +2524,7 @@ func (c Client) IsVserverDRSource(ctx context.Context) (bool, error) {
 	}
 
 	// for each of the aggregate's volumes, compute its potential storage usage
+	// TODO: need to change to DR Source
 	if response.Result.AttributesListPtr != nil {
 		for _, volAttrs := range response.Result.AttributesListPtr.SnapmirrorDestinationInfoPtr {
 			destinationLocation := volAttrs.DestinationLocation()

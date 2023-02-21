@@ -143,7 +143,7 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
 
 	creationErr := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
 	if creationErr != nil {
 		return fmt.Errorf("error creating volume: %v", creationErr)
 	}
@@ -709,6 +709,12 @@ func (d OntapAPIREST) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, 
 func (d OntapAPIREST) VolumeMount(ctx context.Context, name, junctionPath string) error {
 	// Mount the volume at the specified junction
 	if err := d.api.VolumeMount(ctx, name, junctionPath); err != nil {
+		if restErr, ok := err.(RestError); ok {
+			// Error code for expected error when mounting to DP volume that isn't initialized
+			if restErr.code == DP_VOLUME_NOT_INITIALIZED {
+				return ApiError(fmt.Sprintf("%v", err))
+			}
+		}
 		return fmt.Errorf("error mounting volume %v to junction %v: %v", name, junctionPath, err)
 	}
 
@@ -1283,97 +1289,201 @@ func (d OntapAPIREST) VolumeListBySnapshotParent(
 	return childVolumes, nil
 }
 
-func (d OntapAPIREST) SnapmirrorDeleteViaDestination(_, _ string) error {
-	// TODO implement
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// BEGIN: Snapmirror operations
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func (d OntapAPIREST) SnapmirrorDeleteViaDestination(ctx context.Context, localFlexvolName, localSVMName string) error {
+	err := d.api.SnapmirrorDeleteViaDestination(ctx, localFlexvolName, localSVMName)
+	if err != nil {
+		if !IsNotFoundError(err) {
+			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localFlexvolName, err)
+		}
+	}
+
+	// Ensure no leftover snapmirror metadata
+	err = d.api.SnapmirrorRelease(ctx, localFlexvolName, localSVMName)
+	if err != nil {
+		if !IsNotFoundError(err) {
+			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localFlexvolName, err)
+		}
+	}
+
 	return nil
 }
 
-func (d OntapAPIREST) SnapmirrorRelease(_, _ string) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+func (d OntapAPIREST) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, sourceSVMName string) error {
+	// Ensure no leftover snapmirror metadata
+	err := d.api.SnapmirrorRelease(ctx, sourceFlexvolName, sourceSVMName)
+	if err != nil {
+		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+	}
+
+	return nil
 }
 
-func (d OntapAPIREST) IsSVMDRCapable(_ context.Context) (bool, error) {
-	// TODO implement
-	return false, fmt.Errorf("not implemented")
+func (d OntapAPIREST) IsSVMDRCapable(ctx context.Context) (bool, error) {
+	return d.api.IsVserverDRCapable(ctx)
 }
 
 func (d OntapAPIREST) SnapmirrorCreate(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
 	remoteSVMName, replicationPolicy, replicationSchedule string,
 ) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	return d.api.SnapmirrorCreate(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, replicationPolicy, replicationSchedule)
 }
 
 func (d OntapAPIREST) SnapmirrorGet(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) (*Snapmirror, error) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
+	snapmirrorResponse, err := d.api.SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		return nil, err
+	}
+	if snapmirrorResponse == nil {
+		return nil, fmt.Errorf("unexpected error on snapmirror get")
+	}
 
-func (d OntapAPIREST) SnapmirrorDelete(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName string,
-) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	snapmirror := &Snapmirror{
+		State:            SnapmirrorState(snapmirrorResponse.State),
+		LastTransferType: snapmirrorResponse.LastTransferType,
+	}
+
+	if snapmirrorResponse.Transfer != nil {
+		snapmirror.RelationshipStatus = SnapmirrorStatus(snapmirrorResponse.Transfer.State)
+	}
+
+	if snapmirrorResponse.Healthy != nil {
+		snapmirror.IsHealthy = *snapmirrorResponse.Healthy
+		if !snapmirror.IsHealthy {
+			if snapmirrorResponse.UnhealthyReason != nil && len(snapmirrorResponse.UnhealthyReason) > 0 {
+				snapmirror.UnhealthyReason = snapmirrorResponse.UnhealthyReason[0].Message
+			}
+		}
+	}
+
+	if snapmirrorResponse.Policy != nil {
+		snapmirror.ReplicationPolicy = snapmirrorResponse.Policy.Name
+	}
+
+	if snapmirrorResponse.TransferSchedule != nil {
+		snapmirror.ReplicationSchedule = snapmirrorResponse.TransferSchedule.Name
+	}
+
+	return snapmirror, nil
 }
 
 func (d OntapAPIREST) SnapmirrorInitialize(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	err := d.api.SnapmirrorInitialize(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		if restErr, err := ExtractErrorResponse(ctx, err); err == nil {
+			if restErr.Error.Code == SNAPMIRROR_TRANSFER_IN_PROGRESS {
+				Logc(ctx).Debug("snapmirror transfer already in progress")
+				return nil
+			}
+		}
+		Logc(ctx).WithError(err).Error("Error on snapmirror initialize")
+		return err
+	}
+	return nil
+}
+
+func (d OntapAPIREST) SnapmirrorDelete(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string,
+) error {
+	return d.api.SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 func (d OntapAPIREST) SnapmirrorResync(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	err := d.api.SnapmirrorResync(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Error on snapmirror resync")
+		// If we fail on the resync, we need to cleanup the snapmirror
+		// it will be recreated in a future TMR reconcile loop through this function
+		if delError := d.SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
+			remoteSVMName); delError != nil {
+			Logc(ctx).WithError(delError).Error("Error on snapmirror delete following a resync failure")
+		}
+		return err
+	}
+	return nil
 }
 
 func (d OntapAPIREST) SnapmirrorPolicyGet(ctx context.Context, replicationPolicy string) (*SnapmirrorPolicy, error) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
+	snapmirrorPolicyResponse, err := d.api.SnapmirrorPolicyGet(ctx, replicationPolicy)
+	if err != nil {
+		return nil, err
+	}
+
+	if snapmirrorPolicyResponse == nil {
+		return nil, fmt.Errorf("unexpected error on snapmirror policy get")
+	}
+
+	if len(snapmirrorPolicyResponse.Payload.Records) != 1 {
+		return nil, fmt.Errorf("unexpected error on snapmirror policy get")
+	}
+
+	response := snapmirrorPolicyResponse.Payload.Records[0]
+	if response == nil || response.Type == nil {
+		return nil, fmt.Errorf("unexpected error on snapmirror policy get")
+	}
+
+	var syncType SnapmirrorPolicyType
+	if SnapmirrorPolicyType(*response.Type).IsSnapmirrorPolicyTypeSync() {
+		syncType = SnapmirrorPolicyType(response.SyncType)
+	} else {
+		syncType = SnapmirrorPolicyType(*response.Type)
+	}
+	snapmirrorPolicy := &SnapmirrorPolicy{
+		Type:             syncType,
+		CopyAllSnapshots: response.CopyAllSourceSnapshots,
+	}
+
+	return snapmirrorPolicy, nil
 }
 
 func (d OntapAPIREST) SnapmirrorQuiesce(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	// TODO: potential error if quiesce in progress
+	return d.api.SnapmirrorQuiesce(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 func (d OntapAPIREST) SnapmirrorAbort(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	// TODO: Not sure if there's a transfer in progress error code
+	return d.api.SnapmirrorAbort(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 func (d OntapAPIREST) SnapmirrorBreak(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
 	remoteSVMName, snapshotName string,
 ) error {
-	return fmt.Errorf("not implemented for REST")
+	// TODO: potential error if break is in progress or if volume is not DP
+	return d.api.SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName)
 }
 
-func (d OntapAPIREST) JobScheduleExists(ctx context.Context, replicationSchedule string) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// END: Snapmirror operations
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func (d OntapAPIREST) JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error) {
+	return d.api.JobScheduleExists(ctx, replicationSchedule)
 }
 
 func (d OntapAPIREST) GetSVMPeers(ctx context.Context) ([]string, error) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
+	return d.api.GetPeeredVservers(ctx)
 }
 
 func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error) {

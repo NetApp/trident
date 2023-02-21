@@ -60,7 +60,9 @@ func establishMirror(
 		}
 	}
 
-	if snapmirror.State.IsUninitialized() && snapmirror.RelationshipStatus.IsIdle() {
+	// Check last transfer type as empty or idle
+	if snapmirror.State.IsUninitialized() &&
+		(snapmirror.RelationshipStatus.IsIdle() || snapmirror.LastTransferType == "") {
 		err = d.SnapmirrorInitialize(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 		if err != nil {
 			Logc(ctx).WithError(err).Error("Error on snapmirror initialize")
@@ -68,7 +70,7 @@ func establishMirror(
 		}
 		// Ensure state is inititialized
 		snapmirror, err = d.SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-		if snapmirror.State.IsUninitialized() {
+		if snapmirror.State.IsUninitialized() || snapmirror.RelationshipStatus.IsTransferring() {
 			return api.NotReadyError("Snapmirror not yet initialized, snapmirror not ready")
 		}
 	}
@@ -149,9 +151,7 @@ func reestablishMirror(
 // promoteMirror will break the snapmirror and make the destination volume RW,
 // optionally after a given snapshot has synced
 func promoteMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotHandle,
-	replicationPolicy string,
-	d api.OntapAPI,
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotHandle, replicationPolicy string, d api.OntapAPI,
 ) (bool, error) {
 	if remoteVolumeHandle == "" {
 		return false, nil
@@ -316,9 +316,9 @@ func getMirrorStatus(
 				return v1.MirrorStateEstablishing, nil
 			}
 			return v1.MirrorStatePromoting, nil
-		case api.SnapmirrorStateUninitialized:
+		case api.SnapmirrorStateUninitialized, api.SnapmirrorStateSynchronizing:
 			return v1.MirrorStateEstablishing, nil
-		case api.SnapmirrorStateSnapmirrored:
+		case api.SnapmirrorStateSnapmirrored, api.SnapmirrorStateInSync:
 			return v1.MirrorStateEstablished, nil
 		}
 	}
@@ -355,34 +355,29 @@ func validateReplicationPolicy(ctx context.Context, policyName string, d api.Ont
 	if err != nil {
 		return false, fmt.Errorf("error getting snapmirror policy: %v", err)
 	}
-
 	if snapmirrorPolicy.Type.IsSnapmirrorPolicyTypeSync() {
 		// If the policy is synchronous we're fine
 		return false, nil
 	} else if !snapmirrorPolicy.Type.IsSnapmirrorPolicyTypeAsync() {
 		return false, fmt.Errorf("unsupported mirror policy type %v, must be %v or %v",
-			snapmirrorPolicy.Type, api.SnapmirrorPolicyTypeSync, api.SnapmirrorPolicyTypeAsync)
+			snapmirrorPolicy.Type, api.SnapmirrorPolicyZAPITypeSync, api.SnapmirrorPolicyZAPITypeAsync)
 	}
 
 	// If the policy is async, check below for correct rule
 	// Check async policies for the "all_source_snapshots" rule
 	if snapmirrorPolicy.Type.IsSnapmirrorPolicyTypeAsync() {
-		for rule := range snapmirrorPolicy.Rules {
-			if rule == api.SnapmirrorPolicyRuleAll {
-				return true, nil
-			}
+		if snapmirrorPolicy.CopyAllSnapshots {
+			return true, nil
 		}
-
 		return true, fmt.Errorf("snapmirror policy %v is of type %v and is missing the %v rule",
-			policyName, api.SnapmirrorPolicyTypeAsync, api.SnapmirrorPolicyRuleAll)
-
+			policyName, api.SnapmirrorPolicyZAPITypeAsync, api.SnapmirrorPolicyRuleAll)
 	}
 	return false, nil
 }
 
 func validateReplicationSchedule(ctx context.Context, replicationSchedule string, d api.OntapAPI) error {
 	if replicationSchedule != "" {
-		if err := d.JobScheduleExists(ctx, replicationSchedule); err != nil {
+		if _, err := d.JobScheduleExists(ctx, replicationSchedule); err != nil {
 			return err
 		}
 	}
@@ -414,7 +409,7 @@ func releaseMirror(ctx context.Context, localVolumeHandle string, d api.OntapAPI
 	if err != nil {
 		return fmt.Errorf("could not parse localVolumeHandle '%v'; %v", localVolumeHandle, err)
 	}
-	err = d.SnapmirrorRelease(localFlexvolName, localSVMName)
+	err = d.SnapmirrorRelease(ctx, localFlexvolName, localSVMName)
 	if err != nil {
 		return err
 	}

@@ -12,6 +12,7 @@ import (
 	nas "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
 	san "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/snapmirror"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
@@ -34,7 +35,7 @@ type RestClientInterface interface {
 	// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 	// -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 	// -encrypt false
-	VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int) error
+	VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) error
 	// VolumeExists tests for the existence of a flexvol
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	// VolumeGetByName gets the flexvol with the specified name
@@ -132,12 +133,9 @@ type RestClientInterface interface {
 	LunList(ctx context.Context, pattern string) (*san.LunCollectionGetOK, error)
 	// LunDelete deletes a LUN
 	LunDelete(ctx context.Context, lunUUID string) error
-	// TODO: Change this for LUN Attributes when available
 	// LunGetComment gets the comment for a given LUN.
-	// This is in place of the fstype and context attributes from ZAPI
 	LunGetComment(ctx context.Context, lunPath string) (string, error)
 	// LunSetComment sets the comment for a given LUN.
-	// This is in place of the fstype and context attributes from ZAPI
 	LunSetComment(ctx context.Context, lunPath, comment string) error
 	// LunGetAttribute gets an attribute by name for a given LUN.
 	LunGetAttribute(ctx context.Context, lunPath, attributeName string) (string, error)
@@ -234,7 +232,7 @@ type RestClientInterface interface {
 	FlexgroupSetQosPolicyGroupName(ctx context.Context, volumeName string, qosPolicyGroup QosPolicyGroup) error
 	// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
 	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error
+	FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx context.Context, flexGroupVolumeName string) error
 	FlexGroupModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error
 	// FlexGroupSetComment sets a flexgroup's comment to the supplied value
 	FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) error
@@ -293,4 +291,29 @@ type RestClientInterface interface {
 	// QuotaEntryList returns the disk limit quotas for a Flexvol
 	// equivalent to filer::> volume quota policy rule show
 	QuotaEntryList(ctx context.Context, volumeName string) (*storage.QuotaRuleCollectionGetOK, error)
+	// GetPeeredVservers returns a list of vservers peered with the vserver for this backend
+	GetPeeredVservers(ctx context.Context) ([]string, error)
+	SnapmirrorRelationshipsList(ctx context.Context) (*snapmirror.SnapmirrorRelationshipsGetOK, error)
+	// IsVserverDRDestination identifies if the Vserver is a destination vserver of Snapmirror relationship (SVM-DR) or not
+	IsVserverDRDestination(ctx context.Context) (bool, error)
+	// IsVserverDRSource identifies if the Vserver is a source vserver of Snapmirror relationship (SVM-DR) or not
+	IsVserverDRSource(ctx context.Context) (bool, error)
+	SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*models.SnapmirrorRelationship, error)
+	SnapmirrorCreate(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) error
+	SnapmirrorInitialize(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorResync(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorBreak(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string) error
+	SnapmirrorQuiesce(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorAbort(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	// SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
+	// Intended to be used on the source vserver
+	SnapmirrorRelease(ctx context.Context, sourceFlexvolName, sourceSVMName string) error
+	// Intended to be from the destination vserver
+	SnapmirrorDeleteViaDestination(ctx context.Context, localFlexvolName, localSVMName string) error
+	// Intended to be from the destination vserver
+	SnapmirrorDelete(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	IsVserverDRCapable(ctx context.Context) (bool, error)
+	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
+	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*snapmirror.SnapmirrorPoliciesGetOK, error)
+	JobScheduleExists(ctx context.Context, jobName string) (bool, error)
 }

@@ -18,7 +18,7 @@ import (
 type SnapmirrorError struct {
 
 	// Error code
-	Code int64 `json:"code,omitempty"`
+	Code string `json:"code,omitempty"`
 
 	// Error message
 	Message string `json:"message,omitempty"`

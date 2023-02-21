@@ -33,6 +33,7 @@ import (
 	nas "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
 	san "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/snapmirror"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/support"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
@@ -1099,12 +1100,7 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
-func (c RestClient) createVolumeByStyle(
-	ctx context.Context,
-	name string, sizeInBytes int64, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
-	snapshotReserve int, style string,
-) error {
+func (c RestClient) createVolumeByStyle(ctx context.Context, name string, sizeInBytes int64, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, style string, dpVolume bool) error {
 	params := storage.NewVolumeCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1158,7 +1154,9 @@ func (c RestClient) createVolumeByStyle(
 		volumeNas.SecurityStyle = ToStringPointer(securityStyle)
 		volumeInfo.Nas = volumeNas
 	}
-	if unixPermissions != "" {
+	if dpVolume {
+		volumeInfo.Type = ToStringPointer("DP")
+	} else if unixPermissions != "" {
 		unixPermissions = convertUnixPermissions(unixPermissions)
 		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
 		if parseErr != nil {
@@ -1303,17 +1301,13 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) 
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
-func (c RestClient) VolumeCreate(
-	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
-	snapshotReserve int,
-) error {
+func (c RestClient) VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) error {
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(size)
 	sizeInBytes, _ := strconv.ParseInt(sizeBytesStr, 10, 64)
 
 	return c.createVolumeByStyle(ctx, name, sizeInBytes, []string{aggregateName}, spaceReserve, snapshotPolicy,
-		unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
-		snapshotReserve, models.VolumeStyleFlexvol)
+		unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve,
+		models.VolumeStyleFlexvol, dpVolume)
 }
 
 // VolumeExists tests for the existence of a flexvol
@@ -2628,7 +2622,7 @@ func (c RestClient) LunMapGetReportingNodes(
 		}
 		if errorResponse != nil && errorResponse.Error != nil {
 			errorCode := errorResponse.Error.Code
-			if errorCode == "5374922" {
+			if errorCode == LUN_MAP_EXIST_ERROR {
 				// the specified LUN map does not exist
 				return []string{}, nil
 			}
@@ -3598,9 +3592,7 @@ func (c RestClient) FlexGroupCreate(
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int,
 ) error {
-	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,
-		exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
-		snapshotReserve, models.VolumeStyleFlexgroup)
+	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, models.VolumeStyleFlexgroup, false)
 }
 
 // FlexgroupCloneSplitStart starts splitting the flexgroup clone
@@ -3659,7 +3651,9 @@ func (c RestClient) FlexgroupSetQosPolicyGroupName(
 
 // FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
 // Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx context.Context, flexGroupVolumeName string) error {
+func (c RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(
+	ctx context.Context, flexGroupVolumeName string,
+) error {
 	volume, err := c.getVolumeByNameAndStyle(ctx, flexGroupVolumeName, models.VolumeStyleFlexgroup)
 	if err != nil {
 		return err
@@ -4497,4 +4491,577 @@ func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*sto
 }
 
 // QTREE operations END
+// ///////////////////////////////////////////////////////////////////////////
+
+// ///////////////////////////////////////////////////////////////////////////
+// SNAPMIRROR operations BEGIN
+
+// GetPeeredVservers returns a list of vservers peered with the vserver for this backend
+func (c RestClient) GetPeeredVservers(ctx context.Context) ([]string, error) {
+	peers := *new([]string)
+
+	params := svm.NewSvmPeerCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := c.api.Svm.SvmPeerCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	if result != nil && result.Payload != nil {
+		// with no results, we will return the empty peers list
+		for _, peerInfo := range result.Payload.Records {
+			if peerInfo != nil && peerInfo.Peer != nil && peerInfo.Peer.Svm != nil {
+				peers = append(peers, peerInfo.Peer.Svm.Name)
+			}
+		}
+	}
+
+	return peers, err
+}
+
+func (c RestClient) SnapmirrorRelationshipsList(ctx context.Context) (*snapmirror.SnapmirrorRelationshipsGetOK, error) {
+	params := snapmirror.NewSnapmirrorRelationshipsGetParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+
+	results, err := c.api.Snapmirror.SnapmirrorRelationshipsGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+// IsVserverDRDestination identifies if the Vserver is a destination vserver of Snapmirror relationship (SVM-DR) or not
+func (c RestClient) IsVserverDRDestination(ctx context.Context) (bool, error) {
+	results, err := c.SnapmirrorRelationshipsList(ctx)
+	if err != nil {
+		return false, err
+	}
+	if results == nil {
+		return false, nil
+	}
+	if results.Payload == nil {
+		return false, nil
+	}
+
+	isSVMDRDestination := false
+	for _, relationship := range results.Payload.Records {
+		destinationLocation := relationship.Destination.Path
+		destinationVserver := relationship.Destination.Svm.Name
+		if (destinationVserver + ":") == destinationLocation {
+			isSVMDRDestination = true
+		}
+	}
+
+	return isSVMDRDestination, nil
+}
+
+// IsVserverDRSource identifies if the Vserver is a source vserver of Snapmirror relationship (SVM-DR) or not
+func (c RestClient) IsVserverDRSource(ctx context.Context) (bool, error) {
+	results, err := c.SnapmirrorRelationshipsList(ctx)
+	if err != nil {
+		return false, err
+	}
+	if results == nil {
+		return false, nil
+	}
+	if results.Payload == nil {
+		return false, nil
+	}
+
+	isSVMDRSource := false
+	for _, foo := range results.Payload.Records {
+		sourceLocation := foo.Source.Path
+		sourceVserver := foo.Source.Svm.Name
+		if (sourceVserver + ":") == sourceLocation {
+			isSVMDRSource = true
+		}
+	}
+
+	return isSVMDRSource, nil
+}
+
+// IsVserverInSVMDR identifies if the Vserver is in Snapmirror relationship (SVM-DR) or not
+func (c RestClient) IsVserverInSVMDR(ctx context.Context) bool {
+	isSVMDRSource, _ := c.IsVserverDRSource(ctx)
+	isSVMDRDestination, _ := c.IsVserverDRDestination(ctx)
+
+	return isSVMDRSource || isSVMDRDestination
+}
+
+func (c RestClient) SnapmirrorGet(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) (*models.SnapmirrorRelationship, error) {
+	params := snapmirror.NewSnapmirrorRelationshipsGetParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+
+	results, err := c.api.Snapmirror.SnapmirrorRelationshipsGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if results == nil {
+		return nil, nil
+	}
+
+	for _, relationship := range results.Payload.Records {
+		if relationship == nil || relationship.Destination == nil || relationship.Source == nil {
+			continue
+		}
+
+		if localFlexvolName != "" {
+			if relationship.Destination.Path != fmt.Sprintf("%s:%s", c.SVMName(), localFlexvolName) {
+				continue
+			}
+		}
+
+		if remoteFlexvolName != "" {
+			if relationship.Source.Path != fmt.Sprintf("%s:%s", remoteSVMName, remoteFlexvolName) {
+				continue
+			}
+		}
+
+		return relationship, nil
+	}
+
+	return nil, NotFoundError("could not find relationship")
+}
+
+func (c RestClient) SnapmirrorListDestinations(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) (*models.SnapmirrorRelationship, error) {
+	params := snapmirror.NewSnapmirrorRelationshipsGetParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.WithListDestinationsOnlyQueryParameter(ToBoolPointer(true))
+
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+
+	results, err := c.api.Snapmirror.SnapmirrorRelationshipsGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if results == nil {
+		return nil, nil
+	}
+
+	for _, relationship := range results.Payload.Records {
+		if relationship == nil || relationship.Destination == nil || relationship.Source == nil {
+			continue
+		}
+
+		if localFlexvolName != "" {
+			if relationship.Destination.Path != fmt.Sprintf("%s:%s", c.SVMName(), localFlexvolName) {
+				continue
+			}
+		}
+
+		if remoteFlexvolName != "" {
+			if relationship.Source.Path != fmt.Sprintf("%s:%s", remoteSVMName, remoteFlexvolName) {
+				continue
+			}
+		}
+
+		return relationship, nil
+	}
+
+	return nil, NotFoundError("could not find relationship")
+}
+
+func (c RestClient) SnapmirrorCreate(
+	ctx context.Context,
+	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
+) error {
+	params := snapmirror.NewSnapmirrorRelationshipCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+
+	info := &models.SnapmirrorRelationship{
+		Destination: &models.SnapmirrorEndpoint{
+			Path: fmt.Sprintf("%s:%s", c.SVMName(), localFlexvolName),
+		},
+		Source: &models.SnapmirrorEndpoint{
+			Path: fmt.Sprintf("%s:%s", remoteSVMName, remoteFlexvolName),
+		},
+		Policy: &models.SnapmirrorRelationshipPolicy{
+			Name: repPolicy,
+		},
+		TransferSchedule: &models.SnapmirrorRelationshipTransferSchedule{
+			Name: repSchedule,
+		},
+	}
+	params.SetInfo(info)
+
+	snapmirrorRelationshipCreateAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipCreate(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+
+	if snapmirrorRelationshipCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship create")
+	}
+
+	return c.PollJobStatus(ctx, snapmirrorRelationshipCreateAccepted.Payload)
+}
+
+func (c RestClient) SnapmirrorInitialize(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) error {
+	// first, find the relationship so we can then use the UUID to modify it
+	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, c.SVMName(), remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	params := snapmirror.NewSnapmirrorRelationshipTransferCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.SetRelationshIPUUIDPathParameter(string(relationship.UUID))
+
+	params.Info = &models.SnapmirrorTransfer{}
+
+	snapmirrorRelationshipTransferCreateAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipTransferCreate(params,
+		c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipTransferCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship transfer modify")
+	}
+
+	return nil
+}
+
+func (c RestClient) SnapmirrorResync(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) error {
+	// first, find the relationship so we can then use the UUID to modify it
+	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, c.SVMName(), remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	params := snapmirror.NewSnapmirrorRelationshipModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.SetUUIDPathParameter(string(relationship.UUID))
+
+	if relationship.Policy.Type == "sync" {
+		params.Info = &models.SnapmirrorRelationship{
+			State: models.SnapmirrorRelationshipStateInSync,
+		}
+	} else {
+		params.Info = &models.SnapmirrorRelationship{
+			State: models.SnapmirrorRelationshipStateSnapmirrored,
+		}
+	}
+
+	snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship modify")
+	}
+
+	return c.PollJobStatus(ctx, snapmirrorRelationshipModifyAccepted.Payload)
+}
+
+func (c RestClient) SnapmirrorBreak(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string,
+) error {
+	// first, find the relationship so we can then use the UUID to modify it
+	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, c.SVMName(), remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	params := snapmirror.NewSnapmirrorRelationshipModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.SetUUIDPathParameter(string(relationship.UUID))
+
+	params.Info = &models.SnapmirrorRelationship{
+		State: models.SnapmirrorRelationshipStateBrokenOff,
+	}
+
+	if snapshotName != "" {
+		params.Info.RestoreToSnapshot = snapshotName
+	}
+
+	snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship modify")
+	}
+
+	return c.PollJobStatus(ctx, snapmirrorRelationshipModifyAccepted.Payload)
+}
+
+func (c RestClient) SnapmirrorQuiesce(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) error {
+	// first, find the relationship so we can then use the UUID to modify it
+	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, c.SVMName(), remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	params := snapmirror.NewSnapmirrorRelationshipModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.SetUUIDPathParameter(string(relationship.UUID))
+
+	params.Info = &models.SnapmirrorRelationship{
+		State: models.SnapmirrorRelationshipStatePaused,
+	}
+
+	snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship modify")
+	}
+
+	return c.PollJobStatus(ctx, snapmirrorRelationshipModifyAccepted.Payload)
+}
+
+func (c RestClient) SnapmirrorAbort(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) error {
+	// first, find the relationship so we can then use the UUID to modify it
+	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, c.SVMName(), remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	params := snapmirror.NewSnapmirrorRelationshipModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.SetUUIDPathParameter(string(relationship.UUID))
+
+	params.Info = &models.SnapmirrorRelationship{
+		State: models.SnapmirrorRelationshipTransferStateAborted,
+	}
+
+	snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship modify")
+	}
+
+	return c.PollJobStatus(ctx, snapmirrorRelationshipModifyAccepted.Payload)
+}
+
+// SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
+// Intended to be used on the source vserver
+func (c RestClient) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, sourceSVMName string) error {
+	// first, find the relationship so we can then use the UUID to delete it
+	relationship, err := c.SnapmirrorListDestinations(ctx, "", "", sourceFlexvolName, sourceSVMName)
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	// now, delete the relationship via its UUID
+	params := snapmirror.NewSnapmirrorRelationshipDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.SetUUIDPathParameter(string(relationship.UUID))
+	params.WithSourceInfoOnlyQueryParameter(ToBoolPointer(true))
+
+	snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipDeleteAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship delete")
+	}
+
+	return c.PollJobStatus(ctx, snapmirrorRelationshipDeleteAccepted.Payload)
+}
+
+// Intended to be from the destination vserver
+func (c RestClient) SnapmirrorDeleteViaDestination(
+	ctx context.Context, localFlexvolName, localSVMName string,
+) error {
+	// first, find the relationship so we can then use the UUID to delete it
+	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, localSVMName, "", "")
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	// now, delete the relationship via its UUID
+	params := snapmirror.NewSnapmirrorRelationshipDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.SetUUIDPathParameter(string(relationship.UUID))
+	params.WithDestinationOnlyQueryParameter(ToBoolPointer(true))
+
+	snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipDeleteAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship delete")
+	}
+
+	return c.PollJobStatus(ctx, snapmirrorRelationshipDeleteAccepted.Payload)
+}
+
+// Intended to be from the destination vserver
+func (c RestClient) SnapmirrorDelete(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+) error {
+	// first, find the relationship so we can then use the UUID to delete it
+	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	// now, delete the relationship via its UUID
+	params := snapmirror.NewSnapmirrorRelationshipDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+
+	params.SetUUIDPathParameter(string(relationship.UUID))
+	params.WithDestinationOnlyQueryParameter(ToBoolPointer(true))
+
+	snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipDeleteAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship delete")
+	}
+
+	return c.PollJobStatus(ctx, snapmirrorRelationshipDeleteAccepted.Payload)
+}
+
+func (c RestClient) IsVserverDRCapable(ctx context.Context) (bool, error) {
+	params := svm.NewSvmPeerCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+
+	params.SVMUUIDQueryParameter = &c.svmUUID
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := c.api.Svm.SvmPeerCollectionGet(params, c.authInfo)
+	if err != nil {
+		return false, err
+	}
+	if result == nil {
+		return false, nil
+	}
+	if result.Payload == nil {
+		return false, nil
+	}
+	if len(result.Payload.Records) < 1 {
+		return false, nil
+	}
+
+	peerFound := false
+	for _, peerInfo := range result.Payload.Records {
+		if peerInfo != nil && peerInfo.Peer != nil && peerInfo.Peer.Svm != nil {
+			peerFound = true
+		}
+	}
+
+	return peerFound, nil
+}
+
+func (c RestClient) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
+	policy, err := c.SnapmirrorPolicyGet(ctx, policyName)
+	if err != nil {
+		return false, err
+	}
+	if policy == nil {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (c RestClient) SnapmirrorPolicyGet(
+	ctx context.Context, policyName string,
+) (*snapmirror.SnapmirrorPoliciesGetOK, error) {
+	// Policy is typically cluster scoped not SVM scoped, do not use SVM UUID
+	params := snapmirror.NewSnapmirrorPoliciesGetParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+
+	params.SetNameQueryParameter(ToStringPointer(policyName))
+	params.SetFieldsQueryParameter([]string{"type", "sync_type", "copy_all_source_snapshots"})
+
+	result, err := c.api.Snapmirror.SnapmirrorPoliciesGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (c RestClient) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
+	// Schedule is typically cluster scoped not SVM scoped, do not use SVM UUID
+	params := cluster.NewScheduleCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+
+	params.SetNameQueryParameter(ToStringPointer(jobName))
+
+	result, err := c.api.Cluster.ScheduleCollectionGet(params, c.authInfo)
+	if err != nil {
+		return false, err
+	}
+	if result == nil {
+		return false, fmt.Errorf("nil result finding job with name: %v", jobName)
+	}
+
+	if result.Payload.Records == nil {
+		return false, fmt.Errorf("could not find job with name: %v", jobName)
+	}
+	if result.Payload.NumRecords != 1 {
+		return false, fmt.Errorf("more than one job found with name: %v", jobName)
+	}
+
+	return true, nil
+}
+
+// SNAPMIRROR operations END
 // ///////////////////////////////////////////////////////////////////////////

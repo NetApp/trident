@@ -1989,12 +1989,10 @@ func (d OntapAPIZAPI) VolumeListBySnapshotParent(
 	return childVolumes, nil
 }
 
-func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) error {
+func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(ctx context.Context, localFlexvolName, localSVMName string) error {
 	snapDeleteResponse, err := d.api.SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName)
-	if err != nil && snapDeleteResponse != nil {
-		if snapDeleteResponse.Result.ResultErrnoAttr == azgo.EOBJECTNOTFOUND {
-			return NotFoundError(fmt.Sprintf("Error deleting snapmirror info for volume %v: %v", localFlexvolName, err))
-		} else {
+	if snapDeleteResponse != nil {
+		if snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
 			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localFlexvolName, err)
 		}
 	}
@@ -2008,7 +2006,7 @@ func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMN
 	return nil
 }
 
-func (d OntapAPIZAPI) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
+func (d OntapAPIZAPI) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, sourceSVMName string) error {
 	// Ensure no leftover snapmirror metadata
 	err := d.api.SnapmirrorRelease(sourceFlexvolName, sourceSVMName)
 	if err != nil {
@@ -2205,7 +2203,13 @@ func (d OntapAPIZAPI) SnapmirrorPolicyGet(ctx context.Context, replicationPolicy
 		}
 	}
 
-	snapmirrorPolicy.Rules = rules
+	snapmirrorPolicy.CopyAllSnapshots = false
+	for rule := range rules {
+		if rule == SnapmirrorPolicyRuleAll {
+			snapmirrorPolicy.CopyAllSnapshots = true
+			break
+		}
+	}
 
 	return snapmirrorPolicy, nil
 }
@@ -2259,14 +2263,14 @@ func (d OntapAPIZAPI) SnapmirrorBreak(
 	return nil
 }
 
-func (d OntapAPIZAPI) JobScheduleExists(ctx context.Context, replicationSchedule string) error {
+func (d OntapAPIZAPI) JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error) {
 	exists, err := d.api.JobScheduleExists(ctx, replicationSchedule)
 	if err != nil {
-		return fmt.Errorf("failed to list job schedules: %v", err)
+		return false, fmt.Errorf("failed to list job schedules: %v", err)
 	} else if !exists {
-		return fmt.Errorf("specified replicationSchedule %v does not exist", replicationSchedule)
+		return false, fmt.Errorf("specified replicationSchedule %v does not exist", replicationSchedule)
 	}
-	return nil
+	return true, nil
 }
 
 func (d OntapAPIZAPI) GetSVMPeers(ctx context.Context) ([]string, error) {

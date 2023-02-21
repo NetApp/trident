@@ -355,3 +355,4 @@ type ZapiClientInterface interface {
 	//	                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
 	IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorSetDefaultAuthResponse, error)
 }
+
