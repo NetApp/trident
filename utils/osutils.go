@@ -125,7 +125,7 @@ func execCommandRedacted(
 	}).Debug(">>>> osutils.execCommand.")
 
 	// create context with a cancellation
-	cancelCtx, cancel := context.WithCancel(ctx)
+	cancelCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	out, err := execCmd(cancelCtx, name, args...).CombinedOutput()
 
@@ -173,7 +173,7 @@ func execCommandWithTimeoutAndInput(
 	}).Debug(">>>> osutils.execCommandWithTimeoutAndInput.")
 
 	// create context with a cancellation
-	cancelCtx, cancel := context.WithTimeout(ctx, timeout)
+	cancelCtx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	cmd := execCmd(cancelCtx, name, args...)
