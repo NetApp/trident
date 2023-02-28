@@ -49,8 +49,10 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 		"Type":   "OntapAPIZAPI",
 		"spec":   volume,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeCreate")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreate")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreate")
 
 	volCreateResponse, err := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size,
 		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy,
@@ -102,7 +104,8 @@ func (d OntapAPIZAPI) VolumeInfo(ctx context.Context, name string) (*Volume, err
 		"name":   name,
 	}
 	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeInfo")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeInfo")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeInfo")
 
 	// Get Flexvol by name
 	volumeGetResponse, err := d.api.VolumeGet(name)
@@ -333,7 +336,8 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 		"spec":   lun,
 	}
 	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCreate")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
@@ -437,8 +441,10 @@ func (d OntapAPIZAPI) LunGetByName(ctx context.Context, name string) (*Lun, erro
 		"Type":    "OntapAPIZAPI",
 		"LunPath": name,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunGetByName")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunGetByName")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunGetByName")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunGetByName")
 
 	lunResponse, err := d.api.LunGet(name)
 	if err != nil || lunResponse == nil {
@@ -639,6 +645,10 @@ func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 func (d OntapAPIZAPI) LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error {
 	apiResponse, err := d.api.LunUnmap(initiatorGroupName, lunPath)
 	err = azgo.GetError(ctx, apiResponse, err)
+	if zerr := azgo.NewZapiError(apiResponse); zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_LUNMAP {
+		// IGroup is not mapped to LUN, return success.
+		return nil
+	}
 	if err != nil {
 		msg := "error unmapping LUN"
 		Logc(ctx).WithError(err).Error(msg)
@@ -1030,8 +1040,10 @@ func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error 
 		"Type":   "OntapAPIZAPI",
 		"spec":   volume,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupCreate")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
 
 	sizeBytes, err := strconv.ParseUint(volume.Size, 10, 64)
 	if err != nil {
@@ -1084,8 +1096,10 @@ func (d OntapAPIZAPI) FlexgroupInfo(ctx context.Context, volumeName string) (*Vo
 		"Type":   "OntapAPIZAPI",
 		"name":   volumeName,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupInfo")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupInfo")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupInfo")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupInfo")
 
 	// Get Flexvol by name
 	flexGroupGetResponse, err := d.api.FlexGroupGet(volumeName)

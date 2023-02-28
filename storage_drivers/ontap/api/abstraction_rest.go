@@ -138,8 +138,10 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
 		"Type":   "OntapAPIREST",
 		"spec":   volume,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeCreate")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreate")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreate")
 
 	creationErr := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
@@ -377,8 +379,10 @@ func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error 
 		"Type":   "OntapAPIREST",
 		"spec":   volume,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupCreate")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
 
 	volumeSize, _ := strconv.ParseUint(volume.Size, 10, 64)
 
@@ -831,8 +835,10 @@ func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredP
 		"policyName":         policyName,
 		"desiredPolicyRules": desiredPolicyRules,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ExportRuleCreate")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ExportRuleCreate")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ExportRuleCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ExportRuleCreate")
 
 	// unlike the ZAPI version of this function, we must create them 1 at a time here in REST
 	for _, desiredPolicyRule := range strings.Split(desiredPolicyRules, ",") {
@@ -1514,7 +1520,8 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 		"spec":   lun,
 	}
 	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCreate")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
@@ -1534,7 +1541,8 @@ func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
 		"Name":   lunPath,
 	}
 	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunDestroy")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunDestroy")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunDestroy")
 
 	lun, err := d.api.LunGetByName(ctx, lunPath)
 	if err != nil {
@@ -1627,8 +1635,10 @@ func (d OntapAPIREST) LunCloneCreate(
 		"fullSourceLunPath": fullSourceLunPath,
 		"fullCloneLunPath":  fullCloneLunPath,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCloneCreate")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCloneCreate")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCloneCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCloneCreate")
 
 	lunResponse, err := d.api.LunGetByName(ctx, fullSourceLunPath)
 	if err != nil {
@@ -1717,8 +1727,10 @@ func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, erro
 		"Type":    "OntapAPIREST",
 		"LunPath": name,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunGetByName")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunGetByName")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunGetByName")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunGetByName")
 
 	lunResponse, err := d.api.LunGetByName(ctx, name)
 	if err != nil {
@@ -1739,7 +1751,8 @@ func (d OntapAPIREST) LunRename(ctx context.Context, lunPath, newLunPath string)
 		"NewLunName": newLunPath,
 	}
 	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunRename")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunRename")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunRename")
 
 	return d.api.LunRename(ctx, lunPath, newLunPath)
 }
@@ -1777,14 +1790,17 @@ func (d OntapAPIREST) isLunMapped(
 		return alreadyMapped, lunID, fmt.Errorf("problem reading maps for LUN %s", lunPath)
 	}
 
+	Logc(ctx).WithFields(
+		LogFields{
+			"lun":    lunPath,
+			"igroup": initiatorGroupName,
+		},
+	).Debug("Checking if LUN is mapped to iGroup.")
+
 	for _, record := range lunMapResponse.Payload.Records {
 		if record.Igroup != nil {
-			if record.Igroup.Name != initiatorGroupName && !importNotManaged {
-				Logc(ctx).Debugf("deleting existing LUN mapping")
-				err = d.api.LunUnmap(ctx, record.Igroup.Name, lunPath)
-				if err != nil {
-					return alreadyMapped, lunID, fmt.Errorf("problem deleting map for LUN %s", lunPath)
-				}
+			if record.Igroup.Name != initiatorGroupName {
+				Logc(ctx).Debugf("LUN %s is mapped to iGroup %s.", lunPath, record.Igroup.Name)
 			}
 			if record.Igroup.Name == initiatorGroupName || importNotManaged {
 				if record.LogicalUnitNumber != nil {
@@ -1928,7 +1944,8 @@ func (d OntapAPIREST) LunSetSize(ctx context.Context, lunPath, newSize string) (
 		"NewSize": newSize,
 	}
 	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunSetSize")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunSetSize")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunSetSize")
 
 	return d.api.LunSetSize(ctx, lunPath, newSize)
 }
@@ -2030,8 +2047,10 @@ func (d OntapAPIREST) IgroupCreate(ctx context.Context, initiatorGroupName, init
 		"InitiatorGroupType": initiatorGroupType,
 		"OsType":             osType,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupCreate")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupCreate")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupCreate")
 
 	igroup, err := d.api.IgroupGetByName(ctx, initiatorGroupName)
 	if err != nil {
@@ -2057,8 +2076,10 @@ func (d OntapAPIREST) IgroupDestroy(ctx context.Context, initiatorGroupName stri
 		"Type":               "OntapAPIREST",
 		"InitiatorGroupName": initiatorGroupName,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupDestroy")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupDestroy")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupDestroy")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupDestroy")
 
 	err := d.api.IgroupDestroy(ctx, initiatorGroupName)
 	if err != nil {
@@ -2080,8 +2101,10 @@ func (d OntapAPIREST) EnsureIgroupAdded(
 		"InitiatorGroupName": initiatorGroupName,
 		"IQN":                initiator,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> EnsureIgroupAdded")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< EnsureIgroupAdded")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> EnsureIgroupAdded")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< EnsureIgroupAdded")
 
 	alreadyAdded, err := d.isIgroupAdded(ctx, initiator, initiatorGroupName)
 	if err != nil {
@@ -2121,8 +2144,10 @@ func (d OntapAPIREST) IgroupRemove(ctx context.Context, initiatorGroupName, init
 		"InitiatorGroupName": initiatorGroupName,
 		"IQN":                initiator,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupRemove")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupRemove")
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupRemove")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupRemove")
 
 	return d.api.IgroupRemove(ctx, initiatorGroupName, initiator)
 }

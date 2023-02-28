@@ -2488,6 +2488,8 @@ func (c RestClient) LunUnmap(
 		return fmt.Errorf("problem reading maps for LUN %s: %v", lunPath, err)
 	} else if lunMapResponse.Payload == nil {
 		return fmt.Errorf("problem reading maps for LUN %s", lunPath)
+	} else if lunMapResponse.Payload.NumRecords == 0 {
+		return nil
 	}
 	igroupUUID := lunMapResponse.Payload.Records[0].Igroup.UUID
 

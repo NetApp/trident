@@ -469,16 +469,19 @@ func (c Client) LunMapIfNotMapped(
 		return -1, fmt.Errorf("problem reading maps for LUN %s: %+v", lunPath, lunMapListResponse.Result)
 	}
 
+	Logc(ctx).WithFields(
+		LogFields{
+			"lun":    lunPath,
+			"igroup": initiatorGroupName,
+		},
+	).Debug("Checking if LUN is mapped to igroup.")
+
 	lunID := 0
 	alreadyMapped := false
 	if lunMapListResponse.Result.InitiatorGroupsPtr != nil {
 		for _, igroup := range lunMapListResponse.Result.InitiatorGroupsPtr.InitiatorGroupInfoPtr {
-			if igroup.InitiatorGroupName() != initiatorGroupName && !importNotManaged {
-				Logc(ctx).Debugf("deleting existing LUN mapping")
-				lunUnmapResponse, err := c.LunUnmap(igroup.InitiatorGroupName(), lunPath)
-				if err != nil {
-					return -1, fmt.Errorf("problem deleting map for LUN %s: %+v", lunPath, lunUnmapResponse.Result)
-				}
+			if igroup.InitiatorGroupName() != initiatorGroupName {
+				Logc(ctx).Debugf("LUN %s is mapped to iGroup %s.", lunPath, igroup.InitiatorGroupName())
 			}
 			if igroup.InitiatorGroupName() == initiatorGroupName || importNotManaged {
 
