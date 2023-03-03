@@ -1678,14 +1678,17 @@ func (d OntapAPIREST) isLunMapped(
 		return alreadyMapped, lunID, fmt.Errorf("problem reading maps for LUN %s", lunPath)
 	}
 
+	Logc(ctx).WithFields(
+		log.Fields{
+			"lun":    lunPath,
+			"igroup": initiatorGroupName,
+		},
+	).Debug("Checking if LUN is mapped to iGroup.")
+
 	for _, record := range lunMapResponse.Payload.Records {
 		if record.Igroup != nil {
-			if record.Igroup.Name != initiatorGroupName && !importNotManaged {
-				Logc(ctx).Debugf("deleting existing LUN mapping")
-				err = d.api.LunUnmap(ctx, record.Igroup.Name, lunPath)
-				if err != nil {
-					return alreadyMapped, lunID, fmt.Errorf("problem deleting map for LUN %s", lunPath)
-				}
+			if record.Igroup.Name != initiatorGroupName {
+				Logc(ctx).Debugf("LUN %s is mapped to iGroup %s.", lunPath, record.Igroup.Name)
 			}
 			if record.Igroup.Name == initiatorGroupName || importNotManaged {
 				if record.LogicalUnitNumber != nil {

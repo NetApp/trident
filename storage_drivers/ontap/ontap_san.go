@@ -627,6 +627,11 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 				return fmt.Errorf("volume %s modify failed: %v", originalName, err)
 			}
 		}
+		err = LunUnmapAllIgroups(ctx, d.GetAPI(), lunPath(volConfig.InternalName))
+		if err != nil {
+			Logc(ctx).WithField("LUN", lunInfo.Name).Warnf("Unmapping of iGroups failed: %v", err)
+			return fmt.Errorf("failed to upmap iGroups for LUN %s: %v", lunInfo.Name, err)
+		}
 	} else {
 		// Volume import is not managed by Trident
 		if lunInfo.Name != targetPath {
@@ -763,6 +768,26 @@ func (d *SANStorageDriver) Publish(
 	if volConfig.AccessInfo.PublishEnforcement && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName)
+
+		// TODO (vhs): Below blocks of code to be removed once the Force detach handles the per-backend iGroup deletion.
+		// Remove the per-backend iGroup mapping as we have already moved to per-node iGroups.
+		perBackendIGroup := getDefaultIgroupName(tridentconfig.ContextCSI, publishInfo.BackendUUID)
+		err = d.API.LunUnmap(ctx, perBackendIGroup, lunPath)
+		if err != nil {
+			Logc(ctx).WithError(err).WithFields(log.Fields{
+				"LUN":    lunPath,
+				"igroup": perBackendIGroup,
+			}).Warn("error unmapping LUN from igroup")
+		}
+
+		// Remove the default iGroup mapping as we have already moved to per-node iGroups.
+		err = d.API.LunUnmap(ctx, drivers.DefaultTridentIgroupName, lunPath)
+		if err != nil {
+			Logc(ctx).WithError(err).WithFields(log.Fields{
+				"LUN":    lunPath,
+				"igroup": drivers.DefaultTridentIgroupName,
+			}).Warn("error unmapping LUN from igroup")
+		}
 	}
 
 	// Get target info

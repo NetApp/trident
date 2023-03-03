@@ -127,7 +127,6 @@ func TestEnsureLunMapped(t *testing.T) {
 	// If lun not already mapped OR incorrectly mapped
 	lunMapCollection.Payload.Records[0].Igroup.Name = "tmp"
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
-	rsi.EXPECT().LunUnmap(ctx, "tmp", lunPath).Return(nil)
 	rsi.EXPECT().LunMap(ctx, initiatorGroup, lunPath, -1).Return(lunMapCreated, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, false)
 	assert.Nil(t, err)

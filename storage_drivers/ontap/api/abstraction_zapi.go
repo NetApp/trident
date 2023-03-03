@@ -645,6 +645,10 @@ func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 func (d OntapAPIZAPI) LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error {
 	apiResponse, err := d.api.LunUnmap(initiatorGroupName, lunPath)
 	err = azgo.GetError(ctx, apiResponse, err)
+	if zerr := azgo.NewZapiError(apiResponse); zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_LUNMAP {
+		// IGroup is not mapped to LUN, return success.
+		return nil
+	}
 	if err != nil {
 		msg := "error unmapping LUN"
 		Logc(ctx).WithError(err).Error(msg)
