@@ -1,4 +1,5 @@
-FROM gcr.io/distroless/static:42ec9e98b4eb48fac18ccde3251f757bae2c41e4
+ARG	BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 LABEL maintainers="The NetApp Trident Team" \
       app="trident-operator.netapp.io" description="Trident Operator"

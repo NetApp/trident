@@ -25,10 +25,6 @@ func isControllerRBACResource(labels map[string]string) bool {
 	return strings.HasPrefix(labels[TridentAppLabelKey], "controller")
 }
 
-func isNodeRBACResource(labels map[string]string) bool {
-	return strings.HasPrefix(labels[TridentAppLabelKey], "node")
-}
-
 const namespaceYAMLTemplate = `---
 apiVersion: v1
 kind: Namespace
@@ -231,7 +227,8 @@ rules:
       - {CLUSTER_ROLE_NAME}
 `
 
-func GetRoleYAML(flavor OrchestratorFlavor, namespace, roleName string, labels, controllingCRDetails map[string]string,
+func GetRoleYAML(
+	flavor OrchestratorFlavor, namespace, roleName string, labels, controllingCRDetails map[string]string,
 	csi bool,
 ) string {
 	var roleYAML string
@@ -284,7 +281,8 @@ rules:
       - {ROLE_NAME}
 `
 
-func GetRoleBindingYAML(flavor OrchestratorFlavor, namespace, name string,
+func GetRoleBindingYAML(
+	flavor OrchestratorFlavor, namespace, name string,
 	labels, controllingCRDetails map[string]string, csi bool,
 ) string {
 	rbYAML := roleBindingKubernetesV1YAMLTemplate
@@ -716,10 +714,21 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       {IMAGE_PULL_SECRETS}
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
-        {NODE_SELECTOR}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
+                  {NODE_SELECTOR}
       {NODE_TOLERATIONS}
       volumes:
       - name: socket-dir
@@ -1020,10 +1029,21 @@ spec:
         - name: registration-dir
           mountPath: /registration
       {IMAGE_PULL_SECRETS}
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
-        {NODE_SELECTOR}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
+                  {NODE_SELECTOR}
       {NODE_TOLERATIONS}
       volumes:
       - name: plugin-dir
@@ -1236,10 +1256,20 @@ spec:
           requests:
             cpu: 10m
             memory: 40Mi
-      nodeSelector:
-        kubernetes.io/os: windows
-        kubernetes.io/arch: amd64
-        {NODE_SELECTOR}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - windows
+                  {NODE_SELECTOR}
       volumes:
         - name: trident-tracking-dir
           hostPath:
@@ -1329,12 +1359,25 @@ spec:
     command: ["tridentctl"]
     args: ["pause"]
   {IMAGE_PULL_SECRETS}
-  nodeSelector:
-    beta.kubernetes.io/os: linux
-    beta.kubernetes.io/arch: amd64
+  affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator : In
+                    values:
+                    - linux
 `
 
-func GetOpenShiftSCCYAML(sccName, user, namespace string, labels, controllingCRDetails map[string]string, privileged bool) string {
+func GetOpenShiftSCCYAML(
+	sccName, user, namespace string, labels, controllingCRDetails map[string]string, privileged bool,
+) string {
 	sccYAML := openShiftUnprivilegedSCCYAML
 	// Only linux node pod needs an privileged SCC (i.e. privileged set to true)
 	if privileged {
@@ -2367,10 +2410,9 @@ func constructNodeSelector(nodeLabels map[string]string) string {
 
 	if nodeLabels != nil {
 		for key, value := range nodeLabels {
-			nodeSelector += fmt.Sprintf("%s: '%s'\n", key, value)
+			nodeSelector += fmt.Sprintf("- key: %s\n  operator: In\n  values:\n  - %s\n", key, value)
 		}
 	}
-
 	return nodeSelector
 }
 

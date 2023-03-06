@@ -52,6 +52,12 @@ GO_LINUX = ${DR_LINUX} go
 
 .PHONY = default build dist dist_tar dist_tag clean vet
 
+## Container base image
+## Restricting to arm64 and amd64
+ifeq ($(GOARCH),$(filter $(GOARCH),arm64 amd64))
+BASE_IMAGE := gcr.io/distroless/static@sha256:c3c3d0230d487c0ad3a0d87ad03ee02ea2ff0b3dcce91ca06a1019e07de05f12
+endif
+
 ## version variables
 OPERATOR_VERSION ?= ${VERSION}
 TRIDENT_IMAGE ?= trident
@@ -96,7 +102,7 @@ ifdef CREATE_BASE_IMAGE
 endif
 	@docker rm ${BUILD_CONTAINER_NAME}
 	cp ${BIN_DIR}/${BIN} .
-	docker build --build-arg BIN=${BIN} --build-arg K8S=${K8S} -t ${OPERATOR_TAG} --rm .
+	docker build --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg BIN=${BIN} --build-arg K8S=${K8S} -t ${OPERATOR_TAG} --rm .
 ifdef REGISTRY_ADDR
 	docker push ${OPERATOR_TAG}
 endif

@@ -79,6 +79,12 @@ DR_HELM = docker run --rm -v "${ROOT}":"/apps" $(HELM_IMAGE)
 
 default: dist
 
+## Container base image
+## Restricting to arm64 and amd64
+ifeq ($(GOARCH),$(filter $(GOARCH),arm64 amd64))
+BASE_IMAGE := gcr.io/distroless/static@sha256:c3c3d0230d487c0ad3a0d87ad03ee02ea2ff0b3dcce91ca06a1019e07de05f12
+endif
+
 ## version variables
 TRIDENT_VERSION ?= ${VERSION}
 TRIDENT_IMAGE ?= trident
@@ -124,7 +130,7 @@ endif
 	@docker rm ${BUILD_CONTAINER_NAME}
 	cp ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} .
 	chwrap/make-tarball.sh ${BIN_DIR}/chwrap chwrap.tar
-	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
+	docker build --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
 ifdef REGISTRY_ADDR
 	docker push ${TRIDENT_TAG}
 endif

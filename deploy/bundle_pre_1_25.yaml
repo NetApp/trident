@@ -456,9 +456,20 @@ spec:
           image: docker.io/netapp/trident-operator:23.01.0
           imagePullPolicy: IfNotPresent
           name: trident-operator
-      nodeSelector:
-        kubernetes.io/arch: amd64
-        kubernetes.io/os: linux
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                      - arm64
+                      - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
       serviceAccountName: trident-operator
 ---
 apiVersion: policy/v1beta1

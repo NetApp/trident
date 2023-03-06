@@ -106,6 +106,7 @@ func TestYAMLFactory(t *testing.T) {
 		GetRoleBindingYAML(FlavorOpenshift, Namespace, Name, labels, ownerRef, true),
 		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false),
 		GetClusterRoleYAML(FlavorOpenshift, Name, labels, ownerRef, true),
+		GetClusterRoleYAML(FlavorOpenshift, Name, labels, ownerRef, false),
 		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, ownerRef, false),
 		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, labels, ownerRef, true),
 		GetCSIDeploymentYAML(deploymentArgs),
@@ -123,11 +124,14 @@ func TestYAMLFactory(t *testing.T) {
 
 // TestAPIVersion validates that we get correct APIVersion value
 func TestAPIVersion(t *testing.T) {
+	controllerRBACLabels := map[string]string{"app": "controller"}
+
 	yamlsOutputs := map[string]string{
 		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, true):                         "rbac.authorization.k8s.io/v1",
 		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, true):                   "rbac.authorization.k8s.io/v1",
 		GetRoleYAML(FlavorK8s, Namespace, Name, nil, nil, false):                    "rbac.authorization.k8s.io/v1",
 		GetRoleYAML(FlavorK8s, Namespace, Name, nil, nil, true):                     "rbac.authorization.k8s.io/v1",
+		GetRoleYAML(FlavorK8s, Namespace, Name, controllerRBACLabels, nil, true):    "rbac.authorization.k8s.io/v1",
 		GetRoleYAML(FlavorOpenshift, Namespace, Name, nil, nil, true):               "rbac.authorization.k8s.io/v1",
 		GetRoleBindingYAML(FlavorK8s, Namespace, Name, nil, nil, false):             "rbac.authorization.k8s.io/v1",
 		GetRoleBindingYAML(FlavorK8s, Namespace, Name, nil, nil, true):              "rbac.authorization.k8s.io/v1",
@@ -254,13 +258,28 @@ func TestGetCSIDeploymentYAML(t *testing.T) {
 
 func TestGetCSIDeploymentYAML_NodeSelectors(t *testing.T) {
 	deploymentArgs := &DeploymentYAMLArguments{
-		NodeSelector: map[string]string{"foo": "bar"},
+		NodeSelector: map[string]string{"node-label-key": "test1"},
 	}
+
 	expectedNodeSelectorString := `
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
-        foo: 'bar'
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
+                  - key: node-label-key
+                    operator: In
+                    values:
+                    - test1
 `
 
 	yamlData := GetCSIDeploymentYAML(deploymentArgs)
@@ -268,17 +287,28 @@ func TestGetCSIDeploymentYAML_NodeSelectors(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
+
 	assert.Contains(t, yamlData, expectedNodeSelectorString,
 		fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
 
 	// Defaults
 	deploymentArgs = &DeploymentYAMLArguments{}
 	expectedNodeSelectorString = `
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
 `
-
 	yamlData = GetCSIDeploymentYAML(deploymentArgs)
 	_, err = yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {
@@ -292,9 +322,20 @@ func TestGetCSIDeploymentYAML_NodeSelectors(t *testing.T) {
 		NodeSelector: map[string]string{},
 	}
 	expectedNodeSelectorString = `
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
 `
 
 	yamlData = GetCSIDeploymentYAML(deploymentArgs)
@@ -481,7 +522,8 @@ func TestGetCSIDaemonSetYAMLLinux_ForceDetach(t *testing.T) {
 			}
 			failMsg := fmt.Sprintf("expected enableForceDetach to be %s in final YAML: %s", args.FailStr, yamlData)
 			assert.Contains(t, yamlData, args.Expected, failMsg)
-			failMsg2 := fmt.Sprintf("did not expect enableForceDetach to be %s in final YAML: %s", args.FailStr2, yamlData)
+			failMsg2 := fmt.Sprintf("did not expect enableForceDetach to be %s in final YAML: %s", args.FailStr2,
+				yamlData)
 			assert.NotContains(t, yamlData, args.Unexpected, failMsg2)
 		}
 	}
@@ -537,15 +579,29 @@ func TestGetCSIDaemonSetYAMLLinuxImagePullPolicy(t *testing.T) {
 
 func TestGetCSIDaemonSetYAMLLinux_NodeSelectors(t *testing.T) {
 	daemonsetArgs := &DaemonsetYAMLArguments{
-		NodeSelector: map[string]string{"foo": "bar"},
+		NodeSelector: map[string]string{"node-label-key": "test1"},
 	}
-	expectedNodeSelectorString := `
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
-        foo: 'bar'
-`
 
+	expectedNodeSelectorString := `
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
+                  - key: node-label-key
+                    operator: In
+                    values:
+                    - test1
+`
 	yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 	_, err := yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {
@@ -557,11 +613,21 @@ func TestGetCSIDaemonSetYAMLLinux_NodeSelectors(t *testing.T) {
 	// Defaults
 	daemonsetArgs = &DaemonsetYAMLArguments{}
 	expectedNodeSelectorString = `
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
 `
-
 	yamlData = GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 	_, err = yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {
@@ -574,12 +640,23 @@ func TestGetCSIDaemonSetYAMLLinux_NodeSelectors(t *testing.T) {
 	daemonsetArgs = &DaemonsetYAMLArguments{
 		NodeSelector: map[string]string{},
 	}
-	expectedNodeSelectorString = `
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
-`
 
+	expectedNodeSelectorString = `
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
+`
 	yamlData = GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 	_, err = yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {
@@ -738,16 +815,12 @@ func TestGetCSIDaemonSetYAMLWindowsImagePullPolicy(t *testing.T) {
 }
 
 func TestConstructNodeSelector(t *testing.T) {
-	nodeSelMap := map[string]string{"worker": "true", "master": "20"}
-	expectedNodeSelString := []string{"worker: 'true'\nmaster: '20'\n", "master: '20'\nworker: 'true'\n"}
+	nodeSelMap := map[string]string{"node-label-name": "master"}
+
+	expectedNodeSelString := "- key: node-label-name\n  operator: In\n  values:\n  - master\n"
 	result := constructNodeSelector(nodeSelMap)
-	isResultExpected := false
-	for _, v := range expectedNodeSelString {
-		if v == result {
-			isResultExpected = true
-		}
-	}
-	assert.True(t, isResultExpected)
+
+	assert.Equal(t, expectedNodeSelString, result)
 }
 
 func TestGetNamespaceYAML(t *testing.T) {
@@ -813,9 +886,27 @@ func TestGetTridentVersionPodYAML(t *testing.T) {
 					Name: "trident-csi-image-secret",
 				},
 			},
-			NodeSelector: map[string]string{
-				"beta.kubernetes.io/os":   "linux",
-				"beta.kubernetes.io/arch": "amd64",
+			Affinity: &v1.Affinity{
+				NodeAffinity: &v1.NodeAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: &v1.NodeSelector{
+						NodeSelectorTerms: []v1.NodeSelectorTerm{
+							{
+								MatchExpressions: []v1.NodeSelectorRequirement{
+									{
+										Key:      "kubernetes.io/arch",
+										Operator: v1.NodeSelectorOperator("In"),
+										Values:   []string{"arm64", "amd64"},
+									},
+									{
+										Key:      "kubernetes.io/os",
+										Operator: v1.NodeSelectorOperator("In"),
+										Values:   []string{"linux"},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}

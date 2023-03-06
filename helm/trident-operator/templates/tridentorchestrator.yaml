@@ -35,7 +35,7 @@ spec:
   controllerPluginNodeSelector:
     {{- range $key, $value := .Values.tridentControllerPluginNodeSelector }}
       {{ $key }}: "{{ $value }}"
-      {{- end}}
+    {{- end }}
   {{- end }}
   {{- if .Values.tridentControllerPluginTolerations }}
   controllerPluginTolerations:
@@ -49,7 +49,7 @@ spec:
   nodePluginNodeSelector:
     {{- range $key, $value := .Values.tridentNodePluginNodeSelector }}
     {{ $key }}: "{{ $value }}"
-    {{- end}}
+    {{- end }}
   {{- end }}
   {{- if .Values.tridentNodePluginTolerations }}
   nodePluginTolerations:
