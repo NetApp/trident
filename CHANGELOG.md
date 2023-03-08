@@ -2,7 +2,17 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v22.10.0
+## Changes since v23.01.0
+
+**Fixes:**
+
+- Fixed Trident Operator to use IPv6 localhost for installation when specified in spec.
+- Fixed Trident Operator cluster role permissions to be in sync with the bundle permissions (Issue [#799](https://github.com/NetApp/trident/issues/799)).
+- Added a fix to allow external processes to run to completion.
+- Fixed issue with attaching raw block volume on multiple nodes in RWX mode.
+- Fixed FlexGroup cloning support and volume import for SMB volumes.
+
+## v22.10.0
 
 - **IMPORTANT**: Kubernetes 1.26 is now supported in Trident. Please upgrade Trident prior to upgrading Kubernetes.
 
