@@ -298,20 +298,20 @@ type RestClientInterface interface {
 	IsVserverDRDestination(ctx context.Context) (bool, error)
 	// IsVserverDRSource identifies if the Vserver is a source vserver of Snapmirror relationship (SVM-DR) or not
 	IsVserverDRSource(ctx context.Context) (bool, error)
-	SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*models.SnapmirrorRelationship, error)
-	SnapmirrorCreate(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) error
-	SnapmirrorInitialize(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorResync(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorBreak(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string) error
-	SnapmirrorQuiesce(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorAbort(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorGet(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*models.SnapmirrorRelationship, error)
+	SnapmirrorCreate(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) error
+	SnapmirrorInitialize(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorResync(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorBreak(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string) error
+	SnapmirrorQuiesce(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorAbort(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
 	// SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
 	// Intended to be used on the source vserver
 	SnapmirrorRelease(ctx context.Context, sourceFlexvolName, sourceSVMName string) error
 	// Intended to be from the destination vserver
-	SnapmirrorDeleteViaDestination(ctx context.Context, localFlexvolName, localSVMName string) error
+	SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error
 	// Intended to be from the destination vserver
-	SnapmirrorDelete(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorDelete(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
 	IsVserverDRCapable(ctx context.Context) (bool, error)
 	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
 	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*snapmirror.SnapmirrorPoliciesGetOK, error)

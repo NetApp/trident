@@ -1299,19 +1299,19 @@ func (d OntapAPIREST) VolumeListBySnapshotParent(
 // BEGIN: Snapmirror operations
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (d OntapAPIREST) SnapmirrorDeleteViaDestination(ctx context.Context, localFlexvolName, localSVMName string) error {
-	err := d.api.SnapmirrorDeleteViaDestination(ctx, localFlexvolName, localSVMName)
+func (d OntapAPIREST) SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error {
+	err := d.api.SnapmirrorDeleteViaDestination(ctx, localInternalVolumeName, localSVMName)
 	if err != nil {
 		if !IsNotFoundError(err) {
-			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localFlexvolName, err)
+			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localInternalVolumeName, err)
 		}
 	}
 
 	// Ensure no leftover snapmirror metadata
-	err = d.api.SnapmirrorRelease(ctx, localFlexvolName, localSVMName)
+	err = d.api.SnapmirrorRelease(ctx, localInternalVolumeName, localSVMName)
 	if err != nil {
 		if !IsNotFoundError(err) {
-			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localFlexvolName, err)
+			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localInternalVolumeName, err)
 		}
 	}
 
@@ -1333,17 +1333,17 @@ func (d OntapAPIREST) IsSVMDRCapable(ctx context.Context) (bool, error) {
 }
 
 func (d OntapAPIREST) SnapmirrorCreate(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName, replicationPolicy, replicationSchedule string,
 ) error {
-	return d.api.SnapmirrorCreate(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, replicationPolicy, replicationSchedule)
+	return d.api.SnapmirrorCreate(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, replicationPolicy, replicationSchedule)
 }
 
 func (d OntapAPIREST) SnapmirrorGet(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) (*Snapmirror, error) {
-	snapmirrorResponse, err := d.api.SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapmirrorResponse, err := d.api.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err != nil {
 		return nil, err
 	}
@@ -1381,10 +1381,10 @@ func (d OntapAPIREST) SnapmirrorGet(
 }
 
 func (d OntapAPIREST) SnapmirrorInitialize(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	err := d.api.SnapmirrorInitialize(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	err := d.api.SnapmirrorInitialize(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err != nil {
 		if restErr, err := ExtractErrorResponse(ctx, err); err == nil {
 			if restErr.Error.Code == SNAPMIRROR_TRANSFER_IN_PROGRESS {
@@ -1399,22 +1399,22 @@ func (d OntapAPIREST) SnapmirrorInitialize(
 }
 
 func (d OntapAPIREST) SnapmirrorDelete(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	return d.api.SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return d.api.SnapmirrorDelete(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 func (d OntapAPIREST) SnapmirrorResync(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	err := d.api.SnapmirrorResync(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	err := d.api.SnapmirrorResync(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Error on snapmirror resync")
 		// If we fail on the resync, we need to cleanup the snapmirror
 		// it will be recreated in a future TMR reconcile loop through this function
-		if delError := d.SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
+		if delError := d.SnapmirrorDelete(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName,
 			remoteSVMName); delError != nil {
 			Logc(ctx).WithError(delError).Error("Error on snapmirror delete following a resync failure")
 		}
@@ -1457,27 +1457,27 @@ func (d OntapAPIREST) SnapmirrorPolicyGet(ctx context.Context, replicationPolicy
 }
 
 func (d OntapAPIREST) SnapmirrorQuiesce(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
 	// TODO: potential error if quiesce in progress
-	return d.api.SnapmirrorQuiesce(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return d.api.SnapmirrorQuiesce(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 func (d OntapAPIREST) SnapmirrorAbort(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
 	// TODO: Not sure if there's a transfer in progress error code
-	return d.api.SnapmirrorAbort(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return d.api.SnapmirrorAbort(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 func (d OntapAPIREST) SnapmirrorBreak(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName, snapshotName string,
 ) error {
 	// TODO: potential error if break is in progress or if volume is not DP
-	return d.api.SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName)
+	return d.api.SnapmirrorBreak(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

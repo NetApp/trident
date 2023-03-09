@@ -147,30 +147,32 @@ type OntapAPI interface {
 	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error
 
 	SnapmirrorCreate(
-		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		replicationPolicy, replicationSchedule string,
 	) error
-	SnapmirrorResync(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorDelete(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
-		*Snapmirror, error)
+	SnapmirrorResync(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName string) error
+	SnapmirrorDelete(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName string) error
+	SnapmirrorGet(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName string) (*Snapmirror, error)
 	SnapmirrorInitialize(
-		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 	) error
 	SnapmirrorPolicyGet(ctx context.Context, replicationPolicy string) (*SnapmirrorPolicy, error)
 	SnapmirrorQuiesce(
-		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 	) error
-	SnapmirrorAbort(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorAbort(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
 	SnapmirrorBreak(
-		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		snapshotName string,
 	) error
 	JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error)
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	ValidateAPIVersion(ctx context.Context) error
-	SnapmirrorDeleteViaDestination(ctx context.Context, localFlexvolName, localSVMName string) error
-	SnapmirrorRelease(ctx context.Context, localFlexvolName, localSVMName string) error
+	SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error
+	SnapmirrorRelease(ctx context.Context, localInternalVolumeName, localSVMName string) error
 	IsSVMDRCapable(ctx context.Context) (bool, error)
 
 	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error

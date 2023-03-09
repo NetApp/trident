@@ -1564,12 +1564,12 @@ func TestOntapNasStorageDriverEstablishMirror(t *testing.T) {
 		RelationshipStatus: "idle",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 	mockAPI.EXPECT().SnapmirrorInitialize(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror2, nil)
 
-	result := driver.EstablishMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "", "")
+	result := driver.EstablishMirror(ctx, "fakevolume1", "fakesvm2:fakevolume2", "", "")
 
 	assert.NoError(t, result)
 }
@@ -1591,12 +1591,12 @@ func TestOntapNasStorageDriverEstablishMirror_WithReplicationPolicy(t *testing.T
 		RelationshipStatus: "idle",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, "testpolicy").Return(snapmirrorPolicy, nil).Times(2)
 	mockAPI.EXPECT().VolumeInfo(ctx, "fakevolume1").Return(&flexVol, nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 
-	result := driver.EstablishMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "testpolicy", "")
+	result := driver.EstablishMirror(ctx, "fakevolume1", "fakesvm2:fakevolume2", "testpolicy", "")
 
 	assert.NoError(t, result)
 }
@@ -1604,7 +1604,6 @@ func TestOntapNasStorageDriverEstablishMirror_WithReplicationPolicy(t *testing.T
 func TestOntapNasStorageDriverEstablishMirror_WithReplicationPolicyAndSchedule(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 
-	svmName := "SVM1"
 	volName := "fakevolume1"
 
 	driver.Config.ReplicationPolicy = "testpolicy"
@@ -1621,13 +1620,13 @@ func TestOntapNasStorageDriverEstablishMirror_WithReplicationPolicyAndSchedule(t
 		RelationshipStatus: "idle",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, "testpolicy").Return(snapmirrorPolicy, nil).Times(2)
 	mockAPI.EXPECT().VolumeInfo(ctx, "fakevolume1").Return(&flexVol, nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 	mockAPI.EXPECT().JobScheduleExists(ctx, "testschedule").Return(true, nil)
 
-	result := driver.EstablishMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "testpolicy", "testschedule")
+	result := driver.EstablishMirror(ctx, "fakevolume1", "fakesvm2:fakevolume2", "testpolicy", "testschedule")
 
 	assert.NoError(t, result)
 }
@@ -1649,14 +1648,14 @@ func TestOntapNasStorageDriverEstablishMirror_InvalidReplicationSchedule(t *test
 		RelationshipStatus: "idle",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, "testpolicy").Return(snapmirrorPolicy, nil).Times(2)
 	mockAPI.EXPECT().VolumeInfo(ctx, "fakevolume1").Return(&flexVol, nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 	mockAPI.EXPECT().JobScheduleExists(ctx,
 		"testschedule").Return(false, fmt.Errorf("specified replicationSchedule does not exist"))
 
-	result := driver.EstablishMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "testpolicy", "testschedule")
+	result := driver.EstablishMirror(ctx, "fakevolume1", "fakesvm2:fakevolume2", "testpolicy", "testschedule")
 
 	assert.NoError(t, result)
 }
@@ -1674,12 +1673,12 @@ func TestOntapNasStorageDriverReestablishMirror(t *testing.T) {
 		IsHealthy:          true,
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror2, nil)
 	mockAPI.EXPECT().SnapmirrorResync(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(nil)
 
-	result := driver.ReestablishMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "", "")
+	result := driver.ReestablishMirror(ctx, "fakevolume1", "fakesvm2:fakevolume2", "", "")
 
 	assert.NoError(t, result)
 }
@@ -1695,11 +1694,11 @@ func TestOntapNasStorageDriverReestablishMirror_WithReplicationPolicy(t *testing
 		RelationshipStatus: "idle",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, "testpolicy").Return(snapmirrorPolicy, nil).Times(2)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 
-	result := driver.ReestablishMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "testpolicy", "")
+	result := driver.ReestablishMirror(ctx, "fakevolume1", "fakesvm2:fakevolume2", "testpolicy", "")
 
 	assert.NoError(t, result)
 }
@@ -1715,13 +1714,13 @@ func TestOntapNasStorageDriverReestablishMirror_WithReplicationPolicyAndSchedule
 		RelationshipStatus: "idle",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, "testpolicy").Return(snapmirrorPolicy, nil).Times(2)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 	mockAPI.EXPECT().JobScheduleExists(ctx,
 		"testschedule").Return(false, fmt.Errorf("specified replicationSchedule does not exist"))
 
-	result := driver.ReestablishMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "testpolicy",
+	result := driver.ReestablishMirror(ctx, "fakevolume1", "fakesvm2:fakevolume2", "testpolicy",
 		"testschedule")
 
 	assert.NoError(t, result)
@@ -1738,11 +1737,11 @@ func TestOntapNasStorageDriverPromoteMirror(t *testing.T) {
 		Type: "async_mirror",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, "testpolicy").Return(snapmirrorPolicy, nil)
 
-	waitingForSnap, err := driver.PromoteMirror(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2", "snap1")
+	waitingForSnap, err := driver.PromoteMirror(ctx, "fakevolume1", "fakesvm2:fakevolume2", "snap1")
 
 	assert.False(t, waitingForSnap)
 	assert.Error(t, err)
@@ -1755,10 +1754,10 @@ func TestOntapNasStorageDriverGetMirrorStatus(t *testing.T) {
 		RelationshipStatus: "idle",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 
-	status, err := driver.GetMirrorStatus(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2")
+	status, err := driver.GetMirrorStatus(ctx, "fakevolume1", "fakesvm2:fakevolume2")
 
 	assert.Equal(t, "established", status)
 	assert.NoError(t, err)
@@ -1767,10 +1766,10 @@ func TestOntapNasStorageDriverGetMirrorStatus(t *testing.T) {
 func TestOntapNasStorageDriverReleaseMirror(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorRelease(ctx, "fakevolume1", "fakesvm1").Return(nil)
 
-	result := driver.ReleaseMirror(ctx, "fakesvm1:fakevolume1")
+	result := driver.ReleaseMirror(ctx, "fakevolume1")
 
 	assert.NoError(t, result)
 }
@@ -1784,13 +1783,15 @@ func TestOntapNasStorageDriverGetReplicationDetails(t *testing.T) {
 		ReplicationSchedule: "testschedule",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
 	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "fakevolume2", "fakesvm2").Return(snapmirror, nil)
 
-	policy, schedule, err := driver.GetReplicationDetails(ctx, "fakesvm1:fakevolume1", "fakesvm2:fakevolume2")
+	policy, schedule, SVMName, err := driver.GetReplicationDetails(ctx, "fakevolume1",
+		"fakesvm2:fakevolume2")
 
 	assert.Equal(t, "testpolicy", policy)
 	assert.Equal(t, "testschedule", schedule)
+	assert.Equal(t, "fakesvm1", SVMName)
 	assert.NoError(t, err)
 }
 

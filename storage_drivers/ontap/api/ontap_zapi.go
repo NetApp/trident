@@ -2550,10 +2550,10 @@ func (c Client) isVserverInSVMDR(ctx context.Context) bool {
 }
 
 func (c Client) SnapmirrorGet(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorGetResponse, error) {
 	query := azgo.NewSnapmirrorGetRequest()
-	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVolume(localInternalVolumeName)
 	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
@@ -2562,10 +2562,10 @@ func (c Client) SnapmirrorGet(
 }
 
 func (c Client) SnapmirrorCreate(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
 ) (*azgo.SnapmirrorCreateResponse, error) {
 	query := azgo.NewSnapmirrorCreateRequest()
-	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVolume(localInternalVolumeName)
 	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
@@ -2581,10 +2581,10 @@ func (c Client) SnapmirrorCreate(
 }
 
 func (c Client) SnapmirrorInitialize(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorInitializeResponse, error) {
 	query := azgo.NewSnapmirrorInitializeRequest()
-	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVolume(localInternalVolumeName)
 	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
@@ -2593,10 +2593,10 @@ func (c Client) SnapmirrorInitialize(
 }
 
 func (c Client) SnapmirrorResync(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorResyncResponse, error) {
 	query := azgo.NewSnapmirrorResyncRequest()
-	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVolume(localInternalVolumeName)
 	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
@@ -2611,10 +2611,10 @@ func (c Client) SnapmirrorResync(
 }
 
 func (c Client) SnapmirrorBreak(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string,
 ) (*azgo.SnapmirrorBreakResponse, error) {
 	query := azgo.NewSnapmirrorBreakRequest()
-	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVolume(localInternalVolumeName)
 	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
@@ -2627,10 +2627,10 @@ func (c Client) SnapmirrorBreak(
 }
 
 func (c Client) SnapmirrorQuiesce(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorQuiesceResponse, error) {
 	query := azgo.NewSnapmirrorQuiesceRequest()
-	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVolume(localInternalVolumeName)
 	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
@@ -2639,10 +2639,10 @@ func (c Client) SnapmirrorQuiesce(
 }
 
 func (c Client) SnapmirrorAbort(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorAbortResponse, error) {
 	query := azgo.NewSnapmirrorAbortRequest()
-	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVolume(localInternalVolumeName)
 	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
@@ -2684,10 +2684,10 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 
 // Intended to be from the destination vserver
 func (c Client) SnapmirrorDeleteViaDestination(
-	localFlexvolName, localSVMName string,
+	localInternalVolumeName, localSVMName string,
 ) (*azgo.SnapmirrorDestroyResponse, error) {
 	query := azgo.NewSnapmirrorDestroyRequest()
-	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVolume(localInternalVolumeName)
 	query.SetDestinationVserver(c.SVMName())
 
 	return query.ExecuteUsing(c.zr)
@@ -2695,10 +2695,10 @@ func (c Client) SnapmirrorDeleteViaDestination(
 
 // Intended to be from the destination vserver
 func (c Client) SnapmirrorDelete(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorDestroyResponse, error) {
 	query := azgo.NewSnapmirrorDestroyRequest()
-	query.SetDestinationVolume(localFlexvolName)
+	query.SetDestinationVolume(localInternalVolumeName)
 	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)

@@ -921,7 +921,6 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
 
-	volConfig.MirrorHandle = d.API.SVMName() + ":" + volConfig.InternalName
 	if d.Config.NASType == sa.SMB {
 		volConfig.AccessInfo.SMBServer = d.Config.DataLIF
 		volConfig.FileSystem = sa.SMB
@@ -1147,7 +1146,7 @@ func (d NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorag
 // EstablishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
 // had a relationship
 func (d *NASStorageDriver) EstablishMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
 ) error {
 	// If replication policy in TMR is empty use the backend policy
 	if replicationPolicy == "" {
@@ -1181,13 +1180,13 @@ func (d *NASStorageDriver) EstablishMirror(
 		replicationSchedule = ""
 	}
 
-	return establishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
 }
 
 // ReestablishMirror will attempt to resync a snapmirror relationship,
 // if and only if the relationship existed previously
 func (d *NASStorageDriver) ReestablishMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
 ) error {
 	// If replication policy in TMR is empty use the backend policy
 	if replicationPolicy == "" {
@@ -1221,35 +1220,33 @@ func (d *NASStorageDriver) ReestablishMirror(
 		replicationSchedule = ""
 	}
 
-	return reestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
 }
 
 // PromoteMirror will break the snapmirror and make the destination volume RW,
 // optionally after a given snapshot has synced
 func (d *NASStorageDriver) PromoteMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotName string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
 ) (bool, error) {
-	return promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
+	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
 		d.API)
 }
 
 // GetMirrorStatus returns the current state of a snapmirror relationship
 func (d *NASStorageDriver) GetMirrorStatus(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
 ) (string, error) {
-	return getMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
+	return getMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
 }
 
 // ReleaseMirror will release the snapmirror relationship data of the source volume
-func (d *NASStorageDriver) ReleaseMirror(ctx context.Context, localVolumeHandle string) error {
-	return releaseMirror(ctx, localVolumeHandle, d.API)
+func (d *NASStorageDriver) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {
+	return releaseMirror(ctx, localInternalVolumeName, d.API)
 }
 
 // GetReplicationDetails returns the replication policy and schedule of a snapmirror relationship
-func (d *NASStorageDriver) GetReplicationDetails(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
-) (string, string, error) {
-	return getReplicationDetails(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
+func (d *NASStorageDriver) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+	return getReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
 }
 
 // MountVolume returns the volume mount error(if any)

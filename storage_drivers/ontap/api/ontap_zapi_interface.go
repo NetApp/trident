@@ -291,20 +291,20 @@ type ZapiClientInterface interface {
 	IsVserverDRDestination(ctx context.Context) (bool, error)
 	// IsVserverDRSource identifies if the Vserver is a source vserver of Snapmirror relationship (SVM-DR) or not
 	IsVserverDRSource(ctx context.Context) (bool, error)
-	SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorGetResponse, error)
-	SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (*azgo.SnapmirrorCreateResponse, error)
-	SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorInitializeResponse, error)
-	SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorResyncResponse, error)
-	SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string) (*azgo.SnapmirrorBreakResponse, error)
-	SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorQuiesceResponse, error)
-	SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorAbortResponse, error)
+	SnapmirrorGet(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorGetResponse, error)
+	SnapmirrorCreate(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (*azgo.SnapmirrorCreateResponse, error)
+	SnapmirrorInitialize(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorInitializeResponse, error)
+	SnapmirrorResync(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorResyncResponse, error)
+	SnapmirrorBreak(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string) (*azgo.SnapmirrorBreakResponse, error)
+	SnapmirrorQuiesce(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorQuiesceResponse, error)
+	SnapmirrorAbort(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorAbortResponse, error)
 	// SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
 	// Intended to be used on the source vserver
 	SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 	// Intended to be from the destination vserver
-	SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) (*azgo.SnapmirrorDestroyResponse, error)
+	SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName string) (*azgo.SnapmirrorDestroyResponse, error)
 	// Intended to be from the destination vserver
-	SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorDestroyResponse, error)
+	SnapmirrorDelete(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorDestroyResponse, error)
 	IsVserverDRCapable(ctx context.Context) (bool, error)
 	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
 	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*azgo.SnapmirrorPolicyInfoType, error)
@@ -355,4 +355,3 @@ type ZapiClientInterface interface {
 	//	                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
 	IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorSetDefaultAuthResponse, error)
 }
-

@@ -194,14 +194,10 @@ func (c *TridentCrdController) deleteMirrorRelationship(obj interface{}) {
 // updateTMRConditionLocalFields returns a new TridentMirrorRelationshipCondition object with the specified fields set
 func updateTMRConditionLocalFields(
 	statusCondition *netappv1.TridentMirrorRelationshipCondition,
-	localVolumeHandle,
 	localPVCName,
 	remoteVolumeHandle string,
 ) (*netappv1.TridentMirrorRelationshipCondition, error) {
 	conditionCopy := statusCondition.DeepCopy()
-	if localVolumeHandle != "" {
-		conditionCopy.LocalVolumeHandle = localVolumeHandle
-	}
 	conditionCopy.LocalPVCName = localPVCName
 	conditionCopy.RemoteVolumeHandle = remoteVolumeHandle
 	return conditionCopy, nil
@@ -410,10 +406,10 @@ func (c *TridentCrdController) getCurrentMirrorState(
 	ctx context.Context,
 	desiredMirrorState,
 	backendUUID,
-	localVolumeHandle,
+	localInternalVolumeName,
 	remoteVolumeHandle string,
 ) (string, error) {
-	currentMirrorState, err := c.orchestrator.GetMirrorStatus(ctx, backendUUID, localVolumeHandle, remoteVolumeHandle)
+	currentMirrorState, err := c.orchestrator.GetMirrorStatus(ctx, backendUUID, localInternalVolumeName, remoteVolumeHandle)
 	if err != nil {
 		// Unsupported backends are always "promoted"
 		if utils.IsUnsupportedError(err) {
@@ -538,7 +534,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 		)
 		Logx(ctx).WithFields(logFields).Debugf(statusCondition.Message)
 		c.recorder.Eventf(relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message)
-		return updateTMRConditionLocalFields(statusCondition, "", localPVCName, volumeMapping.RemoteVolumeHandle)
+		return updateTMRConditionLocalFields(statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 	}
 
 	// If we not trying to promote the mirror then we should verify the backend supports mirroring
@@ -549,34 +545,34 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).WithError(err).Error(statusCondition.Message)
 			c.recorder.Eventf(
 				relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message)
-			return updateTMRConditionLocalFields(statusCondition, "", localPVCName, volumeMapping.RemoteVolumeHandle)
+			return updateTMRConditionLocalFields(statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 		} else if !mirrorCapable {
 			statusCondition.MirrorState = netappv1.MirrorStateInvalid
 			statusCondition.Message = "localPVC's backend does not support mirroring"
 			Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Warn(statusCondition.Message)
 			c.recorder.Eventf(
 				relationship, corev1.EventTypeWarning, netappv1.MirrorStateInvalid, statusCondition.Message)
-			return updateTMRConditionLocalFields(statusCondition, "", localPVCName, volumeMapping.RemoteVolumeHandle)
+			return updateTMRConditionLocalFields(statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 		}
 	}
 
-	localVolumeHandle := existingVolume.Config.MirrorHandle
+	localInternalVolumeName := existingVolume.Config.InternalName
 	remoteVolumeHandle := volumeMapping.RemoteVolumeHandle
 
 	desiredMirrorState := relationship.Spec.MirrorState
 	currentMirrorState, _ := c.getCurrentMirrorState(
-		ctx, desiredMirrorState, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
+		ctx, desiredMirrorState, existingVolume.BackendUUID, localInternalVolumeName, remoteVolumeHandle,
 	)
 
 	// Release any previous snapmirror relationship
 	if relationship.Spec.MirrorState == netappv1.MirrorStateReleased {
 		statusCondition.Message = "Releasing snapmirror metadata"
-		if err := c.orchestrator.ReleaseMirror(ctx, existingVolume.BackendUUID, localVolumeHandle); err != nil {
+		if err := c.orchestrator.ReleaseMirror(ctx, existingVolume.BackendUUID, localInternalVolumeName); err != nil {
 			Logx(ctx).WithError(err).Error("Error releasing snapmirror")
 		}
 
 		return updateTMRConditionLocalFields(
-			statusCondition, localVolumeHandle, localPVCName, volumeMapping.RemoteVolumeHandle)
+			statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 	}
 
 	// If we are not already at our desired state on the backend
@@ -601,7 +597,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			// Pass in the replicationPolicy and replicationSchedule to establish mirror
 			// Initialize snapmirror relationship
 			err = c.orchestrator.EstablishMirror(
-				ctx, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
+				ctx, existingVolume.BackendUUID, localInternalVolumeName, remoteVolumeHandle,
 				relationship.Spec.ReplicationPolicy, relationship.Spec.ReplicationSchedule)
 			if err != nil && !api.IsNotReadyError(err) {
 				currentMirrorState = netappv1.MirrorStateFailed
@@ -611,13 +607,13 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message,
 				)
 			} else if api.IsNotReadyError(err) {
-				update, _ := updateTMRConditionLocalFields(statusCondition, "", localPVCName,
+				update, _ := updateTMRConditionLocalFields(statusCondition, localPVCName,
 					volumeMapping.RemoteVolumeHandle)
 				return update, utils.ReconcileDeferredError(err)
 			} else {
 				// If we performed an action, get new mirror state
 				currentMirrorState, _ = c.getCurrentMirrorState(
-					ctx, desiredMirrorState, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
+					ctx, desiredMirrorState, existingVolume.BackendUUID, localInternalVolumeName, remoteVolumeHandle,
 				)
 			}
 		} else if desiredMirrorState == netappv1.MirrorStateReestablished &&
@@ -626,7 +622,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			Logx(ctx).WithFields(logFields).Debugf("Attempting to reestablish mirror")
 			// Resync snapmirror relationship
 			err = c.orchestrator.ReestablishMirror(
-				ctx, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
+				ctx, existingVolume.BackendUUID, localInternalVolumeName, remoteVolumeHandle,
 				relationship.Spec.ReplicationPolicy, relationship.Spec.ReplicationSchedule)
 			if err != nil {
 				currentMirrorState = netappv1.MirrorStateFailed
@@ -638,7 +634,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			} else {
 				// If we performed an action, get new mirror state
 				currentMirrorState, _ = c.getCurrentMirrorState(
-					ctx, desiredMirrorState, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
+					ctx, desiredMirrorState, existingVolume.BackendUUID, localInternalVolumeName, remoteVolumeHandle,
 				)
 			}
 		} else if desiredMirrorState == netappv1.MirrorStatePromoted &&
@@ -647,7 +643,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 				"Attempting to promote volume for mirror",
 			)
 			waitingForSnapshot, err := c.orchestrator.PromoteMirror(
-				ctx, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
+				ctx, existingVolume.BackendUUID, localInternalVolumeName, remoteVolumeHandle,
 				volumeMapping.PromotedSnapshotHandle,
 			)
 			if err != nil && !api.IsNotReadyError(err) {
@@ -658,7 +654,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message,
 				)
 			} else if api.IsNotReadyError(err) {
-				update, _ := updateTMRConditionLocalFields(statusCondition, "", localPVCName,
+				update, _ := updateTMRConditionLocalFields(statusCondition, localPVCName,
 					volumeMapping.RemoteVolumeHandle)
 				return update, err
 			}
@@ -671,37 +667,39 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 
 	statusCondition.MirrorState = currentMirrorState
 
-	statusCondition = c.updateTMRConditionReplicationSettings(ctx, statusCondition, existingVolume, localVolumeHandle, remoteVolumeHandle)
+	statusCondition = c.updateTMRConditionReplicationSettings(ctx, statusCondition, existingVolume, localInternalVolumeName,
+		remoteVolumeHandle)
 
 	if utils.IsUnsupportedError(err) {
 		statusCondition.MirrorState = netappv1.MirrorStateInvalid
 		statusCondition.Message = err.Error()
 		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Error(err)
 		c.recorder.Eventf(relationship, corev1.EventTypeWarning, netappv1.MirrorStateInvalid, statusCondition.Message)
-		return updateTMRConditionLocalFields(statusCondition, "", localPVCName, volumeMapping.RemoteVolumeHandle)
+		return updateTMRConditionLocalFields(statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 	}
 
 	return updateTMRConditionLocalFields(
-		statusCondition, localVolumeHandle, localPVCName, volumeMapping.RemoteVolumeHandle)
+		statusCondition, localPVCName, volumeMapping.RemoteVolumeHandle)
 }
 
 func (c *TridentCrdController) updateTMRConditionReplicationSettings(
 	ctx context.Context,
 	statusCondition *netappv1.TridentMirrorRelationshipCondition,
 	volume *storage.VolumeExternal,
-	localVolumeHandle,
+	localInternalVolumeName,
 	remoteVolumeHandle string,
 ) *netappv1.TridentMirrorRelationshipCondition {
 	conditionCopy := statusCondition.DeepCopy()
 	// Get the replication policy and schedule
-	policy, schedule, err := c.orchestrator.GetReplicationDetails(ctx, volume.BackendUUID,
-		localVolumeHandle, remoteVolumeHandle)
+	policy, schedule, SVMName, err := c.orchestrator.GetReplicationDetails(ctx, volume.BackendUUID,
+		localInternalVolumeName, remoteVolumeHandle)
 	if err != nil {
 		Logx(ctx).Errorf("Error getting replication details: %v", err)
 	} else {
 		conditionCopy.ReplicationPolicy = policy
 		conditionCopy.ReplicationSchedule = schedule
 	}
+	conditionCopy.LocalVolumeHandle = SVMName + ":" + localInternalVolumeName
 
 	return conditionCopy
 }

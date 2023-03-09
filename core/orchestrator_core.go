@@ -5347,10 +5347,7 @@ func (o *TridentOrchestrator) isCRDContext(ctx context.Context) bool {
 }
 
 // EstablishMirror creates a net-new replication mirror relationship between 2 volumes on a backend
-func (o *TridentOrchestrator) EstablishMirror(
-	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
-	replicationSchedule string,
-) (err error) {
+func (o *TridentOrchestrator) EstablishMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5369,15 +5366,12 @@ func (o *TridentOrchestrator) EstablishMirror(
 	if !ok {
 		return fmt.Errorf("backend does not support mirroring")
 	}
-	return mirrorBackend.EstablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+	return mirrorBackend.EstablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
 		replicationSchedule)
 }
 
 // ReestablishMirror recreates a previously existing replication mirror relationship between 2 volumes on a backend
-func (o *TridentOrchestrator) ReestablishMirror(
-	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
-	replicationSchedule string,
-) (err error) {
+func (o *TridentOrchestrator) ReestablishMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5396,14 +5390,12 @@ func (o *TridentOrchestrator) ReestablishMirror(
 	if !ok {
 		return fmt.Errorf("backend does not support mirroring")
 	}
-	return mirrorBackend.ReestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+	return mirrorBackend.ReestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
 		replicationSchedule)
 }
 
 // PromoteMirror makes the local volume the primary
-func (o *TridentOrchestrator) PromoteMirror(
-	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
-) (waitingForSnapshot bool, err error) {
+func (o *TridentOrchestrator) PromoteMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, snapshotHandle string) (waitingForSnapshot bool, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5422,13 +5414,11 @@ func (o *TridentOrchestrator) PromoteMirror(
 	if !ok {
 		return false, fmt.Errorf("backend does not support mirroring")
 	}
-	return mirrorBackend.PromoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotHandle)
+	return mirrorBackend.PromoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotHandle)
 }
 
 // GetMirrorStatus returns the current status of the mirror relationship
-func (o *TridentOrchestrator) GetMirrorStatus(
-	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
-) (status string, err error) {
+func (o *TridentOrchestrator) GetMirrorStatus(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (status string, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5447,7 +5437,7 @@ func (o *TridentOrchestrator) GetMirrorStatus(
 	if !ok {
 		return "", fmt.Errorf("backend does not support mirroring")
 	}
-	return mirrorBackend.GetMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle)
+	return mirrorBackend.GetMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle)
 }
 
 func (o *TridentOrchestrator) CanBackendMirror(ctx context.Context, backendUUID string) (capable bool, err error) {
@@ -5469,9 +5459,7 @@ func (o *TridentOrchestrator) CanBackendMirror(ctx context.Context, backendUUID 
 }
 
 // ReleaseMirror removes snapmirror relationship infromation and snapshots for a source volume in ONTAP
-func (o *TridentOrchestrator) ReleaseMirror(
-	ctx context.Context, backendUUID, localVolumeHandle string,
-) (err error) {
+func (o *TridentOrchestrator) ReleaseMirror(ctx context.Context, backendUUID, localInternalVolumeName string) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5490,17 +5478,15 @@ func (o *TridentOrchestrator) ReleaseMirror(
 	if !ok {
 		return fmt.Errorf("backend does not support mirroring")
 	}
-	return mirrorBackend.ReleaseMirror(ctx, localVolumeHandle)
+	return mirrorBackend.ReleaseMirror(ctx, localInternalVolumeName)
 }
 
-// GetReplicationDetails returns the current replication policy and schedule of a relationship
-func (o *TridentOrchestrator) GetReplicationDetails(
-	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
-) (policy, schedule string, err error) {
+// GetReplicationDetails returns the current replication policy and schedule of a relationship and the SVM name and UUID
+func (o *TridentOrchestrator) GetReplicationDetails(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (policy, schedule, SVMName string, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
-		return "", "", o.bootstrapError
+		return "", "", "", o.bootstrapError
 	}
 	defer recordTiming("replication_details", &err)()
 	o.mutex.Lock()
@@ -5509,13 +5495,13 @@ func (o *TridentOrchestrator) GetReplicationDetails(
 
 	backend, err := o.getBackendByBackendUUID(backendUUID)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 	mirrorBackend, ok := backend.(storage.Mirrorer)
 	if !ok {
-		return "", "", fmt.Errorf("backend does not support mirroring")
+		return "", "", "", fmt.Errorf("backend does not support mirroring")
 	}
-	return mirrorBackend.GetReplicationDetails(ctx, localVolumeHandle, remoteVolumeHandle)
+	return mirrorBackend.GetReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle)
 }
 
 func (o *TridentOrchestrator) GetCHAP(

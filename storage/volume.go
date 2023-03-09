@@ -55,7 +55,6 @@ type VolumeConfig struct {
 	PreferredTopologies       []map[string]string    `json:"preferredTopologies,omitempty"`
 	AllowedTopologies         []map[string]string    `json:"allowedTopologies,omitempty"`
 	LUKSPassphraseNames       []string               `json:"luksPassphraseNames,omitempty"`
-	MirrorHandle              string                 `json:"mirrorHandle,omitempty"`
 	// IsMirrorDestination is whether the volume is currently the destination in a mirror relationship
 	IsMirrorDestination bool `json:"mirrorDestination,omitempty"`
 	// PeerVolumeHandle is the internal volume handle for the source volume if this volume is a mirror destination

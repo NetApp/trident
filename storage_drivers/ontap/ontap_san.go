@@ -1022,8 +1022,6 @@ func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 		return nil
 	}
 
-	volConfig.MirrorHandle = d.API.SVMName() + ":" + volConfig.InternalName
-
 	// Check if the volume is RW and don't map the lun if not RW
 	volIsRW, err := isFlexvolRW(ctx, d.GetAPI(), volConfig.InternalName)
 	if !volIsRW {
@@ -1352,7 +1350,7 @@ func (d SANStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorag
 // EstablishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
 // had a relationship
 func (d *SANStorageDriver) EstablishMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
 ) error {
 	// If replication policy in TMR is empty use the backend policy
 	if replicationPolicy == "" {
@@ -1386,13 +1384,13 @@ func (d *SANStorageDriver) EstablishMirror(
 		replicationSchedule = ""
 	}
 
-	return establishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
 }
 
 // ReestablishMirror will attempt to resync a snapmirror relationship,
 // if and only if the relationship existed previously
 func (d *SANStorageDriver) ReestablishMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
 ) error {
 	// If replication policy in TMR is empty use the backend policy
 	if replicationPolicy == "" {
@@ -1426,35 +1424,33 @@ func (d *SANStorageDriver) ReestablishMirror(
 		replicationSchedule = ""
 	}
 
-	return reestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
 }
 
 // PromoteMirror will break the snapmirror and make the destination volume RW,
 // optionally after a given snapshot has synced
 func (d *SANStorageDriver) PromoteMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotName string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
 ) (bool, error) {
-	return promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
+	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
 		d.API)
 }
 
 // GetMirrorStatus returns the current state of a snapmirror relationship
 func (d *SANStorageDriver) GetMirrorStatus(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
 ) (string, error) {
-	return getMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
+	return getMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
 }
 
 // ReleaseMirror will release the snapmirror relationship data of the source volume
-func (d *SANStorageDriver) ReleaseMirror(ctx context.Context, localVolumeHandle string) error {
-	return releaseMirror(ctx, localVolumeHandle, d.API)
+func (d *SANStorageDriver) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {
+	return releaseMirror(ctx, localInternalVolumeName, d.API)
 }
 
 // GetReplicationDetails returns the replication policy and schedule of a snapmirror relationship
-func (d *SANStorageDriver) GetReplicationDetails(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
-) (string, string, error) {
-	return getReplicationDetails(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
+func (d *SANStorageDriver) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+	return getReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
 }
 
 func (d *SANStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.IscsiChapInfo, error) {

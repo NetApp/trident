@@ -2003,18 +2003,18 @@ func (d OntapAPIZAPI) VolumeListBySnapshotParent(
 	return childVolumes, nil
 }
 
-func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(ctx context.Context, localFlexvolName, localSVMName string) error {
-	snapDeleteResponse, err := d.api.SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName)
+func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error {
+	snapDeleteResponse, err := d.api.SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName)
 	if snapDeleteResponse != nil {
 		if snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
-			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localFlexvolName, err)
+			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localInternalVolumeName, err)
 		}
 	}
 
 	// Ensure no leftover snapmirror metadata
-	err = d.api.SnapmirrorRelease(localFlexvolName, localSVMName)
+	err = d.api.SnapmirrorRelease(localInternalVolumeName, localSVMName)
 	if err != nil {
-		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localFlexvolName, err)
+		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localInternalVolumeName, err)
 	}
 
 	return nil
@@ -2047,10 +2047,10 @@ func (d OntapAPIZAPI) SVMUUID() string {
 }
 
 func (d OntapAPIZAPI) SnapmirrorCreate(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName, replicationPolicy, replicationSchedule string,
 ) error {
-	snapCreate, err := d.api.SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+	snapCreate, err := d.api.SnapmirrorCreate(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		replicationPolicy, replicationSchedule)
 	if err = azgo.GetError(ctx, snapCreate, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); !ok || zerr.Code() != azgo.EDUPLICATEENTRY {
@@ -2062,10 +2062,10 @@ func (d OntapAPIZAPI) SnapmirrorCreate(
 }
 
 func (d OntapAPIZAPI) SnapmirrorGet(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) (*Snapmirror, error) {
-	snapmirrorResponse, err := d.api.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapmirrorResponse, err := d.api.SnapmirrorGet(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err = azgo.GetError(ctx, snapmirrorResponse, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
 			if zerr.Code() == azgo.EOBJECTNOTFOUND {
@@ -2130,10 +2130,10 @@ func (d OntapAPIZAPI) SnapmirrorGet(
 }
 
 func (d OntapAPIZAPI) SnapmirrorInitialize(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	_, err := d.api.SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	_, err := d.api.SnapmirrorInitialize(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
 			if !zerr.IsPassed() {
@@ -2151,10 +2151,10 @@ func (d OntapAPIZAPI) SnapmirrorInitialize(
 }
 
 func (d OntapAPIZAPI) SnapmirrorDelete(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	snapDelete, deleteErr := d.api.SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapDelete, deleteErr := d.api.SnapmirrorDelete(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if deleteErr = azgo.GetError(ctx, snapDelete, deleteErr); deleteErr != nil {
 		Logc(ctx).WithError(deleteErr).Warn("Error on snapmirror delete")
 	}
@@ -2162,16 +2162,16 @@ func (d OntapAPIZAPI) SnapmirrorDelete(
 }
 
 func (d OntapAPIZAPI) SnapmirrorResync(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	snapResync, err := d.api.SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapResync, err := d.api.SnapmirrorResync(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err = azgo.GetError(ctx, snapResync, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); !ok || zerr.Code() != azgo.ETRANSFERINPROGRESS {
 			Logc(ctx).WithError(err).Error("Error on snapmirror resync")
 			// If we fail on the resync, we need to cleanup the snapmirror
 			// it will be recreated in a future TMR reconcile loop through this function
-			if delError := d.SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
+			if delError := d.SnapmirrorDelete(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName,
 				remoteSVMName); delError != nil {
 				Logc(ctx).WithError(delError).Error("Error on snapmirror delete following a resync failure")
 			}
@@ -2229,10 +2229,10 @@ func (d OntapAPIZAPI) SnapmirrorPolicyGet(ctx context.Context, replicationPolicy
 }
 
 func (d OntapAPIZAPI) SnapmirrorQuiesce(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	snapQuiesce, err := d.api.SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapQuiesce, err := d.api.SnapmirrorQuiesce(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err = azgo.GetError(ctx, snapQuiesce, err); err != nil {
 		Logc(ctx).WithError(err).Error("Error on snapmirror quiesce")
 		if err.(azgo.ZapiError).Code() == azgo.EAPIERROR {
@@ -2244,10 +2244,10 @@ func (d OntapAPIZAPI) SnapmirrorQuiesce(
 }
 
 func (d OntapAPIZAPI) SnapmirrorAbort(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	snapAbort, err := d.api.SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapAbort, err := d.api.SnapmirrorAbort(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err = azgo.GetError(ctx, snapAbort, err); err != nil {
 		zerr, ok := err.(azgo.ZapiError)
 		if !ok || zerr.Code() != azgo.ENOTRANSFERINPROGRESS {
@@ -2259,10 +2259,10 @@ func (d OntapAPIZAPI) SnapmirrorAbort(
 }
 
 func (d OntapAPIZAPI) SnapmirrorBreak(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName, snapshotName string,
 ) error {
-	snapBreak, err := d.api.SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+	snapBreak, err := d.api.SnapmirrorBreak(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		snapshotName)
 	if err = azgo.GetError(ctx, snapBreak, err); err != nil {
 		zerr, ok := err.(azgo.ZapiError)

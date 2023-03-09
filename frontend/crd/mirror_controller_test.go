@@ -132,17 +132,15 @@ func TestUpdateMirrorRelationshipNeedsUpdate(t *testing.T) {
 }
 
 func TestUpdateTMRConditionLocalFields(t *testing.T) {
-	localVolumeHandle := "ontap_svm:ontap_flexvol"
 	localPVCName := "test_pvc"
 	remoteVolumeHandle := "ontap_svm2:ontap_flexvol"
 	expectedStatusCondition := &netappv1.TridentMirrorRelationshipCondition{
-		LocalVolumeHandle:  localVolumeHandle,
 		LocalPVCName:       localPVCName,
 		RemoteVolumeHandle: remoteVolumeHandle,
 	}
 	statusCondition := &netappv1.TridentMirrorRelationshipCondition{}
 	newStatusCondition, err := updateTMRConditionLocalFields(
-		statusCondition, localVolumeHandle, localPVCName, remoteVolumeHandle)
+		statusCondition, localPVCName, remoteVolumeHandle)
 	if err != nil {
 		t.Errorf("Got error updating TMR condition")
 	}
@@ -152,16 +150,14 @@ func TestUpdateTMRConditionLocalFields(t *testing.T) {
 	}
 
 	// Test no flexvol or svm name
-	localVolumeHandle = ""
 	localPVCName = "test_pvc"
 	expectedStatusCondition = &netappv1.TridentMirrorRelationshipCondition{
-		LocalVolumeHandle:  localVolumeHandle,
 		LocalPVCName:       localPVCName,
 		RemoteVolumeHandle: remoteVolumeHandle,
 	}
 	statusCondition = &netappv1.TridentMirrorRelationshipCondition{}
 	newStatusCondition, err = updateTMRConditionLocalFields(
-		statusCondition, localVolumeHandle, localPVCName, remoteVolumeHandle)
+		statusCondition, localPVCName, remoteVolumeHandle)
 
 	if err != nil {
 		t.Errorf("Got error updating TMR condition")
@@ -266,6 +262,7 @@ func TestUpdateTMRConditionReplicationSettings(t *testing.T) {
 		initialSchedule  string
 		returnedPolicy   string
 		returnedSchedule string
+		returnedSVMName  string
 		expectedPolicy   string
 		expectedSchedule string
 	}{
@@ -276,12 +273,14 @@ func TestUpdateTMRConditionReplicationSettings(t *testing.T) {
 			"",
 			"",
 			"",
+			"",
 		},
 		{
 			"",
 			"",
 			"TestReplicationPolicy",
 			"TestReplicationSchedule",
+			"SVM1",
 			"TestReplicationPolicy",
 			"TestReplicationSchedule",
 		},
@@ -290,6 +289,7 @@ func TestUpdateTMRConditionReplicationSettings(t *testing.T) {
 			"TestReplicationSchedule_Old",
 			"TestReplicationPolicy",
 			"TestReplicationSchedule",
+			"SVM1",
 			"TestReplicationPolicy",
 			"TestReplicationSchedule",
 		},
@@ -298,13 +298,17 @@ func TestUpdateTMRConditionReplicationSettings(t *testing.T) {
 	for _, c := range cases {
 		condition := &netappv1.TridentMirrorRelationshipCondition{ReplicationPolicy: c.initialPolicy, ReplicationSchedule: c.initialSchedule}
 		volume := &storage.VolumeExternal{}
+		localVolumeInternalName := "pvc_1"
 
-		orchestrator.EXPECT().GetReplicationDetails(ctx, volume.BackendUUID, "", "").Return(c.returnedPolicy, c.returnedSchedule, nil).Times(1)
+		orchestrator.EXPECT().GetReplicationDetails(ctx, volume.BackendUUID, localVolumeInternalName, "").Return(c.returnedPolicy,
+			c.returnedSchedule, c.returnedSVMName, nil).Times(1)
 
-		actualCondition := controller.updateTMRConditionReplicationSettings(ctx, condition, volume, "", "")
+		actualCondition := controller.updateTMRConditionReplicationSettings(ctx, condition, volume, localVolumeInternalName, "")
+		expectedVolumeHandle := c.returnedSVMName + ":" + localVolumeInternalName
 
 		assert.Equal(t, c.expectedPolicy, actualCondition.ReplicationPolicy, "Replication Policy does not match")
 		assert.Equal(t, c.expectedSchedule, actualCondition.ReplicationSchedule, "Replication Schedule does not match")
+		assert.Equal(t, expectedVolumeHandle, actualCondition.LocalVolumeHandle, "LocalVolumeHandle does not match")
 	}
 }
 
@@ -320,6 +324,7 @@ func TestUpdateTMRConditionReplicationSettings_ErrorGettingDetails(t *testing.T)
 	crdClient := GetTestCrdClientset()
 	snapClient := GetTestSnapshotClientset()
 	addCrdTestReactors(crdClient, testingCache)
+	localVolumeInternalName := "pvc_1"
 
 	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
 
@@ -328,6 +333,7 @@ func TestUpdateTMRConditionReplicationSettings_ErrorGettingDetails(t *testing.T)
 		initialSchedule  string
 		returnedPolicy   string
 		returnedSchedule string
+		returnedSVMName  string
 		expectedPolicy   string
 		expectedSchedule string
 	}{
@@ -338,12 +344,14 @@ func TestUpdateTMRConditionReplicationSettings_ErrorGettingDetails(t *testing.T)
 			"",
 			"",
 			"",
+			"",
 		},
 		{
 			"",
 			"",
 			"TestReplicationPolicy",
 			"TestReplicationSchedule",
+			"SVM1",
 			"",
 			"",
 		},
@@ -352,6 +360,7 @@ func TestUpdateTMRConditionReplicationSettings_ErrorGettingDetails(t *testing.T)
 			"TestReplicationSchedule_Old",
 			"TestReplicationPolicy",
 			"TestReplicationSchedule",
+			"SVM1",
 			"TestReplicationPolicy_Old",
 			"TestReplicationSchedule_Old",
 		},
@@ -361,11 +370,14 @@ func TestUpdateTMRConditionReplicationSettings_ErrorGettingDetails(t *testing.T)
 		condition := &netappv1.TridentMirrorRelationshipCondition{ReplicationPolicy: c.initialPolicy, ReplicationSchedule: c.initialSchedule}
 		volume := &storage.VolumeExternal{}
 
-		orchestrator.EXPECT().GetReplicationDetails(ctx, volume.BackendUUID, "", "").Return(c.returnedPolicy, c.returnedSchedule, fmt.Errorf("Fake error")).Times(1)
+		orchestrator.EXPECT().GetReplicationDetails(ctx, volume.BackendUUID, localVolumeInternalName, "").Return(c.returnedPolicy,
+			c.returnedSchedule, c.returnedSVMName, fmt.Errorf("Fake error")).Times(1)
 
-		actualCondition := controller.updateTMRConditionReplicationSettings(ctx, condition, volume, "", "")
+		actualCondition := controller.updateTMRConditionReplicationSettings(ctx, condition, volume, localVolumeInternalName, "")
+		expectedVolumeHandle := c.returnedSVMName + ":" + localVolumeInternalName
 
 		assert.Equal(t, c.expectedPolicy, actualCondition.ReplicationPolicy, "Replication Policy does not match")
 		assert.Equal(t, c.expectedSchedule, actualCondition.ReplicationSchedule, "Replication Schedule does not match")
+		assert.Equal(t, expectedVolumeHandle, actualCondition.LocalVolumeHandle, "LocalVolumeHandle does not match")
 	}
 }

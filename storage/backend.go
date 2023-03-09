@@ -77,17 +77,17 @@ type Unpublisher interface {
 // Mirrorer provides a common interface for backends that support mirror replication
 type Mirrorer interface {
 	EstablishMirror(
-		ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+		ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
 		replicationSchedule string,
 	) error
 	ReestablishMirror(
-		ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+		ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
 		replicationSchedule string,
 	) error
-	PromoteMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotName string) (bool, error)
-	GetMirrorStatus(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) (string, error)
-	ReleaseMirror(ctx context.Context, localVolumeHandle string) error
-	GetReplicationDetails(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) (string, string, error)
+	PromoteMirror(ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string) (bool, error)
+	GetMirrorStatus(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, error)
+	ReleaseMirror(ctx context.Context, localInternalVolumeName string) error
+	GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error)
 }
 
 type StorageBackend struct {
@@ -1131,7 +1131,7 @@ func (p *BackendPersistent) InjectBackendSecrets(secretMap map[string]string) er
 }
 
 func (b *StorageBackend) EstablishMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
 	replicationSchedule string,
 ) error {
 	mirrorDriver, ok := b.driver.(Mirrorer)
@@ -1140,12 +1140,12 @@ func (b *StorageBackend) EstablishMirror(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
-	return mirrorDriver.EstablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+	return mirrorDriver.EstablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
 		replicationSchedule)
 }
 
 func (b *StorageBackend) PromoteMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotHandle string,
 ) (bool, error) {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
@@ -1153,11 +1153,11 @@ func (b *StorageBackend) PromoteMirror(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
-	return mirrorDriver.PromoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotHandle)
+	return mirrorDriver.PromoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotHandle)
 }
 
 func (b *StorageBackend) ReestablishMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle,
 	replicationPolicy, replicationSchedule string,
 ) error {
 	mirrorDriver, ok := b.driver.(Mirrorer)
@@ -1166,19 +1166,19 @@ func (b *StorageBackend) ReestablishMirror(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
-	return mirrorDriver.ReestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+	return mirrorDriver.ReestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
 		replicationSchedule)
 }
 
 func (b *StorageBackend) GetMirrorStatus(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
 ) (string, error) {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
 		return "", utils.UnsupportedError(fmt.Sprintf(
 			"mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
-	return mirrorDriver.GetMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle)
+	return mirrorDriver.GetMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle)
 }
 
 func (b *StorageBackend) CanMirror() bool {
@@ -1186,25 +1186,23 @@ func (b *StorageBackend) CanMirror() bool {
 	return ok
 }
 
-func (b *StorageBackend) ReleaseMirror(ctx context.Context, localVolumeHandle string) error {
+func (b *StorageBackend) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
 		return utils.UnsupportedError(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
-	return mirrorDriver.ReleaseMirror(ctx, localVolumeHandle)
+	return mirrorDriver.ReleaseMirror(ctx, localInternalVolumeName)
 }
 
-func (b *StorageBackend) GetReplicationDetails(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
-) (string, string, error) {
+func (b *StorageBackend) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return "", "", utils.UnsupportedError(fmt.Sprintf(
+		return "", "", "", utils.UnsupportedError(fmt.Sprintf(
 			"mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
-	return mirrorDriver.GetReplicationDetails(ctx, localVolumeHandle, remoteVolumeHandle)
+	return mirrorDriver.GetReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle)
 }
 
 func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error) {
