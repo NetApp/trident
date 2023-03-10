@@ -20,14 +20,12 @@ import (
 
 func TestUpdateMirrorRelationshipNoUpdateNeeded(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	testingCache := NewTestingCache()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
 	crdClient := GetTestCrdClientset()
 	snapClient := GetTestSnapshotClientset()
-	addCrdTestReactors(crdClient, testingCache)
 
 	// Test no changes to TMR
 	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
@@ -71,14 +69,12 @@ func TestUpdateMirrorRelationshipNoUpdateNeeded(t *testing.T) {
 
 func TestUpdateMirrorRelationshipNeedsUpdate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	testingCache := NewTestingCache()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
 	crdClient := GetTestCrdClientset()
 	snapClient := GetTestSnapshotClientset()
-	addCrdTestReactors(crdClient, testingCache)
 
 	// Test the old relationship has no status conditions
 	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
@@ -170,7 +166,6 @@ func TestUpdateTMRConditionLocalFields(t *testing.T) {
 
 func TestValidateTMRUpdate_InvalidPolicyUpdate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	testingCache := NewTestingCache()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	ctx := context.Background()
 
@@ -178,7 +173,6 @@ func TestValidateTMRUpdate_InvalidPolicyUpdate(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	crdClient := GetTestCrdClientset()
 	snapClient := GetTestSnapshotClientset()
-	addCrdTestReactors(crdClient, testingCache)
 
 	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
 	conditions := &netappv1.TridentMirrorRelationshipCondition{}
@@ -206,7 +200,6 @@ func TestValidateTMRUpdate_InvalidPolicyUpdate(t *testing.T) {
 
 func TestValidateTMRUpdate_InvalidScheduleUpdate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	testingCache := NewTestingCache()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	ctx := context.Background()
 
@@ -214,7 +207,6 @@ func TestValidateTMRUpdate_InvalidScheduleUpdate(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	crdClient := GetTestCrdClientset()
 	snapClient := GetTestSnapshotClientset()
-	addCrdTestReactors(crdClient, testingCache)
 
 	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
 	conditions := &netappv1.TridentMirrorRelationshipCondition{}
@@ -245,7 +237,6 @@ func TestValidateTMRUpdate_InvalidScheduleUpdate(t *testing.T) {
 
 func TestUpdateTMRConditionReplicationSettings(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	testingCache := NewTestingCache()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	ctx := context.Background()
 
@@ -253,7 +244,6 @@ func TestUpdateTMRConditionReplicationSettings(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	crdClient := GetTestCrdClientset()
 	snapClient := GetTestSnapshotClientset()
-	addCrdTestReactors(crdClient, testingCache)
 
 	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
 
@@ -315,7 +305,6 @@ func TestUpdateTMRConditionReplicationSettings(t *testing.T) {
 func TestUpdateTMRConditionReplicationSettings_ErrorGettingDetails(t *testing.T) {
 	// Test updateTMRConditionReplicationSettings when the orchestrator fails to return relationship details
 	mockCtrl := gomock.NewController(t)
-	testingCache := NewTestingCache()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	ctx := context.Background()
 
@@ -323,7 +312,6 @@ func TestUpdateTMRConditionReplicationSettings_ErrorGettingDetails(t *testing.T)
 	kubeClient := GetTestKubernetesClientset()
 	crdClient := GetTestCrdClientset()
 	snapClient := GetTestSnapshotClientset()
-	addCrdTestReactors(crdClient, testingCache)
 	localVolumeInternalName := "pvc_1"
 
 	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)

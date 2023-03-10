@@ -15,24 +15,22 @@ import (
 
 func TestUpdateTSI(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	testingCache := NewTestingCache()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	addCrdTestReactors(crdClient, testingCache)
 	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
 
 	// make sure these aren't nil
-	assertNotNil(t, "kubeClient", kubeClient)
-	assertNotNil(t, "crdClient", crdClient)
-	assertNotNil(t, "crdController", crdController)
-	assertNotNil(t, "crdController.crdInformerFactory", crdController.crdInformerFactory)
+	assert.NotNil(t, kubeClient, "kubeClient is nil")
+	assert.NotNil(t, crdClient, "crdClient is nil")
+	assert.NotNil(t, crdController, "crdController is nil")
+	assert.NotNil(t, crdController.crdInformerFactory, "crdController.crdInformerFactory is nil")
 
 	statusCondition1 := &netappv1.TridentSnapshotInfoStatus{SnapshotHandle: "volume/foo"}
 	statusCondition2 := &netappv1.TridentSnapshotInfoStatus{SnapshotHandle: "volume/bar"}

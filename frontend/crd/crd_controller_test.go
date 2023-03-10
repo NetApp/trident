@@ -1,35 +1,30 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 package crd
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	fakesnapshots "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned/fake"
+	"github.com/stretchr/testify/assert"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	k8s_fake "k8s.io/client-go/kubernetes/fake"
-	k8stesting "k8s.io/client-go/testing"
+	k8sfake "k8s.io/client-go/kubernetes/fake"
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	crdFake "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
 	"github.com/netapp/trident/storage"
 	fakeStorage "github.com/netapp/trident/storage/fake"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
 	fakeDriver "github.com/netapp/trident/storage_drivers/fake"
 	testutils2 "github.com/netapp/trident/storage_drivers/fake/test_utils"
-	"github.com/netapp/trident/utils"
 )
 
 var (
@@ -40,109 +35,22 @@ var (
 )
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Simple cache for our CRD objects, since we don't have a real database layer here
-
-type TestingCache struct {
-	backendCache      map[string]*tridentv1.TridentBackend
-	nodeCache         map[string]*tridentv1.TridentNode
-	storageClassCache map[string]*tridentv1.TridentStorageClass
-	transactionCache  map[string]*tridentv1.TridentTransaction
-	versionCache      map[string]*tridentv1.TridentVersion
-	volumeCache       map[string]*tridentv1.TridentVolume
-	snapshotCache     map[string]*tridentv1.TridentSnapshot
-}
-
-func NewTestingCache() *TestingCache {
-	result := &TestingCache{
-		backendCache:      make(map[string]*tridentv1.TridentBackend),
-		nodeCache:         make(map[string]*tridentv1.TridentNode),
-		storageClassCache: make(map[string]*tridentv1.TridentStorageClass),
-		transactionCache:  make(map[string]*tridentv1.TridentTransaction),
-		versionCache:      make(map[string]*tridentv1.TridentVersion),
-		volumeCache:       make(map[string]*tridentv1.TridentVolume),
-		snapshotCache:     make(map[string]*tridentv1.TridentSnapshot),
-	}
-	return result
-}
-
-func (o *TestingCache) addBackend(backend *tridentv1.TridentBackend) {
-	o.backendCache[backend.Name] = backend
-}
-
-func (o *TestingCache) updateBackend(updatedBackend *tridentv1.TridentBackend) {
-	Log().Debug(">>>> updateBackend")
-	defer Log().Debug("<<<< updateBackend")
-	currentBackend := o.backendCache[updatedBackend.Name]
-	if !cmp.Equal(updatedBackend, currentBackend) {
-		if diff := cmp.Diff(currentBackend, updatedBackend); diff != "" {
-			Log().Debugf("updated object fields (-old +new):%s", diff)
-			if currentBackend.ResourceVersion == "" {
-				currentBackend.ResourceVersion = "1"
-			}
-			if currentResourceVersion, err := strconv.Atoi(currentBackend.ResourceVersion); err == nil {
-				updatedBackend.ResourceVersion = strconv.Itoa(currentResourceVersion + 1)
-			}
-			Log().WithFields(LogFields{
-				"currentBackend.ResourceVersion": currentBackend.ResourceVersion,
-				"updatedBackend.ResourceVersion": updatedBackend.ResourceVersion,
-			}).Debug("Incremented ResourceVersion.")
-		}
-	} else {
-		Log().Debug("No difference, leaving ResourceVersion unchanged.")
-	}
-	o.backendCache[updatedBackend.Name] = updatedBackend
-}
-
-func (o *TestingCache) addNode(node *tridentv1.TridentNode) {
-	o.nodeCache[node.Name] = node
-}
-
-func (o *TestingCache) addStorageClass(storageClass *tridentv1.TridentStorageClass) {
-	o.storageClassCache[storageClass.Name] = storageClass
-}
-
-func (o *TestingCache) addTransaction(transaction *tridentv1.TridentTransaction) {
-	o.transactionCache[transaction.Name] = transaction
-}
-
-func (o *TestingCache) addVersion(version *tridentv1.TridentVersion) {
-	o.versionCache[version.Name] = version
-}
-
-func (o *TestingCache) addVolume(volume *tridentv1.TridentVolume) {
-	o.volumeCache[volume.Name] = volume
-}
-
-func (o *TestingCache) addSnapshot(snapshot *tridentv1.TridentSnapshot) {
-	o.snapshotCache[snapshot.Name] = snapshot
-}
-
-// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utility functions
 
-func GetTestKubernetesClientset() *k8s_fake.Clientset {
-	client := k8s_fake.NewSimpleClientset()
-	return client
+func GetTestKubernetesClientset() *k8sfake.Clientset {
+	return k8sfake.NewSimpleClientset()
 }
 
 func GetTestSnapshotClientset() *fakesnapshots.Clientset {
-	client := fakesnapshots.NewSimpleClientset()
-	return client
+	return fakesnapshots.NewSimpleClientset()
 }
 
-func GetTestCrdClientset() *crdFake.Clientset {
-	client := crdFake.NewSimpleClientset()
-	return client
+func GetTestCrdClientset() *Clientset {
+	return NewFakeClientset()
 }
 
 func delaySeconds(n time.Duration) {
 	time.Sleep(n * time.Second)
-}
-
-func assertNotNil(t *testing.T, name string, obj interface{}) {
-	if obj == nil {
-		t.Fatalf("%v is nil", name)
-	}
 }
 
 func newFakeStorageDriverConfigJSON(name string) (string, error) {
@@ -150,106 +58,35 @@ func newFakeStorageDriverConfigJSON(name string) (string, error) {
 	return fakeDriver.NewFakeStorageDriverConfigJSON(name, config.File, testutils2.GenerateFakePools(2), volumes)
 }
 
-func addCrdTestReactors(crdFakeClient *crdFake.Clientset, testingCache *TestingCache) {
-	crdFakeClient.Fake.PrependReactor(
-		"*" /* all operations */, "*", /* all object types */
-		// "create" /* create operations only */, "tridentbackends", /* tridentbackends object types only */
-		func(actionCopy k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-			fmt.Printf("actionCopy: %T\n", actionCopy) // use this to find any other types to add
-			switch action := actionCopy.(type) {
-
-			case k8stesting.CreateActionImpl:
-				obj := action.GetObject()
-				fmt.Printf("~~ obj: %T\n", obj)
-				fmt.Printf("~~ obj: %v\n", obj)
-				switch crd := obj.(type) {
-				case *tridentv1.TridentBackend:
-					fmt.Printf("~~ crd: %T\n", crd)
-					if crd.ObjectMeta.GenerateName != "" {
-						if crd.Name == "" {
-							crd.Name = crd.ObjectMeta.GenerateName + strings.ToLower(utils.RandomString(5))
-							fmt.Printf("~~~ generated crd.Name: %v\n", crd.Name)
-						}
-					}
-					if crd.ResourceVersion == "" {
-						crd.ResourceVersion = "1"
-						fmt.Printf("~~~ generated crd.ResourceVersion: %v\n", crd.ResourceVersion)
-					}
-					crd.ObjectMeta.Namespace = action.GetNamespace()
-					testingCache.addBackend(crd)
-					return false, crd, nil
-
-				default:
-					fmt.Printf("~~ crd: %T\n", crd)
-				}
-
-			case k8stesting.DeleteActionImpl:
-				name := action.GetName()
-				fmt.Printf("~~ name: %v\n", name)
-
-			case k8stesting.GetActionImpl:
-				name := action.GetName()
-				fmt.Printf("~~ name: %v\n", name)
-
-			case k8stesting.ListActionImpl:
-				kind := action.GetKind()
-				listRestrictions := action.GetListRestrictions()
-				fmt.Printf("~~ kind: %T\n", kind)
-				fmt.Printf("~~ listRestrictions: %v\n", listRestrictions)
-
-			case k8stesting.PatchActionImpl:
-				name := action.GetName()
-				patch := action.GetPatch()
-				patchType := action.GetPatchType()
-				fmt.Printf("~~ name: %v\n", name)
-				fmt.Printf("~~ patch: %v\n", patch)
-				fmt.Printf("~~ patchType: %v\n", patchType)
-
-			case k8stesting.UpdateActionImpl:
-				obj := action.GetObject()
-				fmt.Printf("~~ obj: %T\n", obj)
-				fmt.Printf("~~ obj: %v\n", obj)
-
-				switch crd := obj.(type) {
-				case *tridentv1.TridentBackend:
-					testingCache.updateBackend(crd)
-					return false, crd, nil
-
-				default:
-				}
-
-			default:
-				fmt.Printf("~~~ unhandled type: %T\n", actionCopy) // use this to find any other types to add
-			}
-			return false, nil, nil
-		})
-}
-
-func TestCrdController(t *testing.T) {
+func TestCrdControllerBackendOperations(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	testingCache := NewTestingCache()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	addCrdTestReactors(crdClient, testingCache)
 	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
 
 	// make sure these aren't nil
-	assertNotNil(t, "kubeClient", kubeClient)
-	assertNotNil(t, "crdClient", crdClient)
-	assertNotNil(t, "crdController", crdController)
-	assertNotNil(t, "crdController.crdInformerFactory", crdController.crdInformerFactory)
+	assert.NotNil(t, kubeClient, "kubeClient is nil")
+	assert.NotNil(t, crdClient, "crdClient is nil")
+	assert.NotNil(t, crdController, "crdController is nil")
+	assert.NotNil(t, crdController.crdInformerFactory, "crdController.crdInformerFactory is nil")
 
 	expectedVersion := config.DefaultOrchestratorVersion
 	if crdController.Version() != expectedVersion {
 		t.Fatalf("%v differs:  '%v' != '%v'", "Version()", expectedVersion, crdController.Version())
 	}
+
+	// Activate the CRD controller and start monitoring
+	if err = crdController.Activate(); err != nil {
+		t.Fatalf("error while activating: %v", err.Error())
+	}
+	delaySeconds(1)
 
 	// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Setup work required for the crdController's logic to work
@@ -303,13 +140,6 @@ func TestCrdController(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error creating backend: %v", err.Error())
 	}
-
-	// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// good to go with setup, now we can activate and start monitoring
-	if err := crdController.Activate(); err != nil {
-		t.Fatalf("error while activating: %v", err.Error())
-	}
-	delaySeconds(2)
 
 	backendList, listErr := crdClient.TridentV1().TridentBackends(tridentNamespace).List(ctx(), listOpts)
 	if listErr != nil {
@@ -380,37 +210,41 @@ func TestCrdController(t *testing.T) {
 		t.Fatalf("unexpected error getting CRD backend '%v' error: %v", crdName, getErr)
 	}
 
-	//	delaySeconds(2)
-	if err := crdController.Deactivate(); err != nil {
+	// Clean up
+	if err = crdController.Deactivate(); err != nil {
 		t.Fatalf("error while deactivating: %v", err.Error())
 	}
 }
 
-func TestCrdController2(t *testing.T) {
+func TestCrdControllerFinalizerRemoval(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	testingCache := NewTestingCache()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	addCrdTestReactors(crdClient, testingCache)
 	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
 
 	// make sure these aren't nil
-	assertNotNil(t, "kubeClient", kubeClient)
-	assertNotNil(t, "crdClient", crdClient)
-	assertNotNil(t, "crdController", crdController)
-	assertNotNil(t, "crdController.crdInformerFactory", crdController.crdInformerFactory)
+	assert.NotNil(t, kubeClient, "kubeClient is nil")
+	assert.NotNil(t, crdClient, "crdClient is nil")
+	assert.NotNil(t, crdController, "crdController is nil")
+	assert.NotNil(t, crdController.crdInformerFactory, "crdController.crdInformerFactory is nil")
 
 	expectedVersion := config.DefaultOrchestratorVersion
 	if crdController.Version() != expectedVersion {
 		t.Fatalf("%v differs:  '%v' != '%v'", "Version()", expectedVersion, crdController.Version())
 	}
+
+	// Activate the CRD controller and start monitoring
+	if err = crdController.Activate(); err != nil {
+		t.Fatalf("error while activating: %v", err.Error())
+	}
+	delaySeconds(1)
 
 	// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Setup work required for the crdController's logic to work
@@ -458,11 +292,15 @@ func TestCrdController2(t *testing.T) {
 			backendCRD.BackendName, fakeBackend.Name())
 	}
 
+	Logc(ctx()).Debug("Creating backend.")
+
 	// create a new Backend CRD object through the client-go api
-	_, err = crdClient.TridentV1().TridentBackends(tridentNamespace).Create(ctx(), backendCRD, createOpts)
+	backend, err := crdClient.TridentV1().TridentBackends(tridentNamespace).Create(ctx(), backendCRD, createOpts)
 	if err != nil {
 		t.Fatalf("error creating backend: %v", err.Error())
 	}
+
+	Logc(ctx()).Debug("Created backend.")
 
 	// Build a storage.volume
 	volConfig := storage.VolumeConfig{
@@ -486,17 +324,21 @@ func TestCrdController2(t *testing.T) {
 		t.Fatal("Unable to construct TridentVolume CRD: ", err)
 	}
 
+	Logc(ctx()).Debug("Creating volume.")
+
 	// create a new Volume CRD object through the client-go api
 	_, err = crdClient.TridentV1().TridentVolumes(tridentNamespace).Create(ctx(), volumeCRD, createOpts)
 	if err != nil {
 		t.Fatalf("error creating volume: %v", err.Error())
 	}
 
+	Logc(ctx()).Debug("Created volume.")
+
 	// Build a storage.Snapshot
 	testSnapshotConfig := &storage.SnapshotConfig{
 		Version:            config.OrchestratorAPIVersion,
-		Name:               "testsnap1",
-		InternalName:       "internal_testsnap1",
+		Name:               "snap1",
+		InternalName:       "internal_snap1",
 		VolumeName:         volConfig.Name,
 		VolumeInternalName: volConfig.InternalName,
 	}
@@ -508,18 +350,15 @@ func TestCrdController2(t *testing.T) {
 		t.Fatal("Unable to construct TridentSnapshot CRD: ", err)
 	}
 
+	Logc(ctx()).Debug("Creating snapshot.")
+
 	// create a new Snapshot CRD object through the client-go api
 	_, err = crdClient.TridentV1().TridentSnapshots(tridentNamespace).Create(ctx(), snapshotCRD, createOpts)
 	if err != nil {
 		t.Fatalf("error creating volume: %v", err.Error())
 	}
 
-	// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// good to go with setup, now we can activate and start monitoring
-	if err := crdController.Activate(); err != nil {
-		t.Fatalf("error while activating: %v", err.Error())
-	}
-	delaySeconds(2)
+	Logc(ctx()).Debug("Created snapshot.")
 
 	// validate our Volume is present
 	volumeList, listErr := crdClient.TridentV1().TridentVolumes(tridentNamespace).List(ctx(), listOpts)
@@ -539,8 +378,212 @@ func TestCrdController2(t *testing.T) {
 		t.Fatalf("error while listing snapshots, unexpected snapshot list length: %v", len(snapshotList.Items))
 	}
 
-	//	delaySeconds(2)
-	if err := crdController.Deactivate(); err != nil {
+	Logc(ctx()).Debug("Deleting snapshot.")
+
+	// Delete the snapshot
+	deleteErr := crdClient.TridentV1().TridentSnapshots(tridentNamespace).Delete(ctx(), "vol1-snap1", deleteOptions)
+	if deleteErr != nil {
+		t.Fatalf("unable to delete snapshot CRD: %v", deleteErr)
+	}
+
+	Logc(ctx()).Debug("Deleted snapshot.")
+
+	snapshotGone := false
+
+	// Wait until the snapshot disappears, which can only happen if the CRD controller removes the finalizers.
+	for i := 0; i < 5; i++ {
+		time.Sleep(1 * time.Second)
+
+		// Get the latest version of the CRD
+		s, getErr := crdClient.TridentV1().TridentSnapshots(tridentNamespace).Get(ctx(), "vol1-snap1", getOpts)
+
+		Log().WithFields(LogFields{
+			"snapshot": s,
+			"getErr":   getErr,
+		}).Debug("Checking if snapshot was deleted.")
+
+		if k8serrors.IsNotFound(getErr) {
+			Logc(ctx()).Debug("Snapshot gone.")
+			snapshotGone = true
+			break
+		}
+	}
+
+	Logc(ctx()).Debug("Deleting volume.")
+
+	// Delete the snapshot
+	deleteErr = crdClient.TridentV1().TridentVolumes(tridentNamespace).Delete(ctx(), "vol1", deleteOptions)
+	if deleteErr != nil {
+		t.Fatalf("unable to delete volume CRD: %v", deleteErr)
+	}
+
+	Logc(ctx()).Debug("Deleted volume.")
+
+	volumeGone := false
+
+	// Wait until the volume disappears, which can only happen if the CRD controller removes the finalizers.
+	for i := 0; i < 5; i++ {
+		time.Sleep(1 * time.Second)
+
+		// Get the latest version of the CRD
+		v, getErr := crdClient.TridentV1().TridentVolumes(tridentNamespace).Get(ctx(), "vol1", getOpts)
+
+		Log().WithFields(LogFields{
+			"volume": v,
+			"getErr": getErr,
+		}).Debug("Checking if volume was deleted.")
+
+		if k8serrors.IsNotFound(getErr) {
+			Logc(ctx()).Debug("Volume gone.")
+			volumeGone = true
+			break
+		}
+	}
+
+	Logc(ctx()).Debug("Deleting backend.")
+
+	// Delete the snapshot
+	deleteErr = crdClient.TridentV1().TridentBackends(tridentNamespace).Delete(ctx(), backend.Name, deleteOptions)
+	if deleteErr != nil {
+		t.Fatalf("unable to delete backnd CRD: %v", deleteErr)
+	}
+
+	Logc(ctx()).Debug("Deleted backend.")
+
+	assert.True(t, snapshotGone, "expected snapshot to be deleted")
+	assert.True(t, volumeGone, "expected volume to be deleted")
+
+	// Clean up
+	if err = crdController.Deactivate(); err != nil {
+		t.Fatalf("error while deactivating: %v", err.Error())
+	}
+}
+
+func TestCrdControllerTransactionFinalizerRemoval(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	crdClient := GetTestCrdClientset()
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	if err != nil {
+		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
+	}
+
+	// make sure these aren't nil
+	assert.NotNil(t, kubeClient, "kubeClient is nil")
+	assert.NotNil(t, crdClient, "crdClient is nil")
+	assert.NotNil(t, crdController, "crdController is nil")
+	assert.NotNil(t, crdController.txnInformerFactory, "crdController.txnInformerFactory is nil")
+
+	expectedVersion := config.DefaultOrchestratorVersion
+	if crdController.Version() != expectedVersion {
+		t.Fatalf("%v differs:  '%v' != '%v'", "Version()", expectedVersion, crdController.Version())
+	}
+
+	// Activate the CRD controller and start monitoring
+	if err = crdController.Activate(); err != nil {
+		t.Fatalf("error while activating: %v", err.Error())
+	}
+	delaySeconds(1)
+
+	// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Setup work required for the crdController's logic to work
+	// * create a fake transaction
+	// * create a CRD version from the fake transaction
+	// * ensure CRD has Trident finalizer
+	// * delete the transaction CRD
+	// * ensure the CRD disappears, which can only happen if the controller removes the Trident finalizer
+
+	// Build a volume transaction
+	volConfig := storage.VolumeConfig{
+		Version:      config.OrchestratorAPIVersion,
+		Name:         "vol1",
+		InternalName: "internal_vol1",
+		Size:         "1GB",
+		Protocol:     config.File,
+		StorageClass: "gold",
+	}
+	volume := &storage.Volume{
+		Config:      &volConfig,
+		BackendUUID: uuid.New().String(),
+		Pool:        "aggr1",
+		State:       storage.VolumeStateOnline,
+	}
+	txn := &storage.VolumeTransaction{
+		Config: volume.Config,
+		Op:     storage.DeleteVolume,
+	}
+
+	// Create a k8s CRD Object for use by the client-go bindings and CRD persistence layer
+	txnCRD, err := tridentv1.NewTridentTransaction(txn)
+	if err != nil {
+		t.Fatal("Unable to construct TridentTransaction CRD: ", err)
+	}
+
+	Logc(ctx()).Debug("Creating transaction.")
+
+	// Create the CRD
+	_, err = crdClient.TridentV1().TridentTransactions(tridentNamespace).Create(ctx(), txnCRD, createOpts)
+	if err != nil {
+		t.Fatal("Unable to create TridentTransaction CRD: ", err)
+	}
+
+	Logc(ctx()).Debug("Created transaction.")
+	time.Sleep(1 * time.Second)
+
+	// Get the CRD
+	savedTxn, getErr := crdClient.TridentV1().TridentTransactions(tridentNamespace).Get(ctx(), "vol1", getOpts)
+	if getErr != nil {
+		t.Fatalf("unable to get transaction CRD: %v", getErr)
+	}
+
+	Log().WithFields(LogFields{
+		"txn": savedTxn,
+	}).Debug("Got transaction.")
+
+	// Ensure the CRD was saved with a Trident finalizer
+	if !savedTxn.HasTridentFinalizers() {
+		t.Fatalf("expected transaction CRD to have Trident finalizer")
+	}
+
+	Logc(ctx()).Debug("Deleting transaction.")
+
+	// Delete the CRD
+	deleteErr := crdClient.TridentV1().TridentTransactions(tridentNamespace).Delete(ctx(), "vol1", deleteOptions)
+	if deleteErr != nil {
+		t.Fatalf("unable to delete transaction CRD: %v", getErr)
+	}
+
+	Logc(ctx()).Debug("Deleted transaction.")
+
+	transactionGone := false
+
+	// Wait until the CRD disappears, which can only happen if the CRD controller removes the finalizers.
+	for i := 0; i < 5; i++ {
+		time.Sleep(1 * time.Second)
+
+		// Get the latest version of the CRD
+		updatedTxn, getErr := crdClient.TridentV1().TridentTransactions(tridentNamespace).Get(ctx(), "vol1", getOpts)
+
+		Log().WithFields(LogFields{
+			"txn":    updatedTxn,
+			"getErr": getErr,
+		}).Debug("Checking if transaction was deleted.")
+
+		if k8serrors.IsNotFound(getErr) {
+			Logc(ctx()).Debug("Transaction gone.")
+			transactionGone = true
+			break
+		}
+	}
+
+	assert.True(t, transactionGone, "expected transaction to be deleted")
+
+	// Clean up
+	if err = crdController.Deactivate(); err != nil {
 		t.Fatalf("error while deactivating: %v", err.Error())
 	}
 }

@@ -61,6 +61,8 @@ const (
 	controllerName                 = "crd"
 	controllerAgentName            = "trident-crd-controller"
 	tridentBackendConfigsQueueName = "TridentBackendConfigs"
+
+	transactionSyncPeriod = 60 * time.Second
 )
 
 type KeyItem struct {
@@ -98,6 +100,9 @@ type TridentCrdController struct {
 	crdControllerStopChan chan struct{}
 	crdInformerFactory    tridentinformers.SharedInformerFactory
 	crdInformer           tridentinformersv1.Interface
+
+	txnInformerFactory tridentinformers.SharedInformerFactory
+	txnInformer        tridentinformersv1.Interface
 
 	kubeInformerFactory goinformer.SharedInformerFactory
 	kubeInformer        goinformerv1.Interface
@@ -196,6 +201,10 @@ func newTridentCrdControllerImpl(
 	crdInformer := tridentinformersv1.New(crdInformerFactory, tridentNamespace, nil)
 	allNSCrdInformer := tridentinformersv1.New(crdInformerFactory, corev1.NamespaceAll, nil)
 
+	// Set resync to 60 seconds so that transactions never get stuck in place by finalizers
+	txnInformerFactory := tridentinformers.NewSharedInformerFactory(crdClientset, transactionSyncPeriod)
+	txnInformer := tridentinformersv1.New(txnInformerFactory, tridentNamespace, nil)
+
 	// Set resync to 0 sec so that reconciliation is on demand
 	kubeInformerFactory := goinformer.NewSharedInformerFactory(kubeClientset, time.Second*0)
 	kubeInformer := goinformerv1.New(kubeInformerFactory, tridentNamespace, nil)
@@ -206,7 +215,7 @@ func newTridentCrdControllerImpl(
 	snapshotInfoInformer := allNSCrdInformer.TridentSnapshotInfos()
 	nodeInformer := crdInformer.TridentNodes()
 	storageClassInformer := crdInformer.TridentStorageClasses()
-	transactionInformer := crdInformer.TridentTransactions()
+	transactionInformer := txnInformer.TridentTransactions()
 	versionInformer := crdInformer.TridentVersions()
 	volumeInformer := crdInformer.TridentVolumes()
 	volumePublicationInformer := crdInformer.TridentVolumePublications()
@@ -229,6 +238,8 @@ func newTridentCrdControllerImpl(
 		crdControllerStopChan:    make(chan struct{}),
 		crdInformerFactory:       crdInformerFactory,
 		crdInformer:              crdInformer,
+		txnInformerFactory:       txnInformerFactory,
+		txnInformer:              txnInformer,
 		kubeInformerFactory:      kubeInformerFactory,
 		kubeInformer:             kubeInformer,
 		backendsLister:           backendInformer.Lister(),
@@ -310,7 +321,6 @@ func newTridentCrdControllerImpl(
 	informers := []cache.SharedIndexInformer{
 		nodeInformer.Informer(),
 		storageClassInformer.Informer(),
-		transactionInformer.Informer(),
 		versionInformer.Informer(),
 		volumeInformer.Informer(),
 		volumePublicationInformer.Informer(),
@@ -328,6 +338,30 @@ func newTridentCrdControllerImpl(
 		})
 	}
 
+	_, _ = transactionInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(crd interface{}) {
+			ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD,
+				WorkflowCRReconcile, LogLayerCRDFrontend)
+			Logc(ctx).WithField("transaction", crd).Trace("CRD controller received new transaction.")
+		},
+		UpdateFunc: func(oldCrd, newCrd interface{}) {
+			ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD,
+				WorkflowCRReconcile, LogLayerCRDFrontend)
+			Logc(ctx).WithFields(LogFields{
+				"oldTransaction": oldCrd,
+				"newTransaction": newCrd,
+			}).Trace("CRD controller received updated transaction.")
+			if err := controller.removeFinalizers(ctx, newCrd, false); err != nil {
+				Logx(ctx).WithError(err).Error("Error removing transaction finalizers.")
+			}
+		},
+		DeleteFunc: func(crd interface{}) {
+			ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD,
+				WorkflowCRReconcile, LogLayerCRDFrontend)
+			Logc(ctx).WithField("transaction", crd).Trace("CRD controller received deleted transaction.")
+		},
+	})
+
 	return controller, nil
 }
 
@@ -336,6 +370,7 @@ func (c *TridentCrdController) Activate() error {
 	Logx(ctx).Trace("Activating CRD frontend.")
 	if c.crdControllerStopChan != nil {
 		c.crdInformerFactory.Start(c.crdControllerStopChan)
+		c.txnInformerFactory.Start(c.crdControllerStopChan)
 		c.kubeInformerFactory.Start(c.crdControllerStopChan)
 		go c.Run(ctx, 1, c.crdControllerStopChan)
 	}
