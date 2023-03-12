@@ -729,7 +729,7 @@ func (d OntapAPIZAPI) IgroupCreate(ctx context.Context, initiatorGroupName, init
 	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Debug("No such initiator group (igroup).")
-	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_EXISTS {
+	} else if zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_EXISTS {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Info("Initiator group (igroup) already exists.")
 	} else {
 		Logc(ctx).WithFields(LogFields{
@@ -748,7 +748,7 @@ func (d OntapAPIZAPI) IgroupDestroy(ctx context.Context, initiatorGroupName stri
 	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Debug("No such initiator group (igroup).")
-	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_MAPS_EXIST {
+	} else if zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_MAPS_EXIST {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Info("Initiator group (igroup) currently in use.")
 	} else {
 		Logc(ctx).WithFields(LogFields{
@@ -1403,8 +1403,10 @@ func (d OntapAPIZAPI) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, 
 func (d OntapAPIZAPI) VolumeMount(ctx context.Context, name, junctionPath string) error {
 	mountResponse, err := d.api.VolumeMount(name, junctionPath)
 	if err = azgo.GetError(ctx, mountResponse, err); err != nil {
-		if err.(azgo.ZapiError).Code() == azgo.EAPIERROR {
-			return ApiError(fmt.Sprintf("%v", err))
+		if zerr, ok := err.(azgo.ZapiError); ok {
+			if zerr.Code() == azgo.EAPIERROR {
+				return ApiError(fmt.Sprintf("%v", err))
+			}
 		}
 		return fmt.Errorf("error mounting volume to junction: %v", err)
 	}
@@ -2235,8 +2237,10 @@ func (d OntapAPIZAPI) SnapmirrorQuiesce(
 	snapQuiesce, err := d.api.SnapmirrorQuiesce(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err = azgo.GetError(ctx, snapQuiesce, err); err != nil {
 		Logc(ctx).WithError(err).Error("Error on snapmirror quiesce")
-		if err.(azgo.ZapiError).Code() == azgo.EAPIERROR {
-			err = NotReadyError(fmt.Sprintf("Snapmirror quiesce failed: %v", err.Error()))
+		if zerr, ok := err.(azgo.ZapiError); ok {
+			if zerr.Code() == azgo.EAPIERROR {
+				err = NotReadyError(fmt.Sprintf("Snapmirror quiesce failed: %v", err.Error()))
+			}
 		}
 		return err
 	}
@@ -2266,7 +2270,7 @@ func (d OntapAPIZAPI) SnapmirrorBreak(
 		snapshotName)
 	if err = azgo.GetError(ctx, snapBreak, err); err != nil {
 		zerr, ok := err.(azgo.ZapiError)
-		if zerr.Code() == azgo.EAPIERROR {
+		if ok && zerr.Code() == azgo.EAPIERROR {
 			return NotReadyError(fmt.Sprintf("Snapmirror break failed: %v", err.Error()))
 		}
 		if !ok || zerr.Code() != azgo.EDEST_ISNOT_DP_VOLUME {
