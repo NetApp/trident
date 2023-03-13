@@ -12,6 +12,7 @@ import (
 	config "github.com/netapp/trident/config"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	storage "github.com/netapp/trident/storage"
+	utils "github.com/netapp/trident/utils"
 )
 
 // MockControllerHelper is a mock of ControllerHelper interface.
@@ -35,6 +36,21 @@ func NewMockControllerHelper(ctrl *gomock.Controller) *MockControllerHelper {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockControllerHelper) EXPECT() *MockControllerHelperMockRecorder {
 	return m.recorder
+}
+
+// GetNodePublicationState mocks base method.
+func (m *MockControllerHelper) GetNodePublicationState(arg0 context.Context, arg1 string) (*utils.NodePublicationStateFlags, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNodePublicationState", arg0, arg1)
+	ret0, _ := ret[0].(*utils.NodePublicationStateFlags)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNodePublicationState indicates an expected call of GetNodePublicationState.
+func (mr *MockControllerHelperMockRecorder) GetNodePublicationState(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodePublicationState", reflect.TypeOf((*MockControllerHelper)(nil).GetNodePublicationState), arg0, arg1)
 }
 
 // GetNodeTopologyLabels mocks base method.

@@ -12,7 +12,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -265,7 +267,7 @@ func TestCreateNodeFailedInvokeAPICall(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestGetNode(t *testing.T) {
+func TestGetNodes(t *testing.T) {
 	controllerRestClient := ControllerRestClient{}
 	ctx = context.Background()
 	tests := []struct {
@@ -277,7 +279,7 @@ func TestGetNode(t *testing.T) {
 		{mockFunction: mockGetNodeNegative, isErrorExpected: true},
 	}
 	for i, test := range tests {
-		t.Run(fmt.Sprintf("GetNode: %d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("GetNodes: %d", i), func(t *testing.T) {
 			server := getHttpServer(config.NodeURL, test.mockFunction)
 			controllerRestClient.url = server.URL
 			response, result := controllerRestClient.GetNodes(ctx)
@@ -301,6 +303,206 @@ func TestGetNodesInvokeAPIError(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestGetNode(t *testing.T) {
+	controllerRestClient := ControllerRestClient{}
+	ctx = context.Background()
+	tests := map[string]struct {
+		mockHandlerGenerator func(string, string) func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected      bool
+	}{
+		"passes with status ok": {
+			mockHandlerGenerator: func(
+				url, nodeName string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = url
+					fakeNodeResponse := &GetNodeResponse{
+						Node: &utils.NodeExternal{
+							Name: nodeName,
+						},
+						Error: "",
+					}
+					responseData, err := json.Marshal(fakeNodeResponse)
+					if err != nil {
+						t.Fatalf("Failed to setup fake response for GetNode")
+					}
+					w.WriteHeader(http.StatusOK)
+					if _, err := w.Write(responseData); err != nil {
+						t.Fatalf("Failed to write fake response data for GetNode")
+					}
+				}
+			},
+			isErrorExpected: false,
+		},
+		"fails when api never writes a response": {
+			mockHandlerGenerator: func(
+				_, nodeName string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = ""
+				}
+			},
+			isErrorExpected: true,
+		},
+		"fails with unexpected status": {
+			mockHandlerGenerator: func(
+				url, nodeName string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = url
+					responseData, err := json.Marshal(&GetNodeResponse{})
+					if err != nil {
+						t.Fatalf("Failed to setup fake response for GetNode")
+					}
+					w.WriteHeader(http.StatusAccepted)
+					if _, err := w.Write(responseData); err != nil {
+						t.Fatalf("Failed to write fake response data for GetNode")
+					}
+				}
+			},
+			isErrorExpected: true,
+		},
+		"fails to parse response body": {
+			mockHandlerGenerator: func(
+				url, nodeName string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = url
+					responseData, err := json.Marshal(`{{////}`)
+					if err != nil {
+						t.Fatalf("Failed to setup fake response for GetNode")
+					}
+					w.WriteHeader(http.StatusOK)
+					if _, err := w.Write(responseData); err != nil {
+						t.Fatalf("Failed to write fake response data for GetNode")
+					}
+				}
+			},
+			isErrorExpected: true,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Setup fake handler and server.
+			nodeName := "foo"
+			url := config.NodeURL + "/" + nodeName
+			handler := test.mockHandlerGenerator(url, nodeName)
+			server := getHttpServer(url, handler)
+			defer server.Close()
+
+			// Connect the rest client to the fake server.
+			controllerRestClient.url = server.URL
+
+			// Call the unit in test.
+			node, err := controllerRestClient.GetNode(ctx, nodeName)
+
+			// Assertions.
+			if test.isErrorExpected {
+				assert.Error(t, err)
+				assert.Nil(t, node)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, node)
+			}
+		})
+	}
+}
+
+func TestUpdateNode(t *testing.T) {
+	controllerRestClient := ControllerRestClient{}
+	ctx = context.Background()
+	tests := map[string]struct {
+		nodeState            *utils.NodePublicationStateFlags
+		mockHandlerGenerator func(string, string) func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected      bool
+	}{
+		"passes with status accepted": {
+			nodeState: &utils.NodePublicationStateFlags{},
+			mockHandlerGenerator: func(
+				url, nodeName string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = url
+					responseData, err := json.Marshal(&UpdateNodeResponse{
+						Name: nodeName,
+					})
+					if err != nil {
+						t.Fatalf("Failed to setup fake response for UpdateNode")
+					}
+					w.WriteHeader(http.StatusAccepted)
+					if _, err := w.Write(responseData); err != nil {
+						t.Fatalf("Failed to write fake response data for UpdateNode")
+					}
+				}
+			},
+			isErrorExpected: false,
+		},
+		"fails when api never writes a response": {
+			nodeState: &utils.NodePublicationStateFlags{},
+			mockHandlerGenerator: func(
+				_, nodeName string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = ""
+				}
+			},
+			isErrorExpected: true,
+		},
+		"fails with unexpected status": {
+			nodeState: &utils.NodePublicationStateFlags{},
+			mockHandlerGenerator: func(
+				url, nodeName string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = url
+					responseData, err := json.Marshal(&UpdateNodeResponse{
+						Name: nodeName,
+					})
+					if err != nil {
+						t.Fatalf("Failed to setup fake response for UpdateNode")
+					}
+					// Should be StatusAccepted.
+					w.WriteHeader(http.StatusOK)
+					if _, err := w.Write(responseData); err != nil {
+						t.Fatalf("Failed to write fake response data for UpdateNode")
+					}
+				}
+			},
+			isErrorExpected: true,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Setup fake handler and server.
+			nodeName := "foo"
+			url := fmt.Sprintf("%s/%s/%s", config.NodeURL, nodeName, "publicationState")
+			handler := test.mockHandlerGenerator(url, nodeName)
+			server := getHttpServer(url, handler)
+			defer server.Close()
+
+			// Connect the rest client to the fake server.
+			controllerRestClient.url = server.URL
+
+			// Call the unit in test.
+			err := controllerRestClient.UpdateNode(ctx, nodeName, test.nodeState)
+
+			// Assertions.
+			if test.isErrorExpected {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestDeleteNode(t *testing.T) {
 	controllerRestClient := ControllerRestClient{}
 	tridentNodeTable["1"] = "tridentNode1"
@@ -321,7 +523,7 @@ func TestDeleteNode(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Run(fmt.Sprintf("GetNode: %d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("DeleteNode: %d", i), func(t *testing.T) {
 			server := getHttpServer(config.NodeURL+"/"+test.nodeName, test.mockFunction)
 			controllerRestClient.url = server.URL
 			result := controllerRestClient.DeleteNode(ctx, test.nodeName)
@@ -359,7 +561,7 @@ func TestGetChap(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Run(fmt.Sprintf("GetNode: %d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("GetChap: %d", i), func(t *testing.T) {
 			server := getHttpServer(config.ChapURL+"/"+test.volumeName+"/"+test.nodeName, test.mockFunction)
 			controllerRestClient.url = server.URL
 			response, result := controllerRestClient.GetChap(ctx, test.volumeName, test.nodeName)
@@ -455,4 +657,207 @@ func TestUpdateVolumeLUKSPassphraseNames(t *testing.T) {
 	ctx = context.Background()
 	err = controllerRestClient.UpdateVolumeLUKSPassphraseNames(ctx, "test-vol", []string{"A"})
 	assert.Error(t, err)
+}
+
+func TestListVolumePublicationsForNode(t *testing.T) {
+	controllerRestClient := ControllerRestClient{}
+	ctx = context.Background()
+	tests := map[string]struct {
+		handlerGenerator func(string, string, string) func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected  bool
+	}{
+		"passes with status ok": {
+			handlerGenerator: func(
+				url, volumeName, nodeName string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = url
+					fakeListVolumePublicationsResponse := &ListVolumePublicationsResponse{
+						VolumePublications: []*utils.VolumePublicationExternal{
+							{
+								Name:       utils.GenerateVolumePublishName(volumeName, nodeName),
+								VolumeName: volumeName,
+								NodeName:   nodeName,
+							},
+						},
+						Error: "",
+					}
+					responseData, err := json.Marshal(fakeListVolumePublicationsResponse)
+					if err != nil {
+						t.Fatalf("Failed to setup fake response for ListVolumePublicationsForNode")
+					}
+					w.WriteHeader(http.StatusOK)
+					if _, err := w.Write(responseData); err != nil {
+						t.Fatalf("Failed to write fake response data for ListVolumePublicationsForNode")
+					}
+				}
+			},
+			isErrorExpected: false,
+		},
+		"fails when api never writes a response": {
+			handlerGenerator: func(
+				_, _, _ string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = ""
+				}
+			},
+			isErrorExpected: true,
+		},
+		"fails with unexpected status": {
+			handlerGenerator: func(
+				url, volumeName, nodeName string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = url
+					responseData, err := json.Marshal(&ListVolumePublicationsResponse{})
+					if err != nil {
+						t.Fatalf("Failed to setup fake response for GetNode")
+					}
+					w.WriteHeader(http.StatusAccepted)
+					if _, err := w.Write(responseData); err != nil {
+						t.Fatalf("Failed to write fake response data for GetNode")
+					}
+				}
+			},
+			isErrorExpected: true,
+		},
+		"fails to parse response body": {
+			handlerGenerator: func(
+				url, _, _ string,
+			) func(w http.ResponseWriter, r *http.Request) {
+				return func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+					r.URL.Path = url
+					responseData, err := json.Marshal(`{{////}`)
+					if err != nil {
+						t.Fatalf("Failed to setup fake response for GetNode")
+					}
+					w.WriteHeader(http.StatusOK)
+					if _, err := w.Write(responseData); err != nil {
+						t.Fatalf("Failed to write fake response data for GetNode")
+					}
+				}
+			},
+			isErrorExpected: true,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Setup fake handler and server.
+			nodeName := "foo"
+			volumeName := "bar"
+			url := fmt.Sprintf("%s/%s/%s", config.NodeURL, nodeName, "publication")
+			handler := test.handlerGenerator(url, volumeName, nodeName)
+			server := getHttpServer(url, handler)
+			defer server.Close()
+
+			// Connect the rest client to the fake server.
+			controllerRestClient.url = server.URL
+
+			// Call the unit in test.
+			publications, err := controllerRestClient.ListVolumePublicationsForNode(ctx, nodeName)
+
+			// Assertions.
+			if test.isErrorExpected {
+				assert.Error(t, err)
+				assert.Empty(t, publications)
+			} else {
+				assert.NoError(t, err)
+				assert.NotEmpty(t, publications)
+			}
+		})
+	}
+}
+
+func TestRequestAndRetry(t *testing.T) {
+	controllerRestClient := ControllerRestClient{}
+
+	tests := map[string]struct {
+		requestFunc     func() (*http.Response, []byte, error)
+		isErrorExpected bool
+	}{
+		"passes with status ok": {
+			requestFunc: func() (*http.Response, []byte, error) {
+				response := &http.Response{
+					StatusCode: http.StatusOK,
+				}
+				return response, []byte{}, nil
+			},
+			isErrorExpected: false,
+		},
+		"passes with status accepted": {
+			requestFunc: func() (*http.Response, []byte, error) {
+				response := &http.Response{
+					StatusCode: http.StatusAccepted,
+				}
+				return response, []byte{}, nil
+			},
+			isErrorExpected: false,
+		},
+		"fails with too many requests but no retry after header": {
+			requestFunc: func() (*http.Response, []byte, error) {
+				response := &http.Response{
+					StatusCode: http.StatusTooManyRequests,
+				}
+				response.Header.Del("Retry-After")
+				return response, []byte{}, nil
+			},
+			isErrorExpected: true,
+		},
+		"fails with http error": {
+			requestFunc: func() (*http.Response, []byte, error) {
+				return nil, nil, fmt.Errorf("could not communicate with HTTP controller server")
+			},
+			isErrorExpected: true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			_, _, err := controllerRestClient.requestAndRetry(ctx, test.requestFunc)
+			if test.isErrorExpected {
+				assert.Error(t, err, "expected error")
+			} else {
+				assert.NoError(t, err, "unexpected error")
+			}
+		})
+	}
+}
+
+func TestRequestAndRetrySucceedsAfterTooManyRequests(t *testing.T) {
+	controllerRestClient := ControllerRestClient{}
+	wg := &sync.WaitGroup{}
+
+	// Setting this up here will allow changing the response data
+	// even after requestAndRetry starts calling the requestFunc.
+	response := &http.Response{
+		StatusCode: http.StatusTooManyRequests,
+		Header:     make(http.Header, 0),
+	}
+
+	// Ensure this change happens after the first request but before the second.
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		// Sleep for a bit to give requestAndRetry a chance to retry.
+		time.Sleep(100 * time.Millisecond)
+		// Changing this here will allow requestAndRetry to exit.
+		response.StatusCode = http.StatusAccepted
+	}()
+
+	// Set up a closure so the response can be modified after this has been passed to requestAndRetry.
+	requestFunc := func() (*http.Response, []byte, error) {
+		// Set up some delay here so that requestAndRetry can run a few iterations.
+		response.Header.Set("Retry-After", "200ms")
+		return response, []byte{}, nil
+	}
+
+	_, _, err := controllerRestClient.requestAndRetry(ctx, requestFunc)
+	wg.Wait()
+	assert.NoError(t, err, "expected no error")
 }

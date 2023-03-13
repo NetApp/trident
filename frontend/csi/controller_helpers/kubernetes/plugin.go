@@ -2,6 +2,8 @@
 
 package kubernetes
 
+//go:generate mockgen -destination=../../../../mocks/mock_frontend/mock_csi/mock_controller_helpers/mock_kubernetes_helper/mock_kubernetes_helper.go github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes K8SControllerHelperPlugin
+
 import (
 	"context"
 	"fmt"
@@ -10,9 +12,11 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
+	csiaccessmodes "github.com/kubernetes-csi/csi-lib-utils/accessmodes"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -49,6 +53,8 @@ const (
 	eventAdd    = "add"
 	eventUpdate = "update"
 	eventDelete = "delete"
+
+	outOfServiceTaintKey = "node.kubernetes.io/out-of-service"
 )
 
 var (
@@ -61,16 +67,18 @@ type K8SControllerHelperPlugin interface {
 	frontend.Plugin
 	ImportVolume(ctx context.Context, request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error)
 	UpgradeVolume(ctx context.Context, request *storage.UpgradeVolumeRequest) (*storage.VolumeExternal, error)
+	GetNodePublicationState(ctx context.Context, nodeName string) (*utils.NodePublicationStateFlags, error)
 }
 
 type helper struct {
-	orchestrator  core.Orchestrator
-	tridentClient clientset.Interface
-	restConfig    rest.Config
-	kubeClient    kubernetes.Interface
-	kubeVersion   *k8sversion.Info
-	namespace     string
-	eventRecorder record.EventRecorder
+	orchestrator      core.Orchestrator
+	tridentClient     clientset.Interface
+	restConfig        rest.Config
+	kubeClient        kubernetes.Interface
+	kubeVersion       *k8sversion.Info
+	namespace         string
+	eventRecorder     record.EventRecorder
+	enableForceDetach bool
 
 	pvcIndexer            cache.Indexer
 	pvcController         cache.SharedIndexInformer
@@ -104,7 +112,7 @@ type helper struct {
 }
 
 // NewHelper instantiates this plugin when running outside a pod.
-func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string) (frontend.Plugin, error) {
+func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string, enableForceDetach bool) (frontend.Plugin, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate,
 		LogLayerCSIFrontend)
 
@@ -129,13 +137,14 @@ func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string)
 		restConfig:             *clients.RestConfig,
 		kubeClient:             clients.KubeClient,
 		kubeVersion:            kubeVersion,
+		namespace:              clients.Namespace,
+		enableForceDetach:      enableForceDetach,
 		pvcControllerStopChan:  make(chan struct{}),
 		pvControllerStopChan:   make(chan struct{}),
 		scControllerStopChan:   make(chan struct{}),
 		nodeControllerStopChan: make(chan struct{}),
 		mrControllerStopChan:   make(chan struct{}),
 		vrefControllerStopChan: make(chan struct{}),
-		namespace:              clients.Namespace,
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -397,6 +406,24 @@ func (h *helper) Activate() error {
 		LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Activating K8S helper frontend.")
+
+	// TODO (websterj): Revisit or remove this reconcile once Trident v21.10.1 has reached EOL;
+	// At that point, all supported Trident versions will include volume publications.
+	reconcileRequired, err := h.isPublicationReconcileRequired(ctx)
+	if err != nil {
+		return csi.TerminalReconciliationError(err.Error())
+	}
+	if reconcileRequired {
+		Logc(ctx).Debug("Publication reconciliation is required.")
+		// This call expects the Trident orchestrator core to bootstrapped successfully.
+		if err := h.reconcileVolumePublications(ctx); err != nil {
+			Logc(ctx).Errorf("Error reconciling legacy volumes; %v", err)
+			return csi.TerminalReconciliationError(err.Error())
+		}
+	} else {
+		Logc(ctx).Debug("Publication reconciliation is unnecessary.")
+	}
+
 	go h.pvcController.Run(h.pvcControllerStopChan)
 	go h.pvController.Run(h.pvControllerStopChan)
 	go h.scController.Run(h.scControllerStopChan)
@@ -420,7 +447,6 @@ func (h *helper) Activate() error {
 
 // Deactivate stops this Trident frontend.
 func (h *helper) Deactivate() error {
-	Log().Info("Deactivating K8S helper frontend.")
 	close(h.pvcControllerStopChan)
 	close(h.pvControllerStopChan)
 	close(h.scControllerStopChan)
@@ -487,6 +513,157 @@ func (h *helper) reconcileNodes(ctx context.Context) {
 		}
 	}
 	Logc(ctx).Debug("Node reconciliation complete.")
+}
+
+// isPublicationReconcileRequired looks at Trident's persistent TridentVersion CR and checks if publications are synced.
+// If they are, no reconcile is required. Otherwise, attempt to reconcile.
+func (h *helper) isPublicationReconcileRequired(ctx context.Context) (bool, error) {
+	Logc(ctx).Debug("Checking if publication reconciliation is required.")
+	version, err := h.tridentClient.TridentV1().TridentVersions(h.namespace).Get(ctx, config.OrchestratorName, getOpts)
+	if err != nil {
+		return false, fmt.Errorf("unable to get Trident version; %v", err)
+	}
+
+	return !version.PublicationsSynced, nil
+}
+
+// listVolumeAttachments returns the list of volume attachments in kubernetes.
+func (h *helper) listVolumeAttachments(ctx context.Context) ([]k8sstoragev1.VolumeAttachment, error) {
+	attachments, err := h.kubeClient.StorageV1().VolumeAttachments().List(ctx, listOpts)
+	if err != nil {
+		statusErr, ok := err.(*apierrors.StatusError)
+		if ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return nil, utils.NotFoundError(fmt.Sprintf("no volume attachments found; %s", err.Error()))
+		}
+		return nil, err
+	}
+
+	if attachments == nil {
+		return nil, utils.NotFoundError("no volume attachments found")
+	}
+
+	return attachments.Items, nil
+}
+
+// reconcileVolumePublications upgrades any legacy volumes in Trident by creating publications for
+// K8s volumeAttachments with corresponding Trident volumes that have no publication associated with it.
+// This should happen as part of activating the K8s controller helper and after the Trident core has bootstrapped
+// volumes and publications.
+// NOTE: Not all volumes have a volume publication. Volume attachments should be used as the source of
+// truth in this reconciliation because if a volume attachment exists && it is attached, it means
+// CSI ControllerPublishVolume has happened before for that volume.
+func (h *helper) reconcileVolumePublications(ctx context.Context) error {
+	Logc(ctx).Debug("Performing publication reconciliation.")
+	attachments, err := h.listVolumeAttachments(ctx)
+	if err != nil {
+		if !utils.IsNotFoundError(err) {
+			Logc(ctx).Errorf("Unable list volume attachments; aborting publication reconciliation; %v", err)
+			return err
+		}
+		Logc(ctx).Debugf("No volume attachments found; continuing reconciliation; %v", err)
+	}
+
+	// Reconcile even if no attachments are found so volume publications are synced from Trident core's perspective.
+	publications, err := h.listAttachmentsAsPublications(ctx, attachments)
+	if err != nil {
+		Logc(ctx).Errorf(
+			"Unable list volume attachments as publications; aborting publication reconciliation; %v", err)
+		return err
+	}
+
+	err = h.orchestrator.ReconcileVolumePublications(ctx, publications)
+	if err != nil {
+		Logc(ctx).Errorf(
+			"Unable to reconcile volume publications; aborting publication reconciliation; %v", err)
+		return err
+	}
+
+	Logc(ctx).Debug("Publication reconciliation complete.")
+	return nil
+}
+
+// listAttachmentsAsPublications returns a list of Kubernetes volume attachments as Trident volume publications.
+func (h *helper) listAttachmentsAsPublications(
+	ctx context.Context, attachments []k8sstoragev1.VolumeAttachment,
+) ([]*utils.VolumePublicationExternal, error) {
+	Logc(ctx).Debug("Converting Kubernetes volume attachments to Trident publications.")
+	defer Logc(ctx).Debug("Converted Kubernetes volume attachments to Trident publications.")
+
+	publications := make([]*utils.VolumePublicationExternal, 0)
+	for _, attachment := range attachments {
+
+		// If the attachment is invalid, don't add it.
+		if !h.isAttachmentValid(ctx, attachment) {
+			continue
+		}
+
+		volumeName := *attachment.Spec.Source.PersistentVolumeName
+		nodeName := attachment.Spec.NodeName
+		tridentVolume, err := h.orchestrator.GetVolume(ctx, volumeName)
+		if err != nil {
+			if utils.IsNotFoundError(err) {
+				Logc(ctx).WithFields(LogFields{
+					"attachment": attachment.Name,
+					"volume":     volumeName,
+					"node":       nodeName,
+				}).Warning("Unable to find a corresponding Trident volume for this attachment; ignoring.")
+				continue
+			}
+			return publications, err
+		}
+
+		// Build the access modes for this attached volume the same way the CSI external-attacher does.
+		accessModes := []v1.PersistentVolumeAccessMode{v1.PersistentVolumeAccessMode(tridentVolume.Config.AccessMode)}
+		// "supportsSingleNodeMultiWriter" will always be false; it relies on capabilities of the CSI Controller Server.
+		accessMode, err := csiaccessmodes.ToCSIAccessMode(accessModes, false)
+		if err != nil {
+			return publications, fmt.Errorf("invalid access mode on attached volume; %v", err)
+		}
+
+		// Build an external publication to supply to the core
+		publication := &utils.VolumePublicationExternal{
+			Name:       utils.GenerateVolumePublishName(volumeName, nodeName),
+			VolumeName: volumeName,
+			NodeName:   nodeName,
+			ReadOnly:   tridentVolume.Config.AccessInfo.ReadOnly, // should always default to false.
+			AccessMode: int32(accessMode),
+		}
+		publications = append(publications, publication)
+	}
+
+	return publications, nil
+}
+
+// isAttachmentValid is used to determine if a volume attachment is valid.
+//
+//	There are 4 conditions when an attachment will be marked as invalid:
+//	1. If the provisioner / attacher is not Trident.
+//	2. If the volume attachment is not attached.
+//	3. If the volume attachment lacks a source volume.
+//	4. If the volume attachment lacks a node.
+func (h *helper) isAttachmentValid(ctx context.Context, attachment k8sstoragev1.VolumeAttachment) bool {
+	fields := LogFields{
+		"attachment": attachment.Name,
+	}
+
+	if attachment.Spec.Attacher != csi.Provisioner {
+		Logc(ctx).WithFields(fields).Debug("Volume attachment isn't attached by Trident; ignoring.")
+		return false
+	}
+	if !attachment.Status.Attached {
+		Logc(ctx).WithFields(fields).Debug("Volume attachment isn't attached; ignoring.")
+		return false
+	}
+	if attachment.Spec.Source.PersistentVolumeName == nil || *attachment.Spec.Source.PersistentVolumeName == "" {
+		Logc(ctx).WithFields(fields).Debug("Volume attachment has invalid source volume; ignoring.")
+		return false
+	}
+	if attachment.Spec.NodeName == "" {
+		Logc(ctx).WithFields(fields).Debug("Volume attachment has no node; ignoring.")
+		return false
+	}
+
+	return true
 }
 
 // addPVC is the add handler for the PVC watcher.
@@ -1042,26 +1219,35 @@ func (h *helper) addNode(obj interface{}) {
 	Logc(ctx).Trace(">>>> addNode")
 	defer Logc(ctx).Trace("<<<< addNode")
 
-	switch node := obj.(type) {
-	case *v1.Node:
-		h.processNode(ctx, node, eventAdd)
-	default:
+	node, ok := obj.(*v1.Node)
+	if !ok {
 		Logc(ctx).Errorf("K8S helper expected Node; got %v", obj)
+		return
 	}
+
+	Logc(ctx).WithField("name", node.Name).Debug("Node added to cache.")
 }
 
 // updateNode is the update handler for the node watcher.
-func (h *helper) updateNode(_, newObj interface{}) {
+func (h *helper) updateNode(_, obj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowNodeUpdate,
 		LogLayerCSIFrontend)
 	Logc(ctx).Trace(">>>> updateNode")
 	defer Logc(ctx).Trace("<<<< updateNode")
 
-	switch node := newObj.(type) {
-	case *v1.Node:
-		h.processNode(ctx, node, eventUpdate)
-	default:
-		Logc(ctx).Errorf("K8S helper expected Node; got %v", newObj)
+	node, ok := obj.(*v1.Node)
+	if !ok {
+		Logc(ctx).Errorf("K8S helper expected Node; got %v", obj)
+		return
+	}
+
+	logFields := LogFields{"name": node.Name}
+	Logc(ctx).WithFields(logFields).Debug("Node updated in cache.")
+
+	if h.enableForceDetach {
+		if err := h.orchestrator.UpdateNode(ctx, node.Name, h.getNodePublicationState(node)); err != nil {
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Could not update node in Trident's database.")
+		}
 	}
 }
 
@@ -1071,11 +1257,19 @@ func (h *helper) deleteNode(obj interface{}) {
 	Logc(ctx).Trace(">>>> deleteNode")
 	defer Logc(ctx).Trace("<<<< deleteNode")
 
-	switch node := obj.(type) {
-	case *v1.Node:
-		h.processNode(ctx, node, eventDelete)
-	default:
+	node, ok := obj.(*v1.Node)
+	if !ok {
 		Logc(ctx).Errorf("K8S helper expected Node; got %v", obj)
+		return
+	}
+
+	logFields := LogFields{"name": node.Name}
+	Logc(ctx).WithFields(logFields).Debug("Node deleted from cache.")
+
+	if err := h.orchestrator.DeleteNode(ctx, node.Name); err != nil {
+		if !utils.IsNotFoundError(err) {
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Could not delete node from Trident's database.")
+		}
 	}
 }
 
@@ -1100,6 +1294,55 @@ func (h *helper) processNode(ctx context.Context, node *v1.Node, eventType strin
 			}
 		}
 		Logc(ctx).WithFields(logFields).Trace("Node deleted from cache.")
+	}
+}
+
+// GetNodePublicationState returns a set of flags that indicate whether, in certain circumstances,
+// a node may safely publish volumes.  If such checking is not enabled or otherwise appropriate,
+// this function returns nil.
+func (h *helper) GetNodePublicationState(
+	ctx context.Context, nodeName string,
+) (*utils.NodePublicationStateFlags, error) {
+	if !h.enableForceDetach {
+		return nil, nil
+	}
+
+	node, err := h.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
+	if err != nil {
+		statusErr, ok := err.(*apierrors.StatusError)
+		if ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return nil, utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
+		}
+		return nil, err
+	}
+
+	return h.getNodePublicationState(node), nil
+}
+
+// getNodePublicationState returns a set of flags that indicate whether a node may safely publish volumes.
+// To be safe, a node must have a Ready=true condition and not have the "node.kubernetes.io/out-of-service" taint.
+func (h *helper) getNodePublicationState(node *v1.Node) *utils.NodePublicationStateFlags {
+	ready, outOfService := false, false
+
+	// Look for non-Ready condition
+	for _, condition := range node.Status.Conditions {
+		if condition.Type == v1.NodeReady && condition.Status == v1.ConditionTrue {
+			ready = true
+			break
+		}
+	}
+
+	// Look for OutOfService taint
+	for _, taint := range node.Spec.Taints {
+		if taint.Key == outOfServiceTaintKey {
+			outOfService = true
+			break
+		}
+	}
+
+	return &utils.NodePublicationStateFlags{
+		Ready:      utils.Ptr(ready),
+		AdminReady: utils.Ptr(!outOfService),
 	}
 }
 

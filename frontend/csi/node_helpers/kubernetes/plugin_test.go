@@ -37,7 +37,7 @@ func TestNewHelper(t *testing.T) {
 	aPath := "/var/lib/kubelet"
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockOrchestrator.NewMockOrchestrator(mockCtrl)
-	help, err := NewHelper(orchestrator, aPath)
+	help, err := NewHelper(orchestrator, aPath, false)
 	h, ok := help.(*helper)
 	if !ok {
 		t.Fatal("Could not cast helper to a NodeHelper!")
@@ -75,7 +75,7 @@ func TestGetName(t *testing.T) {
 func TestVersion(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockOrchestrator.NewMockOrchestrator(mockCtrl)
-	h, _ := NewHelper(orchestrator, "")
+	h, _ := NewHelper(orchestrator, "", false)
 	assert.Equal(t, "unknown", h.Version())
 }
 
@@ -342,7 +342,7 @@ func TestDiscoverPVCsToPublishedPaths(t *testing.T) {
 	defer func() { osFs = afero.NewOsFs() }()
 	osFs = afero.NewMemMapFs()
 
-	help, _ := NewHelper(orchestrator, "/var/lib/kubelet")
+	help, _ := NewHelper(orchestrator, "/var/lib/kubelet", false)
 	h, ok := help.(*helper)
 	if !ok {
 		t.Fatal("Could not cast helper to a NodeHelper!")
@@ -366,7 +366,7 @@ func TestDiscoverPVCsToPublishedPaths_ReadDirFails(t *testing.T) {
 	defer func() { osFs = afero.NewOsFs() }()
 	osFs = afero.NewMemMapFs()
 
-	help, _ := NewHelper(orchestrator, "/var/lib/kubelet")
+	help, _ := NewHelper(orchestrator, "/var/lib/kubelet", false)
 	h, ok := help.(*helper)
 	if !ok {
 		t.Fatal("Could not case helper to a NodeHelper!")

@@ -74,20 +74,20 @@ type Orchestrator interface {
 	ListStorageClasses(ctx context.Context) ([]*storageclass.External, error)
 
 	AddNode(ctx context.Context, node *utils.Node, nodeEventCallback NodeEventCallback) error
-	GetNode(ctx context.Context, nName string) (*utils.Node, error)
-	ListNodes(ctx context.Context) ([]*utils.Node, error)
-	DeleteNode(ctx context.Context, nName string) error
+	UpdateNode(ctx context.Context, nodeName string, flags *utils.NodePublicationStateFlags) error
+	GetNode(ctx context.Context, nodeName string) (*utils.NodeExternal, error)
+	ListNodes(ctx context.Context) ([]*utils.NodeExternal, error)
+	DeleteNode(ctx context.Context, nodeName string) error
 	PeriodicallyReconcileNodeAccessOnBackends()
 
-	AddVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
-	UpdateVolumePublication(ctx context.Context, volumeName, nodeName string, notSafeToAttach *bool) error
+	ReconcileVolumePublications(ctx context.Context, attachedLegacyVolumes []*utils.VolumePublicationExternal) error
 	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*utils.VolumePublication, error)
-	ListVolumePublications(ctx context.Context, notSafeToAttach *bool) ([]*utils.VolumePublicationExternal, error)
+	ListVolumePublications(ctx context.Context) ([]*utils.VolumePublicationExternal, error)
 	ListVolumePublicationsForVolume(
-		ctx context.Context, volumeName string, notSafeToAttach *bool,
+		ctx context.Context, volumeName string,
 	) (publications []*utils.VolumePublicationExternal, err error)
 	ListVolumePublicationsForNode(
-		ctx context.Context, nodeName string, notSafeToAttach *bool,
+		ctx context.Context, nodeName string,
 	) (publications []*utils.VolumePublicationExternal, err error)
 	DeleteVolumePublication(ctx context.Context, volumeName, nodeName string) error
 

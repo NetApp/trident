@@ -1407,6 +1407,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		Tolerations:             tolerations,
 		ServiceAccountName:      serviceAccName,
 		ImagePullPolicy:         imagePullPolicy,
+		EnableForceDetach:       enableForceDetach,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)

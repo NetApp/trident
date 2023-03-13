@@ -27,6 +27,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/kr/secureheader v0.2.0
+	github.com/kubernetes-csi/csi-lib-utils v0.12.0
 	github.com/kubernetes-csi/csi-proxy/client v1.1.2
 	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.2.0
 	github.com/mattermost/xml-roundtrip-validator v0.1.1-0.20211207080247-460296229913

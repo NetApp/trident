@@ -80,6 +80,20 @@ func (mr *MockBackendMockRecorder) BackendUUID() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BackendUUID", reflect.TypeOf((*MockBackend)(nil).BackendUUID))
 }
 
+// CanEnablePublishEnforcement mocks base method.
+func (m *MockBackend) CanEnablePublishEnforcement() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CanEnablePublishEnforcement")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// CanEnablePublishEnforcement indicates an expected call of CanEnablePublishEnforcement.
+func (mr *MockBackendMockRecorder) CanEnablePublishEnforcement() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanEnablePublishEnforcement", reflect.TypeOf((*MockBackend)(nil).CanEnablePublishEnforcement))
+}
+
 // CanMirror mocks base method.
 func (m *MockBackend) CanMirror() bool {
 	m.ctrl.T.Helper()

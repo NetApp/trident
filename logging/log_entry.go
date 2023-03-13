@@ -37,10 +37,12 @@ func (le *logEntry) WithError(err error) LogEntry {
 
 func (le *logEntry) Fatal(args ...interface{}) {
 	le.log(log.FatalLevel, args...)
+	le.entry.Logger.Exit(1)
 }
 
 func (le *logEntry) Fatalf(format string, args ...interface{}) {
 	le.logf(log.FatalLevel, format, args...)
+	le.entry.Logger.Exit(1)
 }
 
 func (le *logEntry) Error(args ...interface{}) {

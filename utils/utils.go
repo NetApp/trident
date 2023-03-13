@@ -1021,3 +1021,11 @@ func GetPrintableBoolPtrValue(bPtr *bool) string {
 func Ptr[T any](v T) *T {
 	return &v
 }
+
+// PtrToString converts any value into its string representation, or nil
+func PtrToString[T any](v *T) string {
+	if v == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *v)
+}

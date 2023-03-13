@@ -1353,6 +1353,9 @@ func (k *CRDClientV1) AddVolumePublication(ctx context.Context, publication *uti
 
 	_, err = k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Create(ctx, newPublication, createOpts)
 	if err != nil {
+		if errors.IsAlreadyExists(err) {
+			return NewAlreadyExistsError(newPublication.Kind, newPublication.Name)
+		}
 		return err
 	}
 

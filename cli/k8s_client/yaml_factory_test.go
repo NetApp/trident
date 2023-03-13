@@ -1283,12 +1283,6 @@ func TestGetCRDsYAML(t *testing.T) {
 					Type:   "integer",
 					Format: "int32",
 				},
-				"notSafeToAttach": {
-					Type: "boolean",
-				},
-				"unpublished": {
-					Type: "boolean",
-				},
 			},
 			Required: []string{"volumeID", "nodeID", "readOnly"},
 		},
@@ -2605,12 +2599,6 @@ func TestGetVolumePublicationCRDYAML(t *testing.T) {
 				"accessMode": {
 					Type:   "integer",
 					Format: "int32",
-				},
-				"notSafeToAttach": {
-					Type: "boolean",
-				},
-				"unpublished": {
-					Type: "boolean",
 				},
 			},
 			Required: []string{"volumeID", "nodeID", "readOnly"},

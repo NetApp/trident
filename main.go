@@ -388,11 +388,11 @@ func main() {
 		var hybridControllerFrontend frontend.Plugin
 		var hybridNodeFrontend frontend.Plugin
 		if *k8sAPIServer != "" || *k8sPod {
-			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath)
+			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath, *enableForceDetach)
 			if err != nil {
 				Log().WithError(err).Fatal("Unable to start the K8S hybrid controller frontend.")
 			}
-			hybridNodeFrontend, err = k8snodehelper.NewHelper(orchestrator, *k8sConfigPath)
+			hybridNodeFrontend, err = k8snodehelper.NewHelper(orchestrator, *k8sConfigPath, *enableForceDetach)
 			if err != nil {
 				Log().WithError(err).Fatal("Unable to start the K8S hybrid node frontend.")
 			}
@@ -428,7 +428,8 @@ func main() {
 		switch *csiRole {
 		case csi.CSIController:
 			txnMonitor = true
-			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator, &controllerHelper)
+			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator,
+				&controllerHelper, *enableForceDetach)
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, &nodeHelper, *enableForceDetach,
@@ -512,12 +513,11 @@ func main() {
 	}
 	for _, f := range postBootstrapFrontends {
 		if err := f.Activate(); err != nil {
-			// If there is a terminal error during reconciliation, then the node plugin needs to be restarted so that we
-			// can try again.
+			// Terminal errors only come from application states that are unrecoverable or may lead to
+			// significant but unintentional changes in behavior.
 			if csi.IsTerminalReconciliationError(err) {
-				Log().Fatal(err)
+				Log().WithError(err).Fatal("Activation failed for one or more helper frontends")
 			}
-			Log().Error(err)
 		}
 	}
 

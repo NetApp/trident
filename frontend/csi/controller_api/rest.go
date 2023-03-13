@@ -142,6 +142,83 @@ func (c *ControllerRestClient) CreateNode(ctx context.Context, node *utils.Node)
 	return createResponse, nil
 }
 
+type GetNodeResponse struct {
+	Node  *utils.NodeExternal `json:"node"`
+	Error string              `json:"error,omitempty"`
+}
+
+func (c *ControllerRestClient) GetNode(ctx context.Context, nodeName string) (*utils.NodeExternal, error) {
+	url := config.NodeURL + "/" + nodeName
+	getRequest := func() (*http.Response, []byte, error) {
+		resp, body, err := c.InvokeAPI(ctx, nil, "GET", url, false, false)
+		if err != nil {
+			return resp, body, fmt.Errorf("could not communicate with the Trident CSI Controller: %v", err)
+		}
+		return resp, body, nil
+	}
+
+	// Make the API call to update the node.
+	resp, respBody, err := c.requestAndRetry(ctx, getRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed during retry for GetNode: %v", err)
+	}
+
+	getNodeResponse := GetNodeResponse{}
+	if err := json.Unmarshal(respBody, &getNodeResponse); err != nil {
+		return nil, fmt.Errorf("could not parse node info : %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		msg := "could not get node info"
+		Logc(ctx).WithError(fmt.Errorf(getNodeResponse.Error)).Error(msg)
+		return nil, fmt.Errorf(msg)
+	}
+
+	return getNodeResponse.Node, nil
+}
+
+type UpdateNodeResponse struct {
+	Name  string `json:"name"`
+	Error string `json:"error,omitempty"`
+}
+
+func (c *ControllerRestClient) UpdateNode(
+	ctx context.Context, nodeName string, nodeState *utils.NodePublicationStateFlags,
+) error {
+	body, err := json.Marshal(nodeState)
+	if err != nil {
+		return fmt.Errorf("error marshalling update node request; %v", err)
+	}
+
+	url := fmt.Sprintf("%s/%s/%s", config.NodeURL, nodeName, "publicationState")
+	updateRequest := func() (*http.Response, []byte, error) {
+		resp, _, err := c.InvokeAPI(ctx, body, "PUT", url, false, false)
+		if err != nil {
+			return resp, body, fmt.Errorf("could not communicate with the Trident CSI Controller: %v", err)
+		}
+		return resp, body, nil
+	}
+
+	// Make the API call to update the node.
+	resp, respBody, err := c.requestAndRetry(ctx, updateRequest)
+	if err != nil {
+		return fmt.Errorf("failed during retry for UpdateNode: %v", err)
+	}
+
+	updateNodeResponse := UpdateNodeResponse{}
+	if err := json.Unmarshal(respBody, &updateNodeResponse); err != nil {
+		return fmt.Errorf("could not parse node info : %v", err)
+	}
+
+	if resp.StatusCode != http.StatusAccepted {
+		msg := "could not update node"
+		Logc(ctx).WithError(fmt.Errorf(updateNodeResponse.Error)).Error(msg)
+		return fmt.Errorf(msg)
+	}
+
+	return nil
+}
+
 type ListNodesResponse struct {
 	Nodes []string `json:"nodes"`
 	Error string   `json:"error,omitempty"`
@@ -168,8 +245,8 @@ func (c *ControllerRestClient) GetNodes(ctx context.Context) ([]string, error) {
 }
 
 // DeleteNode deregisters the node with the CSI controller server
-func (c *ControllerRestClient) DeleteNode(ctx context.Context, name string) error {
-	resp, _, err := c.InvokeAPI(ctx, nil, "DELETE", config.NodeURL+"/"+name, false, false)
+func (c *ControllerRestClient) DeleteNode(ctx context.Context, nodeName string) error {
+	resp, _, err := c.InvokeAPI(ctx, nil, "DELETE", config.NodeURL+"/"+nodeName, false, false)
 	if err != nil {
 		return fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
 	}
@@ -193,42 +270,87 @@ type GetCHAPResponse struct {
 }
 
 // GetChap requests the current CHAP credentials for a given volume/node pair from the Trident controller
-func (c *ControllerRestClient) GetChap(ctx context.Context, volume, node string) (*utils.IscsiChapInfo, error) {
-	resp, respBody, err := c.InvokeAPI(ctx, nil, "GET", config.ChapURL+"/"+volume+"/"+node, false, true)
+func (c *ControllerRestClient) GetChap(ctx context.Context, volumeID, nodeName string) (*utils.IscsiChapInfo, error) {
+	resp, respBody, err := c.InvokeAPI(ctx, nil, "GET", config.ChapURL+"/"+volumeID+"/"+nodeName, false, true)
 	if err != nil {
 		return &utils.IscsiChapInfo{}, fmt.Errorf("could not communicate with the Trident CSI Controller: %v", err)
 	}
-	createResponse := GetCHAPResponse{}
-	if err := json.Unmarshal(respBody, &createResponse); err != nil {
+	getResponse := GetCHAPResponse{}
+	if err := json.Unmarshal(respBody, &getResponse); err != nil {
 		return nil, fmt.Errorf("could not parse CHAP info : %v", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		msg := "could not add get CHAP info"
-		Logc(ctx).WithError(fmt.Errorf(createResponse.Error)).Errorf(msg)
+		msg := "could not get CHAP info"
+		Logc(ctx).WithError(fmt.Errorf(getResponse.Error)).Error(msg)
 		return nil, fmt.Errorf(msg)
 	}
-	return createResponse.CHAP, nil
+	return getResponse.CHAP, nil
 }
 
-// UpdateVolumePublication updates a volume publication in the Trident controller.  At present, the only value
-// modified is NotSafeToAttach.
-func (c *ControllerRestClient) UpdateVolumePublication(
-	ctx context.Context, publication *utils.VolumePublicationExternal,
-) error {
-	body, err := json.Marshal(publication)
+type ListVolumePublicationsResponse struct {
+	VolumePublications []*utils.VolumePublicationExternal `json:"volumePublications"`
+	Error              string                             `json:"error,omitempty"`
+}
+
+// ListVolumePublicationsForNode requests volume publications that exist on the host node from Trident controller.
+func (c *ControllerRestClient) ListVolumePublicationsForNode(
+	ctx context.Context, nodeName string,
+) ([]*utils.VolumePublicationExternal, error) {
+	// Set up the resource path.
+	url := fmt.Sprintf("%s/%s/%s", config.NodeURL, nodeName, "publication")
+
+	// Invoke the controller API.
+	resp, respBody, err := c.InvokeAPI(ctx, nil, "GET", url, false, false)
 	if err != nil {
-		return fmt.Errorf("error marshaling update publication request; %v", err)
+		return []*utils.VolumePublicationExternal{},
+			fmt.Errorf("could not communicate with the Trident CSI Controller: %v", err)
 	}
-	url := config.PublicationURL + "/" + publication.VolumeName + "/" + publication.NodeName
-	resp, _, err := c.InvokeAPI(ctx, body, "PUT", url, false, false)
-	if err != nil {
-		return fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
+
+	listResponse := &ListVolumePublicationsResponse{}
+	if err := json.Unmarshal(respBody, &listResponse); err != nil {
+		return nil, fmt.Errorf("failed to parse response body: %v", err)
 	}
-	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("could not update volume publication")
+
+	if resp.StatusCode != http.StatusOK {
+		msg := "could not list publications"
+		Logc(ctx).WithError(fmt.Errorf(listResponse.Error)).Error(msg)
+		return nil, fmt.Errorf(msg)
 	}
-	return nil
+
+	return listResponse.VolumePublications, nil
+}
+
+// requestAndRetry is used when API requests may hit rate limiting. It inspects the headers and checks for
+// 429 / TooManyRequests status. The caller is responsible for setting up the request function properly.
+func (c *ControllerRestClient) requestAndRetry(
+	ctx context.Context, req func() (*http.Response, []byte, error),
+) (*http.Response, []byte, error) {
+	defer func() {
+		if panic := recover(); panic != nil {
+			Logc(ctx).Debugf("Panic during retries; Could not parse HTTP response.")
+		}
+	}()
+
+	res, body, err := req()
+	for err == nil && (res != nil && res.StatusCode == http.StatusTooManyRequests) {
+		Logc(ctx).Debugf("Request rejected due to rate limiting.")
+
+		// Convert the Retry-After value to a time duration.
+		retryAfter, err := time.ParseDuration(res.Header.Get("Retry-After"))
+		if err != nil {
+			return res, body, fmt.Errorf("could not parse response header: %v; %v", res.Header, err)
+		}
+
+		// Sleep for n-seconds supplied from Retry-After.
+		Logc(ctx).Debugf("Sleeping for %s seconds to retry operation...", retryAfter)
+		time.Sleep(time.Duration(retryAfter.Seconds()))
+
+		// Try to make the update call again.
+		res, body, err = req()
+	}
+
+	return res, body, err
 }
 
 func (c *ControllerRestClient) UpdateVolumeLUKSPassphraseNames(

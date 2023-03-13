@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"runtime"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -978,7 +977,6 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 				return httpStatusCodeForAdd(err)
 			}
 			node.TopologyLabels = topologyLabels
-			node.TopologyLabels = topologyLabels
 			updateResponse.setTopologyLabels(topologyLabels)
 			Logc(r.Context()).WithField("node", node.Name).Info("Determined topology labels for node: ",
 				topologyLabels)
@@ -996,9 +994,108 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+type UpdateNodeResponse struct {
+	Name  string `json:"name"`
+	Error string `json:"error,omitempty"`
+}
+
+func (u *UpdateNodeResponse) setError(err error) {
+	u.Error = err.Error()
+}
+
+func (u *UpdateNodeResponse) isError() bool {
+	return u.Error != ""
+}
+
+func (u *UpdateNodeResponse) logSuccess(ctx context.Context) {
+	Logc(ctx).WithFields(LogFields{
+		"handler": "UpdateNode",
+		"node":    u.Name,
+	}).Info("Updated a node.")
+}
+
+func (u *UpdateNodeResponse) logFailure(ctx context.Context) {
+	Logc(ctx).WithFields(LogFields{
+		"handler": "UpdateNode",
+		"node":    u.Name,
+	}).Error(u.Error)
+}
+
+// nodeUpdater updates a Trident Node's persistent state asynchronously.
+func nodeUpdater(_ http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte) int {
+	updateNodeResponse, ok := response.(*UpdateNodeResponse)
+	if !ok {
+		response.setError(fmt.Errorf("response object must be of type UpdateNodeResponse"))
+		return http.StatusInternalServerError
+	}
+
+	nodePublicationState := new(utils.NodePublicationStateFlags)
+	err := json.Unmarshal(body, nodePublicationState)
+	if err != nil {
+		response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+		return httpStatusCodeForAdd(err)
+	}
+
+	nodeName := vars["node"]
+	if nodeName == "" {
+		updateNodeResponse.setError(fmt.Errorf("node name not specified"))
+		return http.StatusBadRequest
+	}
+	updateNodeResponse.Name = nodeName
+
+	// Spawn a routine to do this asynchronously.
+	go func() {
+		ctx := context.Background()
+		logEntry := Logc(ctx).WithFields(LogFields{"handler": "UpdateNode", "nodeName": nodeName})
+
+		// Get the just-in-time node state from Kubernetes
+		k8sFrontend, err := orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
+		if err != nil {
+			logEntry.Error(err)
+			return
+		}
+		k8s, ok := k8sFrontend.(k8shelper.K8SControllerHelperPlugin)
+		if !ok {
+			logEntry.Error(fmt.Errorf("unable to obtain Kubernetes frontend"))
+			return
+		}
+
+		k8sNodePublicationState, err := k8s.GetNodePublicationState(ctx, nodeName)
+		if err != nil {
+			logEntry.Error(err)
+			return
+		}
+
+		// If the nodePublicationState came from another actor (like tridentctl, or trident node pod)
+		// Then we should use those values. If those values are set, these values will be used. Otherwise,
+		// we should use the k8sNodePublication state.
+		if k8sNodePublicationState != nil {
+			if nodePublicationState.Ready == nil && k8sNodePublicationState.Ready != nil {
+				nodePublicationState.Ready = k8sNodePublicationState.Ready
+			}
+			if nodePublicationState.AdminReady == nil && k8sNodePublicationState.AdminReady != nil {
+				nodePublicationState.AdminReady = k8sNodePublicationState.AdminReady
+			}
+		}
+
+		err = orchestrator.UpdateNode(ctx, nodeName, nodePublicationState)
+		if err == nil {
+			logEntry.Infof("Updated a node: %s state", nodeName)
+		} else {
+			logEntry.Error(err)
+		}
+	}()
+	return http.StatusAccepted
+}
+
+func UpdateNode(w http.ResponseWriter, r *http.Request) {
+	response := &UpdateNodeResponse{}
+	UpdateGeneric(w, r, response, nodeUpdater)
+}
+
 type GetNodeResponse struct {
-	Node  *utils.Node `json:"node"`
-	Error string      `json:"error,omitempty"`
+	Node  *utils.NodeExternal `json:"node"`
+	Error string              `json:"error,omitempty"`
 }
 
 func GetNode(w http.ResponseWriter, r *http.Request) {
@@ -1086,13 +1183,13 @@ func (r *VolumePublicationsResponse) isError() bool {
 
 func (r *VolumePublicationsResponse) logSuccess(ctx context.Context) {
 	Logc(ctx).WithFields(LogFields{
-		"handler": "UpdateVolumePublication",
-	}).Info("Updated a volume publication.")
+		"handler": "ListVolumePublications",
+	}).Info("Listed volume publications.")
 }
 
 func (r *VolumePublicationsResponse) logFailure(ctx context.Context) {
 	Logc(ctx).WithFields(LogFields{
-		"handler": "UpdateVolumePublication",
+		"handler": "ListVolumePublications",
 	}).Error(r.Error)
 }
 
@@ -1100,16 +1197,7 @@ func ListVolumePublications(w http.ResponseWriter, r *http.Request) {
 	response := &VolumePublicationsResponse{}
 	GetGeneric(w, r, response,
 		func(_ map[string]string) int {
-			var notSafeToAttach *bool
-			if r.URL.Query().Has("notSafeToAttach") {
-				if strings.ToLower(r.URL.Query().Get("notSafeToAttach")) == "true" {
-					notSafeToAttach = utils.Ptr(true)
-				} else if strings.ToLower(r.URL.Query().Get("notSafeToAttach")) == "false" {
-					notSafeToAttach = utils.Ptr(false)
-				}
-			}
-
-			pubs, err := orchestrator.ListVolumePublications(r.Context(), notSafeToAttach)
+			pubs, err := orchestrator.ListVolumePublications(r.Context())
 			if err != nil {
 				response.Error = err.Error()
 			} else {
@@ -1124,16 +1212,7 @@ func ListVolumePublicationsForVolume(w http.ResponseWriter, r *http.Request) {
 	response := &VolumePublicationsResponse{}
 	GetGeneric(w, r, response,
 		func(vars map[string]string) int {
-			var notSafeToAttach *bool
-			if r.URL.Query().Has("notSafeToAttach") {
-				if strings.ToLower(r.URL.Query().Get("notSafeToAttach")) == "true" {
-					notSafeToAttach = utils.Ptr(true)
-				} else if strings.ToLower(r.URL.Query().Get("notSafeToAttach")) == "false" {
-					notSafeToAttach = utils.Ptr(false)
-				}
-			}
-
-			pubs, err := orchestrator.ListVolumePublicationsForVolume(r.Context(), vars["volume"], notSafeToAttach)
+			pubs, err := orchestrator.ListVolumePublicationsForVolume(r.Context(), vars["volume"])
 			if err != nil {
 				response.Error = err.Error()
 			} else {
@@ -1148,69 +1227,11 @@ func ListVolumePublicationsForNode(w http.ResponseWriter, r *http.Request) {
 	response := &VolumePublicationsResponse{}
 	GetGeneric(w, r, response,
 		func(vars map[string]string) int {
-			var notSafeToAttach *bool
-			if r.URL.Query().Has("notSafeToAttach") {
-				if strings.ToLower(r.URL.Query().Get("notSafeToAttach")) == "true" {
-					notSafeToAttach = utils.Ptr(true)
-				} else if strings.ToLower(r.URL.Query().Get("notSafeToAttach")) == "false" {
-					notSafeToAttach = utils.Ptr(false)
-				}
-			}
-
-			pubs, err := orchestrator.ListVolumePublicationsForNode(r.Context(), vars["node"], notSafeToAttach)
+			pubs, err := orchestrator.ListVolumePublicationsForNode(r.Context(), vars["node"])
 			if err != nil {
 				response.Error = err.Error()
 			} else {
 				response.VolumePublications = pubs
-			}
-			return httpStatusCodeForGetUpdateList(err)
-		},
-	)
-}
-
-type UpdateVolumePublicationResponse struct {
-	Error string `json:"error,omitempty"`
-}
-
-func (r *UpdateVolumePublicationResponse) setError(err error) {
-	r.Error = err.Error()
-}
-
-func (r *UpdateVolumePublicationResponse) isError() bool {
-	return r.Error != ""
-}
-
-func (r *UpdateVolumePublicationResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(LogFields{
-		"handler": "UpdateVolumePublication",
-	}).Info("Updated a volume publication.")
-}
-
-func (r *UpdateVolumePublicationResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(LogFields{
-		"handler": "UpdateVolumePublication",
-	}).Error(r.Error)
-}
-
-func UpdateVolumePublication(w http.ResponseWriter, r *http.Request) {
-	response := &UpdateVolumePublicationResponse{}
-	UpdateGeneric(w, r, response,
-		func(w http.ResponseWriter, r *http.Request, response httpResponse, _ map[string]string, body []byte) int {
-			updateResponse, ok := response.(*UpdateVolumePublicationResponse)
-			if !ok {
-				response.setError(fmt.Errorf("response object must be of type UpdateVolumePublicationResponse"))
-				return http.StatusInternalServerError
-			}
-			request := new(utils.VolumePublicationExternal)
-			err := json.Unmarshal(body, request)
-			if err != nil {
-				updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
-				return httpStatusCodeForGetUpdateList(err)
-			}
-			err = orchestrator.UpdateVolumePublication(r.Context(),
-				request.VolumeName, request.NodeName, request.NotSafeToAttach)
-			if err != nil {
-				updateResponse.Error = err.Error()
 			}
 			return httpStatusCodeForGetUpdateList(err)
 		},

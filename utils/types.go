@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/mitchellh/copystructure"
 )
 
 //go:generate mockgen -destination=../mocks/mock_utils/mock_json_utils.go github.com/netapp/trident/utils JSONReaderWriter
@@ -103,9 +105,7 @@ type VolumePublication struct {
 	ReadOnly   bool   `json:"readOnly"`
 	// The access mode values are defined by CSI
 	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
-	AccessMode      int32 `json:"accessMode"`
-	NotSafeToAttach bool  `json:"notSafeToAttach"`
-	Unpublished     bool  `json:"unpublished"` // Normally should not be set except during force detach scenarios
+	AccessMode int32 `json:"accessMode"`
 }
 
 type VolumePublicationExternal struct {
@@ -115,43 +115,123 @@ type VolumePublicationExternal struct {
 	ReadOnly   bool   `json:"readOnly"`
 	// The access mode values are defined by CSI
 	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
-	AccessMode      int32 `json:"accessMode"`
-	NotSafeToAttach *bool `json:"notSafeToAttach,omitempty"`
+	AccessMode int32 `json:"accessMode"`
 }
 
 // Copy returns a new copy of the VolumePublication.
 func (v *VolumePublication) Copy() *VolumePublication {
 	return &VolumePublication{
-		Name:            v.Name,
-		NodeName:        v.NodeName,
-		VolumeName:      v.VolumeName,
-		ReadOnly:        v.ReadOnly,
-		AccessMode:      v.AccessMode,
-		NotSafeToAttach: v.NotSafeToAttach,
-		Unpublished:     v.Unpublished,
+		Name:       v.Name,
+		NodeName:   v.NodeName,
+		VolumeName: v.VolumeName,
+		ReadOnly:   v.ReadOnly,
+		AccessMode: v.AccessMode,
 	}
 }
 
 // ConstructExternal returns an externally facing representation of the VolumePublication.
 func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
 	return &VolumePublicationExternal{
-		Name:            v.Name,
-		NodeName:        v.NodeName,
-		VolumeName:      v.VolumeName,
-		ReadOnly:        v.ReadOnly,
-		AccessMode:      v.AccessMode,
-		NotSafeToAttach: Ptr(v.NotSafeToAttach),
+		Name:       v.Name,
+		NodeName:   v.NodeName,
+		VolumeName: v.VolumeName,
+		ReadOnly:   v.ReadOnly,
+		AccessMode: v.AccessMode,
 	}
 }
 
 type Node struct {
-	Name           string            `json:"name"`
-	IQN            string            `json:"iqn,omitempty"`
-	IPs            []string          `json:"ips,omitempty"`
-	TopologyLabels map[string]string `json:"topologyLabels,omitempty"`
-	NodePrep       *NodePrep         `json:"nodePrep,omitempty"`
-	HostInfo       *HostSystem       `json:"hostInfo,omitempty"`
-	Deleted        bool              `json:"deleted"`
+	Name             string               `json:"name"`
+	IQN              string               `json:"iqn,omitempty"`
+	IPs              []string             `json:"ips,omitempty"`
+	TopologyLabels   map[string]string    `json:"topologyLabels,omitempty"`
+	NodePrep         *NodePrep            `json:"nodePrep,omitempty"`
+	HostInfo         *HostSystem          `json:"hostInfo,omitempty"`
+	Deleted          bool                 `json:"deleted"`
+	PublicationState NodePublicationState `json:"publicationState"`
+}
+
+type NodeExternal struct {
+	Name             string               `json:"name"`
+	IQN              string               `json:"iqn,omitempty"`
+	IPs              []string             `json:"ips,omitempty"`
+	TopologyLabels   map[string]string    `json:"topologyLabels,omitempty"`
+	NodePrep         *NodePrep            `json:"nodePrep,omitempty"`
+	HostInfo         *HostSystem          `json:"hostInfo,omitempty"`
+	Deleted          *bool                `json:"deleted,omitempty"`
+	PublicationState NodePublicationState `json:"publicationState,omitempty"`
+}
+
+func (n *Node) Copy() *Node {
+	if clone, err := copystructure.Copy(*n); err != nil {
+		return &Node{}
+	} else {
+		node := clone.(Node)
+		return &node
+	}
+}
+
+// ConstructExternal returns an externally facing representation of the Node.
+func (n *Node) ConstructExternal() *NodeExternal {
+	node := n.Copy()
+
+	if n.PublicationState == "" {
+		node.PublicationState = NodeClean
+	}
+
+	return &NodeExternal{
+		Name:             node.Name,
+		IQN:              node.IQN,
+		IPs:              node.IPs,
+		TopologyLabels:   node.TopologyLabels,
+		NodePrep:         node.NodePrep,
+		HostInfo:         node.HostInfo,
+		Deleted:          Ptr(node.Deleted),
+		PublicationState: node.PublicationState,
+	}
+}
+
+type NodePublicationState string
+
+const (
+	NodeDirty     = NodePublicationState("dirty")
+	NodeCleanable = NodePublicationState("cleanable")
+	NodeClean     = NodePublicationState("clean")
+)
+
+type NodePublicationStateFlags struct {
+	Ready      *bool `json:"ready,omitempty"`
+	AdminReady *bool `json:"adminReady,omitempty"`
+	Cleaned    *bool `json:"cleaned,omitempty"`
+}
+
+func (f *NodePublicationStateFlags) IsNodeDirty() bool {
+	if f.Ready == nil || f.AdminReady == nil {
+		return false
+	}
+
+	return !*f.Ready && !*f.AdminReady
+}
+
+func (f *NodePublicationStateFlags) IsNodeCleanable() bool {
+	if f.Ready == nil || f.AdminReady == nil {
+		return false
+	}
+
+	return *f.Ready && *f.AdminReady
+}
+
+func (f *NodePublicationStateFlags) IsNodeCleaned() bool {
+	if f.Ready == nil || f.AdminReady == nil || f.Cleaned == nil {
+		return false
+	}
+
+	return *f.Cleaned && *f.Ready && *f.AdminReady
+}
+
+func (f *NodePublicationStateFlags) String() string {
+	return fmt.Sprintf("Ready: %s; AdminReady: %s; Cleaned: %s", PtrToString(f.Ready), PtrToString(f.AdminReady),
+		PtrToString(f.Cleaned))
 }
 
 // NodePrep struct is deprecated and only here for backwards compatibility

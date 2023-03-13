@@ -41,6 +41,7 @@ func (in *TridentNode) Apply(persistent *utils.Node) error {
 	in.IQN = persistent.IQN
 	in.IPs = persistent.IPs
 	in.Deleted = persistent.Deleted
+	in.PublicationState = string(persistent.PublicationState)
 
 	nodePrep, err := json.Marshal(persistent.NodePrep)
 	if err != nil {
@@ -59,13 +60,19 @@ func (in *TridentNode) Apply(persistent *utils.Node) error {
 // Persistent converts a Kubernetes CRD object into its internal
 // utils.TridentNode equivalent.
 func (in *TridentNode) Persistent() (*utils.Node, error) {
+	publicationState := utils.NodePublicationState(in.PublicationState)
+
+	if publicationState == "" {
+		publicationState = utils.NodeClean
+	}
 	persistent := &utils.Node{
-		Name:     in.Name,
-		IQN:      in.IQN,
-		IPs:      in.IPs,
-		NodePrep: &utils.NodePrep{},
-		HostInfo: &utils.HostSystem{},
-		Deleted:  in.Deleted,
+		Name:             in.Name,
+		IQN:              in.IQN,
+		IPs:              in.IPs,
+		NodePrep:         &utils.NodePrep{},
+		HostInfo:         &utils.HostSystem{},
+		Deleted:          in.Deleted,
+		PublicationState: publicationState,
 	}
 
 	if string(in.NodePrep.Raw) != "" {

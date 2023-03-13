@@ -1315,3 +1315,7 @@ func (d StorageDriver) EnablePublishEnforcement(ctx context.Context, volume *sto
 	volume.Config.AccessInfo.PublishEnforcement = true
 	return nil
 }
+
+func (d StorageDriver) CanEnablePublishEnforcement() bool {
+	return true
+}

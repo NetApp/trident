@@ -633,6 +633,7 @@ func prepareYAMLFiles() error {
 		HTTPRequestTimeout:      httpRequestTimeout.String(),
 		ServiceAccountName:      getControllerRBACResourceName(true),
 		ImagePullPolicy:         imagePullPolicy,
+		EnableForceDetach:       enableForceDetach,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -1158,6 +1159,7 @@ func installTrident() (returnError error) {
 			HTTPRequestTimeout:      httpRequestTimeout.String(),
 			ServiceAccountName:      getControllerRBACResourceName(true),
 			ImagePullPolicy:         imagePullPolicy,
+			EnableForceDetach:       enableForceDetach,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))

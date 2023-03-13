@@ -189,6 +189,7 @@ type DeploymentYAMLArguments struct {
 	Tolerations             []map[string]string   `json:"tolerations"`
 	ServiceAccountName      string                `json:"serviceAccountName"`
 	ImagePullPolicy         string                `json:"imagePullPolicy"`
+	EnableForceDetach       bool                  `json:"enableForceDetach"`
 }
 
 type DaemonsetYAMLArguments struct {

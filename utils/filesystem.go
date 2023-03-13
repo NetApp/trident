@@ -260,6 +260,10 @@ func (j *jsonReaderWriter) ReadJSONFile(
 	file, err := osFs.Open(filepath)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
+			Logc(ctx).WithFields(LogFields{
+				"filepath": filepath,
+				"error":    err.Error(),
+			}).Warningf("Could not find JSON file: %s.", filepath)
 			return NotFoundError(err.Error())
 		}
 		return err

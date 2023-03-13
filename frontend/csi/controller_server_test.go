@@ -4,6 +4,7 @@ package csi
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"testing"
 
@@ -109,7 +110,7 @@ func TestControllerPublishVolume(t *testing.T) {
 	fakeNode := generateFakeNode(req.NodeId)
 
 	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), req.VolumeId).Return(fakeVolumeExternal, nil)
-	mockOrchestrator.EXPECT().GetNode(gomock.Any(), req.NodeId).Return(fakeNode, nil)
+	mockOrchestrator.EXPECT().GetNode(gomock.Any(), req.NodeId).Return(fakeNode.ConstructExternal(), nil)
 	mockOrchestrator.EXPECT().PublishVolume(gomock.Any(), req.VolumeId, gomock.Any()).Return(nil)
 
 	publishResponse, err := controllerServer.ControllerPublishVolume(ctx, req)
@@ -136,7 +137,7 @@ func TestControllerPublishVolume_BlockProtocol(t *testing.T) {
 	fakeVolumeExternal.Config.Protocol = tridentconfig.Block
 
 	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), req.VolumeId).Return(fakeVolumeExternal, nil)
-	mockOrchestrator.EXPECT().GetNode(gomock.Any(), req.NodeId).Return(fakeNode, nil)
+	mockOrchestrator.EXPECT().GetNode(gomock.Any(), req.NodeId).Return(fakeNode.ConstructExternal(), nil)
 	mockOrchestrator.EXPECT().PublishVolume(gomock.Any(), req.VolumeId, gomock.Any()).Return(nil)
 
 	publishResponse, err := controllerServer.ControllerPublishVolume(ctx, req)
@@ -172,7 +173,9 @@ func TestControllerUnpublishVolume(t *testing.T) {
 	// Create fake objects for this test
 	req := generateFakeUnpublishVolumeRequest()
 
-	mockOrchestrator.EXPECT().UnpublishVolume(gomock.Any(), req.VolumeId, gomock.Any()).Return(nil)
+	mockHelper.EXPECT().GetNodePublicationState(gomock.Any(), req.NodeId).Return(nil, nil).Times(1)
+	mockOrchestrator.EXPECT().UpdateNode(gomock.Any(), req.NodeId, nil).Return(nil).Times(1)
+	mockOrchestrator.EXPECT().UnpublishVolume(gomock.Any(), req.VolumeId, req.NodeId).Return(nil)
 
 	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
 	assert.Nil(t, err, "unexpected error unpublishing volume")
@@ -189,10 +192,28 @@ func TestControllerUnpublishVolume_NotFoundErrors(t *testing.T) {
 
 	// Create fake objects for this test
 	req := generateFakeUnpublishVolumeRequest()
+	nodeErr := errors.New("")
+	notFoundErr := utils.NotFoundError("")
 
-	// Simulate an error during volume unpublishing
-	mockOrchestrator.EXPECT().UnpublishVolume(gomock.Any(), req.VolumeId, gomock.Any()).Return(utils.NotFoundError("not found"))
+	// Simulate an error during fetching node state.
+	mockHelper.EXPECT().GetNodePublicationState(gomock.Any(), req.NodeId).Return(nil, nodeErr).Times(1)
 
 	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
+	assert.Error(t, err, "expected error fetching node state")
+
+	// Simulate an error during updating node state.
+	mockHelper.EXPECT().GetNodePublicationState(gomock.Any(), req.NodeId).Return(nil, nil).Times(1)
+	mockOrchestrator.EXPECT().UpdateNode(gomock.Any(), req.NodeId, nil).Return(nodeErr).Times(1)
+
+	_, err = controllerServer.ControllerUnpublishVolume(ctx, req)
+	assert.Error(t, err, "expected error updating node state")
+
+	// Simulate an error during volume unpublishing; not found errors are ignored for
+	// GetNodePublicationState and UpdateNode.
+	mockHelper.EXPECT().GetNodePublicationState(gomock.Any(), req.NodeId).Return(nil, notFoundErr).Times(1)
+	mockOrchestrator.EXPECT().UpdateNode(gomock.Any(), req.NodeId, nil).Return(notFoundErr).Times(1)
+	mockOrchestrator.EXPECT().UnpublishVolume(gomock.Any(), req.VolumeId, req.NodeId).Return(utils.NotFoundError("not found"))
+
+	_, err = controllerServer.ControllerUnpublishVolume(ctx, req)
 	assert.Nil(t, err, "unexpected error unpublishing volume")
 }

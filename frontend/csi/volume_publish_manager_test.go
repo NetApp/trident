@@ -2,6 +2,7 @@ package csi
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io/fs"
 	"path"
@@ -107,6 +108,134 @@ func TestReadTrackingInfo(t *testing.T) {
 	_, err = v.ReadTrackingInfo(context.Background(), volId)
 	assert.Error(t, err, "expected error when reading the file results in an error")
 	assert.Equal(t, "foo", err.Error(), "expected the error we threw in the mock")
+}
+
+func TestListVolumeTrackingInfo_FailsToGetVolumeTrackingFiles(t *testing.T) {
+	defer func(original afero.Fs) { osFs = original }(osFs)
+	osFs = afero.NewMemMapFs()
+
+	// Set up the volume publish manager.
+	trackPath := config.VolumeTrackingInfoPath
+	v := NewVolumePublishManager(trackPath)
+
+	// Without setting up the directory or files in memory, this will fail at GetVolumeTrackingFiles.
+	allTrackingInfo, err := v.ListVolumeTrackingInfo(ctx)
+	assert.Error(t, err, "expected error")
+	assert.Empty(t, allTrackingInfo, "expected no tracking info to exist")
+}
+
+func TestListVolumeTrackingInfo_FailsWhenNoTrackingFilesFound(t *testing.T) {
+	defer func(original afero.Fs) { osFs = original }(osFs)
+	osFs = afero.NewMemMapFs()
+
+	// Set up the volume tracking directory and publish manager.
+	trackPath := config.VolumeTrackingInfoPath
+	v := NewVolumePublishManager(trackPath)
+	if err := osFs.Mkdir(trackPath, 0o600); err != nil {
+		t.Fatalf("failed to create tracking file directory in memory fs for testing; %v", err)
+	}
+
+	allTrackingInfo, err := v.ListVolumeTrackingInfo(ctx)
+	assert.Error(t, err, "expected error")
+	assert.Nil(t, allTrackingInfo, "expected no tracking info to exist")
+}
+
+func TestListVolumeTrackingInfo_FailsToReadTrackingInfo(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+
+	defer func(original utils.JSONReaderWriter) { utils.JsonReaderWriter = original }(utils.JsonReaderWriter)
+	jsonReaderWriter := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	utils.JsonReaderWriter = jsonReaderWriter
+
+	defer func(original afero.Fs) { osFs = original }(osFs)
+	osFs = afero.NewMemMapFs()
+
+	// Set up the volume tracking directory and files.
+	trackPath := config.VolumeTrackingInfoPath
+	v := NewVolumePublishManager(trackPath)
+	volumeOne := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
+	volumeTrackingInfo := &utils.VolumeTrackingInfo{
+		VolumePublishInfo: utils.VolumePublishInfo{},
+		StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+			"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
+		PublishedPaths: map[string]struct{}{
+			"/var/lib/kubelet/pods/b9f476af-47f4-42d8-8cfa-70d49394d9e3/volumes/kubernetes.io~csi/" +
+				volumeOne + "/mount": {},
+		},
+	}
+	file := path.Join(trackPath, volumeOne) + ".json"
+	if _, err := osFs.Create(file); err != nil {
+		t.Fatalf("failed to create tracking file in memory fs for testing; %v", err)
+	}
+	data, err := json.Marshal(volumeTrackingInfo)
+	if err != nil {
+		t.Fatalf("failed to create tracking data for in memory fs for testing; %v", err)
+	}
+	if err := afero.WriteFile(osFs, file, data, 0o600); err != nil {
+		t.Fatalf("failed to create tracking data for in memory fs for testing; %v", err)
+	}
+
+	// Fail to read the tracking file for a given volume.
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), file, "volume tracking info").
+		SetArg(1, *volumeTrackingInfo).
+		Return(errors.New("unable to read tracking info"))
+
+	allTrackingInfo, err := v.ListVolumeTrackingInfo(ctx)
+	assert.Error(t, err, "expected error")
+	assert.Empty(t, allTrackingInfo, "expected no tracking info to exist")
+
+	actualTrackingInfo, ok := allTrackingInfo[volumeOne]
+	assert.False(t, ok, "expected false")
+	assert.NotEqualValues(t, volumeTrackingInfo, actualTrackingInfo, "expected tracking info to be different")
+}
+
+func TestListVolumeTrackingInfo_SucceedsToListTrackingFileInformation(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+
+	defer func(original utils.JSONReaderWriter) { utils.JsonReaderWriter = original }(utils.JsonReaderWriter)
+	jsonReaderWriter := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	utils.JsonReaderWriter = jsonReaderWriter
+
+	defer func(original afero.Fs) { osFs = original }(osFs)
+	osFs = afero.NewMemMapFs()
+
+	// Set up the volume tracking directory and files.
+	trackPath := config.VolumeTrackingInfoPath
+	v := NewVolumePublishManager(trackPath)
+	volumeOne := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
+	volumeTrackingInfo := &utils.VolumeTrackingInfo{
+		VolumePublishInfo: utils.VolumePublishInfo{},
+		StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+			"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
+		PublishedPaths: map[string]struct{}{
+			"/var/lib/kubelet/pods/b9f476af-47f4-42d8-8cfa-70d49394d9e3/volumes/kubernetes.io~csi/" +
+				volumeOne + "/mount": {},
+		},
+	}
+	file := path.Join(trackPath, volumeOne) + ".json"
+	if _, err := osFs.Create(file); err != nil {
+		t.Fatalf("failed to create tracking file in memory fs for testing; %v", err)
+	}
+	data, err := json.Marshal(volumeTrackingInfo)
+	if err != nil {
+		t.Fatalf("failed to create tracking data for in memory fs for testing; %v", err)
+	}
+	if err := afero.WriteFile(osFs, file, data, 0o600); err != nil {
+		t.Fatalf("failed to create tracking data for in memory fs for testing; %v", err)
+	}
+
+	// Happy path.
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), file, "volume tracking info").
+		SetArg(1, *volumeTrackingInfo).
+		Return(nil)
+
+	allTrackingInfo, err := v.ListVolumeTrackingInfo(ctx)
+	assert.NoError(t, err, "expected no error")
+	assert.NotEmpty(t, allTrackingInfo, "expected tracking info to exist")
+
+	actualTrackingInfo, ok := allTrackingInfo[volumeOne]
+	assert.True(t, ok, "expected true")
+	assert.EqualValues(t, volumeTrackingInfo, actualTrackingInfo, "expected tracking info to be the same")
 }
 
 func TestDeleteTrackingInfo(t *testing.T) {

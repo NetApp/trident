@@ -65,23 +65,28 @@ type Plugin struct {
 	iSCSISelfHealingChannel  chan struct{}
 	iSCSISelfHealingInterval time.Duration
 	iSCSISelfHealingWaitTime time.Duration
+
+	stopNodePublicationLoop chan bool
+	nodePublicationTimer    *time.Timer
 }
 
 func NewControllerPlugin(
 	nodeName, endpoint, aesKeyFile string, orchestrator core.Orchestrator, helper *controllerhelpers.ControllerHelper,
+	enableForceDetach bool,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
 		LogLayerCSIFrontend)
 
 	p := &Plugin{
-		orchestrator:     orchestrator,
-		name:             Provisioner,
-		nodeName:         nodeName,
-		version:          tridentconfig.OrchestratorVersion.ShortString(),
-		endpoint:         endpoint,
-		role:             CSIController,
-		controllerHelper: *helper,
-		opCache:          sync.Map{},
+		orchestrator:      orchestrator,
+		name:              Provisioner,
+		nodeName:          nodeName,
+		version:           tridentconfig.OrchestratorVersion.ShortString(),
+		endpoint:          endpoint,
+		role:              CSIController,
+		controllerHelper:  *helper,
+		enableForceDetach: enableForceDetach,
+		opCache:           sync.Map{},
 	}
 
 	var err error
@@ -282,6 +287,11 @@ func (p *Plugin) Activate() error {
 		if p.role == CSINode || p.role == CSIAllInOne {
 			p.nodeRegisterWithController(ctx, 0) // Retry indefinitely
 			p.startISCSISelfHealingThread(ctx)
+			if p.enableForceDetach {
+				backgroundCtx := GenerateRequestContext(context.Background(), "", ContextSourcePeriodic,
+					WorkflowPluginActivate, LogLayerCSIFrontend)
+				p.startReconcilingNodePublications(backgroundCtx)
+			}
 		}
 		p.grpc.Start(p.endpoint, p, p, p)
 	}()
@@ -291,6 +301,13 @@ func (p *Plugin) Activate() error {
 func (p *Plugin) Deactivate() error {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginDeactivate,
 		LogLayerCSIFrontend)
+
+	// stopReconcilingNodePublications
+	if p.role == CSINode || p.role == CSIAllInOne {
+		if p.enableForceDetach {
+			p.stopReconcilingNodePublications(ctx)
+		}
+	}
 
 	Logc(ctx).Info("Deactivating CSI frontend.")
 	p.grpc.GracefulStop()
@@ -353,6 +370,8 @@ func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
 		return status.Error(codes.OutOfRange, errPtr.Error())
 	} else if utils.IsFoundError(err) {
 		return status.Error(codes.AlreadyExists, err.Error())
+	} else if utils.IsNodeNotSafeToPublishForBackendError(err) {
+		return status.Error(codes.FailedPrecondition, err.Error())
 	} else if utils.IsVolumeCreatingError(err) {
 		return status.Error(codes.DeadlineExceeded, err.Error())
 	} else if utils.IsVolumeDeletingError(err) {

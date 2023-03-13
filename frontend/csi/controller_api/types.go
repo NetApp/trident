@@ -17,11 +17,13 @@ type TridentController interface {
 		redactResponseBody bool,
 	) (*http.Response, []byte, error)
 	CreateNode(ctx context.Context, node *utils.Node) (CreateNodeResponse, error)
+	GetNode(ctx context.Context, nodeName string) (*utils.NodeExternal, error)
+	UpdateNode(ctx context.Context, nodeName string, nodeState *utils.NodePublicationStateFlags) error
 	GetNodes(ctx context.Context) ([]string, error)
 	DeleteNode(ctx context.Context, name string) error
 	GetChap(ctx context.Context, volume, node string) (*utils.IscsiChapInfo, error)
-	UpdateVolumePublication(ctx context.Context, publication *utils.VolumePublicationExternal) error
 	UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames []string) error
+	ListVolumePublicationsForNode(ctx context.Context, nodeName string) ([]*utils.VolumePublicationExternal, error)
 	// TODO (bpresnel) Enable later with rate-limiting?
 	// GetLoggingConfig(ctx context.Context) (string, string, string, error)
 }

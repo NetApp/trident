@@ -91,6 +91,21 @@ func (mr *MockNodeHelperMockRecorder) GetVolumeTrackingFiles() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeTrackingFiles", reflect.TypeOf((*MockNodeHelper)(nil).GetVolumeTrackingFiles))
 }
 
+// ListVolumeTrackingInfo mocks base method.
+func (m *MockNodeHelper) ListVolumeTrackingInfo(arg0 context.Context) (map[string]*utils.VolumeTrackingInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListVolumeTrackingInfo", arg0)
+	ret0, _ := ret[0].(map[string]*utils.VolumeTrackingInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListVolumeTrackingInfo indicates an expected call of ListVolumeTrackingInfo.
+func (mr *MockNodeHelperMockRecorder) ListVolumeTrackingInfo(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumeTrackingInfo", reflect.TypeOf((*MockNodeHelper)(nil).ListVolumeTrackingInfo), arg0)
+}
+
 // ReadTrackingInfo mocks base method.
 func (m *MockNodeHelper) ReadTrackingInfo(arg0 context.Context, arg1 string) (*utils.VolumeTrackingInfo, error) {
 	m.ctrl.T.Helper()
@@ -226,6 +241,21 @@ func (m *MockVolumePublishManager) GetVolumeTrackingFiles() ([]fs.FileInfo, erro
 func (mr *MockVolumePublishManagerMockRecorder) GetVolumeTrackingFiles() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeTrackingFiles", reflect.TypeOf((*MockVolumePublishManager)(nil).GetVolumeTrackingFiles))
+}
+
+// ListVolumeTrackingInfo mocks base method.
+func (m *MockVolumePublishManager) ListVolumeTrackingInfo(arg0 context.Context) (map[string]*utils.VolumeTrackingInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListVolumeTrackingInfo", arg0)
+	ret0, _ := ret[0].(map[string]*utils.VolumeTrackingInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListVolumeTrackingInfo indicates an expected call of ListVolumeTrackingInfo.
+func (mr *MockVolumePublishManagerMockRecorder) ListVolumeTrackingInfo(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumeTrackingInfo", reflect.TypeOf((*MockVolumePublishManager)(nil).ListVolumeTrackingInfo), arg0)
 }
 
 // ReadTrackingInfo mocks base method.

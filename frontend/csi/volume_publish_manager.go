@@ -83,6 +83,12 @@ func (v *VolumePublishManager) ReadTrackingInfo(
 	Logc(ctx).WithFields(fields).Debug(">>>> ReadTrackingInfo")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ReadTrackingInfo")
 
+	return v.readTrackingInfo(ctx, volumeID)
+}
+
+func (v *VolumePublishManager) readTrackingInfo(
+	ctx context.Context, volumeID string,
+) (*utils.VolumeTrackingInfo, error) {
 	var volumeTrackingInfo utils.VolumeTrackingInfo
 	filename := volumeID + ".json"
 	err := utils.JsonReaderWriter.ReadJSONFile(ctx, &volumeTrackingInfo, path.Join(v.volumeTrackingInfoPath, filename),
@@ -93,6 +99,36 @@ func (v *VolumePublishManager) ReadTrackingInfo(
 
 	Logc(ctx).WithField("volumeTrackingInfo", volumeTrackingInfo).Debug("Volume tracking info found.")
 	return &volumeTrackingInfo, nil
+}
+
+// ListVolumeTrackingInfo returns a map of tracking files to their contents (volume tracking information).
+func (v *VolumePublishManager) ListVolumeTrackingInfo(ctx context.Context) (map[string]*utils.VolumeTrackingInfo, error) {
+	Logc(ctx).Debug(">>>> ListVolumeTrackingInfo")
+	defer Logc(ctx).Debug("<<<< ListVolumeTrackingInfo")
+
+	// Volumes have a 1-1 relationship with a tracking file. A tracking file may contain 1-many published paths.
+	files, err := v.GetVolumeTrackingFiles()
+	if err != nil {
+		return nil, fmt.Errorf("could not find volume tracking info files; %s", err)
+	}
+
+	if len(files) == 0 {
+		Logc(ctx).Debug("No tracking files found.")
+		return nil, utils.NotFoundError("no tracking files found")
+	}
+
+	// Discover the tracking files and their volume tracking info.
+	trackingFiles := make(map[string]*utils.VolumeTrackingInfo, len(files))
+	for _, file := range files {
+		volumeID := strings.ReplaceAll(file.Name(), ".json", "")
+		trackingInfo, err := v.readTrackingInfo(ctx, volumeID)
+		if err != nil {
+			return nil, err
+		}
+		trackingFiles[volumeID] = trackingInfo
+	}
+
+	return trackingFiles, nil
 }
 
 // DeleteTrackingInfo deletes the tracking info staging target path info for a volume from Trident's own

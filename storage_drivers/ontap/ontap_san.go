@@ -1479,3 +1479,7 @@ func (d *SANStorageDriver) EnablePublishEnforcement(ctx context.Context, volume 
 	volume.Config.AccessInfo.PublishEnforcement = true
 	return nil
 }
+
+func (d *SANStorageDriver) CanEnablePublishEnforcement() bool {
+	return true
+}

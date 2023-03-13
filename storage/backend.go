@@ -1221,3 +1221,8 @@ func (b *StorageBackend) EnablePublishEnforcement(ctx context.Context, volume *V
 	}
 	return nil
 }
+
+func (b *StorageBackend) CanEnablePublishEnforcement() bool {
+	_, ok := b.driver.(PublishEnforceable)
+	return ok
+}

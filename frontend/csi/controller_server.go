@@ -366,8 +366,8 @@ func (p *Plugin) ControllerPublishVolume(
 	// Update NFS export rules (?), add node IQN to igroup, etc.
 	err = p.orchestrator.PublishVolume(ctx, volume.Config.Name, volumePublishInfo)
 	if err != nil {
-		Logc(ctx).Error(err)
-		return nil, status.Error(codes.Internal, err.Error())
+		Logc(ctx).WithFields(fields).Error(err)
+		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
 	// If any mount options are passed in via CSI (e.g. from a StorageClass), then any mount options
@@ -477,10 +477,33 @@ func (p *Plugin) ControllerUnpublishVolume(
 		return nil, status.Error(codes.InvalidArgument, "no node ID provided")
 	}
 
+	// Check whether the node shall be considered unsafe to publish volumes. Ideally CSI gives us this
+	// extra context, but for now we get it just-in-time here.
+	nodePublicationState, err := p.controllerHelper.GetNodePublicationState(ctx, nodeID)
+	if err != nil {
+		msg := "Could not check if node is safe to publish volumes"
+		if !utils.IsNotFoundError(err) {
+			Logc(ctx).WithField("node", nodeID).WithError(err).Errorf("%s.", msg)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		Logc(ctx).WithField("node", nodeID).WithError(err).Debugf(
+			"%s; node not found in Kubernetes, continuing.", msg)
+	}
+	err = p.orchestrator.UpdateNode(ctx, nodeID, nodePublicationState)
+	if err != nil {
+		msg := "Could not update core with node status"
+		if !utils.IsNotFoundError(err) {
+			Logc(ctx).WithField("node", nodeID).WithError(err).Errorf("%s.", msg)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		Logc(ctx).WithField("node", nodeID).WithError(err).Debugf(
+			"%s; node not found in Trident core, continuing.", msg)
+	}
+
 	logFields := LogFields{"volume": req.GetVolumeId(), "node": req.GetNodeId()}
 
 	// Unpublish the volume by updating NFS export rules, removing node IQN from igroup, etc.
-	if err := p.orchestrator.UnpublishVolume(ctx, volumeID, nodeID); err != nil {
+	if err = p.orchestrator.UnpublishVolume(ctx, volumeID, nodeID); err != nil {
 		if !utils.IsNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).WithError(err).Error("Could not unpublish volume.")
 			return nil, status.Error(codes.Internal, err.Error())
@@ -594,7 +617,7 @@ func (p *Plugin) ListVolumes(
 					PublishedNodeIds: []string{},
 				}
 				// Find all the nodes to which this volume has been published
-				publications, err := p.orchestrator.ListVolumePublicationsForVolume(ctx, csiVolume.VolumeId, nil)
+				publications, err := p.orchestrator.ListVolumePublicationsForVolume(ctx, csiVolume.VolumeId)
 				if err != nil {
 					msg := fmt.Sprintf("error listing volume publications for volume %s", csiVolume.VolumeId)
 					Logc(ctx).WithError(err).Error(msg)

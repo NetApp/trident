@@ -555,6 +555,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_FORCE_DETACH}", strconv.FormatBool(args.EnableForceDetach))
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", deploymentYAML).Trace("CSI Deployment YAML.")
@@ -608,6 +609,7 @@ spec:
         - "--disable_audit_log={DISABLE_AUDIT_LOG}"
         - "--address={IP_LOCALHOST}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
+        - "--enable_force_detach={ENABLE_FORCE_DETACH}"
         - "--metrics"
         {DEBUG}
         livenessProbe:
@@ -2066,10 +2068,6 @@ spec:
             accessMode:
               type: integer
               format: int32
-            notSafeToAttach:
-              type: boolean
-            unpublished:
-              type: boolean
           required:
               - volumeID
               - nodeID

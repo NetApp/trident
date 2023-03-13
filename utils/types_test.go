@@ -6,12 +6,96 @@ package utils
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var (
+	fakeVolumePublication = &VolumePublication{
+		Name:       "node1volume1",
+		VolumeName: "volume1",
+		NodeName:   "node1",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+
+	fakeNode = &Node{
+		Name:           "node1",
+		IQN:            "fakeIQN",
+		IPs:            []string{"10.10.10.10", "10.10.10.20"},
+		TopologyLabels: map[string]string{"region": "region1", "zone": "zone1"},
+		HostInfo: &HostSystem{
+			OS: SystemOS{
+				Distro:  "ubuntu",
+				Release: "16.04.7",
+				Version: "16.04",
+			},
+			Services: []string{"NFS", "iSCSI"},
+		},
+		Deleted:          false,
+		PublicationState: NodeClean,
+	}
+)
+
+func TestVolumePublicationCopy(t *testing.T) {
+	result := fakeVolumePublication.Copy()
+	assert.Equal(t, fakeVolumePublication, result, "Volume publication copy does not match.")
+}
+
+func TestVolumePublicationConstructExternal(t *testing.T) {
+	expectedPub := &VolumePublicationExternal{
+		Name:       "node1volume1",
+		VolumeName: "volume1",
+		NodeName:   "node1",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+
+	result := fakeVolumePublication.ConstructExternal()
+
+	assert.True(t, reflect.DeepEqual(expectedPub, result), "External volume publication does not match.")
+}
+
+func TestNodeCopy(t *testing.T) {
+	result := fakeNode.Copy()
+
+	assert.Equal(t, fakeNode, result, "Node copy does not match.")
+}
+
+func TestNodeConstructExternal(t *testing.T) {
+	expectedNode := &NodeExternal{
+		Name:           "node1",
+		IQN:            "fakeIQN",
+		IPs:            []string{"10.10.10.10", "10.10.10.20"},
+		TopologyLabels: map[string]string{"region": "region1", "zone": "zone1"},
+		HostInfo: &HostSystem{
+			OS: SystemOS{
+				Distro:  "ubuntu",
+				Release: "16.04.7",
+				Version: "16.04",
+			},
+			Services: []string{"NFS", "iSCSI"},
+		},
+		Deleted:          Ptr(false),
+		PublicationState: NodeClean,
+	}
+
+	result := fakeNode.ConstructExternal()
+
+	assert.True(t, reflect.DeepEqual(expectedNode, result), "External node does not match.")
+
+	// Ensure publication state is always set
+	nodeCopy := fakeNode.Copy()
+	nodeCopy.PublicationState = ""
+
+	result = nodeCopy.ConstructExternal()
+
+	assert.True(t, reflect.DeepEqual(expectedNode, result), "External node does not match.")
+}
 
 func TestISCSIAction(t *testing.T) {
 	assert.Equal(t, NoAction.String(), "no action", "String output mismatch")
@@ -942,4 +1026,308 @@ func helperISCSISessionsCreateInputs() (ISCSISessions, ISCSISessionData, PortalI
 	}
 
 	return iSCSISession, iSCSISessionData, portalInfo, luns, portal
+}
+
+func TestNodePublicationStateFlags_IsNodeDirty(t *testing.T) {
+	tests := map[string]struct {
+		ready, adminReady    *bool
+		expected, shouldFail bool
+	}{
+		"returns false when Ready is true but AdminReady is not": {
+			ready:      Ptr(true),
+			adminReady: nil,
+			expected:   false,
+		},
+		"returns false when Ready is false but AdminReady is not": {
+			ready:      Ptr(false),
+			adminReady: nil,
+			expected:   false,
+		},
+		"returns false when Ready is not set but AdminReady is true": {
+			ready:      nil,
+			adminReady: Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is not set but AdminReady is false": {
+			ready:      nil,
+			adminReady: Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready and AdminReady are not set": {
+			ready:      nil,
+			adminReady: nil,
+			expected:   false,
+		},
+		"returns false when Ready is true and AdminReady is false": {
+			ready:      Ptr(true),
+			adminReady: Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready is false and AdminReady is true": {
+			ready:      Ptr(false),
+			adminReady: Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is true and AdminReady is true": {
+			ready:      Ptr(true),
+			adminReady: Ptr(true),
+			expected:   false,
+		},
+		"returns true when Ready is false and AdminReady is false": {
+			ready:      Ptr(false),
+			adminReady: Ptr(false),
+			expected:   true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := NodePublicationStateFlags{
+				Ready:      test.ready,
+				AdminReady: test.adminReady,
+			}
+
+			assert.Equal(t, test.expected, f.IsNodeDirty())
+		})
+	}
+}
+
+func TestNodePublicationStateFlags_IsNodeCleanable(t *testing.T) {
+	tests := map[string]struct {
+		ready, adminReady    *bool
+		expected, shouldFail bool
+	}{
+		"returns false when Ready is true but AdminReady is not set": {
+			ready:      Ptr(true),
+			adminReady: nil,
+			expected:   false,
+		},
+		"returns false when Ready is false but AdminReady is not set": {
+			ready:      Ptr(false),
+			adminReady: nil,
+			expected:   false,
+		},
+		"returns false when Ready is not set but AdminReady is true": {
+			ready:      nil,
+			adminReady: Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is not set but AdminReady is false": {
+			ready:      nil,
+			adminReady: Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready and AdminReady are not set": {
+			ready:      nil,
+			adminReady: nil,
+			expected:   false,
+		},
+		"returns false when Ready is true and AdminReady is false": {
+			ready:      Ptr(true),
+			adminReady: Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready is false and AdminReady is true": {
+			ready:      Ptr(false),
+			adminReady: Ptr(true),
+			expected:   false,
+		},
+		"returns true when Ready is true and AdminReady is true": {
+			ready:      Ptr(true),
+			adminReady: Ptr(true),
+			expected:   true,
+		},
+		"returns false when Ready is false and AdminReady is false": {
+			ready:      Ptr(false),
+			adminReady: Ptr(false),
+			expected:   false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := NodePublicationStateFlags{
+				Ready:      test.ready,
+				AdminReady: test.adminReady,
+			}
+
+			assert.Equal(t, test.expected, f.IsNodeCleanable())
+		})
+	}
+}
+
+func TestNodePublicationStateFlags_IsNodeCleaned(t *testing.T) {
+	tests := map[string]struct {
+		ready, adminReady, cleaned *bool
+		expected, shouldFail       bool
+	}{
+		"returns false when Ready, AdminReady, and Cleaned are not set": {
+			ready:      nil,
+			adminReady: nil,
+			cleaned:    nil,
+			expected:   false,
+		},
+		"returns false when Ready is true but AdminReady and Cleaned are not set": {
+			ready:      Ptr(true),
+			adminReady: nil,
+			cleaned:    nil,
+			expected:   false,
+		},
+		"returns false when Ready is false but AdminReady and Cleaned are not set": {
+			ready:      Ptr(false),
+			adminReady: nil,
+			cleaned:    nil,
+			expected:   false,
+		},
+		"returns false when Ready is true, AdminReady is true, and Cleaned is not set": {
+			ready:      Ptr(true),
+			adminReady: Ptr(true),
+			cleaned:    nil,
+			expected:   false,
+		},
+		"returns false when Ready is true, AdminReady is false, and Cleaned is not set": {
+			ready:      Ptr(true),
+			adminReady: Ptr(false),
+			cleaned:    nil,
+			expected:   false,
+		},
+		"returns false when Ready is false, AdminReady is true, and Cleaned is not set": {
+			ready:      Ptr(false),
+			adminReady: Ptr(true),
+			cleaned:    nil,
+			expected:   false,
+		},
+		"returns false when Ready is true, AdminReady is not set, and Cleaned is true": {
+			ready:      Ptr(true),
+			adminReady: nil,
+			cleaned:    Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is true, AdminReady is not set, and Cleaned is false": {
+			ready:      Ptr(true),
+			adminReady: nil,
+			cleaned:    Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready is false, AdminReady is not set, and Cleaned is true": {
+			ready:      Ptr(false),
+			adminReady: nil,
+			cleaned:    Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is false, AdminReady is not set, and Cleaned is false": {
+			ready:      Ptr(false),
+			adminReady: nil,
+			cleaned:    Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready is not set, AdminReady is true, and Cleaned is not set": {
+			ready:      nil,
+			adminReady: Ptr(true),
+			cleaned:    nil,
+			expected:   false,
+		},
+		"returns false when Ready is not set, AdminReady is false, and Cleaned is not set": {
+			ready:      nil,
+			adminReady: Ptr(false),
+			cleaned:    nil,
+			expected:   false,
+		},
+		"returns false when Ready is not set, AdminReady is true, and Cleaned is false": {
+			ready:      nil,
+			adminReady: Ptr(true),
+			cleaned:    Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready is not set, AdminReady is false, and Cleaned is true": {
+			ready:      nil,
+			adminReady: Ptr(false),
+			cleaned:    Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is not set, AdminReady is true, and Cleaned is true": {
+			ready:      nil,
+			adminReady: Ptr(true),
+			cleaned:    Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is not set, AdminReady is false, and Cleaned is false": {
+			ready:      nil,
+			adminReady: Ptr(false),
+			cleaned:    Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready is not set, AdminReady is not set, and Cleaned is true": {
+			ready:      nil,
+			adminReady: nil,
+			cleaned:    Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is not set, AdminReady is not set, and Cleaned is false": {
+			ready:      nil,
+			adminReady: nil,
+			cleaned:    Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready is true, AdminReady is false, and Cleaned is false": {
+			ready:      Ptr(true),
+			adminReady: Ptr(false),
+			cleaned:    Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready is true, AdminReady is true, and Cleaned is false": {
+			ready:      Ptr(true),
+			adminReady: Ptr(true),
+			cleaned:    Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready is true, AdminReady is false, and Cleaned is true": {
+			ready:      Ptr(true),
+			adminReady: Ptr(false),
+			cleaned:    Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is false, AdminReady is true, and Cleaned is false": {
+			ready:      Ptr(false),
+			adminReady: Ptr(true),
+			cleaned:    Ptr(false),
+			expected:   false,
+		},
+		"returns false when Ready is false, AdminReady is true, and Cleaned is true": {
+			ready:      Ptr(false),
+			adminReady: Ptr(true),
+			cleaned:    Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is false, AdminReady is false, and Cleaned is true": {
+			ready:      Ptr(false),
+			adminReady: Ptr(false),
+			cleaned:    Ptr(true),
+			expected:   false,
+		},
+		"returns false when Ready is false, AdminReady is false, and Cleaned is false": {
+			ready:      Ptr(false),
+			adminReady: Ptr(false),
+			cleaned:    Ptr(false),
+			expected:   false,
+		},
+		"returns true when Ready is true, AdminReady is true, and Cleaned is true": {
+			ready:      Ptr(true),
+			adminReady: Ptr(true),
+			cleaned:    Ptr(true),
+			expected:   true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			f := NodePublicationStateFlags{
+				Ready:      test.ready,
+				AdminReady: test.adminReady,
+				Cleaned:    test.cleaned,
+			}
+
+			assert.Equal(t, test.expected, f.IsNodeCleaned())
+		})
+	}
 }

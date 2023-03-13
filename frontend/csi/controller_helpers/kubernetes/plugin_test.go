@@ -4,25 +4,60 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
+	"io"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	k8sfake "k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 
 	"github.com/netapp/trident/frontend/csi"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
+	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/utils"
 )
 
 const (
 	FakeStorageClass = "fakeStorageClass"
 )
+
+var (
+	noTaint               = v1.Taint{}
+	nodeOutOfServiceTaint = v1.Taint{
+		Key: "node.kubernetes.io/out-of-service",
+	}
+	nodeReadyConditionFalse = v1.NodeCondition{
+		Type:   v1.NodeReady,
+		Status: v1.ConditionFalse,
+	}
+	nodeReadyConditionUnknown = v1.NodeCondition{
+		Type:   v1.NodeReady,
+		Status: v1.ConditionUnknown,
+	}
+	nodeReadyConditionTrue = v1.NodeCondition{
+		Type:   v1.NodeReady,
+		Status: v1.ConditionTrue,
+	}
+)
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output
+	log.SetOutput(io.Discard)
+	os.Exit(m.Run())
+}
 
 func newMockPlugin(t *testing.T) (*mockcore.MockOrchestrator, *helper) {
 	mockCtrl := gomock.NewController(t)
@@ -339,10 +374,50 @@ func TestAddNode(t *testing.T) {
 }
 
 func TestUpdateNode(t *testing.T) {
+	mockCore, plugin := newMockPlugin(t)
+
+	tests := []struct {
+		key           string
+		taint         v1.Taint
+		condition     v1.NodeCondition
+		expectedFlags *utils.NodePublicationStateFlags
+		error         error
+	}{
+		{
+			key:           "nodeNotReady",
+			taint:         nodeOutOfServiceTaint,
+			condition:     nodeReadyConditionFalse,
+			expectedFlags: &utils.NodePublicationStateFlags{Ready: utils.Ptr(false), AdminReady: utils.Ptr(false)},
+			error:         nil,
+		},
+		{
+			key:           "nodeUnknown",
+			taint:         nodeOutOfServiceTaint,
+			condition:     nodeReadyConditionUnknown,
+			expectedFlags: &utils.NodePublicationStateFlags{Ready: utils.Ptr(false), AdminReady: utils.Ptr(false)},
+			error:         errors.New("failed"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.key, func(t *testing.T) {
+			plugin.enableForceDetach = true
+
+			newNode := &v1.Node{}
+			newNode.Name = "fakeNode"
+			newNode.Spec.Taints = append(newNode.Spec.Taints, test.taint)
+			newNode.Status.Conditions = append(newNode.Status.Conditions, test.condition)
+
+			mockCore.EXPECT().UpdateNode(gomock.Any(), "fakeNode", test.expectedFlags).Return(test.error).Times(1)
+
+			plugin.updateNode(&v1.Node{}, newNode)
+		})
+	}
+}
+
+func TestUpdateNode_OtherType(t *testing.T) {
 	_, plugin := newMockPlugin(t)
-	newNode := &v1.Node{}
-	plugin.updateNode(nil, newNode)
-	plugin.updateNode(nil, nil)
+	plugin.updateNode(nil, &v1.Pod{})
 }
 
 func TestDeleteNode(t *testing.T) {
@@ -350,9 +425,122 @@ func TestDeleteNode(t *testing.T) {
 	newNode := &v1.Node{}
 	newNode.ObjectMeta.Name = "FakeNode"
 	plugin.addNode(newNode)
-	mockCore.EXPECT().DeleteNode(gomock.Any(), newNode.Name)
-	plugin.deleteNode(newNode)
-	plugin.deleteNode(nil)
+
+	tests := []struct {
+		Node       *v1.Node
+		CoreReturn error
+	}{
+		// Valid attributes with prefix
+		{newNode, nil},
+		{newNode, errors.New("failed")},
+		{newNode, utils.NotFoundError("not found")},
+	}
+
+	for _, test := range tests {
+		mockCore.EXPECT().DeleteNode(gomock.Any(), newNode.Name).Return(test.CoreReturn)
+
+		plugin.deleteNode(test.Node)
+	}
+}
+
+func TestDeleteNode_OtherType(t *testing.T) {
+	_, plugin := newMockPlugin(t)
+	plugin.deleteNode(&v1.Pod{})
+}
+
+func TestGetNodePublicationState(t *testing.T) {
+	_, plugin := newMockPlugin(t)
+
+	tests := []struct {
+		ForceDetach   bool
+		Taint         v1.Taint
+		Condition     v1.NodeCondition
+		ExpectedFlags *utils.NodePublicationStateFlags
+		ExpectedError error
+	}{
+		{
+			false,
+			noTaint,
+			nodeReadyConditionTrue,
+			nil,
+			nil,
+		},
+		{
+			false,
+			nodeOutOfServiceTaint,
+			nodeReadyConditionFalse,
+			nil,
+			nil,
+		},
+		{
+			true,
+			noTaint,
+			nodeReadyConditionTrue,
+			&utils.NodePublicationStateFlags{Ready: utils.Ptr(true), AdminReady: utils.Ptr(true)},
+			nil,
+		},
+		{
+			true,
+			nodeOutOfServiceTaint,
+			nodeReadyConditionTrue,
+			&utils.NodePublicationStateFlags{Ready: utils.Ptr(true), AdminReady: utils.Ptr(false)},
+			nil,
+		},
+		{
+			true,
+			noTaint,
+			nodeReadyConditionUnknown,
+			&utils.NodePublicationStateFlags{Ready: utils.Ptr(false), AdminReady: utils.Ptr(true)},
+			nil,
+		},
+		{
+			true,
+			nodeOutOfServiceTaint,
+			nodeReadyConditionUnknown,
+			&utils.NodePublicationStateFlags{Ready: utils.Ptr(false), AdminReady: utils.Ptr(false)},
+			nil,
+		},
+		{
+			true,
+			noTaint,
+			nodeReadyConditionFalse,
+			&utils.NodePublicationStateFlags{Ready: utils.Ptr(false), AdminReady: utils.Ptr(true)},
+			nil,
+		},
+		{
+			true,
+			nodeOutOfServiceTaint,
+			nodeReadyConditionFalse,
+			&utils.NodePublicationStateFlags{Ready: utils.Ptr(false), AdminReady: utils.Ptr(false)},
+			nil,
+		},
+	}
+
+	for _, test := range tests {
+		node := &v1.Node{}
+		node.ObjectMeta.Name = "FakeNode"
+		node.Spec.Taints = append(node.Spec.Taints, test.Taint)
+		node.Status.Conditions = append(node.Status.Conditions, test.Condition)
+
+		plugin.enableForceDetach = test.ForceDetach
+		plugin.kubeClient = k8sfake.NewSimpleClientset(node)
+
+		result, resultErr := plugin.GetNodePublicationState(context.TODO(), node.Name)
+
+		assert.Equal(t, test.ExpectedFlags, result)
+		assert.Equal(t, test.ExpectedError, resultErr)
+	}
+}
+
+func TestGetNodePublicationState_NotFound(t *testing.T) {
+	_, plugin := newMockPlugin(t)
+	plugin.enableForceDetach = true
+	plugin.kubeClient = k8sfake.NewSimpleClientset()
+
+	result, resultErr := plugin.GetNodePublicationState(context.TODO(), "FakeNode")
+
+	assert.Nil(t, result)
+	assert.NotNil(t, resultErr)
 }
 
 func TestRemoveSCParameterPrefix(t *testing.T) {
@@ -484,6 +672,401 @@ func TestProcessAddedStorageClass_CreateAttributeRequestFromAttributeValue_Failu
 			assert.NotNil(t, err, "expected error")
 			assert.Nil(t, valueAttr, "expected error")
 			plugin.processAddedStorageClass(ctx, sc)
+		})
+	}
+}
+
+func TestListVolumeAttachments(t *testing.T) {
+	ctx := context.Background()
+	volume := "bar"
+	attachmentList := &k8sstoragev1.VolumeAttachmentList{
+		Items: []k8sstoragev1.VolumeAttachment{
+			{
+				ObjectMeta: metav1.ObjectMeta{Name: "valid-attachment"},
+				Spec: k8sstoragev1.VolumeAttachmentSpec{
+					Attacher: csi.Provisioner,
+					NodeName: "foo",
+					Source:   k8sstoragev1.VolumeAttachmentSource{PersistentVolumeName: &volume},
+				},
+				Status: k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+			},
+			{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-wrong-attacher"},
+				Spec:       k8sstoragev1.VolumeAttachmentSpec{Attacher: "no-trident"},
+			},
+			{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-no-source-volume"},
+				Spec: k8sstoragev1.VolumeAttachmentSpec{
+					Attacher: csi.Provisioner,
+					NodeName: "foo",
+				},
+				Status: k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+			},
+			{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-no-node"},
+				Spec: k8sstoragev1.VolumeAttachmentSpec{
+					Attacher: csi.Provisioner,
+					NodeName: "",
+					Source:   k8sstoragev1.VolumeAttachmentSource{PersistentVolumeName: &volume},
+				},
+				Status: k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+			},
+		},
+	}
+	tests := map[string]struct {
+		setupMocks func(c *k8sfake.Clientset)
+		shouldFail bool
+	}{
+		"with no error": {
+			setupMocks: func(c *k8sfake.Clientset) {
+				c.Fake.PrependReactor(
+					"list" /* use '*' for all operations */, "*", /* use '*' all object types */
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						return true, attachmentList, nil
+					},
+				)
+			},
+			shouldFail: false,
+		},
+		"with attachments not found status ": {
+			setupMocks: func(c *k8sfake.Clientset) {
+				c.Fake.PrependReactor(
+					"list" /* use '*' for all operations */, "*", /* use '*' all object types */
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						status := &k8serrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound}}
+						return true, nil, status
+					},
+				)
+			},
+			shouldFail: true,
+		},
+		"with k8s clientset failure": {
+			setupMocks: func(c *k8sfake.Clientset) {
+				c.Fake.PrependReactor(
+					"list" /* use '*' for all operations */, "*", /* use '*' all object types */
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						status := &k8serrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusFailure}}
+						return true, nil, status
+					},
+				)
+			},
+			shouldFail: true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			clientSet := &k8sfake.Clientset{}
+
+			test.setupMocks(clientSet)
+
+			h := &helper{kubeClient: clientSet}
+			attachments, err := h.listVolumeAttachments(ctx)
+
+			if test.shouldFail {
+				assert.Nil(t, attachments)
+				assert.Error(t, err)
+			} else {
+				assert.NotNil(t, attachments)
+				assert.NoError(t, err)
+			}
+		},
+		)
+	}
+}
+
+func TestReconcileVolumePublications(t *testing.T) {
+	ctx := context.Background()
+	volume := "bar"
+	validVolume := &storage.VolumeExternal{
+		Config: &storage.VolumeConfig{
+			Name:       volume,
+			AccessMode: "ReadWriteOnce",
+			AccessInfo: utils.VolumeAccessInfo{
+				ReadOnly: false,
+			},
+		},
+	}
+	attachmentList := &k8sstoragev1.VolumeAttachmentList{
+		Items: []k8sstoragev1.VolumeAttachment{
+			{
+				ObjectMeta: metav1.ObjectMeta{Name: "valid-attachment"},
+				Spec: k8sstoragev1.VolumeAttachmentSpec{
+					Attacher: csi.Provisioner,
+					NodeName: "foo",
+					Source:   k8sstoragev1.VolumeAttachmentSource{PersistentVolumeName: &volume},
+				},
+				Status: k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+			},
+			{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-wrong-attacher"},
+				Spec:       k8sstoragev1.VolumeAttachmentSpec{Attacher: "no-trident"},
+			},
+			{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-no-source-volume"},
+				Spec: k8sstoragev1.VolumeAttachmentSpec{
+					Attacher: csi.Provisioner,
+					NodeName: "foo",
+				},
+				Status: k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+			},
+			{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-no-node"},
+				Spec: k8sstoragev1.VolumeAttachmentSpec{
+					Attacher: csi.Provisioner,
+					NodeName: "",
+					Source:   k8sstoragev1.VolumeAttachmentSource{PersistentVolumeName: &volume},
+				},
+				Status: k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+			},
+		},
+	}
+	tests := map[string]struct {
+		setupMocks func(c *k8sfake.Clientset, o *mockcore.MockOrchestrator)
+		shouldFail bool
+	}{
+		"with no error": {
+			setupMocks: func(c *k8sfake.Clientset, o *mockcore.MockOrchestrator) {
+				c.Fake.PrependReactor(
+					"list" /* use '*' for all operations */, "*", /* use '*' all object types */
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						return true, attachmentList, nil
+					},
+				)
+				o.EXPECT().GetVolume(gomock.Any(), gomock.Any()).Return(validVolume, nil)
+				o.EXPECT().ReconcileVolumePublications(gomock.Any(), gomock.Any()).Return(nil)
+			},
+			shouldFail: false,
+		},
+		"with orchestrator error": {
+			setupMocks: func(c *k8sfake.Clientset, o *mockcore.MockOrchestrator) {
+				c.Fake.PrependReactor(
+					"list" /* use '*' for all operations */, "*", /* use '*' all object types */
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						runtimeObject := &k8sstoragev1.VolumeAttachmentList{Items: nil}
+						return true, runtimeObject, nil
+					},
+				)
+				o.EXPECT().ReconcileVolumePublications(gomock.Any(), gomock.Any()).Return(errors.New("core error"))
+			},
+			shouldFail: true,
+		},
+		"with client set error": {
+			setupMocks: func(c *k8sfake.Clientset, o *mockcore.MockOrchestrator) {
+				c.Fake.PrependReactor(
+					"list" /* use '*' for all operations */, "*", /* use '*' all object types */
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						runtimeObject := &k8sstoragev1.VolumeAttachmentList{Items: nil}
+						return true, runtimeObject, errors.New("client set error")
+					},
+				)
+				// No need to mock the orchestrator here; failing in the client set will cause reconcile to exit.
+			},
+			shouldFail: true,
+		},
+		"with nil attachment list": {
+			setupMocks: func(c *k8sfake.Clientset, o *mockcore.MockOrchestrator) {
+				c.Fake.PrependReactor(
+					"list" /* use '*' for all operations */, "*", /* use '*' all object types */
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						return true, nil, nil
+					},
+				)
+				o.EXPECT().ReconcileVolumePublications(gomock.Any(), gomock.Any()).Return(nil)
+			},
+			shouldFail: false,
+		},
+		"with not found error": {
+			setupMocks: func(c *k8sfake.Clientset, o *mockcore.MockOrchestrator) {
+				c.Fake.PrependReactor(
+					"list" /* use '*' for all operations */, "*", /* use '*' all object types */
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						status := &k8serrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound}}
+						return true, nil, status
+					},
+				)
+				o.EXPECT().ReconcileVolumePublications(gomock.Any(), gomock.Any()).Return(nil)
+			},
+			shouldFail: false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+			clientSet := &k8sfake.Clientset{}
+
+			test.setupMocks(clientSet, orchestrator)
+
+			h := &helper{kubeClient: clientSet, orchestrator: orchestrator}
+			err := h.reconcileVolumePublications(ctx)
+
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestListAttachmentsAsPublications(t *testing.T) {
+	ctx := context.Background()
+	volumeID := "bar"
+	node := "foo"
+	attachments := []k8sstoragev1.VolumeAttachment{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "valid-attachment"},
+			Spec: k8sstoragev1.VolumeAttachmentSpec{
+				Attacher: csi.Provisioner,
+				NodeName: node,
+				Source:   k8sstoragev1.VolumeAttachmentSource{PersistentVolumeName: &volumeID},
+			},
+			Status: k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "invalid-wrong-attacher"},
+			Spec:       k8sstoragev1.VolumeAttachmentSpec{Attacher: "not-trident"},
+		},
+	}
+	volume := &storage.VolumeExternal{
+		Config: &storage.VolumeConfig{
+			Name:       volumeID,
+			AccessMode: "ReadWriteOnce",
+			AccessInfo: utils.VolumeAccessInfo{
+				ReadOnly: false,
+			},
+		},
+	}
+	publications := []*utils.VolumePublicationExternal{
+		{
+			Name:       utils.GenerateVolumePublishName(volumeID, node),
+			VolumeName: volumeID,
+			NodeName:   node,
+			AccessMode: 1, // ReadWriteOnce / SINGLE_NODE_WRITER
+			ReadOnly:   false,
+		},
+	}
+
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockOrchestrator.EXPECT().GetVolume(ctx, gomock.Any()).Return(volume, nil)
+	h := &helper{orchestrator: mockOrchestrator}
+	actualPubs, err := h.listAttachmentsAsPublications(ctx, attachments)
+	assert.NoError(t, err)
+	assert.Equal(t, publications, actualPubs)
+}
+
+func TestListAttachmentsAsPublications_FailsToGetVolume(t *testing.T) {
+	ctx := context.Background()
+	volumeID := "bar"
+	node := "foo"
+	attachments := []k8sstoragev1.VolumeAttachment{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "valid-attachment"},
+			Spec: k8sstoragev1.VolumeAttachmentSpec{
+				Attacher: csi.Provisioner,
+				NodeName: node,
+				Source:   k8sstoragev1.VolumeAttachmentSource{PersistentVolumeName: &volumeID},
+			},
+			Status: k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "invalid-wrong-attacher"},
+			Spec:       k8sstoragev1.VolumeAttachmentSpec{Attacher: "not-trident"},
+		},
+	}
+	volume := &storage.VolumeExternal{
+		Config: &storage.VolumeConfig{
+			Name:       volumeID,
+			AccessMode: "ReadWriteOnce",
+			AccessInfo: utils.VolumeAccessInfo{
+				ReadOnly: false,
+			},
+		},
+	}
+	publications := []*utils.VolumePublicationExternal{
+		{
+			Name:       utils.GenerateVolumePublishName(volumeID, node),
+			VolumeName: volumeID,
+			NodeName:   node,
+			AccessMode: 1, // ReadWriteOnce / SINGLE_NODE_WRITER
+			ReadOnly:   false,
+		},
+	}
+
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockOrchestrator.EXPECT().GetVolume(ctx, gomock.Any()).Return(volume, errors.New("core error"))
+	h := &helper{orchestrator: mockOrchestrator}
+	actualPubs, err := h.listAttachmentsAsPublications(ctx, attachments)
+	assert.Error(t, err)
+	assert.NotEqual(t, publications, actualPubs)
+}
+
+func TestIsAttachmentValid(t *testing.T) {
+	ctx := context.Background()
+	volume := "bar"
+	node := "foo"
+	tests := map[string]struct {
+		shouldBeValid bool
+		attachment    k8sstoragev1.VolumeAttachment
+	}{
+		"with wrong attacher": {
+			false,
+			k8sstoragev1.VolumeAttachment{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-wrong-attacher"},
+				Spec:       k8sstoragev1.VolumeAttachmentSpec{Attacher: "no-trident"},
+			},
+		},
+		"with attachment not attached": {
+			false,
+			k8sstoragev1.VolumeAttachment{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-not-attached"},
+				Spec:       k8sstoragev1.VolumeAttachmentSpec{Attacher: csi.Provisioner},
+				Status:     k8sstoragev1.VolumeAttachmentStatus{Attached: false},
+			},
+		},
+		"with no source volume on attachment": {
+			false,
+			k8sstoragev1.VolumeAttachment{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-no-source-volume"},
+				Spec:       k8sstoragev1.VolumeAttachmentSpec{Attacher: csi.Provisioner},
+				Status:     k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+			},
+		},
+		"with no node on attachment": {
+			false,
+			k8sstoragev1.VolumeAttachment{
+				ObjectMeta: metav1.ObjectMeta{Name: "invalid-no-node"},
+				Spec: k8sstoragev1.VolumeAttachmentSpec{
+					Attacher: csi.Provisioner,
+					NodeName: "",
+					Source:   k8sstoragev1.VolumeAttachmentSource{PersistentVolumeName: &volume},
+				},
+				Status: k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+			},
+		},
+		"with valid attachment": {
+			true,
+			k8sstoragev1.VolumeAttachment{
+				ObjectMeta: metav1.ObjectMeta{Name: "valid-attachment"},
+				Spec: k8sstoragev1.VolumeAttachmentSpec{
+					Attacher: csi.Provisioner,
+					NodeName: node,
+					Source:   k8sstoragev1.VolumeAttachmentSource{PersistentVolumeName: &volume},
+				},
+				Status: k8sstoragev1.VolumeAttachmentStatus{Attached: true},
+			},
+		},
+	}
+
+	h := &helper{}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			isValid := h.isAttachmentValid(ctx, test.attachment)
+			assert.Equal(t, test.shouldBeValid, isValid)
 		})
 	}
 }

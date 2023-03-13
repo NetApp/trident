@@ -110,20 +110,6 @@ func (mr *MockOrchestratorMockRecorder) AddVolume(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolume", reflect.TypeOf((*MockOrchestrator)(nil).AddVolume), arg0, arg1)
 }
 
-// AddVolumePublication mocks base method.
-func (m *MockOrchestrator) AddVolumePublication(arg0 context.Context, arg1 *utils.VolumePublication) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddVolumePublication", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddVolumePublication indicates an expected call of AddVolumePublication.
-func (mr *MockOrchestratorMockRecorder) AddVolumePublication(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolumePublication", reflect.TypeOf((*MockOrchestrator)(nil).AddVolumePublication), arg0, arg1)
-}
-
 // AddVolumeTransaction mocks base method.
 func (m *MockOrchestrator) AddVolumeTransaction(arg0 context.Context, arg1 *storage.VolumeTransaction) error {
 	m.ctrl.T.Helper()
@@ -442,10 +428,10 @@ func (mr *MockOrchestratorMockRecorder) GetMirrorStatus(arg0, arg1, arg2, arg3 i
 }
 
 // GetNode mocks base method.
-func (m *MockOrchestrator) GetNode(arg0 context.Context, arg1 string) (*utils.Node, error) {
+func (m *MockOrchestrator) GetNode(arg0 context.Context, arg1 string) (*utils.NodeExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNode", arg0, arg1)
-	ret0, _ := ret[0].(*utils.Node)
+	ret0, _ := ret[0].(*utils.NodeExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -714,10 +700,10 @@ func (mr *MockOrchestratorMockRecorder) ListLoggingWorkflows(arg0 interface{}) *
 }
 
 // ListNodes mocks base method.
-func (m *MockOrchestrator) ListNodes(arg0 context.Context) ([]*utils.Node, error) {
+func (m *MockOrchestrator) ListNodes(arg0 context.Context) ([]*utils.NodeExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListNodes", arg0)
-	ret0, _ := ret[0].([]*utils.Node)
+	ret0, _ := ret[0].([]*utils.NodeExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -804,48 +790,48 @@ func (mr *MockOrchestratorMockRecorder) ListSubordinateVolumes(arg0, arg1 interf
 }
 
 // ListVolumePublications mocks base method.
-func (m *MockOrchestrator) ListVolumePublications(arg0 context.Context, arg1 *bool) ([]*utils.VolumePublicationExternal, error) {
+func (m *MockOrchestrator) ListVolumePublications(arg0 context.Context) ([]*utils.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListVolumePublications", arg0, arg1)
+	ret := m.ctrl.Call(m, "ListVolumePublications", arg0)
 	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListVolumePublications indicates an expected call of ListVolumePublications.
-func (mr *MockOrchestratorMockRecorder) ListVolumePublications(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) ListVolumePublications(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumePublications", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumePublications), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumePublications", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumePublications), arg0)
 }
 
 // ListVolumePublicationsForNode mocks base method.
-func (m *MockOrchestrator) ListVolumePublicationsForNode(arg0 context.Context, arg1 string, arg2 *bool) ([]*utils.VolumePublicationExternal, error) {
+func (m *MockOrchestrator) ListVolumePublicationsForNode(arg0 context.Context, arg1 string) ([]*utils.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListVolumePublicationsForNode", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListVolumePublicationsForNode", arg0, arg1)
 	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListVolumePublicationsForNode indicates an expected call of ListVolumePublicationsForNode.
-func (mr *MockOrchestratorMockRecorder) ListVolumePublicationsForNode(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) ListVolumePublicationsForNode(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumePublicationsForNode", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumePublicationsForNode), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumePublicationsForNode", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumePublicationsForNode), arg0, arg1)
 }
 
 // ListVolumePublicationsForVolume mocks base method.
-func (m *MockOrchestrator) ListVolumePublicationsForVolume(arg0 context.Context, arg1 string, arg2 *bool) ([]*utils.VolumePublicationExternal, error) {
+func (m *MockOrchestrator) ListVolumePublicationsForVolume(arg0 context.Context, arg1 string) ([]*utils.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListVolumePublicationsForVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListVolumePublicationsForVolume", arg0, arg1)
 	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListVolumePublicationsForVolume indicates an expected call of ListVolumePublicationsForVolume.
-func (mr *MockOrchestratorMockRecorder) ListVolumePublicationsForVolume(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) ListVolumePublicationsForVolume(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumePublicationsForVolume", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumePublicationsForVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumePublicationsForVolume", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumePublicationsForVolume), arg0, arg1)
 }
 
 // ListVolumes mocks base method.
@@ -917,6 +903,20 @@ func (m *MockOrchestrator) ReadSnapshotsForVolume(arg0 context.Context, arg1 str
 func (mr *MockOrchestratorMockRecorder) ReadSnapshotsForVolume(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadSnapshotsForVolume", reflect.TypeOf((*MockOrchestrator)(nil).ReadSnapshotsForVolume), arg0, arg1)
+}
+
+// ReconcileVolumePublications mocks base method.
+func (m *MockOrchestrator) ReconcileVolumePublications(arg0 context.Context, arg1 []*utils.VolumePublicationExternal) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVolumePublications", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileVolumePublications indicates an expected call of ReconcileVolumePublications.
+func (mr *MockOrchestratorMockRecorder) ReconcileVolumePublications(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVolumePublications", reflect.TypeOf((*MockOrchestrator)(nil).ReconcileVolumePublications), arg0, arg1)
 }
 
 // ReestablishMirror mocks base method.
@@ -1104,6 +1104,20 @@ func (mr *MockOrchestratorMockRecorder) UpdateBackendState(arg0, arg1, arg2 inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockOrchestrator)(nil).UpdateBackendState), arg0, arg1, arg2)
 }
 
+// UpdateNode mocks base method.
+func (m *MockOrchestrator) UpdateNode(arg0 context.Context, arg1 string, arg2 *utils.NodePublicationStateFlags) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNode", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateNode indicates an expected call of UpdateNode.
+func (mr *MockOrchestratorMockRecorder) UpdateNode(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNode", reflect.TypeOf((*MockOrchestrator)(nil).UpdateNode), arg0, arg1, arg2)
+}
+
 // UpdateVolume mocks base method.
 func (m *MockOrchestrator) UpdateVolume(arg0 context.Context, arg1 string, arg2 *[]string) error {
 	m.ctrl.T.Helper()
@@ -1116,18 +1130,4 @@ func (m *MockOrchestrator) UpdateVolume(arg0 context.Context, arg1 string, arg2 
 func (mr *MockOrchestratorMockRecorder) UpdateVolume(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolume", reflect.TypeOf((*MockOrchestrator)(nil).UpdateVolume), arg0, arg1, arg2)
-}
-
-// UpdateVolumePublication mocks base method.
-func (m *MockOrchestrator) UpdateVolumePublication(arg0 context.Context, arg1, arg2 string, arg3 *bool) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVolumePublication", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateVolumePublication indicates an expected call of UpdateVolumePublication.
-func (mr *MockOrchestratorMockRecorder) UpdateVolumePublication(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumePublication", reflect.TypeOf((*MockOrchestrator)(nil).UpdateVolumePublication), arg0, arg1, arg2, arg3)
 }

@@ -23,8 +23,10 @@ type Routes []Route
 
 const (
 	// arbitrarily large number to limit maximum routines waiting for global lock
-	updateVolumePublicationRateLimit = 10000.0 // requests per second
-	updateVolumePublicationBurst     = 10000   // maximum request burst
+	updateNodeRateLimit = 10000.0 // requests per second
+	updateNodeBurst     = 10000   // maximum request burst
+	getNodeRateLimit    = 10000.0 // requests per second
+	getNodeBurst        = 10000   // maximum request burst
 )
 
 var controllerRoutes = Routes{
@@ -169,10 +171,21 @@ var controllerRoutes = Routes{
 		AddNode,
 	},
 	Route{
+		"UpdateNode",
+		"PUT",
+		config.NodeURL + "/{node}/publicationState",
+		[]mux.MiddlewareFunc{
+			rateLimiterMiddleware(updateNodeRateLimit, updateNodeBurst),
+		},
+		UpdateNode,
+	},
+	Route{
 		"GetNode",
 		"GET",
 		config.NodeURL + "/{node}",
-		nil,
+		[]mux.MiddlewareFunc{
+			rateLimiterMiddleware(getNodeRateLimit, getNodeBurst),
+		},
 		GetNode,
 	},
 	Route{
@@ -216,15 +229,6 @@ var controllerRoutes = Routes{
 		config.NodeURL + "/{node}/publication",
 		nil,
 		ListVolumePublicationsForNode,
-	},
-	Route{
-		"UpdateVolumePublication",
-		"PUT",
-		config.PublicationURL + "/{volume}/{node}",
-		[]mux.MiddlewareFunc{
-			rateLimiterMiddleware(updateVolumePublicationRateLimit, updateVolumePublicationBurst),
-		},
-		UpdateVolumePublication,
 	},
 	Route{
 		"ListSnapshots",

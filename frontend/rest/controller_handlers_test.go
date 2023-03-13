@@ -1,17 +1,26 @@
 package rest
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	http_test "github.com/stretchr/testify/http"
 
+	"github.com/netapp/trident/frontend"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
+	mockk8scontrollerhelper "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers/mock_kubernetes_helper"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 )
@@ -173,4 +182,173 @@ func TestVolumeLUKSPassphraseNamesUpdater(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rc)
 	assert.Equal(t, volume, response.Volume)
 	mockCtrl.Finish()
+}
+
+// TestUpdateNodeIsAsync tests that UpdateNode is called when it can get the core lock, after
+// responding to the request, by:
+// 1. Requesting another endpoint (ListNodes) that holds core lock for some time
+// 2. Requesting UpdateNode
+// 3. Waiting for ListNodes and UpdateNode to return
+// 4. Asserting response received before UpdateNode returns
+func TestUpdateNodeIsAsync(t *testing.T) {
+	// Set up mocks and tear down functions.
+	oldOrchestrator := orchestrator
+	defer func() {
+		orchestrator = oldOrchestrator
+	}()
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockK8sHelper := mockk8scontrollerhelper.NewMockK8SControllerHelperPlugin(mockCtrl)
+
+	// Setup values to return from mocked calls.
+	nodeStateFlags := &utils.NodePublicationStateFlags{
+		Ready:      utils.Ptr(true),
+		AdminReady: utils.Ptr(true),
+		Cleaned:    nil,
+	}
+
+	// Set up test methods.
+	var (
+		m                          sync.Mutex
+		wg                         sync.WaitGroup
+		updateNodeCalled           time.Time
+		updateNodeResponseReceived time.Time
+	)
+
+	// Setup test http server.
+	orchestrator = mockOrchestrator
+	ts := httptest.NewServer(NewRouter(false))
+
+	// Set up the expected mock calls and add wait groups to those that are async.
+	wg.Add(3)
+	gomock.InOrder(
+		mockOrchestrator.EXPECT().ListNodes(gomock.Any()).
+			DoAndReturn(func(_ context.Context) ([]utils.Node, error) {
+				m.Lock()
+				defer m.Unlock()
+				time.Sleep(200 * time.Millisecond)
+				return nil, nil
+			}),
+		mockOrchestrator.EXPECT().GetFrontend(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ context.Context, _ string) (frontend.Plugin, error) {
+				return mockK8sHelper, nil
+			}),
+		mockK8sHelper.EXPECT().GetNodePublicationState(gomock.Any(), gomock.Any()).Return(nodeStateFlags, nil).Times(1),
+		mockOrchestrator.EXPECT().UpdateNode(gomock.Any(), gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ context.Context, _ string, _ *utils.NodePublicationStateFlags) error {
+				m.Lock()
+				defer m.Unlock()
+				updateNodeCalled = time.Now()
+				wg.Done()
+				return nil
+			}),
+	)
+
+	// Make requests.
+	go func() {
+		defer wg.Done()
+		// ListNodes
+		res, err := http.Get(ts.URL + "/trident/v1/node")
+		assert.NoError(t, err, "expected no error")
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+	}()
+	go func() {
+		defer wg.Done()
+		// Ensure this request occurs after first request.
+		time.Sleep(20 * time.Millisecond)
+
+		nodeState := utils.NodePublicationStateFlags{Cleaned: utils.Ptr(true)}
+		data, err := json.Marshal(nodeState)
+		if err != nil {
+			t.Error("could not create request body")
+		}
+		// Make request to UpdateNode state.
+		req, err := http.NewRequest(http.MethodPut, ts.URL+"/trident/v1/node/nodeID/publicationState", bytes.NewBuffer(data))
+		assert.NoError(t, err, "expected no error")
+		res, err := http.DefaultClient.Do(req)
+		updateNodeResponseReceived = time.Now()
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusAccepted, res.StatusCode)
+	}()
+	wg.Wait()
+	assert.True(t, updateNodeResponseReceived.Before(updateNodeCalled),
+		"response must be received before handler called")
+}
+
+func TestGetNode(t *testing.T) {
+	// Set up mocks and tear down functions.
+	oldOrchestrator := orchestrator
+	defer func() {
+		orchestrator = oldOrchestrator
+	}()
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	// Set up the mock orchestrator, test server and test values.
+	orchestrator = mockOrchestrator
+	server := httptest.NewServer(NewRouter(false))
+	nodeName := "foo"
+	nodeExternal := &utils.NodeExternal{Name: nodeName}
+	mockOrchestrator.EXPECT().GetNode(gomock.Any(), nodeName).Return(nodeExternal, nil)
+
+	// Build a new request to the GetNode route.
+	url := server.URL + "/trident/v1/node/" + nodeName
+	req, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
+	assert.NoError(t, err, "expected no error")
+
+	// Make the request and ensure it doesn't fail and the response is valid.
+	res, err := http.DefaultClient.Do(req)
+	assert.NotNil(t, res, "expected non-nil response")
+	assert.NoError(t, err, "expected no error")
+
+	// Parse the response body and ensure it contains the expected values.
+	defer res.Body.Close()
+	responseBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.FailNow()
+	}
+	updateNodeResponse := GetNodeResponse{}
+	if err := json.Unmarshal(responseBody, &updateNodeResponse); err != nil {
+		t.FailNow()
+	}
+	assert.Equal(t, updateNodeResponse.Node.Name, nodeName, "expected equal values")
+}
+
+func TestGetNode_FailsWithCoreError(t *testing.T) {
+	// Set up mocks and tear down functions.
+	oldOrchestrator := orchestrator
+	defer func() {
+		orchestrator = oldOrchestrator
+	}()
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	// Set up the mock orchestrator, test server and test values.
+	orchestrator = mockOrchestrator
+	server := httptest.NewServer(NewRouter(false))
+	nodeName := "foo"
+	mockOrchestrator.EXPECT().GetNode(gomock.Any(), nodeName).Return(nil, errors.New("core error"))
+
+	// Build a new request to the GetNode route.
+	url := server.URL + "/trident/v1/node/" + nodeName
+	req, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
+	assert.NoError(t, err, "expected no error")
+
+	// Make the request and ensure it doesn't fail and the response is valid.
+	res, err := http.DefaultClient.Do(req)
+	assert.NotNil(t, res, "expected non-nil response")
+	assert.Nil(t, err, "expected no error")
+
+	// Parse the response body and ensure it contains the expected values.
+	defer res.Body.Close()
+	responseBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.FailNow()
+	}
+	updateNodeResponse := GetNodeResponse{}
+	if err := json.Unmarshal(responseBody, &updateNodeResponse); err != nil {
+		t.FailNow()
+	}
+	assert.Nil(t, updateNodeResponse.Node, "expected nil Node value in response")
+	assert.NotEmpty(t, updateNodeResponse.Error, "expected non-empty Error string in response")
 }

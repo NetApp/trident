@@ -4,6 +4,7 @@ package csi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
+	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	"github.com/netapp/trident/utils"
 )
 
@@ -540,4 +542,286 @@ func structCopyHelper(input utils.ISCSISessionData) *utils.ISCSISessionData {
 
 func snooze(val uint32) {
 	time.Sleep(time.Duration(val) * time.Millisecond)
+}
+
+func TestDiscoverDesiredPublicationState_GetsNoPublicationsWithoutError(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "bar"
+	var expectedPublications []*utils.VolumePublicationExternal
+
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockClient.EXPECT().ListVolumePublicationsForNode(ctx, nodeName).Return(expectedPublications, nil)
+	nodeServer := &Plugin{
+		nodeName:          nodeName,
+		role:              CSINode,
+		restClient:        mockClient,
+		enableForceDetach: true,
+	}
+
+	// desiredPublicationState is a mapping of volumes to volume publications.
+	desiredPublicationState, err := nodeServer.discoverDesiredPublicationState(ctx)
+	assert.NoError(t, err, "expected no error")
+	assert.Empty(t, desiredPublicationState, "expected empty map")
+}
+
+func TestDiscoverDesiredPublicationState_GetsPublicationsWithoutError(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "bar"
+	expectedPublications := []*utils.VolumePublicationExternal{
+		{
+			Name:       utils.GenerateVolumePublishName("foo", nodeName),
+			NodeName:   nodeName,
+			VolumeName: "foo",
+		},
+		{
+			Name:       utils.GenerateVolumePublishName("baz", nodeName),
+			NodeName:   nodeName,
+			VolumeName: "baz",
+		},
+	}
+
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockClient.EXPECT().ListVolumePublicationsForNode(ctx, nodeName).Return(expectedPublications, nil)
+	nodeServer := &Plugin{
+		nodeName:          nodeName,
+		role:              CSINode,
+		restClient:        mockClient,
+		enableForceDetach: true,
+	}
+
+	// desiredPublicationState is a mapping of volumes to volume publications.
+	desiredPublicationState, err := nodeServer.discoverDesiredPublicationState(ctx)
+	assert.NoError(t, err, "expected no error")
+	for _, expectedPublication := range expectedPublications {
+		desiredPublication, ok := desiredPublicationState[expectedPublication.VolumeName]
+		assert.True(t, ok, "expected true value")
+		assert.NotNil(t, desiredPublication, "expected publication to exist")
+	}
+}
+
+func TestDiscoverDesiredPublicationState_FailsToGetPublicationsWithError(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "bar"
+	expectedPublications := []*utils.VolumePublicationExternal{
+		{
+			Name:       utils.GenerateVolumePublishName("foo", nodeName),
+			NodeName:   nodeName,
+			VolumeName: "foo",
+		},
+		{
+			Name:       utils.GenerateVolumePublishName("baz", nodeName),
+			NodeName:   nodeName,
+			VolumeName: "baz",
+		},
+	}
+
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockClient.EXPECT().ListVolumePublicationsForNode(ctx, nodeName).Return(
+		expectedPublications,
+		errors.New("failed to list volume publications"),
+	)
+	nodeServer := &Plugin{
+		nodeName:          nodeName,
+		role:              CSINode,
+		restClient:        mockClient,
+		enableForceDetach: true,
+	}
+
+	// desiredPublicationState is a mapping of volumes to volume publications.
+	desiredPublicationState, err := nodeServer.discoverDesiredPublicationState(ctx)
+	assert.Error(t, err, "expected error")
+	assert.Empty(t, desiredPublicationState, "expected nil map")
+}
+
+func TestDiscoverActualPublicationState_FindsTrackingInfoWithoutError(t *testing.T) {
+	ctx := context.Background()
+	expectedPublicationState := map[string]*utils.VolumeTrackingInfo{
+		"pvc-85987a99-648d-4d84-95df-47d0256ca2ab": {
+			VolumePublishInfo: utils.VolumePublishInfo{},
+			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
+			PublishedPaths: map[string]struct{}{
+				"/var/lib/kubelet/pods/b9f476af-47f4-42d8-8cfa-70d49394d9e3/volumes/kubernetes.io~csi/" +
+					"pvc-85987a99-648d-4d84-95df-47d0256ca2ab/mount": {},
+			},
+		},
+		"pvc-85987a99-648d-4d84-95df-47d0256ca2ac": {
+			VolumePublishInfo: utils.VolumePublishInfo{},
+			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787de/globalmount",
+			PublishedPaths: map[string]struct{}{
+				"/var/lib/kubelet/pods/b9f476af-47f4-42d8-8cfa-70d49394d9e2/volumes/kubernetes.io~csi/" +
+					"pvc-85987a99-648d-4d84-95df-47d0256ca2ac/mount": {},
+			},
+		},
+	}
+
+	mockCtrl := gomock.NewController(t)
+	mockHelper := mockNodeHelpers.NewMockNodeHelper(mockCtrl)
+	mockHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(expectedPublicationState, nil)
+	nodeServer := &Plugin{
+		role:              CSINode,
+		nodeHelper:        mockHelper,
+		enableForceDetach: true,
+	}
+
+	// actualPublicationState is a mapping of volumes to volume publications.
+	actualPublicationState, err := nodeServer.discoverActualPublicationState(ctx)
+	assert.NoError(t, err, "expected no error")
+	assert.NotEmptyf(t, actualPublicationState, "expected non-empty map")
+	for volumeName, publicationState := range expectedPublicationState {
+		actualPublication, ok := actualPublicationState[volumeName]
+		assert.True(t, ok, "expected true")
+		assert.NotNil(t, actualPublication, "expected non-nil publication state")
+		for path := range publicationState.PublishedPaths {
+			assert.Contains(t, path, volumeName)
+		}
+	}
+}
+
+func TestDiscoverActualPublicationState_FailsWithError(t *testing.T) {
+	ctx := context.Background()
+
+	mockCtrl := gomock.NewController(t)
+	mockHelper := mockNodeHelpers.NewMockNodeHelper(mockCtrl)
+	mockHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(nil, errors.New("not found"))
+	nodeServer := &Plugin{
+		role:              CSINode,
+		nodeHelper:        mockHelper,
+		enableForceDetach: true,
+	}
+
+	// actualPublicationState is a mapping of volumes to volume publications.
+	actualPublicationState, err := nodeServer.discoverActualPublicationState(ctx)
+	assert.Error(t, err, "expected error")
+	assert.Nil(t, actualPublicationState, "expected nil map")
+}
+
+func TestDiscoverActualPublicationState_FailsToFindTrackingInfo(t *testing.T) {
+	ctx := context.Background()
+
+	mockCtrl := gomock.NewController(t)
+	mockHelper := mockNodeHelpers.NewMockNodeHelper(mockCtrl)
+	mockHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(nil, utils.NotFoundError("not found"))
+	nodeServer := &Plugin{
+		role:              CSINode,
+		nodeHelper:        mockHelper,
+		enableForceDetach: true,
+	}
+
+	// actualPublicationState is a mapping of volumes to volume publications.
+	actualPublicationState, err := nodeServer.discoverActualPublicationState(ctx)
+	assert.NoError(t, err, "expected no error")
+	assert.Empty(t, actualPublicationState, "expected empty map")
+}
+
+func TestDiscoverStalePublications_DiscoversStalePublicationsCorrectly(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "bar"
+	volumeOne := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
+	volumeTwo := "pvc-85987a99-648d-4d84-95df-47d0256ca2ac"
+	volumeThree := "pvc-85987a99-648d-4d84-95df-47d0256ca2ad"
+	desiredPublicationState := map[string]*utils.VolumePublicationExternal{
+		volumeOne: {
+			Name:       utils.GenerateVolumePublishName(volumeOne, nodeName),
+			NodeName:   nodeName,
+			VolumeName: volumeOne,
+		},
+		// This shouldn't be counted as a stale publication.
+		volumeThree: nil,
+	}
+	actualPublicationState := map[string]*utils.VolumeTrackingInfo{
+		volumeOne: {
+			VolumePublishInfo: utils.VolumePublishInfo{},
+			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
+			PublishedPaths: map[string]struct{}{
+				"/var/lib/kubelet/pods/b9f476af-47f4-42d8-8cfa-70d49394d9e3/volumes/kubernetes.io~csi/" +
+					volumeOne + "/mount": {},
+			},
+		},
+		// This is what should be counted as "stale".
+		volumeTwo: {
+			VolumePublishInfo: utils.VolumePublishInfo{},
+			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787de/globalmount",
+			PublishedPaths: map[string]struct{}{
+				"/var/lib/kubelet/pods/b9f476af-47f4-42d8-8cfa-70d49394d9e2/volumes/kubernetes.io~csi/" +
+					volumeTwo + "/mount": {},
+			},
+		},
+	}
+
+	nodeServer := &Plugin{
+		role:              CSINode,
+		nodeName:          nodeName,
+		enableForceDetach: true,
+	}
+
+	stalePublications := nodeServer.discoverStalePublications(ctx, actualPublicationState, desiredPublicationState)
+	assert.Contains(t, stalePublications, volumeTwo, fmt.Sprintf("expected %s to exist in stale publications", volumeTwo))
+	assert.NotContains(t, stalePublications, volumeThree, fmt.Sprintf("expected %s to not exist in stale publications", volumeThree))
+}
+
+func TestUpdateNodePublicationState_NodeNotCleanable(t *testing.T) {
+	ctx := context.Background()
+	nodeState := utils.NodeDirty
+	nodeServer := &Plugin{
+		role:              CSINode,
+		enableForceDetach: true,
+	}
+
+	err := nodeServer.updateNodePublicationState(ctx, nodeState)
+	assert.NoError(t, err, "expected no error")
+
+	nodeState = utils.NodeClean
+	err = nodeServer.updateNodePublicationState(ctx, nodeState)
+	assert.NoError(t, err, "expected no error")
+}
+
+func TestUpdateNodePublicationState_FailsToUpdateNodeAsCleaned(t *testing.T) {
+	ctx := context.Background()
+	nodeState := utils.NodeCleanable
+	nodeName := "foo"
+	nodeStateFlags := &utils.NodePublicationStateFlags{
+		Cleaned: utils.Ptr(true),
+	}
+
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockClient.EXPECT().UpdateNode(ctx, nodeName, nodeStateFlags).Return(errors.New("update failed"))
+	nodeServer := &Plugin{
+		role:              CSINode,
+		nodeName:          nodeName,
+		restClient:        mockClient,
+		enableForceDetach: true,
+	}
+
+	err := nodeServer.updateNodePublicationState(ctx, nodeState)
+	assert.Error(t, err, "expected error")
+}
+
+func TestUpdateNodePublicationState_SuccessfullyUpdatesNodeAsCleaned(t *testing.T) {
+	ctx := context.Background()
+	nodeState := utils.NodeCleanable
+	nodeName := "foo"
+	nodeStateFlags := &utils.NodePublicationStateFlags{
+		Cleaned: utils.Ptr(true),
+	}
+
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockClient.EXPECT().UpdateNode(ctx, nodeName, nodeStateFlags).Return(nil)
+	nodeServer := &Plugin{
+		role:              CSINode,
+		nodeName:          nodeName,
+		restClient:        mockClient,
+		enableForceDetach: true,
+	}
+
+	err := nodeServer.updateNodePublicationState(ctx, nodeState)
+	assert.NoError(t, err, "expected no error")
 }

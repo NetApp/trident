@@ -49,7 +49,7 @@ type MultipleVolumePublicationResponse struct {
 }
 
 type MultipleNodeResponse struct {
-	Items []utils.Node `json:"items"`
+	Items []utils.NodeExternal `json:"items"`
 }
 
 type MultipleSnapshotResponse struct {

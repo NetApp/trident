@@ -362,6 +362,8 @@ github.com/kr/secureheader v0.2.0/go.mod h1:PfvbGMMfqBg6z+vxKGKbSJRcmASZc4klL5Di
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
 github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
+github.com/kubernetes-csi/csi-lib-utils v0.12.0 h1:pqVHD9XvcXHFT/K3tN+HSine4AFjCYO9UkdYgHjkL1E=
+github.com/kubernetes-csi/csi-lib-utils v0.12.0/go.mod h1:JS9eDIZmSjx4F9o0bLTVK/qfhIIOifdjEfVXzxWapfE=
 github.com/kubernetes-csi/csi-proxy/client v1.1.2 h1:zRZOv9RXAd9d/46RIiVkzyssIw5tAK7IJlYIk3gn9FU=
 github.com/kubernetes-csi/csi-proxy/client v1.1.2/go.mod h1:SfK4HVKQdMH5KrffivddAWgX5hl3P5KmnuOTBbDNboU=
 github.com/kubernetes-csi/external-snapshotter/client/v6 v6.2.0 h1:cMM5AB37e9aRGjErygVT6EuBPB6s5a+l95OPERmSlVM=

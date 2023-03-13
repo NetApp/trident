@@ -1,4 +1,5 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package plain
 
 import (
@@ -15,6 +16,7 @@ import (
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 type helper struct {
@@ -39,6 +41,13 @@ func (h *helper) Activate() error {
 	// Configure telemetry
 	config.OrchestratorTelemetry.Platform = string(config.PlatformCSI)
 	config.OrchestratorTelemetry.PlatformVersion = h.Version()
+
+	// TODO (websterj): Revisit or remove this reconcile once Trident v21.10.1 has reached EOL;
+	// At that point, all supported Trident versions will include volume publications.
+	err := h.orchestrator.ReconcileVolumePublications(context.Background(), nil)
+	if err != nil {
+		return csi.TerminalReconciliationError(err.Error())
+	}
 
 	return nil
 }
@@ -102,6 +111,13 @@ func (h *helper) GetSnapshotConfig(volumeName, snapshotName string) (*storage.Sn
 
 func (h *helper) GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error) {
 	return map[string]string{}, nil
+}
+
+// GetNodePublicationState returns a set of flags that indicate whether, in certain circumstances,
+// a node may safely publish volumes.  If such checking is not enabled or otherwise appropriate,
+// this function returns nil.
+func (h *helper) GetNodePublicationState(_ context.Context, _ string) (*utils.NodePublicationStateFlags, error) {
+	return nil, nil
 }
 
 // RecordVolumeEvent accepts the name of a CSI volume and writes the specified

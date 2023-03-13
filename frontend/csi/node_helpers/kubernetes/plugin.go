@@ -30,11 +30,12 @@ type helper struct {
 	orchestrator                     core.Orchestrator
 	podsPath                         string
 	publishedPaths                   map[string]map[string]struct{}
+	enableForceDetach                bool
 	nodehelpers.VolumePublishManager // Embedded/extended interface
 }
 
 // NewHelper instantiates this helper when running outside a pod.
-func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string) (frontend.Plugin, error) {
+func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForceDetach bool) (frontend.Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
 		LogLayerCSIFrontend)
 
@@ -48,6 +49,7 @@ func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string) (frontend.
 		orchestrator:         orchestrator,
 		podsPath:             kubeConfigPath + "/pods",
 		publishedPaths:       make(map[string]map[string]struct{}),
+		enableForceDetach:    enableForceDetach,
 		VolumePublishManager: csi.NewVolumePublishManager(config.VolumeTrackingInfoPath),
 	}
 

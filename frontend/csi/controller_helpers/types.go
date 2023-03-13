@@ -9,6 +9,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 const (
@@ -42,6 +43,11 @@ type ControllerHelper interface {
 	// GetNodeTopologyLabels returns topology labels for a given node
 	// Example: map[string]string{"topology.kubernetes.io/region": "us-east1"}
 	GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error)
+
+	// GetNodePublicationState returns a set of flags that indicate whether, in certain circumstances,
+	// a node may safely publish volumes.  If such checking is not enabled or otherwise appropriate,
+	// this function returns nil.
+	GetNodePublicationState(ctx context.Context, nodeName string) (*utils.NodePublicationStateFlags, error)
 
 	// RecordVolumeEvent accepts the name of a CSI volume and writes the specified
 	// event message in a manner appropriate to the container orchestrator.

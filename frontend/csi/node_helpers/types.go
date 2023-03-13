@@ -29,6 +29,7 @@ type VolumePublishManager interface {
 	WriteTrackingInfo(context.Context, string, *utils.VolumeTrackingInfo) error
 	ReadTrackingInfo(context.Context, string) (*utils.VolumeTrackingInfo, error)
 	DeleteTrackingInfo(context.Context, string) error
+	ListVolumeTrackingInfo(context.Context) (map[string]*utils.VolumeTrackingInfo, error)
 	UpgradeVolumeTrackingFile(context.Context, string, map[string]struct{}) (bool, error)
 	DeleteFailedUpgradeTrackingFile(context.Context, os.FileInfo)
 	ValidateTrackingFile(context.Context, string) (bool, error)

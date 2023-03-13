@@ -74,6 +74,7 @@ type Backend interface {
 
 type PublishEnforceable interface {
 	EnablePublishEnforcement(ctx context.Context, volume *Volume) error
+	CanEnablePublishEnforcement() bool
 }
 
 type ChapEnabled interface {
