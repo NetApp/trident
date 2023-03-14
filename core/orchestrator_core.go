@@ -4772,15 +4772,18 @@ func (o *TridentOrchestrator) PeriodicallyReconcileNodeAccessOnBackends() {
 	defer Logc(ctx).Info("Stopping periodic node access reconciliation service.")
 
 	// Every period seconds after the last run
-	for range time.Tick(NodeAccessReconcilePeriod) {
+	ticker := time.NewTicker(NodeAccessReconcilePeriod)
+	defer ticker.Stop()
+
+	for {
 		select {
 		case <-o.stopNodeAccessLoop:
 			// Exit on shutdown signal
 			return
 
-		default:
+		case <-ticker.C:
 			Logc(ctx).Trace("Periodic node access reconciliation loop beginning.")
-			// Wait at least cooldown seconds after the last node registration to prevent thundering herd
+			// Do nothing if it has not been at least cooldown seconds after the last node registration to prevent thundering herd
 			if time.Now().After(o.lastNodeRegistration.Add(NodeRegistrationCooldownPeriod)) {
 				for _, backend := range o.backends {
 					if err := o.safeReconcileNodeAccessOnBackend(ctx, backend); err != nil {
