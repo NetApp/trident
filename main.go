@@ -530,17 +530,17 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
 	Log().Info("Shutting down.")
+	for _, f := range preBootstrapFrontends {
+		if err := f.Deactivate(); err != nil {
+			Log().Error(err)
+		}
+	}
 	for _, f := range postBootstrapFrontends {
 		if err := f.Deactivate(); err != nil {
 			Log().Error(err)
 		}
 	}
 	orchestrator.Stop()
-	for _, f := range preBootstrapFrontends {
-		if err := f.Deactivate(); err != nil {
-			Log().Error(err)
-		}
-	}
 	if err = storeClient.Stop(); err != nil {
 		Log().Error(err)
 	}
