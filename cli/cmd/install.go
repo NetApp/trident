@@ -398,7 +398,7 @@ func discoverInstallationEnvironment() error {
 }
 
 func initClient() (k8sclient.KubernetesClient, error) {
-	clients, err := k8sclient.CreateK8SClients("", "", "")
+	clients, err := k8sclient.CreateK8SClients("", KubeConfigPath, "")
 	if err != nil {
 		return nil, err
 	}
